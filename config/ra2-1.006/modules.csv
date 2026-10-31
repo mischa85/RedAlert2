@@ -1,5 +1,1049 @@
 unit,start,end,category,evidence
-unk_00401000,0x00401000,0x00781C8C,unknown,code not assigned to a module
+unk_00401000,0x00401000,0x0040D7D0,unknown,code not assigned to a module
+unk_0040D7D0,0x0040D7D0,0x0040D810,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0040D810,0x0040D810,0x0040DB60,unknown,code not assigned to a module
+unk_0040DB60,0x0040DB60,0x0040DB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0040DB90,0x0040DB90,0x00410260,unknown,code not assigned to a module
+unk_00410260,0x00410260,0x00410290,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00410290,0x00410290,0x00410BD0,unknown,code not assigned to a module
+unk_00410BD0,0x00410BD0,0x00410BF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00410BF0,0x00410BF0,0x00412390,unknown,code not assigned to a module
+unk_00412390,0x00412390,0x004123E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004123E0,0x004123E0,0x0041E3E0,unknown,code not assigned to a module
+unk_0041E3E0,0x0041E3E0,0x0041E600,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0041E600,0x0041E600,0x0041F0C0,unknown,code not assigned to a module
+unk_0041F0C0,0x0041F0C0,0x0041F0F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0041F0F0,0x0041F0F0,0x0041F950,unknown,code not assigned to a module
+unk_0041F950,0x0041F950,0x0041F9C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0041F9C0,0x0041F9C0,0x00423F90,unknown,code not assigned to a module
+unk_00423F90,0x00423F90,0x00424060,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00424060,0x00424060,0x00424070,unknown,code not assigned to a module
+unk_00424070,0x00424070,0x00424390,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00424390,0x00424390,0x004246F0,unknown,code not assigned to a module
+unk_004246F0,0x004246F0,0x00424B90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00424B90,0x00424B90,0x00426B70,unknown,code not assigned to a module
+unk_00426B70,0x00426B70,0x00426CE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00426CE0,0x00426CE0,0x00426E50,unknown,code not assigned to a module
+unk_00426E50,0x00426E50,0x00426E70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00426E70,0x00426E70,0x00427E90,unknown,code not assigned to a module
+unk_00427E90,0x00427E90,0x00428370,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00428370,0x00428370,0x004284E0,unknown,code not assigned to a module
+unk_004284E0,0x004284E0,0x004285D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004285D0,0x004285D0,0x00428A90,unknown,code not assigned to a module
+unk_00428A90,0x00428A90,0x00428AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00428AE0,0x00428AE0,0x00429570,unknown,code not assigned to a module
+unk_00429570,0x00429570,0x004296F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004296F0,0x004296F0,0x00429A90,unknown,code not assigned to a module
+unk_00429A90,0x00429A90,0x00429B60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00429B60,0x00429B60,0x0042A590,unknown,code not assigned to a module
+unk_0042A590,0x0042A590,0x0042AA30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042AA30,0x0042AA30,0x0042B670,unknown,code not assigned to a module
+unk_0042B670,0x0042B670,0x0042B850,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042B850,0x0042B850,0x0042B950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042B950,0x0042B950,0x0042B970,unknown,code not assigned to a module
+unk_0042B970,0x0042B970,0x0042B9C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042B9C0,0x0042B9C0,0x0042B9D0,unknown,code not assigned to a module
+unk_0042B9D0,0x0042B9D0,0x0042BA10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042BA10,0x0042BA10,0x0042BEE0,unknown,code not assigned to a module
+unk_0042BEE0,0x0042BEE0,0x0042BF60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042BF60,0x0042BF60,0x0042BF70,unknown,code not assigned to a module
+unk_0042BF70,0x0042BF70,0x0042C000,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042C000,0x0042C000,0x0042CA50,unknown,code not assigned to a module
+unk_0042CA50,0x0042CA50,0x0042CAD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042CAD0,0x0042CAD0,0x0042D520,unknown,code not assigned to a module
+unk_0042D520,0x0042D520,0x0042D770,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042D770,0x0042D770,0x0042F0C0,unknown,code not assigned to a module
+unk_0042F0C0,0x0042F0C0,0x0042F0F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042F0F0,0x0042F0F0,0x0042F100,unknown,code not assigned to a module
+unk_0042F100,0x0042F100,0x0042F200,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042F200,0x0042F200,0x0042FDF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0042FDF0,0x0042FDF0,0x004347C0,unknown,code not assigned to a module
+unk_004347C0,0x004347C0,0x00434820,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00434820,0x00434820,0x00435580,unknown,code not assigned to a module
+unk_00435580,0x00435580,0x004355F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004355F0,0x004355F0,0x00435600,unknown,code not assigned to a module
+unk_00435600,0x00435600,0x00435690,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00435690,0x00435690,0x00435800,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00435800,0x00435800,0x00435840,unknown,code not assigned to a module
+unk_00435840,0x00435840,0x00435930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00435930,0x00435930,0x00436F80,unknown,code not assigned to a module
+unk_00436F80,0x00436F80,0x00436FF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00436FF0,0x00436FF0,0x00437BC0,unknown,code not assigned to a module
+unk_00437BC0,0x00437BC0,0x00437CC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00437CC0,0x00437CC0,0x00437D30,unknown,code not assigned to a module
+unk_00437D30,0x00437D30,0x00437DA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00437DA0,0x00437DA0,0x00438380,unknown,code not assigned to a module
+unk_00438380,0x00438380,0x00438410,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00438410,0x00438410,0x00438470,unknown,code not assigned to a module
+unk_00438470,0x00438470,0x004384D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004384D0,0x004384D0,0x004384E0,unknown,code not assigned to a module
+unk_004384E0,0x004384E0,0x00438500,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00438500,0x00438500,0x00456030,unknown,code not assigned to a module
+unk_00456030,0x00456030,0x00457A50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00457A50,0x00457A50,0x0045D830,unknown,code not assigned to a module
+unk_0045D830,0x0045D830,0x0045D880,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0045D880,0x0045D880,0x00464E00,unknown,code not assigned to a module
+unk_00464E00,0x00464E00,0x00464E70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00464E70,0x00464E70,0x00468EE0,unknown,code not assigned to a module
+unk_00468EE0,0x00468EE0,0x00468F30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00468F30,0x00468F30,0x00468F50,unknown,code not assigned to a module
+unk_00468F50,0x00468F50,0x00468F90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00468F90,0x00468F90,0x00468FD0,unknown,code not assigned to a module
+unk_00468FD0,0x00468FD0,0x004691E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004691E0,0x004691E0,0x004691F0,unknown,code not assigned to a module
+unk_004691F0,0x004691F0,0x004694C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004694C0,0x004694C0,0x004696B0,unknown,code not assigned to a module
+unk_004696B0,0x004696B0,0x00469DD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00469DD0,0x00469DD0,0x00469E00,unknown,code not assigned to a module
+unk_00469E00,0x00469E00,0x00469E70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00469E70,0x00469E70,0x00469EE0,unknown,code not assigned to a module
+unk_00469EE0,0x00469EE0,0x00469F30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00469F30,0x00469F30,0x00469F50,unknown,code not assigned to a module
+unk_00469F50,0x00469F50,0x0046A0E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046A0E0,0x0046A0E0,0x0046A130,unknown,code not assigned to a module
+unk_0046A130,0x0046A130,0x0046A210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046A210,0x0046A210,0x0046A260,unknown,code not assigned to a module
+unk_0046A260,0x0046A260,0x0046A410,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046A410,0x0046A410,0x0046A590,unknown,code not assigned to a module
+unk_0046A590,0x0046A590,0x0046A610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046A610,0x0046A610,0x0046A8B0,unknown,code not assigned to a module
+unk_0046A8B0,0x0046A8B0,0x0046A900,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046A900,0x0046A900,0x0046A920,unknown,code not assigned to a module
+unk_0046A920,0x0046A920,0x0046A970,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046A970,0x0046A970,0x0046AC10,unknown,code not assigned to a module
+unk_0046AC10,0x0046AC10,0x0046ACB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046ACB0,0x0046ACB0,0x0046AD30,unknown,code not assigned to a module
+unk_0046AD30,0x0046AD30,0x0046ADC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046ADC0,0x0046ADC0,0x0046AEA0,unknown,code not assigned to a module
+unk_0046AEA0,0x0046AEA0,0x0046AFB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046AFB0,0x0046AFB0,0x0046B0B0,unknown,code not assigned to a module
+unk_0046B0B0,0x0046B0B0,0x0046B460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046B460,0x0046B460,0x0046B780,unknown,code not assigned to a module
+unk_0046B780,0x0046B780,0x0046B930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046B930,0x0046B930,0x0046BF60,unknown,code not assigned to a module
+unk_0046BF60,0x0046BF60,0x0046C2E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046C2E0,0x0046C2E0,0x0046CA80,unknown,code not assigned to a module
+unk_0046CA80,0x0046CA80,0x0046CB80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046CB80,0x0046CB80,0x0046E470,unknown,code not assigned to a module
+unk_0046E470,0x0046E470,0x0046E4A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046E4A0,0x0046E4A0,0x0046E4D0,unknown,code not assigned to a module
+unk_0046E4D0,0x0046E4D0,0x0046E4F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046E4F0,0x0046E4F0,0x0046EA40,unknown,code not assigned to a module
+unk_0046EA40,0x0046EA40,0x0046EA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046EA60,0x0046EA60,0x0046EA70,unknown,code not assigned to a module
+unk_0046EA70,0x0046EA70,0x0046EA90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046EA90,0x0046EA90,0x0046EAA0,unknown,code not assigned to a module
+unk_0046EAA0,0x0046EAA0,0x0046F510,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046F510,0x0046F510,0x0046F750,unknown,code not assigned to a module
+unk_0046F750,0x0046F750,0x0046FD30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046FD30,0x0046FD30,0x0046FD60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046FD60,0x0046FD60,0x0046FD90,unknown,code not assigned to a module
+unk_0046FD90,0x0046FD90,0x0046FE10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046FE10,0x0046FE10,0x0046FE20,unknown,code not assigned to a module
+unk_0046FE20,0x0046FE20,0x00470490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00470490,0x00470490,0x004763D0,unknown,code not assigned to a module
+unk_004763D0,0x004763D0,0x00476460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00476460,0x00476460,0x0047D270,unknown,code not assigned to a module
+unk_0047D270,0x0047D270,0x0047D2C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0047D2C0,0x0047D2C0,0x0047D330,unknown,code not assigned to a module
+unk_0047D330,0x0047D330,0x0047D3B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0047D3B0,0x0047D3B0,0x0047D3C0,unknown,code not assigned to a module
+unk_0047D3C0,0x0047D3C0,0x0047D3E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0047D3E0,0x0047D3E0,0x0047D4B0,unknown,code not assigned to a module
+unk_0047D4B0,0x0047D4B0,0x0047D500,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0047D500,0x0047D500,0x0047F8B0,unknown,code not assigned to a module
+unk_0047F8B0,0x0047F8B0,0x0047F9B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0047F9B0,0x0047F9B0,0x0047FB70,unknown,code not assigned to a module
+unk_0047FB70,0x0047FB70,0x0047FCC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0047FCC0,0x0047FCC0,0x004809F0,unknown,code not assigned to a module
+unk_004809F0,0x004809F0,0x00480A60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00480A60,0x00480A60,0x00480A80,unknown,code not assigned to a module
+unk_00480A80,0x00480A80,0x00480AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00480AE0,0x00480AE0,0x00480EA0,unknown,code not assigned to a module
+unk_00480EA0,0x00480EA0,0x00480F00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00480F00,0x00480F00,0x00481370,unknown,code not assigned to a module
+unk_00481370,0x00481370,0x004813A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004813A0,0x004813A0,0x004815F0,unknown,code not assigned to a module
+unk_004815F0,0x004815F0,0x00481610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00481610,0x00481610,0x00482B50,unknown,code not assigned to a module
+unk_00482B50,0x00482B50,0x00482BC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00482BC0,0x00482BC0,0x00482C00,unknown,code not assigned to a module
+unk_00482C00,0x00482C00,0x00482E00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00482E00,0x00482E00,0x00482E10,unknown,code not assigned to a module
+unk_00482E10,0x00482E10,0x00482F20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00482F20,0x00482F20,0x00482F60,unknown,code not assigned to a module
+unk_00482F60,0x00482F60,0x00482F80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00482F80,0x00482F80,0x00483430,unknown,code not assigned to a module
+unk_00483430,0x00483430,0x00483510,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00483510,0x00483510,0x00483530,unknown,code not assigned to a module
+unk_00483530,0x00483530,0x00483560,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00483560,0x00483560,0x00491620,unknown,code not assigned to a module
+unk_00491620,0x00491620,0x004916D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004916D0,0x004916D0,0x00491880,unknown,code not assigned to a module
+unk_00491880,0x00491880,0x004918F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004918F0,0x004918F0,0x00491C00,unknown,code not assigned to a module
+unk_00491C00,0x00491C00,0x00491C20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00491C20,0x00491C20,0x00491C50,unknown,code not assigned to a module
+unk_00491C50,0x00491C50,0x00491F00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00491F00,0x00491F00,0x00492140,unknown,code not assigned to a module
+unk_00492140,0x00492140,0x004921F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004921F0,0x004921F0,0x00492210,unknown,code not assigned to a module
+unk_00492210,0x00492210,0x00492380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00492380,0x00492380,0x00492390,unknown,code not assigned to a module
+unk_00492390,0x00492390,0x00492720,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00492720,0x00492720,0x00492740,unknown,code not assigned to a module
+unk_00492740,0x00492740,0x00492B90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00492B90,0x00492B90,0x00492BB0,unknown,code not assigned to a module
+unk_00492BB0,0x00492BB0,0x00492D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00492D10,0x00492D10,0x00492D20,unknown,code not assigned to a module
+unk_00492D20,0x00492D20,0x00493010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00493010,0x00493010,0x00493930,unknown,code not assigned to a module
+unk_00493930,0x00493930,0x004939A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004939A0,0x004939A0,0x00493DF0,unknown,code not assigned to a module
+unk_00493DF0,0x00493DF0,0x00493F30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00493F30,0x00493F30,0x00493F70,unknown,code not assigned to a module
+unk_00493F70,0x00493F70,0x00494210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00494210,0x00494210,0x00494290,unknown,code not assigned to a module
+unk_00494290,0x00494290,0x004942D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004942D0,0x004942D0,0x00494510,unknown,code not assigned to a module
+unk_00494510,0x00494510,0x00494530,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00494530,0x00494530,0x00494760,unknown,code not assigned to a module
+unk_00494760,0x00494760,0x00494800,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00494800,0x00494800,0x00494910,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00494910,0x00494910,0x00494930,unknown,code not assigned to a module
+unk_00494930,0x00494930,0x00494CB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00494CB0,0x00494CB0,0x00494DE0,unknown,code not assigned to a module
+unk_00494DE0,0x00494DE0,0x004950F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004950F0,0x004950F0,0x00495230,unknown,code not assigned to a module
+unk_00495230,0x00495230,0x00495270,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00495270,0x00495270,0x004953B0,unknown,code not assigned to a module
+unk_004953B0,0x004953B0,0x004954D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004954D0,0x004954D0,0x004954E0,unknown,code not assigned to a module
+unk_004954E0,0x004954E0,0x00495590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00495590,0x00495590,0x00495770,unknown,code not assigned to a module
+unk_00495770,0x00495770,0x00495AD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00495AD0,0x00495AD0,0x00495C90,unknown,code not assigned to a module
+unk_00495C90,0x00495C90,0x00496460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00496460,0x00496460,0x00496A20,unknown,code not assigned to a module
+unk_00496A20,0x00496A20,0x00496C50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00496C50,0x00496C50,0x00496C70,unknown,code not assigned to a module
+unk_00496C70,0x00496C70,0x00496D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00496D10,0x00496D10,0x00496D30,unknown,code not assigned to a module
+unk_00496D30,0x00496D30,0x00496FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00496FE0,0x00496FE0,0x004972E0,unknown,code not assigned to a module
+unk_004972E0,0x004972E0,0x00497320,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00497320,0x00497320,0x004981C0,unknown,code not assigned to a module
+unk_004981C0,0x004981C0,0x004983E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004983E0,0x004983E0,0x004985C0,unknown,code not assigned to a module
+unk_004985C0,0x004985C0,0x00498750,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00498750,0x00498750,0x00498950,unknown,code not assigned to a module
+unk_00498950,0x00498950,0x00498A00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00498A00,0x00498A00,0x00499810,unknown,code not assigned to a module
+unk_00499810,0x00499810,0x004998C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004998C0,0x004998C0,0x00499B60,unknown,code not assigned to a module
+unk_00499B60,0x00499B60,0x00499BB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00499BB0,0x00499BB0,0x0049A5B0,unknown,code not assigned to a module
+unk_0049A5B0,0x0049A5B0,0x0049A5D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0049A5D0,0x0049A5D0,0x0049AE70,unknown,code not assigned to a module
+unk_0049AE70,0x0049AE70,0x0049AF80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0049AF80,0x0049AF80,0x0049CBF0,unknown,code not assigned to a module
+unk_0049CBF0,0x0049CBF0,0x0049CC20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0049CC20,0x0049CC20,0x0049E7D0,unknown,code not assigned to a module
+unk_0049E7D0,0x0049E7D0,0x0049E7F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0049E7F0,0x0049E7F0,0x0049E810,unknown,code not assigned to a module
+unk_0049E810,0x0049E810,0x0049E870,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0049E870,0x0049E870,0x0049EE00,unknown,code not assigned to a module
+unk_0049EE00,0x0049EE00,0x0049EE80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0049EE80,0x0049EE80,0x004A4ED0,unknown,code not assigned to a module
+unk_004A4ED0,0x004A4ED0,0x004A4F30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004A4F30,0x004A4F30,0x004A6330,unknown,code not assigned to a module
+unk_004A6330,0x004A6330,0x004A63C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004A63C0,0x004A63C0,0x004A6910,unknown,code not assigned to a module
+unk_004A6910,0x004A6910,0x004A6930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004A6930,0x004A6930,0x004A6AE0,unknown,code not assigned to a module
+unk_004A6AE0,0x004A6AE0,0x004A6B40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004A6B40,0x004A6B40,0x004AA5A0,unknown,code not assigned to a module
+unk_004AA5A0,0x004AA5A0,0x004AA660,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004AA660,0x004AA660,0x004AAB60,unknown,code not assigned to a module
+unk_004AAB60,0x004AAB60,0x004AABF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004AABF0,0x004AABF0,0x004AAC30,unknown,code not assigned to a module
+unk_004AAC30,0x004AAC30,0x004AAC60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004AAC60,0x004AAC60,0x004AADC0,unknown,code not assigned to a module
+unk_004AADC0,0x004AADC0,0x004AAE40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004AAE40,0x004AAE40,0x004ABA00,unknown,code not assigned to a module
+unk_004ABA00,0x004ABA00,0x004ABB30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004ABB30,0x004ABB30,0x004AF550,unknown,code not assigned to a module
+unk_004AF550,0x004AF550,0x004AF650,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004AF650,0x004AF650,0x004B2A60,unknown,code not assigned to a module
+unk_004B2A60,0x004B2A60,0x004B2A90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B2A90,0x004B2A90,0x004B2C50,unknown,code not assigned to a module
+unk_004B2C50,0x004B2C50,0x004B2C90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B2C90,0x004B2C90,0x004B3160,unknown,code not assigned to a module
+unk_004B3160,0x004B3160,0x004B3260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B3260,0x004B3260,0x004B3270,unknown,code not assigned to a module
+unk_004B3270,0x004B3270,0x004B3580,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B3580,0x004B3580,0x004B3670,unknown,code not assigned to a module
+unk_004B3670,0x004B3670,0x004B3690,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B3690,0x004B3690,0x004B4860,unknown,code not assigned to a module
+unk_004B4860,0x004B4860,0x004B4900,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B4900,0x004B4900,0x004B4930,unknown,code not assigned to a module
+unk_004B4930,0x004B4930,0x004B4970,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B4970,0x004B4970,0x004B5A70,unknown,code not assigned to a module
+unk_004B5A70,0x004B5A70,0x004B5AA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B5AA0,0x004B5AA0,0x004B5C50,unknown,code not assigned to a module
+unk_004B5C50,0x004B5C50,0x004B5C90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B5C90,0x004B5C90,0x004B8970,unknown,code not assigned to a module
+unk_004B8970,0x004B8970,0x004B89C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B89C0,0x004B89C0,0x004B89D0,unknown,code not assigned to a module
+unk_004B89D0,0x004B89D0,0x004B8A30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B8A30,0x004B8A30,0x004B8B10,unknown,code not assigned to a module
+unk_004B8B10,0x004B8B10,0x004B8C80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B8C80,0x004B8C80,0x004B8C90,unknown,code not assigned to a module
+unk_004B8C90,0x004B8C90,0x004B8D00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B8D00,0x004B8D00,0x004B8D40,unknown,code not assigned to a module
+unk_004B8D40,0x004B8D40,0x004B8EB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004B8EB0,0x004B8EB0,0x004BA410,unknown,code not assigned to a module
+unk_004BA410,0x004BA410,0x004BA580,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BA580,0x004BA580,0x004BA5B0,unknown,code not assigned to a module
+unk_004BA5B0,0x004BA5B0,0x004BA6C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BA6C0,0x004BA6C0,0x004BA830,unknown,code not assigned to a module
+unk_004BA830,0x004BA830,0x004BAA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BAA60,0x004BAA60,0x004BAA90,unknown,code not assigned to a module
+unk_004BAA90,0x004BAA90,0x004BAB30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BAB30,0x004BAB30,0x004BABA0,unknown,code not assigned to a module
+unk_004BABA0,0x004BABA0,0x004BAD50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BAD50,0x004BAD50,0x004BB160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BB160,0x004BB160,0x004BBF00,unknown,code not assigned to a module
+unk_004BBF00,0x004BBF00,0x004BBF20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BBF20,0x004BBF20,0x004BDC20,unknown,code not assigned to a module
+unk_004BDC20,0x004BDC20,0x004BDD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004BDD10,0x004BDD10,0x004CEDF0,unknown,code not assigned to a module
+unk_004CEDF0,0x004CEDF0,0x004CEEE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CEEE0,0x004CEEE0,0x004CEFC0,unknown,code not assigned to a module
+unk_004CEFC0,0x004CEFC0,0x004CF0E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF0E0,0x004CF0E0,0x004CF170,unknown,code not assigned to a module
+unk_004CF170,0x004CF170,0x004CF190,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF190,0x004CF190,0x004CF1B0,unknown,code not assigned to a module
+unk_004CF1B0,0x004CF1B0,0x004CF200,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF200,0x004CF200,0x004CF240,unknown,code not assigned to a module
+unk_004CF240,0x004CF240,0x004CF290,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF290,0x004CF290,0x004CF560,unknown,code not assigned to a module
+unk_004CF560,0x004CF560,0x004CF5A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF5A0,0x004CF5A0,0x004CF5B0,unknown,code not assigned to a module
+unk_004CF5B0,0x004CF5B0,0x004CF630,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF630,0x004CF630,0x004CF640,unknown,code not assigned to a module
+unk_004CF640,0x004CF640,0x004CF6A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF6A0,0x004CF6A0,0x004D0050,unknown,code not assigned to a module
+unk_004D0050,0x004D0050,0x004D00D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004D00D0,0x004D00D0,0x004D00F0,unknown,code not assigned to a module
+unk_004D00F0,0x004D00F0,0x004D0280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004D0280,0x004D0280,0x004D0630,unknown,code not assigned to a module
+unk_004D0630,0x004D0630,0x004D0730,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004D0730,0x004D0730,0x004D2940,unknown,code not assigned to a module
+unk_004D2940,0x004D2940,0x004D2A10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004D2A10,0x004D2A10,0x004D2A20,unknown,code not assigned to a module
+unk_004D2A20,0x004D2A20,0x004D2A60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004D2A60,0x004D2A60,0x004DE260,unknown,code not assigned to a module
+unk_004DE260,0x004DE260,0x004DE380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004DE380,0x004DE380,0x004DE960,unknown,code not assigned to a module
+unk_004DE960,0x004DE960,0x004DE9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004DE9E0,0x004DE9E0,0x004DED20,unknown,code not assigned to a module
+unk_004DED20,0x004DED20,0x004DED60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004DED60,0x004DED60,0x004DED70,unknown,code not assigned to a module
+unk_004DED70,0x004DED70,0x004DEEE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004DEEE0,0x004DEEE0,0x004DFD10,unknown,code not assigned to a module
+unk_004DFD10,0x004DFD10,0x004DFF10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004DFF10,0x004DFF10,0x004E0120,unknown,code not assigned to a module
+unk_004E0120,0x004E0120,0x004E01A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E01A0,0x004E01A0,0x004E0560,unknown,code not assigned to a module
+unk_004E0560,0x004E0560,0x004E0630,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E0630,0x004E0630,0x004E08D0,unknown,code not assigned to a module
+unk_004E08D0,0x004E08D0,0x004E08F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E08F0,0x004E08F0,0x004E0960,unknown,code not assigned to a module
+unk_004E0960,0x004E0960,0x004E0980,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E0980,0x004E0980,0x004E12B0,unknown,code not assigned to a module
+unk_004E12B0,0x004E12B0,0x004E1350,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E1350,0x004E1350,0x004E13C0,unknown,code not assigned to a module
+unk_004E13C0,0x004E13C0,0x004E13F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E13F0,0x004E13F0,0x004E2AD0,unknown,code not assigned to a module
+unk_004E2AD0,0x004E2AD0,0x004E2AF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E2AF0,0x004E2AF0,0x004E3640,unknown,code not assigned to a module
+unk_004E3640,0x004E3640,0x004E3660,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E3660,0x004E3660,0x004E5CF0,unknown,code not assigned to a module
+unk_004E5CF0,0x004E5CF0,0x004E5DC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E5DC0,0x004E5DC0,0x004E8610,unknown,code not assigned to a module
+unk_004E8610,0x004E8610,0x004E8640,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004E8640,0x004E8640,0x004EAEF0,unknown,code not assigned to a module
+unk_004EAEF0,0x004EAEF0,0x004EAF30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004EAF30,0x004EAF30,0x004ECA30,unknown,code not assigned to a module
+unk_004ECA30,0x004ECA30,0x004ECA50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004ECA50,0x004ECA50,0x004F0F70,unknown,code not assigned to a module
+unk_004F0F70,0x004F0F70,0x004F0FF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004F0FF0,0x004F0FF0,0x004FC8D0,unknown,code not assigned to a module
+unk_004FC8D0,0x004FC8D0,0x004FC900,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004FC900,0x004FC900,0x004FEBD0,unknown,code not assigned to a module
+unk_004FEBD0,0x004FEBD0,0x004FEC80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004FEC80,0x004FEC80,0x004FEF70,unknown,code not assigned to a module
+unk_004FEF70,0x004FEF70,0x004FF170,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004FF170,0x004FF170,0x0050B8D0,unknown,code not assigned to a module
+unk_0050B8D0,0x0050B8D0,0x0050B9A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050B9A0,0x0050B9A0,0x0050BBE0,unknown,code not assigned to a module
+unk_0050BBE0,0x0050BBE0,0x0050CAF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050CAF0,0x0050CAF0,0x0050CFC0,unknown,code not assigned to a module
+unk_0050CFC0,0x0050CFC0,0x0050D0F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050D0F0,0x0050D0F0,0x0050D310,unknown,code not assigned to a module
+unk_0050D310,0x0050D310,0x0050D400,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050D400,0x0050D400,0x0050D6E0,unknown,code not assigned to a module
+unk_0050D6E0,0x0050D6E0,0x0050D760,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050D760,0x0050D760,0x0050DC20,unknown,code not assigned to a module
+unk_0050DC20,0x0050DC20,0x0050DCF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050DCF0,0x0050DCF0,0x0050E180,unknown,code not assigned to a module
+unk_0050E180,0x0050E180,0x0050E1D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050E1D0,0x0050E1D0,0x0050E540,unknown,code not assigned to a module
+unk_0050E540,0x0050E540,0x0050E590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050E590,0x0050E590,0x0050F380,unknown,code not assigned to a module
+unk_0050F380,0x0050F380,0x0050F3C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050F3C0,0x0050F3C0,0x0050F5D0,unknown,code not assigned to a module
+unk_0050F5D0,0x0050F5D0,0x0050F610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050F610,0x0050F610,0x0050F990,unknown,code not assigned to a module
+unk_0050F990,0x0050F990,0x0050F9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050F9E0,0x0050F9E0,0x0050FD90,unknown,code not assigned to a module
+unk_0050FD90,0x0050FD90,0x0050FDF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0050FDF0,0x0050FDF0,0x005101D0,unknown,code not assigned to a module
+unk_005101D0,0x005101D0,0x00510460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00510460,0x00510460,0x005106B0,unknown,code not assigned to a module
+unk_005106B0,0x005106B0,0x005109B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005109B0,0x005109B0,0x00513080,unknown,code not assigned to a module
+unk_00513080,0x00513080,0x00513260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00513260,0x00513260,0x00515A80,unknown,code not assigned to a module
+unk_00515A80,0x00515A80,0x00515AC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00515AC0,0x00515AC0,0x00519240,unknown,code not assigned to a module
+unk_00519240,0x00519240,0x00519480,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00519480,0x00519480,0x0051E820,unknown,code not assigned to a module
+unk_0051E820,0x0051E820,0x0051EB00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0051EB00,0x0051EB00,0x00522040,unknown,code not assigned to a module
+unk_00522040,0x00522040,0x005221A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005221A0,0x005221A0,0x00523410,unknown,code not assigned to a module
+unk_00523410,0x00523410,0x00523440,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00523440,0x00523440,0x00523780,unknown,code not assigned to a module
+unk_00523780,0x00523780,0x00523840,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00523840,0x00523840,0x00523C30,unknown,code not assigned to a module
+unk_00523C30,0x00523C30,0x00523D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00523D10,0x00523D10,0x00523D30,unknown,code not assigned to a module
+unk_00523D30,0x00523D30,0x00523D90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00523D90,0x00523D90,0x00524830,unknown,code not assigned to a module
+unk_00524830,0x00524830,0x00524870,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00524870,0x00524870,0x00529550,unknown,code not assigned to a module
+unk_00529550,0x00529550,0x00529590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00529590,0x00529590,0x0052EE40,unknown,code not assigned to a module
+unk_0052EE40,0x0052EE40,0x0052EF70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0052EF70,0x0052EF70,0x00532290,unknown,code not assigned to a module
+unk_00532290,0x00532290,0x005322C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005322C0,0x005322C0,0x005332B0,unknown,code not assigned to a module
+unk_005332B0,0x005332B0,0x00533330,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00533330,0x00533330,0x005348A0,unknown,code not assigned to a module
+unk_005348A0,0x005348A0,0x00534920,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00534920,0x00534920,0x00534980,unknown,code not assigned to a module
+unk_00534980,0x00534980,0x00534B50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00534B50,0x00534B50,0x00534EE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00534EE0,0x00534EE0,0x00534F50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00534F50,0x00534F50,0x00534F90,unknown,code not assigned to a module
+unk_00534F90,0x00534F90,0x00535280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00535280,0x00535280,0x005352D0,unknown,code not assigned to a module
+unk_005352D0,0x005352D0,0x00535340,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00535340,0x00535340,0x00535380,unknown,code not assigned to a module
+unk_00535380,0x00535380,0x005354E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005354E0,0x005354E0,0x00535530,unknown,code not assigned to a module
+unk_00535530,0x00535530,0x00535720,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00535720,0x00535720,0x00537830,unknown,code not assigned to a module
+unk_00537830,0x00537830,0x00537B50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00537B50,0x00537B50,0x00538F60,unknown,code not assigned to a module
+unk_00538F60,0x00538F60,0x00538FF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00538FF0,0x00538FF0,0x00539000,unknown,code not assigned to a module
+unk_00539000,0x00539000,0x00539020,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00539020,0x00539020,0x00539040,unknown,code not assigned to a module
+unk_00539040,0x00539040,0x00539170,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00539170,0x00539170,0x0053A480,unknown,code not assigned to a module
+unk_0053A480,0x0053A480,0x0053A4A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053A4A0,0x0053A4A0,0x0053AEB0,unknown,code not assigned to a module
+unk_0053AEB0,0x0053AEB0,0x0053AEF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053AEF0,0x0053AEF0,0x0053B190,unknown,code not assigned to a module
+unk_0053B190,0x0053B190,0x0053B1B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053B1B0,0x0053B1B0,0x0053B1E0,unknown,code not assigned to a module
+unk_0053B1E0,0x0053B1E0,0x0053B200,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053B200,0x0053B200,0x0053BF90,unknown,code not assigned to a module
+unk_0053BF90,0x0053BF90,0x0053C010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053C010,0x0053C010,0x0053C7D0,unknown,code not assigned to a module
+unk_0053C7D0,0x0053C7D0,0x0053C7F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053C7F0,0x0053C7F0,0x0053D2B0,unknown,code not assigned to a module
+unk_0053D2B0,0x0053D2B0,0x0053D360,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053D360,0x0053D360,0x0053E110,unknown,code not assigned to a module
+unk_0053E110,0x0053E110,0x0053E180,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053E180,0x0053E180,0x0053E420,unknown,code not assigned to a module
+unk_0053E420,0x0053E420,0x0053E970,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053E970,0x0053E970,0x0053EB40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053EB40,0x0053EB40,0x0053EBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053EBA0,0x0053EBA0,0x0053EBE0,unknown,code not assigned to a module
+unk_0053EBE0,0x0053EBE0,0x0053EF60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053EF60,0x0053EF60,0x0053EFB0,unknown,code not assigned to a module
+unk_0053EFB0,0x0053EFB0,0x0053F010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0053F010,0x0053F010,0x005461A0,unknown,code not assigned to a module
+unk_005461A0,0x005461A0,0x00547930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00547930,0x00547930,0x0054E370,unknown,code not assigned to a module
+unk_0054E370,0x0054E370,0x0054E3A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0054E3A0,0x0054E3A0,0x0054F7C0,unknown,code not assigned to a module
+unk_0054F7C0,0x0054F7C0,0x0054F8F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0054F8F0,0x0054F8F0,0x00559EB0,unknown,code not assigned to a module
+unk_00559EB0,0x00559EB0,0x00559F10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00559F10,0x00559F10,0x0055A280,unknown,code not assigned to a module
+unk_0055A280,0x0055A280,0x0055A300,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0055A300,0x0055A300,0x0055A590,unknown,code not assigned to a module
+unk_0055A590,0x0055A590,0x0055A660,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0055A660,0x0055A660,0x0055A7F0,unknown,code not assigned to a module
+unk_0055A7F0,0x0055A7F0,0x0055A840,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0055A840,0x0055A840,0x0055AF60,unknown,code not assigned to a module
+unk_0055AF60,0x0055AF60,0x0055B060,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0055B060,0x0055B060,0x0055B520,unknown,code not assigned to a module
+unk_0055B520,0x0055B520,0x0055B820,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0055B820,0x0055B820,0x0055CB00,unknown,code not assigned to a module
+unk_0055CB00,0x0055CB00,0x0055CEF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0055CEF0,0x0055CEF0,0x0055D990,unknown,code not assigned to a module
+unk_0055D990,0x0055D990,0x0055DA70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0055DA70,0x0055DA70,0x00567CC0,unknown,code not assigned to a module
+unk_00567CC0,0x00567CC0,0x00567D20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00567D20,0x00567D20,0x005687B0,unknown,code not assigned to a module
+unk_005687B0,0x005687B0,0x005688A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005688A0,0x005688A0,0x0056D6C0,unknown,code not assigned to a module
+unk_0056D6C0,0x0056D6C0,0x0056D870,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0056D870,0x0056D870,0x0056DAC0,unknown,code not assigned to a module
+unk_0056DAC0,0x0056DAC0,0x0056DBC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0056DBC0,0x0056DBC0,0x0056DFC0,unknown,code not assigned to a module
+unk_0056DFC0,0x0056DFC0,0x0056E100,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0056E100,0x0056E100,0x0056E890,unknown,code not assigned to a module
+unk_0056E890,0x0056E890,0x0056E910,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0056E910,0x0056E910,0x0056E970,unknown,code not assigned to a module
+unk_0056E970,0x0056E970,0x0056EA20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0056EA20,0x0056EA20,0x005775B0,unknown,code not assigned to a module
+unk_005775B0,0x005775B0,0x00577880,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00577880,0x00577880,0x005791A0,unknown,code not assigned to a module
+unk_005791A0,0x005791A0,0x005791C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005791C0,0x005791C0,0x00579770,unknown,code not assigned to a module
+unk_00579770,0x00579770,0x005798D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005798D0,0x005798D0,0x0057EC60,unknown,code not assigned to a module
+unk_0057EC60,0x0057EC60,0x0057ECF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0057ECF0,0x0057ECF0,0x00581870,unknown,code not assigned to a module
+unk_00581870,0x00581870,0x00581940,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00581940,0x00581940,0x00582970,unknown,code not assigned to a module
+unk_00582970,0x00582970,0x00582A50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00582A50,0x00582A50,0x00583630,unknown,code not assigned to a module
+unk_00583630,0x00583630,0x00583740,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00583740,0x00583740,0x005872C0,unknown,code not assigned to a module
+unk_005872C0,0x005872C0,0x00587330,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00587330,0x00587330,0x00588380,unknown,code not assigned to a module
+unk_00588380,0x00588380,0x005883F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005883F0,0x005883F0,0x00588A30,unknown,code not assigned to a module
+unk_00588A30,0x00588A30,0x00588C20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00588C20,0x00588C20,0x00588E20,unknown,code not assigned to a module
+unk_00588E20,0x00588E20,0x00588EC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00588EC0,0x00588EC0,0x0058B100,unknown,code not assigned to a module
+unk_0058B100,0x0058B100,0x0058B140,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0058B140,0x0058B140,0x0058B160,unknown,code not assigned to a module
+unk_0058B160,0x0058B160,0x0058B3D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0058B3D0,0x0058B3D0,0x0058B3E0,unknown,code not assigned to a module
+unk_0058B3E0,0x0058B3E0,0x0058B400,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0058B400,0x0058B400,0x0058B420,unknown,code not assigned to a module
+unk_0058B420,0x0058B420,0x0058DA10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0058DA10,0x0058DA10,0x0058FDE0,unknown,code not assigned to a module
+unk_0058FDE0,0x0058FDE0,0x00590550,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00590550,0x00590550,0x00590650,unknown,code not assigned to a module
+unk_00590650,0x00590650,0x00590D50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00590D50,0x00590D50,0x00590F10,unknown,code not assigned to a module
+unk_00590F10,0x00590F10,0x00591380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00591380,0x00591380,0x00591400,unknown,code not assigned to a module
+unk_00591400,0x00591400,0x005914E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005914E0,0x005914E0,0x00591760,unknown,code not assigned to a module
+unk_00591760,0x00591760,0x005917C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005917C0,0x005917C0,0x00591840,unknown,code not assigned to a module
+unk_00591840,0x00591840,0x00591860,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00591860,0x00591860,0x00591900,unknown,code not assigned to a module
+unk_00591900,0x00591900,0x00591950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00591950,0x00591950,0x00593530,unknown,code not assigned to a module
+unk_00593530,0x00593530,0x00593680,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00593680,0x00593680,0x00594DB0,unknown,code not assigned to a module
+unk_00594DB0,0x00594DB0,0x00594FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00594FE0,0x00594FE0,0x00595020,unknown,code not assigned to a module
+unk_00595020,0x00595020,0x00595040,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00595040,0x00595040,0x005951E0,unknown,code not assigned to a module
+unk_005951E0,0x005951E0,0x005952F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005952F0,0x005952F0,0x00595560,unknown,code not assigned to a module
+unk_00595560,0x00595560,0x00595BC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00595BC0,0x00595BC0,0x00596FC0,unknown,code not assigned to a module
+unk_00596FC0,0x00596FC0,0x00597010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00597010,0x00597010,0x0059AA20,unknown,code not assigned to a module
+unk_0059AA20,0x0059AA20,0x0059AAF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059AAF0,0x0059AAF0,0x0059AC80,unknown,code not assigned to a module
+unk_0059AC80,0x0059AC80,0x0059AFD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059AFD0,0x0059AFD0,0x0059B050,unknown,code not assigned to a module
+unk_0059B050,0x0059B050,0x0059B090,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059B090,0x0059B090,0x0059CBA0,unknown,code not assigned to a module
+unk_0059CBA0,0x0059CBA0,0x0059D4F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059D4F0,0x0059D4F0,0x0059D500,unknown,code not assigned to a module
+unk_0059D500,0x0059D500,0x0059D590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059D590,0x0059D590,0x0059EB70,unknown,code not assigned to a module
+unk_0059EB70,0x0059EB70,0x0059EBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059EBA0,0x0059EBA0,0x0059ED30,unknown,code not assigned to a module
+unk_0059ED30,0x0059ED30,0x0059EDC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059EDC0,0x0059EDC0,0x0059F1D0,unknown,code not assigned to a module
+unk_0059F1D0,0x0059F1D0,0x0059F250,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0059F250,0x0059F250,0x005A0250,unknown,code not assigned to a module
+unk_005A0250,0x005A0250,0x005A02B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A02B0,0x005A02B0,0x005A0E30,unknown,code not assigned to a module
+unk_005A0E30,0x005A0E30,0x005A0EC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A0EC0,0x005A0EC0,0x005A14D0,unknown,code not assigned to a module
+unk_005A14D0,0x005A14D0,0x005A1620,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A1620,0x005A1620,0x005A1650,unknown,code not assigned to a module
+unk_005A1650,0x005A1650,0x005A1710,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A1710,0x005A1710,0x005A73E0,unknown,code not assigned to a module
+unk_005A73E0,0x005A73E0,0x005A7430,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A7430,0x005A7430,0x005A7480,unknown,code not assigned to a module
+unk_005A7480,0x005A7480,0x005A74B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A74B0,0x005A74B0,0x005A7550,unknown,code not assigned to a module
+unk_005A7550,0x005A7550,0x005A7950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A7950,0x005A7950,0x005A7980,unknown,code not assigned to a module
+unk_005A7980,0x005A7980,0x005A9720,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A9720,0x005A9720,0x005A97D0,unknown,code not assigned to a module
+unk_005A97D0,0x005A97D0,0x005A9C90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A9C90,0x005A9C90,0x005A9CE0,unknown,code not assigned to a module
+unk_005A9CE0,0x005A9CE0,0x005AA380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AA380,0x005AA380,0x005ABF20,unknown,code not assigned to a module
+unk_005ABF20,0x005ABF20,0x005ABF60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005ABF60,0x005ABF60,0x005ABF70,unknown,code not assigned to a module
+unk_005ABF70,0x005ABF70,0x005AC140,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AC140,0x005AC140,0x005AC810,unknown,code not assigned to a module
+unk_005AC810,0x005AC810,0x005AC850,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AC850,0x005AC850,0x005ACD00,unknown,code not assigned to a module
+unk_005ACD00,0x005ACD00,0x005ACDB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005ACDB0,0x005ACDB0,0x005AD9D0,unknown,code not assigned to a module
+unk_005AD9D0,0x005AD9D0,0x005ADA00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005ADA00,0x005ADA00,0x005ADF90,unknown,code not assigned to a module
+unk_005ADF90,0x005ADF90,0x005ADFE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005ADFE0,0x005ADFE0,0x005AE230,unknown,code not assigned to a module
+unk_005AE230,0x005AE230,0x005AE390,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AE390,0x005AE390,0x005AE3E0,unknown,code not assigned to a module
+unk_005AE3E0,0x005AE3E0,0x005AE460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AE460,0x005AE460,0x005AF400,unknown,code not assigned to a module
+unk_005AF400,0x005AF400,0x005AF450,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AF450,0x005AF450,0x005AF8F0,unknown,code not assigned to a module
+unk_005AF8F0,0x005AF8F0,0x005AF910,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AF910,0x005AF910,0x005AFBC0,unknown,code not assigned to a module
+unk_005AFBC0,0x005AFBC0,0x005AFBF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005AFBF0,0x005AFBF0,0x005B0950,unknown,code not assigned to a module
+unk_005B0950,0x005B0950,0x005B0970,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B0970,0x005B0970,0x005B4C40,unknown,code not assigned to a module
+unk_005B4C40,0x005B4C40,0x005B4C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B4C60,0x005B4C60,0x005B5160,unknown,code not assigned to a module
+unk_005B5160,0x005B5160,0x005B51C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B51C0,0x005B51C0,0x005B53F0,unknown,code not assigned to a module
+unk_005B53F0,0x005B53F0,0x005B5410,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B5410,0x005B5410,0x005B55F0,unknown,code not assigned to a module
+unk_005B55F0,0x005B55F0,0x005B5610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B5610,0x005B5610,0x005B5C30,unknown,code not assigned to a module
+unk_005B5C30,0x005B5C30,0x005B5C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B5C60,0x005B5C60,0x005B5D80,unknown,code not assigned to a module
+unk_005B5D80,0x005B5D80,0x005B5DC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B5DC0,0x005B5DC0,0x005B6060,unknown,code not assigned to a module
+unk_005B6060,0x005B6060,0x005B6210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B6210,0x005B6210,0x005BB9D0,unknown,code not assigned to a module
+unk_005BB9D0,0x005BB9D0,0x005BBA50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005BBA50,0x005BBA50,0x005BCE90,unknown,code not assigned to a module
+unk_005BCE90,0x005BCE90,0x005BD070,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005BD070,0x005BD070,0x005C2C40,unknown,code not assigned to a module
+unk_005C2C40,0x005C2C40,0x005C2C80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005C2C80,0x005C2C80,0x005CDB40,unknown,code not assigned to a module
+unk_005CDB40,0x005CDB40,0x005CDBD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005CDBD0,0x005CDBD0,0x005CDC80,unknown,code not assigned to a module
+unk_005CDC80,0x005CDC80,0x005CDCB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005CDCB0,0x005CDCB0,0x005CE990,unknown,code not assigned to a module
+unk_005CE990,0x005CE990,0x005CEA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005CEA60,0x005CEA60,0x005CFFC0,unknown,code not assigned to a module
+unk_005CFFC0,0x005CFFC0,0x005D0350,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D0350,0x005D0350,0x005D0360,unknown,code not assigned to a module
+unk_005D0360,0x005D0360,0x005D05F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D05F0,0x005D05F0,0x005D0630,unknown,code not assigned to a module
+unk_005D0630,0x005D0630,0x005D08A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D08A0,0x005D08A0,0x005D08E0,unknown,code not assigned to a module
+unk_005D08E0,0x005D08E0,0x005D09A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D09A0,0x005D09A0,0x005D1B70,unknown,code not assigned to a module
+unk_005D1B70,0x005D1B70,0x005D1D40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D1D40,0x005D1D40,0x005D1D50,unknown,code not assigned to a module
+unk_005D1D50,0x005D1D50,0x005D1DA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D1DA0,0x005D1DA0,0x005D1DB0,unknown,code not assigned to a module
+unk_005D1DB0,0x005D1DB0,0x005D1E40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D1E40,0x005D1E40,0x005D1E50,unknown,code not assigned to a module
+unk_005D1E50,0x005D1E50,0x005D1F20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D1F20,0x005D1F20,0x005D4A60,unknown,code not assigned to a module
+unk_005D4A60,0x005D4A60,0x005D4AB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D4AB0,0x005D4AB0,0x005D5D10,unknown,code not assigned to a module
+unk_005D5D10,0x005D5D10,0x005D5D30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D5D30,0x005D5D30,0x005D7E80,unknown,code not assigned to a module
+unk_005D7E80,0x005D7E80,0x005D7EA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D7EA0,0x005D7EA0,0x005D8390,unknown,code not assigned to a module
+unk_005D8390,0x005D8390,0x005D85E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D85E0,0x005D85E0,0x005D9760,unknown,code not assigned to a module
+unk_005D9760,0x005D9760,0x005D9790,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005D9790,0x005D9790,0x005DD660,unknown,code not assigned to a module
+unk_005DD660,0x005DD660,0x005DD760,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005DD760,0x005DD760,0x005DDB40,unknown,code not assigned to a module
+unk_005DDB40,0x005DDB40,0x005DDB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005DDB90,0x005DDB90,0x00602A60,unknown,code not assigned to a module
+unk_00602A60,0x00602A60,0x00602A90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00602A90,0x00602A90,0x00602AA0,unknown,code not assigned to a module
+unk_00602AA0,0x00602AA0,0x00602D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00602D10,0x00602D10,0x00602EA0,unknown,code not assigned to a module
+unk_00602EA0,0x00602EA0,0x00602F10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00602F10,0x00602F10,0x00602F60,unknown,code not assigned to a module
+unk_00602F60,0x00602F60,0x00602FD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00602FD0,0x00602FD0,0x00603200,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00603200,0x00603200,0x00603FA0,unknown,code not assigned to a module
+unk_00603FA0,0x00603FA0,0x00603FD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00603FD0,0x00603FD0,0x0060A5C0,unknown,code not assigned to a module
+unk_0060A5C0,0x0060A5C0,0x0060A5E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0060A5E0,0x0060A5E0,0x0060EA60,unknown,code not assigned to a module
+unk_0060EA60,0x0060EA60,0x0060EB10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0060EB10,0x0060EB10,0x0060ED40,unknown,code not assigned to a module
+unk_0060ED40,0x0060ED40,0x0060F7A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0060F7A0,0x0060F7A0,0x0060FA90,unknown,code not assigned to a module
+unk_0060FA90,0x0060FA90,0x0060FD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0060FD10,0x0060FD10,0x0060FE30,unknown,code not assigned to a module
+unk_0060FE30,0x0060FE30,0x006100E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006100E0,0x006100E0,0x0061BE40,unknown,code not assigned to a module
+unk_0061BE40,0x0061BE40,0x0061C260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0061C260,0x0061C260,0x0061D440,unknown,code not assigned to a module
+unk_0061D440,0x0061D440,0x0061D460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0061D460,0x0061D460,0x0061E2A0,unknown,code not assigned to a module
+unk_0061E2A0,0x0061E2A0,0x0061E490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0061E490,0x0061E490,0x00622180,unknown,code not assigned to a module
+unk_00622180,0x00622180,0x00622230,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00622230,0x00622230,0x00622250,unknown,code not assigned to a module
+unk_00622250,0x00622250,0x00622290,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00622290,0x00622290,0x00622570,unknown,code not assigned to a module
+unk_00622570,0x00622570,0x006225F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006225F0,0x006225F0,0x006229B0,unknown,code not assigned to a module
+unk_006229B0,0x006229B0,0x00622FB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00622FB0,0x00622FB0,0x00626FA0,unknown,code not assigned to a module
+unk_00626FA0,0x00626FA0,0x00626FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00626FE0,0x00626FE0,0x00627190,unknown,code not assigned to a module
+unk_00627190,0x00627190,0x00627210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00627210,0x00627210,0x0062A340,unknown,code not assigned to a module
+unk_0062A340,0x0062A340,0x0062A360,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0062A360,0x0062A360,0x0062FBD0,unknown,code not assigned to a module
+unk_0062FBD0,0x0062FBD0,0x0062FCA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0062FCA0,0x0062FCA0,0x00630320,unknown,code not assigned to a module
+unk_00630320,0x00630320,0x00630340,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00630340,0x00630340,0x00631C40,unknown,code not assigned to a module
+unk_00631C40,0x00631C40,0x00631C80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00631C80,0x00631C80,0x00638310,unknown,code not assigned to a module
+unk_00638310,0x00638310,0x006383A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006383A0,0x006383A0,0x00638410,unknown,code not assigned to a module
+unk_00638410,0x00638410,0x00638560,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00638560,0x00638560,0x00638570,unknown,code not assigned to a module
+unk_00638570,0x00638570,0x00638600,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00638600,0x00638600,0x00638700,unknown,code not assigned to a module
+unk_00638700,0x00638700,0x00638790,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00638790,0x00638790,0x00638950,unknown,code not assigned to a module
+unk_00638950,0x00638950,0x00638AC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00638AC0,0x00638AC0,0x00638B30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00638B30,0x00638B30,0x00638B40,unknown,code not assigned to a module
+unk_00638B40,0x00638B40,0x00638BE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00638BE0,0x00638BE0,0x00638C00,unknown,code not assigned to a module
+unk_00638C00,0x00638C00,0x00638D90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00638D90,0x00638D90,0x00638E80,unknown,code not assigned to a module
+unk_00638E80,0x00638E80,0x00639450,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00639450,0x00639450,0x006395C0,unknown,code not assigned to a module
+unk_006395C0,0x006395C0,0x00639710,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00639710,0x00639710,0x0063BB40,unknown,code not assigned to a module
+unk_0063BB40,0x0063BB40,0x0063BB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0063BB90,0x0063BB90,0x0063BEF0,unknown,code not assigned to a module
+unk_0063BEF0,0x0063BEF0,0x0063BFA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0063BFA0,0x0063BFA0,0x0063C270,unknown,code not assigned to a module
+unk_0063C270,0x0063C270,0x0063C490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0063C490,0x0063C490,0x0063CC80,unknown,code not assigned to a module
+unk_0063CC80,0x0063CC80,0x0063D150,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0063D150,0x0063D150,0x0063D2D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0063D2D0,0x0063D2D0,0x0063D890,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0063D890,0x0063D890,0x0064DB60,unknown,code not assigned to a module
+unk_0064DB60,0x0064DB60,0x0064DD90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0064DD90,0x0064DD90,0x00657FA0,unknown,code not assigned to a module
+unk_00657FA0,0x00657FA0,0x00658040,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00658040,0x00658040,0x0065A3A0,unknown,code not assigned to a module
+unk_0065A3A0,0x0065A3A0,0x0065A490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0065A490,0x0065A490,0x0065A540,unknown,code not assigned to a module
+unk_0065A540,0x0065A540,0x0065A620,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0065A620,0x0065A620,0x0065A700,unknown,code not assigned to a module
+unk_0065A700,0x0065A700,0x0065A9D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0065A9D0,0x0065A9D0,0x0065AAD0,unknown,code not assigned to a module
+unk_0065AAD0,0x0065AAD0,0x0065ABF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0065ABF0,0x0065ABF0,0x0065ACE0,unknown,code not assigned to a module
+unk_0065ACE0,0x0065ACE0,0x0065B280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0065B280,0x0065B280,0x0065C480,unknown,code not assigned to a module
+unk_0065C480,0x0065C480,0x0065C520,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0065C520,0x0065C520,0x0065F980,unknown,code not assigned to a module
+unk_0065F980,0x0065F980,0x0065FBB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0065FBB0,0x0065FBB0,0x00662D60,unknown,code not assigned to a module
+unk_00662D60,0x00662D60,0x00662E00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00662E00,0x00662E00,0x00663930,unknown,code not assigned to a module
+unk_00663930,0x00663930,0x006639F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006639F0,0x006639F0,0x00663B40,unknown,code not assigned to a module
+unk_00663B40,0x00663B40,0x00663CA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00663CA0,0x00663CA0,0x00663D30,unknown,code not assigned to a module
+unk_00663D30,0x00663D30,0x00663DF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00663DF0,0x00663DF0,0x00669630,unknown,code not assigned to a module
+unk_00669630,0x00669630,0x00669650,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00669650,0x00669650,0x0066DA70,unknown,code not assigned to a module
+unk_0066DA70,0x0066DA70,0x0066DAE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0066DAE0,0x0066DAE0,0x0066DFE0,unknown,code not assigned to a module
+unk_0066DFE0,0x0066DFE0,0x0066E0A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0066E0A0,0x0066E0A0,0x00671600,unknown,code not assigned to a module
+unk_00671600,0x00671600,0x00671670,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00671670,0x00671670,0x00674BF0,unknown,code not assigned to a module
+unk_00674BF0,0x00674BF0,0x00675000,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00675000,0x00675000,0x006753C0,unknown,code not assigned to a module
+unk_006753C0,0x006753C0,0x00675400,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00675400,0x00675400,0x0067B6E0,unknown,code not assigned to a module
+unk_0067B6E0,0x0067B6E0,0x0067B700,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0067B700,0x0067B700,0x0067E720,unknown,code not assigned to a module
+unk_0067E720,0x0067E720,0x0067E740,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0067E740,0x0067E740,0x006809D0,unknown,code not assigned to a module
+unk_006809D0,0x006809D0,0x006809F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006809F0,0x006809F0,0x006816B0,unknown,code not assigned to a module
+unk_006816B0,0x006816B0,0x006816D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006816D0,0x006816D0,0x006848C0,unknown,code not assigned to a module
+unk_006848C0,0x006848C0,0x00684B10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00684B10,0x00684B10,0x00684C20,unknown,code not assigned to a module
+unk_00684C20,0x00684C20,0x00684CA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00684CA0,0x00684CA0,0x00684FC0,unknown,code not assigned to a module
+unk_00684FC0,0x00684FC0,0x006850B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006850B0,0x006850B0,0x0068BC70,unknown,code not assigned to a module
+unk_0068BC70,0x0068BC70,0x0068BDE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0068BDE0,0x0068BDE0,0x0068BE30,unknown,code not assigned to a module
+unk_0068BE30,0x0068BE30,0x0068C040,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0068C040,0x0068C040,0x0068CA20,unknown,code not assigned to a module
+unk_0068CA20,0x0068CA20,0x0068CB20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0068CB20,0x0068CB20,0x0068DBC0,unknown,code not assigned to a module
+unk_0068DBC0,0x0068DBC0,0x0068E1C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0068E1C0,0x0068E1C0,0x006987F0,unknown,code not assigned to a module
+unk_006987F0,0x006987F0,0x00698860,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00698860,0x00698860,0x0069A110,unknown,code not assigned to a module
+unk_0069A110,0x0069A110,0x0069A160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069A160,0x0069A160,0x0069A1A0,unknown,code not assigned to a module
+unk_0069A1A0,0x0069A1A0,0x0069A1C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069A1C0,0x0069A1C0,0x0069ADA0,unknown,code not assigned to a module
+unk_0069ADA0,0x0069ADA0,0x0069ADC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069ADC0,0x0069ADC0,0x0069B010,unknown,code not assigned to a module
+unk_0069B010,0x0069B010,0x0069B0C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069B0C0,0x0069B0C0,0x0069FA60,unknown,code not assigned to a module
+unk_0069FA60,0x0069FA60,0x0069FB10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069FB10,0x0069FB10,0x0069FB20,unknown,code not assigned to a module
+unk_0069FB20,0x0069FB20,0x0069FC00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069FC00,0x0069FC00,0x0069FC30,unknown,code not assigned to a module
+unk_0069FC30,0x0069FC30,0x0069FD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069FD10,0x0069FD10,0x0069FD70,unknown,code not assigned to a module
+unk_0069FD70,0x0069FD70,0x0069FD90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069FD90,0x0069FD90,0x006A3020,unknown,code not assigned to a module
+unk_006A3020,0x006A3020,0x006A33E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006A33E0,0x006A33E0,0x006A6570,unknown,code not assigned to a module
+unk_006A6570,0x006A6570,0x006A65A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006A65A0,0x006A65A0,0x006A70D0,unknown,code not assigned to a module
+unk_006A70D0,0x006A70D0,0x006A7110,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006A7110,0x006A7110,0x006A7130,unknown,code not assigned to a module
+unk_006A7130,0x006A7130,0x006A71F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006A71F0,0x006A71F0,0x006A8B10,unknown,code not assigned to a module
+unk_006A8B10,0x006A8B10,0x006A8B70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006A8B70,0x006A8B70,0x006AAF80,unknown,code not assigned to a module
+unk_006AAF80,0x006AAF80,0x006AAFD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006AAFD0,0x006AAFD0,0x006B1AC0,unknown,code not assigned to a module
+unk_006B1AC0,0x006B1AC0,0x006B1AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006B1AE0,0x006B1AE0,0x006B3FA0,unknown,code not assigned to a module
+unk_006B3FA0,0x006B3FA0,0x006B3FD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006B3FD0,0x006B3FD0,0x006BAE00,unknown,code not assigned to a module
+unk_006BAE00,0x006BAE00,0x006BAE60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006BAE60,0x006BAE60,0x006BE950,unknown,code not assigned to a module
+unk_006BE950,0x006BE950,0x006BE9B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006BE9B0,0x006BE9B0,0x006C0CB0,unknown,code not assigned to a module
+unk_006C0CB0,0x006C0CB0,0x006C0CD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006C0CD0,0x006C0CD0,0x006D3EB0,unknown,code not assigned to a module
+unk_006D3EB0,0x006D3EB0,0x006D3ED0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006D3ED0,0x006D3ED0,0x006D7990,unknown,code not assigned to a module
+unk_006D7990,0x006D7990,0x006D79C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006D79C0,0x006D79C0,0x006E4D60,unknown,code not assigned to a module
+unk_006E4D60,0x006E4D60,0x006E5260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006E5260,0x006E5260,0x006E7C40,unknown,code not assigned to a module
+unk_006E7C40,0x006E7C40,0x006E7C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006E7C60,0x006E7C60,0x006EAF60,unknown,code not assigned to a module
+unk_006EAF60,0x006EAF60,0x006EAFE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006EAFE0,0x006EAFE0,0x006EBE90,unknown,code not assigned to a module
+unk_006EBE90,0x006EBE90,0x006EBEB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006EBEB0,0x006EBEB0,0x006EEF10,unknown,code not assigned to a module
+unk_006EEF10,0x006EEF10,0x006EEF80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006EEF80,0x006EEF80,0x006F1230,unknown,code not assigned to a module
+unk_006F1230,0x006F1230,0x006F1280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_006F1280,0x006F1280,0x0070AB20,unknown,code not assigned to a module
+unk_0070AB20,0x0070AB20,0x0070AB40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0070AB40,0x0070AB40,0x0070B690,unknown,code not assigned to a module
+unk_0070B690,0x0070B690,0x0070B7D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0070B7D0,0x0070B7D0,0x0070B7F0,unknown,code not assigned to a module
+unk_0070B7F0,0x0070B7F0,0x0070B820,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0070B820,0x0070B820,0x0070EFC0,unknown,code not assigned to a module
+unk_0070EFC0,0x0070EFC0,0x0070F3B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0070F3B0,0x0070F3B0,0x00710B50,unknown,code not assigned to a module
+unk_00710B50,0x00710B50,0x00710BB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00710BB0,0x00710BB0,0x00712B20,unknown,code not assigned to a module
+unk_00712B20,0x00712B20,0x00712B50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00712B50,0x00712B50,0x00713090,unknown,code not assigned to a module
+unk_00713090,0x00713090,0x00713160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00713160,0x00713160,0x00713170,unknown,code not assigned to a module
+unk_00713170,0x00713170,0x007131B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007131B0,0x007131B0,0x007131D0,unknown,code not assigned to a module
+unk_007131D0,0x007131D0,0x00713300,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00713300,0x00713300,0x00713420,unknown,code not assigned to a module
+unk_00713420,0x00713420,0x00713440,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00713440,0x00713440,0x00713470,unknown,code not assigned to a module
+unk_00713470,0x00713470,0x00713510,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00713510,0x00713510,0x00713520,unknown,code not assigned to a module
+unk_00713520,0x00713520,0x00713580,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00713580,0x00713580,0x007166C0,unknown,code not assigned to a module
+unk_007166C0,0x007166C0,0x00716720,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00716720,0x00716720,0x00716EE0,unknown,code not assigned to a module
+unk_00716EE0,0x00716EE0,0x00716F10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00716F10,0x00716F10,0x00716F40,unknown,code not assigned to a module
+unk_00716F40,0x00716F40,0x00716FC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00716FC0,0x00716FC0,0x00717050,unknown,code not assigned to a module
+unk_00717050,0x00717050,0x00717360,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00717360,0x00717360,0x007174C0,unknown,code not assigned to a module
+unk_007174C0,0x007174C0,0x007176C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007176C0,0x007176C0,0x00717B10,unknown,code not assigned to a module
+unk_00717B10,0x00717B10,0x00717C10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00717C10,0x00717C10,0x00717C30,unknown,code not assigned to a module
+unk_00717C30,0x00717C30,0x00717CD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00717CD0,0x00717CD0,0x00717F90,unknown,code not assigned to a module
+unk_00717F90,0x00717F90,0x00717FB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00717FB0,0x00717FB0,0x00718D40,unknown,code not assigned to a module
+unk_00718D40,0x00718D40,0x00718E70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00718E70,0x00718E70,0x00718E80,unknown,code not assigned to a module
+unk_00718E80,0x00718E80,0x00719000,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00719000,0x00719000,0x00719010,unknown,code not assigned to a module
+unk_00719010,0x00719010,0x00719040,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00719040,0x00719040,0x00719060,unknown,code not assigned to a module
+unk_00719060,0x00719060,0x007190C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007190C0,0x007190C0,0x00719860,unknown,code not assigned to a module
+unk_00719860,0x00719860,0x00719C10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00719C10,0x00719C10,0x00719F60,unknown,code not assigned to a module
+unk_00719F60,0x00719F60,0x0071A950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0071A950,0x0071A950,0x0071B220,unknown,code not assigned to a module
+unk_0071B220,0x0071B220,0x0071BAA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0071BAA0,0x0071BAA0,0x0071BC30,unknown,code not assigned to a module
+unk_0071BC30,0x0071BC30,0x0071BD00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0071BD00,0x0071BD00,0x0071C320,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0071C320,0x0071C320,0x0071D660,unknown,code not assigned to a module
+unk_0071D660,0x0071D660,0x0071D6E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0071D6E0,0x0071D6E0,0x0071DB20,unknown,code not assigned to a module
+unk_0071DB20,0x0071DB20,0x0071DC10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0071DC10,0x0071DC10,0x0071FB10,unknown,code not assigned to a module
+unk_0071FB10,0x0071FB10,0x0071FBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0071FBA0,0x0071FBA0,0x007200C0,unknown,code not assigned to a module
+unk_007200C0,0x007200C0,0x00720100,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00720100,0x00720100,0x00721BF0,unknown,code not assigned to a module
+unk_00721BF0,0x00721BF0,0x00721CC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00721CC0,0x00721CC0,0x00721DB0,unknown,code not assigned to a module
+unk_00721DB0,0x00721DB0,0x00721EB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00721EB0,0x00721EB0,0x007220C0,unknown,code not assigned to a module
+unk_007220C0,0x007220C0,0x00722190,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00722190,0x00722190,0x007249F0,unknown,code not assigned to a module
+unk_007249F0,0x007249F0,0x00724AD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00724AD0,0x00724AD0,0x00724AE0,unknown,code not assigned to a module
+unk_00724AE0,0x00724AE0,0x00724B00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00724B00,0x00724B00,0x00726930,unknown,code not assigned to a module
+unk_00726930,0x00726930,0x007269B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007269B0,0x007269B0,0x0072A7C0,unknown,code not assigned to a module
+unk_0072A7C0,0x0072A7C0,0x0072A840,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0072A840,0x0072A840,0x00732A50,unknown,code not assigned to a module
+unk_00732A50,0x00732A50,0x00732AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00732AE0,0x00732AE0,0x00732BE0,unknown,code not assigned to a module
+unk_00732BE0,0x00732BE0,0x00732C10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00732C10,0x00732C10,0x00733A20,unknown,code not assigned to a module
+unk_00733A20,0x00733A20,0x00733A60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00733A60,0x00733A60,0x00734120,unknown,code not assigned to a module
+unk_00734120,0x00734120,0x007348A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007348A0,0x007348A0,0x007348B0,unknown,code not assigned to a module
+unk_007348B0,0x007348B0,0x007354A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007354A0,0x007354A0,0x007354D0,unknown,code not assigned to a module
+unk_007354D0,0x007354D0,0x00735610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00735610,0x00735610,0x00735690,unknown,code not assigned to a module
+unk_00735690,0x00735690,0x00735700,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00735700,0x00735700,0x00735910,unknown,code not assigned to a module
+unk_00735910,0x00735910,0x007359E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007359E0,0x007359E0,0x00735B50,unknown,code not assigned to a module
+unk_00735B50,0x00735B50,0x00735BA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00735BA0,0x00735BA0,0x00735BC0,unknown,code not assigned to a module
+unk_00735BC0,0x00735BC0,0x00735D70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00735D70,0x00735D70,0x00735DB0,unknown,code not assigned to a module
+unk_00735DB0,0x00735DB0,0x00736210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00736210,0x00736210,0x00736230,unknown,code not assigned to a module
+unk_00736230,0x00736230,0x00736880,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00736880,0x00736880,0x007368A0,unknown,code not assigned to a module
+unk_007368A0,0x007368A0,0x00736D40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00736D40,0x00736D40,0x00736D80,unknown,code not assigned to a module
+unk_00736D80,0x00736D80,0x00736EA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00736EA0,0x00736EA0,0x00736EB0,unknown,code not assigned to a module
+unk_00736EB0,0x00736EB0,0x007371B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007371B0,0x007371B0,0x00737A60,unknown,code not assigned to a module
+unk_00737A60,0x00737A60,0x00737AF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00737AF0,0x00737AF0,0x00737B00,unknown,code not assigned to a module
+unk_00737B00,0x00737B00,0x00737BD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00737BD0,0x00737BD0,0x0073A8E0,unknown,code not assigned to a module
+unk_0073A8E0,0x0073A8E0,0x0073A900,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0073A900,0x0073A900,0x0073CFD0,unknown,code not assigned to a module
+unk_0073CFD0,0x0073CFD0,0x0073CFF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0073CFF0,0x0073CFF0,0x00752710,unknown,code not assigned to a module
+unk_00752710,0x00752710,0x00752730,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00752730,0x00752730,0x00769E00,unknown,code not assigned to a module
+unk_00769E00,0x00769E00,0x00769EA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00769EA0,0x00769EA0,0x0076B8A0,unknown,code not assigned to a module
+unk_0076B8A0,0x0076B8A0,0x0076B8F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076B8F0,0x0076B8F0,0x0076B990,unknown,code not assigned to a module
+unk_0076B990,0x0076B990,0x0076B9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076B9E0,0x0076B9E0,0x0076D980,unknown,code not assigned to a module
+unk_0076D980,0x0076D980,0x0076D9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076D9E0,0x0076D9E0,0x0076DA70,unknown,code not assigned to a module
+unk_0076DA70,0x0076DA70,0x0076DAE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076DAE0,0x0076DAE0,0x0076DB50,unknown,code not assigned to a module
+unk_0076DB50,0x0076DB50,0x0076DBC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076DBC0,0x0076DBC0,0x0076DD00,unknown,code not assigned to a module
+unk_0076DD00,0x0076DD00,0x0076DDB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076DDB0,0x0076DDB0,0x0076DE40,unknown,code not assigned to a module
+unk_0076DE40,0x0076DE40,0x0076E4A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076E4A0,0x0076E4A0,0x0076E650,unknown,code not assigned to a module
+unk_0076E650,0x0076E650,0x0076E6F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076E6F0,0x0076E6F0,0x0076E7A0,unknown,code not assigned to a module
+unk_0076E7A0,0x0076E7A0,0x0076E7C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076E7C0,0x0076E7C0,0x0076EDA0,unknown,code not assigned to a module
+unk_0076EDA0,0x0076EDA0,0x0076EDD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076EDD0,0x0076EDD0,0x0076EE20,unknown,code not assigned to a module
+unk_0076EE20,0x0076EE20,0x0076EE70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076EE70,0x0076EE70,0x0076EF40,unknown,code not assigned to a module
+unk_0076EF40,0x0076EF40,0x0076EF90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0076EF90,0x0076EF90,0x00773730,unknown,code not assigned to a module
+unk_00773730,0x00773730,0x00773840,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00773840,0x00773840,0x00773930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00773930,0x00773930,0x00774130,unknown,code not assigned to a module
+unk_00774130,0x00774130,0x007741D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_007741D0,0x007741D0,0x00774C90,unknown,code not assigned to a module
+unk_00774C90,0x00774C90,0x00774E20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00774E20,0x00774E20,0x00775190,unknown,code not assigned to a module
+unk_00775190,0x00775190,0x00775360,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00775360,0x00775360,0x00775620,unknown,code not assigned to a module
+unk_00775620,0x00775620,0x00775980,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00775980,0x00775980,0x00781C8C,unknown,code not assigned to a module
 libcmt/typinfo,0x00781C8C,0x00781CB5,library,"code sections of VC6 LIBCMT.LIB typinfo.obj, matched"
 unk_00781CB5,0x00781CB5,0x00781D46,unknown,code not assigned to a module
 libcmt/qsort,0x00781D46,0x00781F20,library,"code sections of VC6 LIBCMT.LIB qsort.obj, matched"
