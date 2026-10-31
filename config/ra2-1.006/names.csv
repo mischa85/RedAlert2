@@ -9,6 +9,9 @@ address,symbol,evidence
 0x00493FC0,??RCRCEngine@@QAEHPBXH@Z,"compiled from src/crc.cpp, matched"
 0x00494190,?Memory@CRC@@SIIPAEII@Z,"compiled from src/crc.cpp, matched"
 0x004941D0,?String@CRC@@SIIPBDI@Z,"compiled from src/crc.cpp, matched"
+0x00494210,?Put@CRCPipe@@UAEHPBXH@Z,"compiled from src/crcpipe.cpp, matched"
+0x00494240,?Result@CRCPipe@@QBEHXZ,"compiled from src/crcpipe.cpp, matched; identical code also at 0x004942D0, this one inferred from alphabetical link order"
+0x0060EAF0,?Put@Pipe@@UAEHPBXH@Z,"inferred: called by src/crcpipe.cpp from 0x0049422C, and its code matches Pipe::Put of the Tiberian Sun reconstruction"
 0x00781C8C,??1type_info@@UAE@XZ,symbol of VC6 LIBCMT.LIB typinfo.obj
 0x00781D46,_qsort,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781E9A,_shortsort,symbol of VC6 LIBCMT.LIB qsort.obj
