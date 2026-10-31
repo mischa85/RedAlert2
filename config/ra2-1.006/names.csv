@@ -1,1 +1,468 @@
 address,symbol,evidence
+0x00781C8C,??1type_info@@UAE@XZ,symbol of VC6 LIBCMT.LIB typinfo.obj
+0x00781D46,_qsort,symbol of VC6 LIBCMT.LIB qsort.obj
+0x00781E9A,_shortsort,symbol of VC6 LIBCMT.LIB qsort.obj
+0x00781EE8,_swap,symbol of VC6 LIBCMT.LIB qsort.obj
+0x00781F20,__strcmpi,symbol of VC6 LIBCMT.LIB stricmp.obj; alias: __stricmp
+0x00781FF0,_strrchr,symbol of VC6 LIBCMT.LIB strrchr.obj
+0x00782025,_bsearch,symbol of VC6 LIBCMT.LIB bsearch.obj
+0x007820C0,__allmul,symbol of VC6 LIBCMT.LIB llmul.obj / MSVCRTD.LIB llmul.obj
+0x007820F4,_sprintf,symbol of VC6 LIBCMT.LIB sprintf.obj
+0x007821B0,__CIpow,symbol of VC6 LIBCMT.LIB pow.obj
+0x007823D0,_strncpy,symbol of VC6 LIBCMT.LIB strncpy.obj
+0x007824D0,__alldiv,symbol of VC6 LIBCMT.LIB lldiv.obj / MSVCRTD.LIB lldiv.obj
+0x00782580,__aulldiv,symbol of VC6 LIBCMT.LIB ulldiv.obj / MSVCRTD.LIB ulldiv.obj
+0x007825E8,_free,symbol of VC6 LIBCMT.LIB free.obj
+0x00782642,__nh_malloc,symbol of VC6 LIBCMT.LIB malloc.obj
+0x0078266E,__heap_alloc,symbol of VC6 LIBCMT.LIB malloc.obj
+0x007826EB,__fread_lk,symbol of VC6 LIBCMT.LIB fread.obj
+0x00782802,__fwrite_lk,symbol of VC6 LIBCMT.LIB fwrite.obj
+0x007829D3,_toupper,symbol of VC6 LIBCMT.LIB toupper.obj
+0x00782A42,__toupper_lk,symbol of VC6 LIBCMT.LIB toupper.obj
+0x00782B0E,_isalpha,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782B3C,_isupper,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782B64,_islower,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782B8C,_isdigit,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782BB4,_isxdigit,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782BE1,_isspace,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782C09,_ispunct,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782C31,_isalnum,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782C5F,_isprint,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782C8D,_isgraph,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782CBB,_iscntrl,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782CF8,___iscsymf,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782D35,___iscsym,symbol of VC6 LIBCMT.LIB _ctype.obj
+0x00782D72,_atol,symbol of VC6 LIBCMT.LIB atox.obj
+0x00782E08,__atoi64,symbol of VC6 LIBCMT.LIB atox.obj
+0x00782EC2,_strtok,symbol of VC6 LIBCMT.LIB strtok.obj
+0x00782F66,_atof,symbol of VC6 LIBCMT.LIB atof.obj
+0x00782FD4,_strtoxl,symbol of VC6 LIBCMT.LIB strtol.obj
+0x007831F0,__makepath,symbol of VC6 LIBCMT.LIB makepath.obj
+0x007835C5,_wcsrchr,symbol of VC6 LIBCMT.LIB wcsrchr.obj
+0x00783622,_wcsncpy,symbol of VC6 LIBCMT.LIB wcsncpy.obj
+0x0078365F,_wcscat,symbol of VC6 LIBCMT.LIB wcscat.obj
+0x00783689,_wcscpy,symbol of VC6 LIBCMT.LIB wcscat.obj
+0x007836B0,_strstr,symbol of VC6 LIBCMT.LIB strstr.obj
+0x00783730,_sscanf,symbol of VC6 LIBCMT.LIB sscanf.obj
+0x00783764,_swprintf,symbol of VC6 LIBCMT.LIB swprintf.obj
+0x007837D3,_wcscmp,symbol of VC6 LIBCMT.LIB wcscmp.obj
+0x00783810,_strncmp,symbol of VC6 LIBCMT.LIB strncmp.obj
+0x0078387F,_time,symbol of VC6 LIBCMT.LIB time.obj
+0x0078395B,_fclose,symbol of VC6 LIBCMT.LIB fclose.obj
+0x0078398C,__fclose_lk,symbol of VC6 LIBCMT.LIB fclose.obj
+0x00783A58,_vswprintf,symbol of VC6 LIBCMT.LIB vswprint.obj
+0x00783AC6,_wcschr,symbol of VC6 LIBCMT.LIB wcschr.obj
+0x00783AEF,___RTCastToVoid,symbol of VC6 LIBCMT.LIB rtti.obj
+0x00783B71,??0__non_rtti_object@@QAE@PBD@Z,symbol of VC6 LIBCMT.LIB rtti.obj
+0x00783C05,___RTtypeid,symbol of VC6 LIBCMT.LIB rtti.obj
+0x00783CE4,___RTDynamicCast,symbol of VC6 LIBCMT.LIB rtti.obj
+0x00783E66,?FindSITargetTypeInstance@@YAPBU_s_RTTIBaseClassDescriptor@@PAXPBU_s_RTTICompleteObjectLocator@@PAUTypeDescriptor@@H2@Z,symbol of VC6 LIBCMT.LIB rtti.obj
+0x00783EC0,?FindMITargetTypeInstance@@YAPBU_s_RTTIBaseClassDescriptor@@PAXPBU_s_RTTICompleteObjectLocator@@PAUTypeDescriptor@@H2@Z,symbol of VC6 LIBCMT.LIB rtti.obj
+0x00783FB9,?FindVITargetTypeInstance@@YAPBU_s_RTTIBaseClassDescriptor@@PAXPBU_s_RTTICompleteObjectLocator@@PAUTypeDescriptor@@H2@Z,symbol of VC6 LIBCMT.LIB rtti.obj
+0x007840F1,?PMDtoOffset@@YAHPAXABUPMD@@@Z,symbol of VC6 LIBCMT.LIB rtti.obj
+0x007841F4,_tolower,symbol of VC6 LIBCMT.LIB tolower.obj
+0x00784263,__tolower_lk,symbol of VC6 LIBCMT.LIB tolower.obj
+0x0078432E,__putws,symbol of VC6 LIBCMT.LIB putws.obj
+0x0078439C,_fflush,symbol of VC6 LIBCMT.LIB fflush.obj
+0x007843CB,__fflush_lk,symbol of VC6 LIBCMT.LIB fflush.obj
+0x007843F9,__flush,symbol of VC6 LIBCMT.LIB fflush.obj
+0x0078445E,_flsall,symbol of VC6 LIBCMT.LIB fflush.obj
+0x0078453D,___initstdio,symbol of VC6 LIBCMT.LIB _file.obj
+0x007846AA,_rand,symbol of VC6 LIBCMT.LIB rand.obj
+0x007846CC,_wcsncmp,symbol of VC6 LIBCMT.LIB wcsncmp.obj
+0x00784704,_wcsncat,symbol of VC6 LIBCMT.LIB wcsncat.obj
+0x00784750,_strncat,symbol of VC6 LIBCMT.LIB strncat.obj
+0x00784873,__splitpath,symbol of VC6 LIBCMT.LIB splitpat.obj
+0x007849BA,_vsprintf,symbol of VC6 LIBCMT.LIB vsprintf.obj
+0x00784A0B,_fgetc,symbol of VC6 LIBCMT.LIB fgetc.obj
+0x00784B11,_wcstok,symbol of VC6 LIBCMT.LIB wcstok.obj
+0x00784BCF,_wcstoxl,symbol of VC6 LIBCMT.LIB wcstol.obj
+0x00784D8D,__mbsnccnt,symbol of VC6 LIBCMT.LIB mbsnccnt.obj
+0x00784DDB,_swscanf,symbol of VC6 LIBCMT.LIB swscanf.obj
+0x00784E32,__getenv_lk,symbol of VC6 LIBCMT.LIB getenv.obj
+0x00785014,__control87,symbol of VC6 LIBCMT.LIB ieee87.obj
+0x0078505F,__fpreset,symbol of VC6 LIBCMT.LIB ieee87.obj
+0x0078508A,__abstract_cw,symbol of VC6 LIBCMT.LIB ieee87.obj
+0x0078511C,__hw_cw,symbol of VC6 LIBCMT.LIB ieee87.obj
+0x007851A5,__abstract_sw,symbol of VC6 LIBCMT.LIB ieee87.obj
+0x007851DC,__global_unwind2,symbol of VC6 LIBCMT.LIB exsup.obj
+0x00785409,__mbstowcs_lk,symbol of VC6 LIBCMT.LIB mbstowcs.obj
+0x00785509,_wcspbrk,symbol of VC6 LIBCMT.LIB wcspbrk.obj
+0x00785547,_fgets,symbol of VC6 LIBCMT.LIB fgets.obj
+0x007855A9,_floor,symbol of VC6 LIBCMT.LIB floor.obj
+0x007856AD,_tmpnam,symbol of VC6 LIBCMT.LIB tmpfile.obj
+0x0078572B,_tmpfile,symbol of VC6 LIBCMT.LIB tmpfile.obj
+0x00785801,_init_namebuf,symbol of VC6 LIBCMT.LIB tmpfile.obj
+0x00785862,_genfname,symbol of VC6 LIBCMT.LIB tmpfile.obj
+0x007858D0,__strnicmp,symbol of VC6 LIBCMT.LIB strnicmp.obj
+0x007859E0,_strcspn,symbol of VC6 LIBCMT.LIB strcspn.obj
+0x00785A1E,_wcsstr,symbol of VC6 LIBCMT.LIB wcsstr.obj
+0x00785A5F,_wcscspn,symbol of VC6 LIBCMT.LIB wcscspn.obj
+0x00785C86,__lock,symbol of VC6 LIBCMT.LIB mlock.obj
+0x00785D20,_strcmp,symbol of VC6 LIBCMT.LIB strcmp.obj
+0x00785DA4,_setlocale,symbol of VC6 LIBCMT.LIB setlocal.obj
+0x00785FEA,__setlocale_set_cat,symbol of VC6 LIBCMT.LIB setlocal.obj
+0x007861BE,__expandlocale,symbol of VC6 LIBCMT.LIB setlocal.obj
+0x007862D9,__strcats,symbol of VC6 LIBCMT.LIB setlocal.obj
+0x007862FE,___lc_strtolc,symbol of VC6 LIBCMT.LIB setlocal.obj
+0x007863CA,___lc_lctostr,symbol of VC6 LIBCMT.LIB setlocal.obj
+0x0078641D,__flsbuf,symbol of VC6 LIBCMT.LIB _flsbuf.obj
+0x00786535,__output,symbol of VC6 LIBCMT.LIB output.obj
+0x00786D51,__ms_p5_test_fdiv,symbol of VC6 LIBCMT.LIB testfdiv.obj
+0x00786DB8,__forcdecpt,symbol of VC6 LIBCMT.LIB cvt.obj
+0x00786E12,__cropzeros,symbol of VC6 LIBCMT.LIB cvt.obj
+0x00786E78,__fassign,symbol of VC6 LIBCMT.LIB cvt.obj
+0x00786EB6,__cftoe,symbol of VC6 LIBCMT.LIB cvt.obj
+0x00786F17,__cftoe2,symbol of VC6 LIBCMT.LIB cvt.obj
+0x00786FD9,__cftof,symbol of VC6 LIBCMT.LIB cvt.obj
+0x0078702E,__cftof2,symbol of VC6 LIBCMT.LIB cvt.obj
+0x007870D5,__cftog,symbol of VC6 LIBCMT.LIB cvt.obj
+0x00787168,__cfltcvt,symbol of VC6 LIBCMT.LIB cvt.obj
+0x007871B9,__shift,symbol of VC6 LIBCMT.LIB cvt.obj
+0x007873F0,__trandisp1,symbol of VC6 LIBCMT.LIB 87disp.obj
+0x007875C0,__startTwoArgErrorHandling,symbol of VC6 LIBCMT.LIB genexcep.obj
+0x00787620,__twoToTOS,symbol of VC6 LIBCMT.LIB common.obj
+0x007877AC,__powhlp,symbol of VC6 LIBCMT.LIB powhlp.obj
+0x007878DC,__d_inttype,symbol of VC6 LIBCMT.LIB powhlp.obj
+0x00787941,__heap_init,symbol of VC6 LIBCMT.LIB heapinit.obj
+0x0078797D,__heap_term,symbol of VC6 LIBCMT.LIB heapinit.obj
+0x00787A4D,___sbh_find_block,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x00787A78,___sbh_free_block,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x00787DA3,___sbh_alloc_block,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x007880AC,___sbh_alloc_new_region,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x0078815D,___sbh_alloc_new_group,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x00788258,___sbh_resize_block,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x0078854E,___sbh_heapmin,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x0078861F,___sbh_heap_check,symbol of VC6 LIBCMT.LIB sbheap.obj
+0x00788993,__filbuf,symbol of VC6 LIBCMT.LIB _filbuf.obj
+0x00788AD4,__read_lk,symbol of VC6 LIBCMT.LIB read.obj
+0x0078904A,__write_lk,symbol of VC6 LIBCMT.LIB write.obj
+0x007891D5,_realloc,symbol of VC6 LIBCMT.LIB realloc.obj
+0x0078930D,__msize,symbol of VC6 LIBCMT.LIB msize.obj
+0x00789352,___crtLCMapStringA,symbol of VC6 LIBCMT.LIB a_map.obj
+0x007895A1,__isctype,symbol of VC6 LIBCMT.LIB isctype.obj
+0x00789616,__mtinit,symbol of VC6 LIBCMT.LIB tidtable.obj
+0x0078969B,__getptd,symbol of VC6 LIBCMT.LIB tidtable.obj
+0x00789702,__freeptd,symbol of VC6 LIBCMT.LIB tidtable.obj
+0x007897AE,__fltin2,symbol of VC6 LIBCMT.LIB cfin.obj
+0x00789830,_strlen,symbol of VC6 LIBCMT.LIB strlen.obj
+0x007898AB,__dosmaperr,symbol of VC6 LIBCMT.LIB dosmap.obj
+0x00789930,__mbsdec,symbol of VC6 LIBCMT.LIB mbsdec.obj
+0x0078999D,__input,symbol of VC6 LIBCMT.LIB input.obj
+0x0078A44E,__woutput,symbol of VC6 LIBCMT.LIB woutput.obj
+0x0078AC42,___loctotime_t,symbol of VC6 LIBCMT.LIB dtoxtime.obj
+0x0078AD04,__close,symbol of VC6 LIBCMT.LIB close.obj
+0x0078AD61,__close_lk,symbol of VC6 LIBCMT.LIB close.obj
+0x0078ADE4,__freebuf,symbol of VC6 LIBCMT.LIB _freebuf.obj
+0x0078AE0F,__stbuf,symbol of VC6 LIBCMT.LIB _sftbuf.obj
+0x0078AE9C,__ftbuf,symbol of VC6 LIBCMT.LIB _sftbuf.obj
+0x0078AEC6,__openfile,symbol of VC6 LIBCMT.LIB _open.obj
+0x0078B036,__getstream,symbol of VC6 LIBCMT.LIB stream.obj
+0x0078B12B,??0exception@@QAE@ABQBD@Z,symbol of VC6 LIBCMT.LIB stdexcpt.obj
+0x0078B168,??0exception@@QAE@ABV0@@Z,symbol of VC6 LIBCMT.LIB stdexcpt.obj
+0x0078B1F4,__CxxThrowException@8,symbol of VC6 LIBCMT.LIB throw.obj
+0x0078B258,__putwc_lk,symbol of VC6 LIBCMT.LIB fputwc.obj
+0x0078B361,__commit,symbol of VC6 LIBCMT.LIB commit.obj
+0x0078B3F4,__ioinit,symbol of VC6 LIBCMT.LIB ioinit.obj
+0x0078B5B0,__ioterm,symbol of VC6 LIBCMT.LIB ioinit.obj
+0x0078B604,_calloc,symbol of VC6 LIBCMT.LIB calloc.obj
+0x0078B691,__fcloseall,symbol of VC6 LIBCMT.LIB closeall.obj
+0x0078B712,__setmbcp,symbol of VC6 LIBCMT.LIB mbctype.obj
+0x0078B8BF,_getSystemCP,symbol of VC6 LIBCMT.LIB mbctype.obj
+0x0078B909,_CPtoLCID,symbol of VC6 LIBCMT.LIB mbctype.obj
+0x0078B965,_setSBUpLow,symbol of VC6 LIBCMT.LIB mbctype.obj
+0x0078BB16,__mbsnbcpy,symbol of VC6 LIBCMT.LIB mbsnbcpy.obj
+0x0078BBB0,_iswctype,symbol of VC6 LIBCMT.LIB iswctype.obj
+0x0078BC12,_towupper,symbol of VC6 LIBCMT.LIB towupper.obj
+0x0078BC86,__towupper_lk,symbol of VC6 LIBCMT.LIB towupper.obj
+0x0078BCFD,__winput,symbol of VC6 LIBCMT.LIB winput.obj
+0x0078C86F,__mbsnbicoll,symbol of VC6 LIBCMT.LIB mbsnbico.obj
+0x0078C8AE,___wtomb_environ,symbol of VC6 LIBCMT.LIB wtombenv.obj
+0x0078C91C,_signal,symbol of VC6 LIBCMT.LIB winsig.obj
+0x0078CA9E,_ctrlevent_capture@4,symbol of VC6 LIBCMT.LIB winsig.obj
+0x0078CB00,_raise,symbol of VC6 LIBCMT.LIB winsig.obj
+0x0078CC82,_siglookup,symbol of VC6 LIBCMT.LIB winsig.obj
+0x0078CCD1,__handle_qnan1,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078CD25,__handle_qnan2,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078CD85,__except1,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078CE1D,__except2,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078CEC2,__raise_exc,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078D175,__handle_exc,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078D38C,__umatherr,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078D414,__set_errno,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078D43C,__get_fname,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078D461,__errcode,symbol of VC6 LIBCMT.LIB fpexcept.obj
+0x0078D4A0,__set_exp,symbol of VC6 LIBCMT.LIB util.obj
+0x0078D4DD,__add_exp,symbol of VC6 LIBCMT.LIB util.obj
+0x0078D509,__set_bexp,symbol of VC6 LIBCMT.LIB util.obj
+0x0078D52D,__sptype,symbol of VC6 LIBCMT.LIB util.obj
+0x0078D587,__decomp,symbol of VC6 LIBCMT.LIB util.obj
+0x0078D665,__ctrlfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
+0x0078D688,__set_statfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
+0x0078D858,__sopen,symbol of VC6 LIBCMT.LIB open.obj
+0x0078DB27,__itoa,symbol of VC6 LIBCMT.LIB xtoa.obj
+0x0078DB54,_xtoa,symbol of VC6 LIBCMT.LIB xtoa.obj
+0x0078DBB0,__ltoa,symbol of VC6 LIBCMT.LIB xtoa.obj
+0x0078DBF5,__i64toa,symbol of VC6 LIBCMT.LIB xtoa.obj
+0x0078DC26,_x64toa@20,symbol of VC6 LIBCMT.LIB xtoa.obj
+0x0078DCCD,__mbsrchr,symbol of VC6 LIBCMT.LIB mbsrchr.obj
+0x0078DD3F,__rmtmp,symbol of VC6 LIBCMT.LIB rmtmp.obj
+0x0078DDAC,_asctime,symbol of VC6 LIBCMT.LIB asctime.obj
+0x0078DE76,_store_dt,symbol of VC6 LIBCMT.LIB asctime.obj
+0x0078DE9E,_localtime,symbol of VC6 LIBCMT.LIB localtim.obj
+0x0078DFFE,__XcptFilter,symbol of VC6 LIBCMT.LIB winxfltr.obj
+0x0078E13C,_xcptlookup,symbol of VC6 LIBCMT.LIB winxfltr.obj
+0x0078E176,__wincmdln,symbol of VC6 LIBCMT.LIB wincmdln.obj
+0x0078E1CE,__setenvp,symbol of VC6 LIBCMT.LIB stdenvp.obj
+0x0078E287,__setargv,symbol of VC6 LIBCMT.LIB stdargv.obj
+0x0078E320,_parse_cmdline,symbol of VC6 LIBCMT.LIB stdargv.obj
+0x0078E4D4,___crtGetEnvironmentStringsA,symbol of VC6 LIBCMT.LIB a_env.obj
+0x0078E606,__FF_MSGBANNER,symbol of VC6 LIBCMT.LIB crt0msg.obj
+0x0078E63F,__NMSG_WRITE,symbol of VC6 LIBCMT.LIB crt0msg.obj
+0x0078E792,__GET_RTERRMSG,symbol of VC6 LIBCMT.LIB crt0msg.obj
+0x0078E854,__get_lc_time,symbol of VC6 LIBCMT.LIB inittime.obj
+0x0078F009,__get_lc_lconv,symbol of VC6 LIBCMT.LIB initmon.obj
+0x0078F1B0,___init_ctype,symbol of VC6 LIBCMT.LIB initctyp.obj
+0x0078F400,_strpbrk,symbol of VC6 LIBCMT.LIB strpbrk.obj
+0x0078F43A,___get_qualified_locale,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078F5B7,_TranslateName,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078F696,_LangCountryEnumProc@4,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078F8F0,_LanguageEnumProc@4,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078F9E4,_CountryEnumProc@4,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078FA84,_ProcessCodePage,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078FB09,_TestDefaultLanguage,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078FB6B,_IsThisWindowsNT,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078FBA1,_crtGetLocaleInfoA@16,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078FC87,_LcidFromHexString,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078FCC0,_GetPrimaryLen,symbol of VC6 LIBCMT.LIB getqloc.obj
+0x0078FCF0,_memset,symbol of VC6 LIBCMT.LIB memset.obj
+0x0078FDAD,__lseek_lk,symbol of VC6 LIBCMT.LIB lseek.obj
+0x0078FE20,__getbuf,symbol of VC6 LIBCMT.LIB _getbuf.obj
+0x0078FE64,__isatty,symbol of VC6 LIBCMT.LIB isatty.obj
+0x0078FE8D,_wctomb,symbol of VC6 LIBCMT.LIB wctomb.obj
+0x0078FEE6,__wctomb_lk,symbol of VC6 LIBCMT.LIB wctomb.obj
+0x0078FF50,__aullrem,symbol of VC6 LIBCMT.LIB ullrem.obj / MSVCRTD.LIB ullrem.obj
+0x0078FFC5,__ZeroTail,symbol of VC6 LIBCMT.LIB intrncvt.obj
+0x0079000E,__IncMan,symbol of VC6 LIBCMT.LIB intrncvt.obj
+0x00790064,__RoundMan,symbol of VC6 LIBCMT.LIB intrncvt.obj
+0x00790132,__ShrMan,symbol of VC6 LIBCMT.LIB intrncvt.obj
+0x007901BF,__ld12cvt,symbol of VC6 LIBCMT.LIB intrncvt.obj
+0x00790357,__ld12told,symbol of VC6 LIBCMT.LIB intrncvt.obj
+0x007903FE,__atoldbl,symbol of VC6 LIBCMT.LIB intrncvt.obj
+0x00790459,__fptostr,symbol of VC6 LIBCMT.LIB _fptostr.obj
+0x007904D0,__fltout2,symbol of VC6 LIBCMT.LIB cfout.obj
+0x0079052C,___dtold,symbol of VC6 LIBCMT.LIB cfout.obj
+0x007905F0,_fdiv_main_routine,symbol of VC6 LIBCMT.LIB adj_fdiv.obj
+0x0079137B,__87except,symbol of VC6 LIBCMT.LIB 87except.obj
+0x0079144B,__copysign,symbol of VC6 LIBCMT.LIB ieeemisc.obj
+0x0079146C,__chgsign,symbol of VC6 LIBCMT.LIB ieeemisc.obj
+0x007914A7,__logb,symbol of VC6 LIBCMT.LIB ieeemisc.obj
+0x0079158E,__nextafter,symbol of VC6 LIBCMT.LIB ieeemisc.obj
+0x00791837,__isnan,symbol of VC6 LIBCMT.LIB ieeemisc.obj
+0x00791865,__fpclass,symbol of VC6 LIBCMT.LIB ieeemisc.obj
+0x007918F7,__alloc_osfhnd,symbol of VC6 LIBCMT.LIB osfinfo.obj
+0x00791A1A,__set_osfhnd,symbol of VC6 LIBCMT.LIB osfinfo.obj
+0x00791A96,__free_osfhnd,symbol of VC6 LIBCMT.LIB osfinfo.obj
+0x00791B15,__get_osfhandle,symbol of VC6 LIBCMT.LIB osfinfo.obj
+0x00791B57,__open_osfhandle,symbol of VC6 LIBCMT.LIB osfinfo.obj
+0x00791BFE,__lock_fhandle,symbol of VC6 LIBCMT.LIB osfinfo.obj
+0x00791C5D,__unlock_fhandle,symbol of VC6 LIBCMT.LIB osfinfo.obj
+0x00791C7F,___crtGetStringTypeA,symbol of VC6 LIBCMT.LIB a_str.obj
+0x00791DC8,___strgtold12,symbol of VC6 LIBCMT.LIB strgtold.obj
+0x00792299,___STRINGTOLD,symbol of VC6 LIBCMT.LIB strgtold.obj
+0x00792332,__mbtowc_lk,symbol of VC6 LIBCMT.LIB mbtowc.obj
+0x0079241F,_ungetc,symbol of VC6 LIBCMT.LIB ungetc.obj
+0x00792448,__ungetc_lk,symbol of VC6 LIBCMT.LIB ungetc.obj
+0x007924FA,__tzset_lk,symbol of VC6 LIBCMT.LIB tzset.obj
+0x007927A2,__isindst_lk,symbol of VC6 LIBCMT.LIB tzset.obj
+0x00792A8E,?__CxxUnhandledExceptionFilter@@YGJPAU_EXCEPTION_POINTERS@@@Z,symbol of VC6 LIBCMT.LIB unhandld.obj
+0x00792AF2,__flswbuf,symbol of VC6 LIBCMT.LIB _flswbuf.obj
+0x00792C19,___crtGetStringTypeW,symbol of VC6 LIBCMT.LIB w_str.obj
+0x00792DDE,___crtLCMapStringW,symbol of VC6 LIBCMT.LIB w_map.obj
+0x00793074,__wcstombs_lk,symbol of VC6 LIBCMT.LIB wcstombs.obj
+0x00793252,_fgetwc,symbol of VC6 LIBCMT.LIB fgetwc.obj
+0x00793275,__getwc_lk,symbol of VC6 LIBCMT.LIB fgetwc.obj
+0x0079339B,__ungetwc_lk,symbol of VC6 LIBCMT.LIB ungetwc.obj
+0x00793488,___crtCompareStringA,symbol of VC6 LIBCMT.LIB a_cmp.obj
+0x00793730,___crtsetenv,symbol of VC6 LIBCMT.LIB setenv.obj
+0x007938B7,_findenv,symbol of VC6 LIBCMT.LIB setenv.obj
+0x0079390F,_copy_environ,symbol of VC6 LIBCMT.LIB setenv.obj / LIBCMT.LIB wsetenv.obj
+0x007939D2,__chsize_lk,symbol of VC6 LIBCMT.LIB chsize.obj
+0x00793AF7,_gmtime,symbol of VC6 LIBCMT.LIB gmtime.obj
+0x00793CB7,__ismbbkana,symbol of VC6 LIBCMT.LIB ismbbyte.obj
+0x00793CDE,_x_ismbbtype,symbol of VC6 LIBCMT.LIB ismbbyte.obj
+0x00793D0F,___crtMessageBoxA,symbol of VC6 LIBCMT.LIB crtmbox.obj
+0x00793D98,__Getdays,symbol of VC6 LIBCMT.LIB strftime.obj
+0x00793E27,__Getmonths,symbol of VC6 LIBCMT.LIB strftime.obj
+0x00793EBC,__Gettnames,symbol of VC6 LIBCMT.LIB strftime.obj
+0x00794203,__expandtime,symbol of VC6 LIBCMT.LIB strftime.obj
+0x007945F2,__store_str,symbol of VC6 LIBCMT.LIB strftime.obj
+0x00794619,__store_num,symbol of VC6 LIBCMT.LIB strftime.obj
+0x00794688,__store_number,symbol of VC6 LIBCMT.LIB strftime.obj
+0x007946D1,__store_winword,symbol of VC6 LIBCMT.LIB strftime.obj
+0x007949A0,___getlocaleinfo,symbol of VC6 LIBCMT.LIB inithelp.obj
+0x00794ADE,___addl,symbol of VC6 LIBCMT.LIB mantold.obj
+0x00794AFF,___add_12,symbol of VC6 LIBCMT.LIB mantold.obj
+0x00794B5D,___shl_12,symbol of VC6 LIBCMT.LIB mantold.obj
+0x00794B8B,___shr_12,symbol of VC6 LIBCMT.LIB mantold.obj
+0x00794BB8,___mtold12,symbol of VC6 LIBCMT.LIB mantold.obj
+0x00794C7F,_$I10_OUTPUT,symbol of VC6 LIBCMT.LIB x10fout.obj
+0x00794F12,_ldexp,symbol of VC6 LIBCMT.LIB ldexp.obj
+0x007950F8,___ld12mul,symbol of VC6 LIBCMT.LIB tenpow.obj
+0x00795318,___multtenpow12,symbol of VC6 LIBCMT.LIB tenpow.obj
+0x007953E4,?terminate@@YAXXZ,symbol of VC6 LIBCMT.LIB hooks.obj
+0x0079545D,?_inconsistency@@YAXXZ,symbol of VC6 LIBCMT.LIB hooks.obj
+0x007954B3,__filwbuf,symbol of VC6 LIBCMT.LIB _filwbuf.obj
+0x0079559A,__mbschr,symbol of VC6 LIBCMT.LIB mbschr.obj
+0x0079568A,__setmode_lk,symbol of VC6 LIBCMT.LIB setmode.obj
+0x007956EB,___crtGetLocaleInfoW,symbol of VC6 LIBCMT.LIB w_loc.obj
+0x007957FE,___crtGetLocaleInfoA,symbol of VC6 LIBCMT.LIB a_loc.obj
+0x0079594E,?_com_issue_errorex@@YGXJPAUIUnknown@@ABU_GUID@@@Z,symbol of VC6 COMSUPP.LIB comsupp.obj
+0x007959AF,?_com_dispatch_raw_method@@YAJPAUIDispatch@@JGGPAXPBGZZ,symbol of VC6 COMSUPP.LIB comsupp.obj
+0x007959EB,?_com_invoke_helper@@YAJPAUIDispatch@@JGGPAXPBGPADPAPAUIErrorInfo@@@Z,symbol of VC6 COMSUPP.LIB comsupp.obj
+0x00795E94,?_com_dispatch_method@@YAJPAUIDispatch@@JGGPAXPBGZZ,symbol of VC6 COMSUPP.LIB comsupp.obj
+0x00795F0C,?_com_dispatch_raw_propput@@YAJPAUIDispatch@@JGZZ,symbol of VC6 COMSUPP.LIB comsupp.obj
+0x00795F65,?_com_dispatch_propput@@YAJPAUIDispatch@@JGZZ,symbol of VC6 COMSUPP.LIB comsupp.obj
+0x00795FBC,?_com_raise_error@@YGXJPAUIErrorInfo@@@Z,symbol of VC6 COMSUPP.LIB comraise.obj
+0x00795FE0,??0_com_error@@QAE@JPAUIErrorInfo@@_N@Z,symbol of VC6 COMSUPP.LIB comraise.obj
+0x0079602E,??0_com_error@@QAE@ABV0@@Z,symbol of VC6 COMSUPP.LIB comraise.obj
+0x0079605B,??1_com_error@@UAE@XZ,symbol of VC6 COMSUPP.LIB comraise.obj
+0x007961E4,__strupr,symbol of VC6 LIBCMT.LIB strupr.obj
+0x00796318,__wcsicmp,symbol of VC6 LIBCMT.LIB wcsicmp.obj
+0x0079642F,__getch_lk,symbol of VC6 LIBCMT.LIB getch.obj
+0x00796500,__getche_lk,symbol of VC6 LIBCMT.LIB getch.obj
+0x00796554,__kbhit_lk,symbol of VC6 LIBCMT.LIB getch.obj
+0x00796633,__ungetch_lk,symbol of VC6 LIBCMT.LIB getch.obj
+0x00796654,__getextendedkeycode,symbol of VC6 LIBCMT.LIB getch.obj
+0x00796725,_output,symbol of VC6 LIBCMT.LIB cprintf.obj
+0x00796E6C,_write_multi_char,symbol of VC6 LIBCMT.LIB cprintf.obj
+0x00796EF6,__wcsupr,symbol of VC6 LIBCMT.LIB wcsupr.obj
+0x00797033,__wcsdup,symbol of VC6 LIBCMT.LIB wcsdup.obj
+0x00797070,__strrev,symbol of VC6 LIBCMT.LIB strrev.obj
+0x007970A0,__wcsnicmp,symbol of VC6 LIBCMT.LIB wcsnicmp.obj
+0x00797198,__filelength,symbol of VC6 LIBCMT.LIB flength.obj
+0x00797222,_towlower,symbol of VC6 LIBCMT.LIB towlower.obj
+0x0079729C,__towlower_lk,symbol of VC6 LIBCMT.LIB towlower.obj
+0x0079734F,___termcon,symbol of VC6 LIBCMT.LIB initcon.obj
+0x0079739D,__putch_lk,symbol of VC6 LIBCMT.LIB putch.obj
+0x0079A0D0,__imp__GetSystemTime@4,"import slot of GetSystemTime (import table), referenced as __imp__GetSystemTime@4 by matched VC6 library code"
+0x0079A110,__imp__ReadFile@20,"import slot of ReadFile (import table), referenced as __imp__ReadFile@20 by matched VC6 library code"
+0x0079A12C,__imp__WriteFile@20,"import slot of WriteFile (import table), referenced as __imp__WriteFile@20 by matched VC6 library code"
+0x0079A158,__imp__IsBadReadPtr@8,"import slot of IsBadReadPtr (import table), referenced as __imp__IsBadReadPtr@8 by matched VC6 library code"
+0x0079A17C,__imp__GetVersionExA@4,"import slot of GetVersionExA (import table), referenced as __imp__GetVersionExA@4 by matched VC6 library code"
+0x0079A188,__imp__HeapDestroy@4,"import slot of HeapDestroy (import table), referenced as __imp__HeapDestroy@4 by matched VC6 library code"
+0x0079A198,__imp__GetModuleFileNameA@12,"import slot of GetModuleFileNameA (import table), referenced as __imp__GetModuleFileNameA@12 by matched VC6 library code"
+0x0079A1B0,__imp__CreateFileA@28,"import slot of CreateFileA (import table), referenced as __imp__CreateFileA@28 by matched VC6 library code"
+0x0079A1B4,__imp__SetFilePointer@16,"import slot of SetFilePointer (import table), referenced as __imp__SetFilePointer@16 by matched VC6 library code"
+0x0079A1B8,__imp__MultiByteToWideChar@24,"import slot of MultiByteToWideChar (import table), referenced as __imp__MultiByteToWideChar@24 by matched VC6 library code"
+0x0079A1BC,__imp__InterlockedIncrement@4,"import slot of InterlockedIncrement (import table), referenced as __imp__InterlockedIncrement@4 by matched VC6 library code"
+0x0079A1C0,__imp__InterlockedDecrement@4,"import slot of InterlockedDecrement (import table), referenced as __imp__InterlockedDecrement@4 by matched VC6 library code"
+0x0079A1C4,__imp__GetCurrentThreadId@0,"import slot of GetCurrentThreadId (import table), referenced as __imp__GetCurrentThreadId@0 by matched VC6 library code"
+0x0079A1D4,__imp__CloseHandle@4,"import slot of CloseHandle (import table), referenced as __imp__CloseHandle@4 by matched VC6 library code"
+0x0079A1D8,__imp__DeleteCriticalSection@4,"import slot of DeleteCriticalSection (import table), referenced as __imp__DeleteCriticalSection@4 by matched VC6 library code"
+0x0079A1DC,__imp__EnterCriticalSection@4,"import slot of EnterCriticalSection (import table), referenced as __imp__EnterCriticalSection@4 by matched VC6 library code"
+0x0079A1E0,__imp__LeaveCriticalSection@4,"import slot of LeaveCriticalSection (import table), referenced as __imp__LeaveCriticalSection@4 by matched VC6 library code"
+0x0079A1E4,__imp__Sleep@4,"import slot of Sleep (import table), referenced as __imp__Sleep@4 by matched VC6 library code"
+0x0079A1E8,__imp__InitializeCriticalSection@4,"import slot of InitializeCriticalSection (import table), referenced as __imp__InitializeCriticalSection@4 by matched VC6 library code"
+0x0079A1F4,__imp__GetLastError@0,"import slot of GetLastError (import table), referenced as __imp__GetLastError@0 by matched VC6 library code"
+0x0079A210,__imp__LoadLibraryA@4,"import slot of LoadLibraryA (import table), referenced as __imp__LoadLibraryA@4 by matched VC6 library code"
+0x0079A23C,__imp__WideCharToMultiByte@32,"import slot of WideCharToMultiByte (import table), referenced as __imp__WideCharToMultiByte@32 by matched VC6 library code"
+0x0079A240,__imp__GetProcAddress@8,"import slot of GetProcAddress (import table), referenced as __imp__GetProcAddress@8 by matched VC6 library code"
+0x0079A254,__imp__GetStartupInfoA@4,"import slot of GetStartupInfoA (import table), referenced as __imp__GetStartupInfoA@4 by matched VC6 library code"
+0x0079A25C,__imp__GetLocalTime@4,"import slot of GetLocalTime (import table), referenced as __imp__GetLocalTime@4 by matched VC6 library code"
+0x0079A260,__imp__PeekConsoleInputA@16,"import slot of PeekConsoleInputA (import table), referenced as __imp__PeekConsoleInputA@16 by matched VC6 library code"
+0x0079A264,__imp__GetConsoleMode@8,"import slot of GetConsoleMode (import table), referenced as __imp__GetConsoleMode@8 by matched VC6 library code"
+0x0079A268,__imp__HeapFree@12,"import slot of HeapFree (import table), referenced as __imp__HeapFree@12 by matched VC6 library code"
+0x0079A270,__imp__HeapAlloc@12,"import slot of HeapAlloc (import table), referenced as __imp__HeapAlloc@12 by matched VC6 library code"
+0x0079A278,__imp__HeapCreate@12,"import slot of HeapCreate (import table), referenced as __imp__HeapCreate@12 by matched VC6 library code"
+0x0079A27C,__imp__GetTimeZoneInformation@4,"import slot of GetTimeZoneInformation (import table), referenced as __imp__GetTimeZoneInformation@4 by matched VC6 library code"
+0x0079A284,__imp__SetConsoleMode@8,"import slot of SetConsoleMode (import table), referenced as __imp__SetConsoleMode@8 by matched VC6 library code"
+0x0079A28C,__imp__VirtualFree@12,"import slot of VirtualFree (import table), referenced as __imp__VirtualFree@12 by matched VC6 library code"
+0x0079A290,__imp__VirtualAlloc@16,"import slot of VirtualAlloc (import table), referenced as __imp__VirtualAlloc@16 by matched VC6 library code"
+0x0079A294,__imp__HeapReAlloc@16,"import slot of HeapReAlloc (import table), referenced as __imp__HeapReAlloc@16 by matched VC6 library code"
+0x0079A298,__imp__IsBadWritePtr@8,"import slot of IsBadWritePtr (import table), referenced as __imp__IsBadWritePtr@8 by matched VC6 library code"
+0x0079A29C,__imp__HeapSize@12,"import slot of HeapSize (import table), referenced as __imp__HeapSize@12 by matched VC6 library code"
+0x0079A2A0,__imp__LCMapStringA@24,"import slot of LCMapStringA (import table), referenced as __imp__LCMapStringA@24 by matched VC6 library code"
+0x0079A2A4,__imp__LCMapStringW@24,"import slot of LCMapStringW (import table), referenced as __imp__LCMapStringW@24 by matched VC6 library code"
+0x0079A2A8,__imp__TlsSetValue@8,"import slot of TlsSetValue (import table), referenced as __imp__TlsSetValue@8 by matched VC6 library code"
+0x0079A2AC,__imp__TlsAlloc@0,"import slot of TlsAlloc (import table), referenced as __imp__TlsAlloc@0 by matched VC6 library code"
+0x0079A2B0,__imp__TlsGetValue@4,"import slot of TlsGetValue (import table), referenced as __imp__TlsGetValue@4 by matched VC6 library code"
+0x0079A2B8,__imp__SetLastError@4,"import slot of SetLastError (import table), referenced as __imp__SetLastError@4 by matched VC6 library code"
+0x0079A2BC,__imp__FlushFileBuffers@4,"import slot of FlushFileBuffers (import table), referenced as __imp__FlushFileBuffers@4 by matched VC6 library code"
+0x0079A2C0,__imp__SetHandleCount@4,"import slot of SetHandleCount (import table), referenced as __imp__SetHandleCount@4 by matched VC6 library code"
+0x0079A2C4,__imp__GetStdHandle@4,"import slot of GetStdHandle (import table), referenced as __imp__GetStdHandle@4 by matched VC6 library code"
+0x0079A2C8,__imp__GetFileType@4,"import slot of GetFileType (import table), referenced as __imp__GetFileType@4 by matched VC6 library code"
+0x0079A2CC,__imp__GetCPInfo@8,"import slot of GetCPInfo (import table), referenced as __imp__GetCPInfo@8 by matched VC6 library code"
+0x0079A2D0,__imp__GetACP@0,"import slot of GetACP (import table), referenced as __imp__GetACP@0 by matched VC6 library code"
+0x0079A2D4,__imp__GetOEMCP@0,"import slot of GetOEMCP (import table), referenced as __imp__GetOEMCP@0 by matched VC6 library code"
+0x0079A2D8,__imp__SetConsoleCtrlHandler@8,"import slot of SetConsoleCtrlHandler (import table), referenced as __imp__SetConsoleCtrlHandler@8 by matched VC6 library code"
+0x0079A2E4,__imp__UnhandledExceptionFilter@4,"import slot of UnhandledExceptionFilter (import table), referenced as __imp__UnhandledExceptionFilter@4 by matched VC6 library code"
+0x0079A2E8,__imp__FreeEnvironmentStringsA@4,"import slot of FreeEnvironmentStringsA (import table), referenced as __imp__FreeEnvironmentStringsA@4 by matched VC6 library code"
+0x0079A2EC,__imp__FreeEnvironmentStringsW@4,"import slot of FreeEnvironmentStringsW (import table), referenced as __imp__FreeEnvironmentStringsW@4 by matched VC6 library code"
+0x0079A2F0,__imp__GetEnvironmentStrings@0,"import slot of GetEnvironmentStrings (import table), referenced as __imp__GetEnvironmentStrings@0 by matched VC6 library code"
+0x0079A2F4,__imp__GetEnvironmentStringsW@0,"import slot of GetEnvironmentStringsW (import table), referenced as __imp__GetEnvironmentStringsW@0 by matched VC6 library code"
+0x0079A2FC,__imp__IsValidLocale@8,"import slot of IsValidLocale (import table), referenced as __imp__IsValidLocale@8 by matched VC6 library code"
+0x0079A300,__imp__IsValidCodePage@4,"import slot of IsValidCodePage (import table), referenced as __imp__IsValidCodePage@4 by matched VC6 library code"
+0x0079A304,__imp__GetLocaleInfoA@16,"import slot of GetLocaleInfoA (import table), referenced as __imp__GetLocaleInfoA@16 by matched VC6 library code"
+0x0079A310,__imp__SetStdHandle@8,"import slot of SetStdHandle (import table), referenced as __imp__SetStdHandle@8 by matched VC6 library code"
+0x0079A314,__imp__GetStringTypeA@20,"import slot of GetStringTypeA (import table), referenced as __imp__GetStringTypeA@20 by matched VC6 library code"
+0x0079A318,__imp__GetStringTypeW@16,"import slot of GetStringTypeW (import table), referenced as __imp__GetStringTypeW@16 by matched VC6 library code"
+0x0079A31C,__imp__CompareStringA@24,"import slot of CompareStringA (import table), referenced as __imp__CompareStringA@24 by matched VC6 library code"
+0x0079A320,__imp__CompareStringW@24,"import slot of CompareStringW (import table), referenced as __imp__CompareStringW@24 by matched VC6 library code"
+0x0079A324,__imp__SetEnvironmentVariableA@8,"import slot of SetEnvironmentVariableA (import table), referenced as __imp__SetEnvironmentVariableA@8 by matched VC6 library code"
+0x0079A328,__imp__LocalFree@4,"import slot of LocalFree (import table), referenced as __imp__LocalFree@4 by matched VC6 library code"
+0x0079A32C,__imp__SetEndOfFile@4,"import slot of SetEndOfFile (import table), referenced as __imp__SetEndOfFile@4 by matched VC6 library code"
+0x0079A330,__imp__GetLocaleInfoW@16,"import slot of GetLocaleInfoW (import table), referenced as __imp__GetLocaleInfoW@16 by matched VC6 library code"
+0x0079A334,__imp__lstrlenW@4,"import slot of lstrlenW (import table), referenced as __imp__lstrlenW@4 by matched VC6 library code"
+0x0079A338,__imp__RaiseException@16,"import slot of RaiseException (import table), referenced as __imp__RaiseException@16 by matched VC6 library code"
+0x0079A33C,__imp__ReadConsoleInputA@16,"import slot of ReadConsoleInputA (import table), referenced as __imp__ReadConsoleInputA@16 by matched VC6 library code"
+0x0079A344,__imp__GetNumberOfConsoleInputEvents@8,"import slot of GetNumberOfConsoleInputEvents (import table), referenced as __imp__GetNumberOfConsoleInputEvents@8 by matched VC6 library code"
+0x0079A348,__imp__WriteConsoleA@20,"import slot of WriteConsoleA (import table), referenced as __imp__WriteConsoleA@20 by matched VC6 library code"
+0x007B170C,___lookuptable,"data of VC6 library objects, its data section matched"
+0x007B17D4,DblMax,"data of VC6 library objects, its data section matched"
+0x007B17DC,DblMin,"data of VC6 library objects, its data section matched"
+0x007B17E4,IeeeAdjO,"data of VC6 library objects, its data section matched"
+0x007B17EC,IeeeAdjU,"data of VC6 library objects, its data section matched"
+0x007B17F4,_infinity,"data of VC6 library objects, its data section matched"
+0x007B17FC,_zero,"data of VC6 library objects, its data section matched"
+0x007B1848,_?ExceptionTemplate@?1??_CxxThrowException@@9@8@4UEHExceptionRecord@@B,"data of VC6 library objects, its data section matched"
+0x007B227C,___dnames,"data of VC6 library objects, its data section matched"
+0x007B2294,___mnames,"data of VC6 library objects, its data section matched"
+0x0082EC90,__iob,"data of VC6 library objects, its data section matched"
+0x0082F000,__clocalestr,"data of VC6 library objects, its data section matched"
+0x0082F004,_?cachein@?1??_expandlocale@@9@9,"data of VC6 library objects, its data section matched"
+0x0082F088,_?cacheout@?1??_expandlocale@@9@9,"data of VC6 library objects, its data section matched"
+0x0082F180,__infinity,"data of VC6 library objects, its data section matched"
+0x0082F18A,__minfinity,"data of VC6 library objects, its data section matched"
+0x0082F19E,_log2max,"data of VC6 library objects, its data section matched"
+0x0082F1B2,_half,"data of VC6 library objects, its data section matched"
+0x0082F1E0,__indefinite,"data of VC6 library objects, its data section matched"
+0x0082F1FC,XAMtoTagTab,"data of VC6 library objects, its data section matched"
+0x0082F220,__pctype,"data of VC6 library objects, its data section matched"
+0x0082F224,__pwctype,"data of VC6 library objects, its data section matched"
+0x0082F228,__ctype,"data of VC6 library objects, its data section matched"
+0x0082F440,_errtable,"data of VC6 library objects, its data section matched"
+0x0082F5B8,___badioinfo,"data of VC6 library objects, its data section matched"
+0x0082F5E0,___rgctypeflag,"data of VC6 library objects, its data section matched"
+0x0082F5E8,___rgcode_page_info,"data of VC6 library objects, its data section matched"
+0x0082F7C0,__d_inf,"data of VC6 library objects, its data section matched"
+0x0082F7C8,__d_ind,"data of VC6 library objects, its data section matched"
+0x0082F7D0,__d_max,"data of VC6 library objects, its data section matched"
+0x0082F7E0,__d_mzero,"data of VC6 library objects, its data section matched"
+0x0082F808,__XcptActTab,"data of VC6 library objects, its data section matched"
+0x0082F880,__First_FPE_Indx,"data of VC6 library objects, its data section matched"
+0x0082F884,__Num_FPE,"data of VC6 library objects, its data section matched"
+0x0082F888,__XcptActTabSize,"data of VC6 library objects, its data section matched"
+0x0082F88C,__XcptActTabCount,"data of VC6 library objects, its data section matched"
+0x0082F920,___rgLocInfo,"data of VC6 library objects, its data section matched"
+0x00830230,__timezone,"data of VC6 library objects, its data section matched"
+0x00830234,__daylight,"data of VC6 library objects, its data section matched"
+0x00830238,__dstbias,"data of VC6 library objects, its data section matched"
+0x008302BC,__tzname,"data of VC6 library objects, its data section matched"
+0x008302E4,__lpdays,"data of VC6 library objects, its data section matched"
+0x00830318,__days,"data of VC6 library objects, its data section matched"
+0x00830448,__pow10pos,"data of VC6 library objects, its data section matched"
+0x008305A8,__pow10neg,"data of VC6 library objects, its data section matched"
+0x00830758,_EnhancedKeys,"data of VC6 library objects, its data section matched"
+0x008307D0,_NormalKeys,"data of VC6 library objects, its data section matched"
+0x00830A98,_chbuf,"data of VC6 library objects, its data section matched"

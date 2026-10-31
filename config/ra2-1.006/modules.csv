@@ -1,2 +1,348 @@
 unit,start,end,category,evidence
-unk_00401000,0x00401000,0x007995CD,unknown,the whole code section
+unk_00401000,0x00401000,0x00781C8C,unknown,code not assigned to a module
+libcmt/typinfo,0x00781C8C,0x00781CB5,library,"code sections of VC6 LIBCMT.LIB typinfo.obj, matched"
+unk_00781CB5,0x00781CB5,0x00781D46,unknown,code not assigned to a module
+libcmt/qsort,0x00781D46,0x00781F20,library,"code sections of VC6 LIBCMT.LIB qsort.obj, matched"
+libcmt/stricmp,0x00781F20,0x00781FF0,library,"code sections of VC6 LIBCMT.LIB stricmp.obj, matched"
+libcmt/strrchr,0x00781FF0,0x00782017,library,"code sections of VC6 LIBCMT.LIB strrchr.obj, matched"
+unk_00782017,0x00782017,0x00782025,unknown,code not assigned to a module
+libcmt/bsearch,0x00782025,0x007820C0,library,"code sections of VC6 LIBCMT.LIB bsearch.obj, matched"
+unk_007820C0,0x007820C0,0x007820F4,library,identical code of several objects: LIBCMT.LIB llmul.obj / MSVCRTD.LIB llmul.obj
+libcmt/sprintf,0x007820F4,0x00782146,library,"code sections of VC6 LIBCMT.LIB sprintf.obj, matched"
+unk_00782146,0x00782146,0x007821B0,unknown,code not assigned to a module
+libcmt/pow,0x007821B0,0x007823D0,library,"code sections of VC6 LIBCMT.LIB pow.obj, matched"
+libcmt/strncpy,0x007823D0,0x007824D0,library,"code sections of VC6 LIBCMT.LIB strncpy.obj, matched"
+unk_007824D0,0x007824D0,0x00782580,library,identical code of several objects: LIBCMT.LIB lldiv.obj / MSVCRTD.LIB lldiv.obj
+unk_00782580,0x00782580,0x007825E8,library,identical code of several objects: LIBCMT.LIB ulldiv.obj / MSVCRTD.LIB ulldiv.obj
+libcmt/free,0x007825E8,0x00782630,library,"code sections of VC6 LIBCMT.LIB free.obj, matched"
+unk_00782630,0x00782630,0x00782642,unknown,code not assigned to a module
+libcmt/malloc,0x00782642,0x007826BC,library,"code sections of VC6 LIBCMT.LIB malloc.obj, matched"
+unk_007826BC,0x007826BC,0x007826EB,unknown,code not assigned to a module
+libcmt/fread,0x007826EB,0x007827D3,library,"code sections of VC6 LIBCMT.LIB fread.obj, matched"
+unk_007827D3,0x007827D3,0x00782802,unknown,code not assigned to a module
+libcmt/fwrite,0x00782802,0x0078290C,library,"code sections of VC6 LIBCMT.LIB fwrite.obj, matched"
+unk_0078290C,0x0078290C,0x007829D3,unknown,code not assigned to a module
+libcmt/toupper,0x007829D3,0x00782B0E,library,"code sections of VC6 LIBCMT.LIB toupper.obj, matched"
+libcmt/_ctype,0x00782B0E,0x00782CE3,library,"code sections of VC6 LIBCMT.LIB _ctype.obj, matched"
+unk_00782CE3,0x00782CE3,0x00782CF8,unknown,code not assigned to a module
+libcmt/_ctype,0x00782CF8,0x00782D72,library,"code sections of VC6 LIBCMT.LIB _ctype.obj, matched"
+libcmt/atox,0x00782D72,0x00782DFD,library,"code sections of VC6 LIBCMT.LIB atox.obj, matched"
+unk_00782DFD,0x00782DFD,0x00782E08,unknown,code not assigned to a module
+libcmt/atox,0x00782E08,0x00782EC2,library,"code sections of VC6 LIBCMT.LIB atox.obj, matched"
+libcmt/strtok,0x00782EC2,0x00782F66,library,"code sections of VC6 LIBCMT.LIB strtok.obj, matched"
+libcmt/atof,0x00782F66,0x00782FBD,library,"code sections of VC6 LIBCMT.LIB atof.obj, matched"
+unk_00782FBD,0x00782FBD,0x00782FD4,unknown,code not assigned to a module
+libcmt/strtol,0x00782FD4,0x007831D9,library,"code sections of VC6 LIBCMT.LIB strtol.obj, matched"
+unk_007831D9,0x007831D9,0x007831F0,unknown,code not assigned to a module
+libcmt/makepath,0x007831F0,0x00783290,library,"code sections of VC6 LIBCMT.LIB makepath.obj, matched"
+unk_00783290,0x00783290,0x007835C5,unknown,code not assigned to a module
+libcmt/wcsrchr,0x007835C5,0x00783605,library,"code sections of VC6 LIBCMT.LIB wcsrchr.obj, matched"
+unk_00783605,0x00783605,0x00783622,unknown,code not assigned to a module
+libcmt/wcsncpy,0x00783622,0x0078365F,library,"code sections of VC6 LIBCMT.LIB wcsncpy.obj, matched"
+libcmt/wcscat,0x0078365F,0x007836B0,library,"code sections of VC6 LIBCMT.LIB wcscat.obj, matched"
+libcmt/strstr,0x007836B0,0x00783730,library,"code sections of VC6 LIBCMT.LIB strstr.obj, matched"
+libcmt/sscanf,0x00783730,0x00783764,library,"code sections of VC6 LIBCMT.LIB sscanf.obj, matched"
+libcmt/swprintf,0x00783764,0x007837D3,library,"code sections of VC6 LIBCMT.LIB swprintf.obj, matched"
+libcmt/wcscmp,0x007837D3,0x00783810,library,"code sections of VC6 LIBCMT.LIB wcscmp.obj, matched"
+libcmt/strncmp,0x00783810,0x00783850,library,"code sections of VC6 LIBCMT.LIB strncmp.obj, matched"
+unk_00783850,0x00783850,0x0078387F,library,identical code of several objects: LIBCMT.LIB chkstk.obj / MSVCRTD.LIB chkstk.obj
+libcmt/time,0x0078387F,0x0078395B,library,"code sections of VC6 LIBCMT.LIB time.obj, matched"
+libcmt/fclose,0x0078395B,0x007839D8,library,"code sections of VC6 LIBCMT.LIB fclose.obj, matched"
+unk_007839D8,0x007839D8,0x00783A14,library,identical code of several objects: LIBCMT.LIB fprintf.obj / LIBCMT.LIB fwprintf.obj
+unk_00783A14,0x00783A14,0x00783A45,library,identical code of several objects: LIBCMT.LIB fopen.obj / LIBCMT.LIB wfopen.obj
+unk_00783A45,0x00783A45,0x00783A58,unknown,code not assigned to a module
+libcmt/vswprint,0x00783A58,0x00783AC6,library,"code sections of VC6 LIBCMT.LIB vswprint.obj, matched"
+libcmt/wcschr,0x00783AC6,0x00783AEF,library,"code sections of VC6 LIBCMT.LIB wcschr.obj, matched"
+libcmt/rtti,0x00783AEF,0x00783B93,library,"code sections of VC6 LIBCMT.LIB rtti.obj, matched"
+unk_00783B93,0x00783B93,0x00783C05,unknown,code not assigned to a module
+libcmt/rtti,0x00783C05,0x00783CCB,library,"code sections of VC6 LIBCMT.LIB rtti.obj, matched"
+unk_00783CCB,0x00783CCB,0x00783CE4,unknown,code not assigned to a module
+libcmt/rtti,0x00783CE4,0x00783DFB,library,"code sections of VC6 LIBCMT.LIB rtti.obj, matched"
+unk_00783DFB,0x00783DFB,0x00783E66,unknown,code not assigned to a module
+libcmt/rtti,0x00783E66,0x00784120,library,"code sections of VC6 LIBCMT.LIB rtti.obj, matched"
+libcmt/strchr,0x00784120,0x007841EC,library,"code sections of VC6 LIBCMT.LIB strchr.obj, matched"
+unk_007841EC,0x007841EC,0x007841F4,unknown,code not assigned to a module
+libcmt/tolower,0x007841F4,0x0078432E,library,"code sections of VC6 LIBCMT.LIB tolower.obj, matched"
+libcmt/putws,0x0078432E,0x0078439C,library,"code sections of VC6 LIBCMT.LIB putws.obj, matched"
+libcmt/fflush,0x0078439C,0x00784455,library,"code sections of VC6 LIBCMT.LIB fflush.obj, matched"
+unk_00784455,0x00784455,0x0078445E,unknown,code not assigned to a module
+libcmt/fflush,0x0078445E,0x00784502,library,"code sections of VC6 LIBCMT.LIB fflush.obj, matched"
+unk_00784502,0x00784502,0x0078453D,library,identical code of several objects: LIBCMT.LIB vfprintf.obj / LIBCMT.LIB vfwprint.obj
+libcmt/_file,0x0078453D,0x007845E5,library,"code sections of VC6 LIBCMT.LIB _file.obj, matched"
+unk_007845E5,0x007845E5,0x007846AA,unknown,code not assigned to a module
+libcmt/rand,0x007846AA,0x007846CC,library,"code sections of VC6 LIBCMT.LIB rand.obj, matched"
+libcmt/wcsncmp,0x007846CC,0x00784704,library,"code sections of VC6 LIBCMT.LIB wcsncmp.obj, matched"
+libcmt/wcsncat,0x00784704,0x00784750,library,"code sections of VC6 LIBCMT.LIB wcsncat.obj, matched"
+libcmt/strncat,0x00784750,0x00784873,library,"code sections of VC6 LIBCMT.LIB strncat.obj, matched"
+libcmt/splitpat,0x00784873,0x007849BA,library,"code sections of VC6 LIBCMT.LIB splitpat.obj, matched"
+libcmt/vsprintf,0x007849BA,0x00784A0B,library,"code sections of VC6 LIBCMT.LIB vsprintf.obj, matched"
+libcmt/fgetc,0x00784A0B,0x00784A3C,library,"code sections of VC6 LIBCMT.LIB fgetc.obj, matched"
+unk_00784A3C,0x00784A3C,0x00784B11,unknown,code not assigned to a module
+libcmt/wcstok,0x00784B11,0x00784BB8,library,"code sections of VC6 LIBCMT.LIB wcstok.obj, matched"
+unk_00784BB8,0x00784BB8,0x00784BCF,unknown,code not assigned to a module
+libcmt/wcstol,0x00784BCF,0x00784D76,library,"code sections of VC6 LIBCMT.LIB wcstol.obj, matched"
+unk_00784D76,0x00784D76,0x00784D8D,unknown,code not assigned to a module
+libcmt/mbsnccnt,0x00784D8D,0x00784DDB,library,"code sections of VC6 LIBCMT.LIB mbsnccnt.obj, matched"
+libcmt/swscanf,0x00784DDB,0x00784E11,library,"code sections of VC6 LIBCMT.LIB swscanf.obj, matched"
+unk_00784E11,0x00784E11,0x00784E32,unknown,code not assigned to a module
+libcmt/getenv,0x00784E32,0x00784EAF,library,"code sections of VC6 LIBCMT.LIB getenv.obj, matched"
+unk_00784EAF,0x00784EAF,0x00785014,unknown,code not assigned to a module
+libcmt/ieee87,0x00785014,0x00785049,library,"code sections of VC6 LIBCMT.LIB ieee87.obj, matched"
+unk_00785049,0x00785049,0x0078505F,unknown,code not assigned to a module
+libcmt/ieee87,0x0078505F,0x007851DC,library,"code sections of VC6 LIBCMT.LIB ieee87.obj, matched"
+libcmt/exsup,0x007851DC,0x007852CC,library,"code sections of VC6 LIBCMT.LIB exsup.obj, matched"
+libcmt/exsup3,0x007852CC,0x007853AC,library,"code sections of VC6 LIBCMT.LIB exsup3.obj, matched"
+unk_007853AC,0x007853AC,0x00785409,unknown,code not assigned to a module
+libcmt/mbstowcs,0x00785409,0x00785509,library,"code sections of VC6 LIBCMT.LIB mbstowcs.obj, matched"
+libcmt/wcspbrk,0x00785509,0x00785547,library,"code sections of VC6 LIBCMT.LIB wcspbrk.obj, matched"
+libcmt/fgets,0x00785547,0x007855A9,library,"code sections of VC6 LIBCMT.LIB fgets.obj, matched"
+libcmt/floor,0x007855A9,0x00785678,library,"code sections of VC6 LIBCMT.LIB floor.obj, matched"
+unk_00785678,0x00785678,0x007856A2,library,identical code of several objects: LIBCMT.LIB rmdir.obj / LIBCMT.LIB unlink.obj / LIBCMT.LIB wrmdir.obj / LIBCMT.LIB wunlink.obj
+unk_007856A2,0x007856A2,0x007856AD,unknown,code not assigned to a module
+libcmt/tmpfile,0x007856AD,0x007858A8,library,"code sections of VC6 LIBCMT.LIB tmpfile.obj, matched"
+unk_007858A8,0x007858A8,0x007858D0,unknown,code not assigned to a module
+libcmt/strnicmp,0x007858D0,0x007859E0,library,"code sections of VC6 LIBCMT.LIB strnicmp.obj, matched"
+libcmt/strcspn,0x007859E0,0x00785A1E,library,"code sections of VC6 LIBCMT.LIB strcspn.obj, matched"
+libcmt/wcsstr,0x00785A1E,0x00785A5F,library,"code sections of VC6 LIBCMT.LIB wcsstr.obj, matched"
+libcmt/wcscspn,0x00785A5F,0x00785AA0,library,"code sections of VC6 LIBCMT.LIB wcscspn.obj, matched"
+unk_00785AA0,0x00785AA0,0x00785C86,unknown,code not assigned to a module
+libcmt/mlock,0x00785C86,0x00785CE7,library,"code sections of VC6 LIBCMT.LIB mlock.obj, matched"
+unk_00785CE7,0x00785CE7,0x00785D20,unknown,code not assigned to a module
+libcmt/strcmp,0x00785D20,0x00785DA4,library,"code sections of VC6 LIBCMT.LIB strcmp.obj, matched"
+libcmt/setlocal,0x00785DA4,0x00786105,library,"code sections of VC6 LIBCMT.LIB setlocal.obj, matched"
+unk_00786105,0x00786105,0x007861BE,unknown,code not assigned to a module
+libcmt/setlocal,0x007861BE,0x007862D6,library,"code sections of VC6 LIBCMT.LIB setlocal.obj, matched"
+unk_007862D6,0x007862D6,0x007862D9,unknown,code not assigned to a module
+libcmt/setlocal,0x007862D9,0x0078641D,library,"code sections of VC6 LIBCMT.LIB setlocal.obj, matched"
+libcmt/_flsbuf,0x0078641D,0x00786535,library,"code sections of VC6 LIBCMT.LIB _flsbuf.obj, matched"
+libcmt/output,0x00786535,0x00786CAB,library,"code sections of VC6 LIBCMT.LIB output.obj, matched"
+unk_00786CAB,0x00786CAB,0x00786CDC,unknown,code not assigned to a module
+libcmt/output,0x00786CDC,0x00786D14,library,"code sections of VC6 LIBCMT.LIB output.obj, matched"
+unk_00786D14,0x00786D14,0x00786D51,unknown,code not assigned to a module
+libcmt/testfdiv,0x00786D51,0x00786D8F,library,"code sections of VC6 LIBCMT.LIB testfdiv.obj, matched"
+unk_00786D8F,0x00786D8F,0x00786DB8,unknown,code not assigned to a module
+libcmt/cvt,0x00786DB8,0x00786E60,library,"code sections of VC6 LIBCMT.LIB cvt.obj, matched"
+unk_00786E60,0x00786E60,0x00786E78,unknown,code not assigned to a module
+libcmt/cvt,0x00786E78,0x007871E0,library,"code sections of VC6 LIBCMT.LIB cvt.obj, matched"
+libcmt/87tran,0x007871E0,0x007873F0,library,"code sections of VC6 LIBCMT.LIB 87tran.obj, matched"
+libcmt/87disp,0x007873F0,0x007875C0,library,"code sections of VC6 LIBCMT.LIB 87disp.obj, matched"
+libcmt/genexcep,0x007875C0,0x00787620,library,"code sections of VC6 LIBCMT.LIB genexcep.obj, matched"
+libcmt/common,0x00787620,0x007877AC,library,"code sections of VC6 LIBCMT.LIB common.obj, matched"
+libcmt/powhlp,0x007877AC,0x00787941,library,"code sections of VC6 LIBCMT.LIB powhlp.obj, matched"
+libcmt/heapinit,0x00787941,0x007879F2,library,"code sections of VC6 LIBCMT.LIB heapinit.obj, matched"
+unk_007879F2,0x007879F2,0x00787A4D,unknown,code not assigned to a module
+libcmt/sbheap,0x00787A4D,0x0078894E,library,"code sections of VC6 LIBCMT.LIB sbheap.obj, matched"
+unk_0078894E,0x0078894E,0x00788993,unknown,code not assigned to a module
+libcmt/_filbuf,0x00788993,0x00788A6F,library,"code sections of VC6 LIBCMT.LIB _filbuf.obj, matched"
+unk_00788A6F,0x00788A6F,0x00788AD4,unknown,code not assigned to a module
+libcmt/read,0x00788AD4,0x00788CB0,library,"code sections of VC6 LIBCMT.LIB read.obj, matched"
+unk_00788CB0,0x00788CB0,0x0078904A,unknown,code not assigned to a module
+libcmt/write,0x0078904A,0x007891D5,library,"code sections of VC6 LIBCMT.LIB write.obj, matched"
+libcmt/realloc,0x007891D5,0x0078930D,library,"code sections of VC6 LIBCMT.LIB realloc.obj, matched"
+libcmt/msize,0x0078930D,0x00789352,library,"code sections of VC6 LIBCMT.LIB msize.obj, matched"
+libcmt/a_map,0x00789352,0x00789576,library,"code sections of VC6 LIBCMT.LIB a_map.obj, matched"
+unk_00789576,0x00789576,0x007895A1,unknown,code not assigned to a module
+libcmt/isctype,0x007895A1,0x00789616,library,"code sections of VC6 LIBCMT.LIB isctype.obj, matched"
+libcmt/tidtable,0x00789616,0x0078966A,library,"code sections of VC6 LIBCMT.LIB tidtable.obj, matched"
+unk_0078966A,0x0078966A,0x0078969B,unknown,code not assigned to a module
+libcmt/tidtable,0x0078969B,0x007897A2,library,"code sections of VC6 LIBCMT.LIB tidtable.obj, matched"
+unk_007897A2,0x007897A2,0x007897AE,unknown,code not assigned to a module
+libcmt/cfin,0x007897AE,0x00789830,library,"code sections of VC6 LIBCMT.LIB cfin.obj, matched"
+libcmt/strlen,0x00789830,0x007898AB,library,"code sections of VC6 LIBCMT.LIB strlen.obj, matched"
+libcmt/dosmap,0x007898AB,0x0078991E,library,"code sections of VC6 LIBCMT.LIB dosmap.obj, matched"
+unk_0078991E,0x0078991E,0x00789930,unknown,code not assigned to a module
+libcmt/mbsdec,0x00789930,0x0078999D,library,"code sections of VC6 LIBCMT.LIB mbsdec.obj, matched"
+libcmt/input,0x0078999D,0x0078A3C2,library,"code sections of VC6 LIBCMT.LIB input.obj, matched"
+unk_0078A3C2,0x0078A3C2,0x0078A3F9,library,identical code of several objects: LIBCMT.LIB cscanf.obj / LIBCMT.LIB input.obj
+unk_0078A3F9,0x0078A3F9,0x0078A42A,unknown,code not assigned to a module
+libcmt/input,0x0078A42A,0x0078A44E,library,"code sections of VC6 LIBCMT.LIB input.obj, matched"
+libcmt/woutput,0x0078A44E,0x0078ABBB,library,"code sections of VC6 LIBCMT.LIB woutput.obj, matched"
+unk_0078ABBB,0x0078ABBB,0x0078ABEC,unknown,code not assigned to a module
+libcmt/woutput,0x0078ABEC,0x0078AC25,library,"code sections of VC6 LIBCMT.LIB woutput.obj, matched"
+unk_0078AC25,0x0078AC25,0x0078AC42,unknown,code not assigned to a module
+libcmt/dtoxtime,0x0078AC42,0x0078AD04,library,"code sections of VC6 LIBCMT.LIB dtoxtime.obj, matched"
+libcmt/close,0x0078AD04,0x0078ADE4,library,"code sections of VC6 LIBCMT.LIB close.obj, matched"
+libcmt/_freebuf,0x0078ADE4,0x0078AE0F,library,"code sections of VC6 LIBCMT.LIB _freebuf.obj, matched"
+libcmt/_sftbuf,0x0078AE0F,0x0078AEC6,library,"code sections of VC6 LIBCMT.LIB _sftbuf.obj, matched"
+libcmt/_open,0x0078AEC6,0x0078B036,library,"code sections of VC6 LIBCMT.LIB _open.obj, matched"
+libcmt/stream,0x0078B036,0x0078B0FE,library,"code sections of VC6 LIBCMT.LIB stream.obj, matched"
+unk_0078B0FE,0x0078B0FE,0x0078B12B,unknown,code not assigned to a module
+libcmt/stdexcpt,0x0078B12B,0x0078B1B2,library,"code sections of VC6 LIBCMT.LIB stdexcpt.obj, matched"
+unk_0078B1B2,0x0078B1B2,0x0078B1F4,unknown,code not assigned to a module
+libcmt/throw,0x0078B1F4,0x0078B22E,library,"code sections of VC6 LIBCMT.LIB throw.obj, matched"
+unk_0078B22E,0x0078B22E,0x0078B258,unknown,code not assigned to a module
+libcmt/fputwc,0x0078B258,0x0078B351,library,"code sections of VC6 LIBCMT.LIB fputwc.obj, matched"
+unk_0078B351,0x0078B351,0x0078B361,unknown,code not assigned to a module
+libcmt/commit,0x0078B361,0x0078B3F4,library,"code sections of VC6 LIBCMT.LIB commit.obj, matched"
+libcmt/ioinit,0x0078B3F4,0x0078B604,library,"code sections of VC6 LIBCMT.LIB ioinit.obj, matched"
+libcmt/calloc,0x0078B604,0x0078B691,library,"code sections of VC6 LIBCMT.LIB calloc.obj, matched"
+libcmt/closeall,0x0078B691,0x0078B712,library,"code sections of VC6 LIBCMT.LIB closeall.obj, matched"
+libcmt/mbctype,0x0078B712,0x0078B93C,library,"code sections of VC6 LIBCMT.LIB mbctype.obj, matched"
+unk_0078B93C,0x0078B93C,0x0078B965,unknown,code not assigned to a module
+libcmt/mbctype,0x0078B965,0x0078BAEA,library,"code sections of VC6 LIBCMT.LIB mbctype.obj, matched"
+unk_0078BAEA,0x0078BAEA,0x0078BB16,unknown,code not assigned to a module
+libcmt/mbsnbcpy,0x0078BB16,0x0078BBB0,library,"code sections of VC6 LIBCMT.LIB mbsnbcpy.obj, matched"
+libcmt/iswctype,0x0078BBB0,0x0078BC02,library,"code sections of VC6 LIBCMT.LIB iswctype.obj, matched"
+unk_0078BC02,0x0078BC02,0x0078BC12,unknown,code not assigned to a module
+libcmt/towupper,0x0078BC12,0x0078BCFD,library,"code sections of VC6 LIBCMT.LIB towupper.obj, matched"
+libcmt/winput,0x0078BCFD,0x0078C826,library,"code sections of VC6 LIBCMT.LIB winput.obj, matched"
+unk_0078C826,0x0078C826,0x0078C84A,unknown,code not assigned to a module
+libcmt/winput,0x0078C84A,0x0078C86F,library,"code sections of VC6 LIBCMT.LIB winput.obj, matched"
+libcmt/mbsnbico,0x0078C86F,0x0078C8AE,library,"code sections of VC6 LIBCMT.LIB mbsnbico.obj, matched"
+libcmt/wtombenv,0x0078C8AE,0x0078C91C,library,"code sections of VC6 LIBCMT.LIB wtombenv.obj, matched"
+libcmt/winsig,0x0078C91C,0x0078CCBF,library,"code sections of VC6 LIBCMT.LIB winsig.obj, matched"
+unk_0078CCBF,0x0078CCBF,0x0078CCD1,unknown,code not assigned to a module
+libcmt/fpexcept,0x0078CCD1,0x0078D48E,library,"code sections of VC6 LIBCMT.LIB fpexcept.obj, matched"
+unk_0078D48E,0x0078D48E,0x0078D4A0,unknown,code not assigned to a module
+libcmt/util,0x0078D4A0,0x0078D4C9,library,"code sections of VC6 LIBCMT.LIB util.obj, matched"
+unk_0078D4C9,0x0078D4C9,0x0078D4DD,unknown,code not assigned to a module
+libcmt/util,0x0078D4DD,0x0078D648,library,"code sections of VC6 LIBCMT.LIB util.obj, matched"
+unk_0078D648,0x0078D648,0x0078D665,unknown,code not assigned to a module
+libcmt/fpctrl,0x0078D665,0x0078D6E0,library,"code sections of VC6 LIBCMT.LIB fpctrl.obj, matched"
+unk_0078D6E0,0x0078D6E0,0x0078D7D0,library,identical code of several objects: LIBCMT.LIB mbscat.obj / LIBCMT.LIB strcat.obj
+unk_0078D7D0,0x0078D7D0,0x0078D816,library,identical code of several objects: LIBCMT.LIB access.obj / LIBCMT.LIB waccess.obj
+unk_0078D816,0x0078D816,0x0078D841,library,identical code of several objects: LIBCMT.LIB mbsdup.obj / LIBCMT.LIB strdup.obj
+unk_0078D841,0x0078D841,0x0078D858,unknown,code not assigned to a module
+libcmt/open,0x0078D858,0x0078DB27,library,"code sections of VC6 LIBCMT.LIB open.obj, matched"
+libcmt/xtoa,0x0078DB27,0x0078DBDA,library,"code sections of VC6 LIBCMT.LIB xtoa.obj, matched"
+unk_0078DBDA,0x0078DBDA,0x0078DBF5,unknown,code not assigned to a module
+libcmt/xtoa,0x0078DBF5,0x0078DCAC,library,"code sections of VC6 LIBCMT.LIB xtoa.obj, matched"
+unk_0078DCAC,0x0078DCAC,0x0078DCCD,unknown,code not assigned to a module
+libcmt/mbsrchr,0x0078DCCD,0x0078DD3F,library,"code sections of VC6 LIBCMT.LIB mbsrchr.obj, matched"
+libcmt/rmtmp,0x0078DD3F,0x0078DDAC,library,"code sections of VC6 LIBCMT.LIB rmtmp.obj, matched"
+libcmt/asctime,0x0078DDAC,0x0078DE9E,library,"code sections of VC6 LIBCMT.LIB asctime.obj, matched"
+libcmt/localtim,0x0078DE9E,0x0078DFFE,library,"code sections of VC6 LIBCMT.LIB localtim.obj, matched"
+libcmt/winxfltr,0x0078DFFE,0x0078E176,library,"code sections of VC6 LIBCMT.LIB winxfltr.obj, matched"
+libcmt/wincmdln,0x0078E176,0x0078E1CE,library,"code sections of VC6 LIBCMT.LIB wincmdln.obj, matched"
+libcmt/stdenvp,0x0078E1CE,0x0078E287,library,"code sections of VC6 LIBCMT.LIB stdenvp.obj, matched"
+libcmt/stdargv,0x0078E287,0x0078E4D4,library,"code sections of VC6 LIBCMT.LIB stdargv.obj, matched"
+libcmt/a_env,0x0078E4D4,0x0078E606,library,"code sections of VC6 LIBCMT.LIB a_env.obj, matched"
+libcmt/crt0msg,0x0078E606,0x0078E7C3,library,"code sections of VC6 LIBCMT.LIB crt0msg.obj, matched"
+unk_0078E7C3,0x0078E7C3,0x0078E854,unknown,code not assigned to a module
+libcmt/inittime,0x0078E854,0x0078EBA2,library,"code sections of VC6 LIBCMT.LIB inittime.obj, matched"
+unk_0078EBA2,0x0078EBA2,0x0078F009,unknown,code not assigned to a module
+libcmt/initmon,0x0078F009,0x0078F12B,library,"code sections of VC6 LIBCMT.LIB initmon.obj, matched"
+unk_0078F12B,0x0078F12B,0x0078F1B0,unknown,code not assigned to a module
+libcmt/initctyp,0x0078F1B0,0x0078F3F5,library,"code sections of VC6 LIBCMT.LIB initctyp.obj, matched"
+unk_0078F3F5,0x0078F3F5,0x0078F400,unknown,code not assigned to a module
+libcmt/strpbrk,0x0078F400,0x0078F43A,library,"code sections of VC6 LIBCMT.LIB strpbrk.obj, matched"
+libcmt/getqloc,0x0078F43A,0x0078F60F,library,"code sections of VC6 LIBCMT.LIB getqloc.obj, matched"
+unk_0078F60F,0x0078F60F,0x0078F696,unknown,code not assigned to a module
+libcmt/getqloc,0x0078F696,0x0078F89A,library,"code sections of VC6 LIBCMT.LIB getqloc.obj, matched"
+unk_0078F89A,0x0078F89A,0x0078F8F0,unknown,code not assigned to a module
+libcmt/getqloc,0x0078F8F0,0x0078F9AD,library,"code sections of VC6 LIBCMT.LIB getqloc.obj, matched"
+unk_0078F9AD,0x0078F9AD,0x0078F9E4,unknown,code not assigned to a module
+libcmt/getqloc,0x0078F9E4,0x0078FA6A,library,"code sections of VC6 LIBCMT.LIB getqloc.obj, matched"
+unk_0078FA6A,0x0078FA6A,0x0078FA84,unknown,code not assigned to a module
+libcmt/getqloc,0x0078FA84,0x0078FAEA,library,"code sections of VC6 LIBCMT.LIB getqloc.obj, matched"
+unk_0078FAEA,0x0078FAEA,0x0078FB09,unknown,code not assigned to a module
+libcmt/getqloc,0x0078FB09,0x0078FCF0,library,"code sections of VC6 LIBCMT.LIB getqloc.obj, matched"
+libcmt/memset,0x0078FCF0,0x0078FD48,library,"code sections of VC6 LIBCMT.LIB memset.obj, matched"
+unk_0078FD48,0x0078FD48,0x0078FDAD,unknown,code not assigned to a module
+libcmt/lseek,0x0078FDAD,0x0078FE20,library,"code sections of VC6 LIBCMT.LIB lseek.obj, matched"
+libcmt/_getbuf,0x0078FE20,0x0078FE64,library,"code sections of VC6 LIBCMT.LIB _getbuf.obj, matched"
+libcmt/isatty,0x0078FE64,0x0078FE8D,library,"code sections of VC6 LIBCMT.LIB isatty.obj, matched"
+libcmt/wctomb,0x0078FE8D,0x0078FF50,library,"code sections of VC6 LIBCMT.LIB wctomb.obj, matched"
+unk_0078FF50,0x0078FF50,0x0078FFC5,library,identical code of several objects: LIBCMT.LIB ullrem.obj / MSVCRTD.LIB ullrem.obj
+libcmt/intrncvt,0x0078FFC5,0x007900F0,library,"code sections of VC6 LIBCMT.LIB intrncvt.obj, matched"
+unk_007900F0,0x007900F0,0x00790132,unknown,code not assigned to a module
+libcmt/intrncvt,0x00790132,0x0079032B,library,"code sections of VC6 LIBCMT.LIB intrncvt.obj, matched"
+unk_0079032B,0x0079032B,0x00790357,unknown,code not assigned to a module
+libcmt/intrncvt,0x00790357,0x007903D1,library,"code sections of VC6 LIBCMT.LIB intrncvt.obj, matched"
+unk_007903D1,0x007903D1,0x007903FE,unknown,code not assigned to a module
+libcmt/intrncvt,0x007903FE,0x0079042C,library,"code sections of VC6 LIBCMT.LIB intrncvt.obj, matched"
+unk_0079042C,0x0079042C,0x00790459,unknown,code not assigned to a module
+libcmt/_fptostr,0x00790459,0x007904D0,library,"code sections of VC6 LIBCMT.LIB _fptostr.obj, matched"
+libcmt/cfout,0x007904D0,0x007905E2,library,"code sections of VC6 LIBCMT.LIB cfout.obj, matched"
+unk_007905E2,0x007905E2,0x007905F0,unknown,code not assigned to a module
+libcmt/adj_fdiv,0x007905F0,0x0079137B,library,"code sections of VC6 LIBCMT.LIB adj_fdiv.obj, matched"
+libcmt/87except,0x0079137B,0x0079144B,library,"code sections of VC6 LIBCMT.LIB 87except.obj, matched"
+libcmt/ieeemisc,0x0079144B,0x00791491,library,"code sections of VC6 LIBCMT.LIB ieeemisc.obj, matched"
+unk_00791491,0x00791491,0x007914A7,unknown,code not assigned to a module
+libcmt/ieeemisc,0x007914A7,0x00791823,library,"code sections of VC6 LIBCMT.LIB ieeemisc.obj, matched"
+unk_00791823,0x00791823,0x00791837,unknown,code not assigned to a module
+libcmt/ieeemisc,0x00791837,0x007918F7,library,"code sections of VC6 LIBCMT.LIB ieeemisc.obj, matched"
+libcmt/osfinfo,0x007918F7,0x00791C7F,library,"code sections of VC6 LIBCMT.LIB osfinfo.obj, matched"
+libcmt/a_str,0x00791C7F,0x00791DC8,library,"code sections of VC6 LIBCMT.LIB a_str.obj, matched"
+libcmt/strgtold,0x00791DC8,0x007922D5,library,"code sections of VC6 LIBCMT.LIB strgtold.obj, matched"
+unk_007922D5,0x007922D5,0x00792332,unknown,code not assigned to a module
+libcmt/mbtowc,0x00792332,0x00792400,library,"code sections of VC6 LIBCMT.LIB mbtowc.obj, matched"
+unk_00792400,0x00792400,0x0079241F,unknown,code not assigned to a module
+libcmt/ungetc,0x0079241F,0x007924B6,library,"code sections of VC6 LIBCMT.LIB ungetc.obj, matched"
+unk_007924B6,0x007924B6,0x007924FA,unknown,code not assigned to a module
+libcmt/tzset,0x007924FA,0x00792781,library,"code sections of VC6 LIBCMT.LIB tzset.obj, matched"
+unk_00792781,0x00792781,0x007927A2,unknown,code not assigned to a module
+libcmt/tzset,0x007927A2,0x0079294E,library,"code sections of VC6 LIBCMT.LIB tzset.obj, matched"
+unk_0079294E,0x0079294E,0x00792A8E,unknown,code not assigned to a module
+libcmt/unhandld,0x00792A8E,0x00792AD4,library,"code sections of VC6 LIBCMT.LIB unhandld.obj, matched"
+unk_00792AD4,0x00792AD4,0x00792AF2,unknown,code not assigned to a module
+libcmt/_flswbuf,0x00792AF2,0x00792C19,library,"code sections of VC6 LIBCMT.LIB _flswbuf.obj, matched"
+libcmt/w_str,0x00792C19,0x00792DDE,library,"code sections of VC6 LIBCMT.LIB w_str.obj, matched"
+libcmt/w_map,0x00792DDE,0x00792FE7,library,"code sections of VC6 LIBCMT.LIB w_map.obj, matched"
+unk_00792FE7,0x00792FE7,0x00793017,library,identical code of several objects: LIBCMT.LIB w_cmp.obj / LIBCMT.LIB w_map.obj
+unk_00793017,0x00793017,0x00793074,unknown,code not assigned to a module
+libcmt/wcstombs,0x00793074,0x00793252,library,"code sections of VC6 LIBCMT.LIB wcstombs.obj, matched"
+libcmt/fgetwc,0x00793252,0x00793366,library,"code sections of VC6 LIBCMT.LIB fgetwc.obj, matched"
+unk_00793366,0x00793366,0x0079339B,unknown,code not assigned to a module
+libcmt/ungetwc,0x0079339B,0x00793488,library,"code sections of VC6 LIBCMT.LIB ungetwc.obj, matched"
+libcmt/a_cmp,0x00793488,0x00793705,library,"code sections of VC6 LIBCMT.LIB a_cmp.obj, matched"
+unk_00793705,0x00793705,0x00793730,unknown,code not assigned to a module
+libcmt/setenv,0x00793730,0x0079390F,library,"code sections of VC6 LIBCMT.LIB setenv.obj, matched"
+unk_0079390F,0x0079390F,0x00793976,library,identical code of several objects: LIBCMT.LIB setenv.obj / LIBCMT.LIB wsetenv.obj
+unk_00793976,0x00793976,0x007939D2,unknown,code not assigned to a module
+libcmt/chsize,0x007939D2,0x00793AF7,library,"code sections of VC6 LIBCMT.LIB chsize.obj, matched"
+libcmt/gmtime,0x00793AF7,0x00793C01,library,"code sections of VC6 LIBCMT.LIB gmtime.obj, matched"
+unk_00793C01,0x00793C01,0x00793CB7,unknown,code not assigned to a module
+libcmt/ismbbyte,0x00793CB7,0x00793D0F,library,"code sections of VC6 LIBCMT.LIB ismbbyte.obj, matched"
+libcmt/crtmbox,0x00793D0F,0x00793D98,library,"code sections of VC6 LIBCMT.LIB crtmbox.obj, matched"
+libcmt/strftime,0x00793D98,0x007940EE,library,"code sections of VC6 LIBCMT.LIB strftime.obj, matched"
+unk_007940EE,0x007940EE,0x00794203,unknown,code not assigned to a module
+libcmt/strftime,0x00794203,0x007949A0,library,"code sections of VC6 LIBCMT.LIB strftime.obj, matched"
+libcmt/inithelp,0x007949A0,0x00794AD8,library,"code sections of VC6 LIBCMT.LIB inithelp.obj, matched"
+unk_00794AD8,0x00794AD8,0x00794ADE,unknown,code not assigned to a module
+libcmt/mantold,0x00794ADE,0x00794C7F,library,"code sections of VC6 LIBCMT.LIB mantold.obj, matched"
+libcmt/x10fout,0x00794C7F,0x00794F12,library,"code sections of VC6 LIBCMT.LIB x10fout.obj, matched"
+libcmt/ldexp,0x00794F12,0x007950F8,library,"code sections of VC6 LIBCMT.LIB ldexp.obj, matched"
+libcmt/tenpow,0x007950F8,0x00795394,library,"code sections of VC6 LIBCMT.LIB tenpow.obj, matched"
+unk_00795394,0x00795394,0x007953E4,unknown,code not assigned to a module
+libcmt/hooks,0x007953E4,0x00795445,library,"code sections of VC6 LIBCMT.LIB hooks.obj, matched"
+unk_00795445,0x00795445,0x0079545D,unknown,code not assigned to a module
+libcmt/hooks,0x0079545D,0x007954B3,library,"code sections of VC6 LIBCMT.LIB hooks.obj, matched"
+libcmt/_filwbuf,0x007954B3,0x0079559A,library,"code sections of VC6 LIBCMT.LIB _filwbuf.obj, matched"
+libcmt/mbschr,0x0079559A,0x00795631,library,"code sections of VC6 LIBCMT.LIB mbschr.obj, matched"
+unk_00795631,0x00795631,0x0079568A,unknown,code not assigned to a module
+libcmt/setmode,0x0079568A,0x007956EB,library,"code sections of VC6 LIBCMT.LIB setmode.obj, matched"
+libcmt/w_loc,0x007956EB,0x007957FE,library,"code sections of VC6 LIBCMT.LIB w_loc.obj, matched"
+libcmt/a_loc,0x007957FE,0x0079591C,library,"code sections of VC6 LIBCMT.LIB a_loc.obj, matched"
+unk_0079591C,0x0079591C,0x0079594E,unknown,code not assigned to a module
+comsupp/comsupp,0x0079594E,0x00795ECE,library,"code sections of VC6 COMSUPP.LIB comsupp.obj, matched"
+unk_00795ECE,0x00795ECE,0x00795F0C,unknown,code not assigned to a module
+comsupp/comsupp,0x00795F0C,0x00795FBC,library,"code sections of VC6 COMSUPP.LIB comsupp.obj, matched"
+comsupp/comraise,0x00795FBC,0x00796012,library,"code sections of VC6 COMSUPP.LIB comraise.obj, matched"
+unk_00796012,0x00796012,0x0079602E,unknown,code not assigned to a module
+comsupp/comraise,0x0079602E,0x00796082,library,"code sections of VC6 COMSUPP.LIB comraise.obj, matched"
+unk_00796082,0x00796082,0x007961E4,unknown,code not assigned to a module
+libcmt/strupr,0x007961E4,0x00796318,library,"code sections of VC6 LIBCMT.LIB strupr.obj, matched"
+libcmt/wcsicmp,0x00796318,0x007963F7,library,"code sections of VC6 LIBCMT.LIB wcsicmp.obj, matched"
+unk_007963F7,0x007963F7,0x0079642F,unknown,code not assigned to a module
+libcmt/getch,0x0079642F,0x00796538,library,"code sections of VC6 LIBCMT.LIB getch.obj, matched"
+unk_00796538,0x00796538,0x00796554,unknown,code not assigned to a module
+libcmt/getch,0x00796554,0x00796612,library,"code sections of VC6 LIBCMT.LIB getch.obj, matched"
+unk_00796612,0x00796612,0x00796633,unknown,code not assigned to a module
+libcmt/getch,0x00796633,0x00796714,library,"code sections of VC6 LIBCMT.LIB getch.obj, matched"
+unk_00796714,0x00796714,0x00796725,unknown,code not assigned to a module
+libcmt/cprintf,0x00796725,0x00796E52,library,"code sections of VC6 LIBCMT.LIB cprintf.obj, matched"
+unk_00796E52,0x00796E52,0x00796E6C,unknown,code not assigned to a module
+libcmt/cprintf,0x00796E6C,0x00796ECB,library,"code sections of VC6 LIBCMT.LIB cprintf.obj, matched"
+unk_00796ECB,0x00796ECB,0x00796EF6,unknown,code not assigned to a module
+libcmt/wcsupr,0x00796EF6,0x00797033,library,"code sections of VC6 LIBCMT.LIB wcsupr.obj, matched"
+libcmt/wcsdup,0x00797033,0x00797070,library,"code sections of VC6 LIBCMT.LIB wcsdup.obj, matched"
+libcmt/strrev,0x00797070,0x007970A0,library,"code sections of VC6 LIBCMT.LIB strrev.obj, matched"
+libcmt/wcsnicmp,0x007970A0,0x00797198,library,"code sections of VC6 LIBCMT.LIB wcsnicmp.obj, matched"
+libcmt/flength,0x00797198,0x00797222,library,"code sections of VC6 LIBCMT.LIB flength.obj, matched"
+libcmt/towlower,0x00797222,0x00797311,library,"code sections of VC6 LIBCMT.LIB towlower.obj, matched"
+unk_00797311,0x00797311,0x0079734F,unknown,code not assigned to a module
+libcmt/initcon,0x0079734F,0x0079737C,library,"code sections of VC6 LIBCMT.LIB initcon.obj, matched"
+unk_0079737C,0x0079737C,0x0079739D,unknown,code not assigned to a module
+libcmt/putch,0x0079739D,0x007973E2,library,"code sections of VC6 LIBCMT.LIB putch.obj, matched"
+unk_007973E2,0x007973E2,0x007995CD,unknown,code not assigned to a module
