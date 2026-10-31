@@ -1,4 +1,14 @@
 address,symbol,evidence
+0x00493DF0,??RCRCEngine@@QAEXD@Z,"compiled from src/crc.cpp, matched"
+0x00493E80,??RCRCEngine@@QAEX_N@Z,"compiled from src/crc.cpp, matched"
+0x00493F10,??RCRCEngine@@QAEXF@Z,"compiled from src/crc.cpp, matched"
+0x00493F30,??RCRCEngine@@QAEXH@Z,"compiled from src/crc.cpp, matched; identical code at two addresses, order inferred from src/crc.cpp"
+0x00493F50,??RCRCEngine@@QAEXM@Z,"compiled from src/crc.cpp, matched; identical code at two addresses, order inferred from src/crc.cpp"
+0x00493F70,??RCRCEngine@@QAEXN@Z,"compiled from src/crc.cpp, matched"
+0x00493F90,??RCRCEngine@@QAEXPBD@Z,"compiled from src/crc.cpp, matched"
+0x00493FC0,??RCRCEngine@@QAEHPBXH@Z,"compiled from src/crc.cpp, matched"
+0x00494190,?Memory@CRC@@SIIPAEII@Z,"compiled from src/crc.cpp, matched"
+0x004941D0,?String@CRC@@SIIPBDI@Z,"compiled from src/crc.cpp, matched"
 0x00781C8C,??1type_info@@UAE@XZ,symbol of VC6 LIBCMT.LIB typinfo.obj
 0x00781D46,_qsort,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781E9A,_shortsort,symbol of VC6 LIBCMT.LIB qsort.obj
@@ -428,6 +438,7 @@ address,symbol,evidence
 0x007B1848,_?ExceptionTemplate@?1??_CxxThrowException@@9@8@4UEHExceptionRecord@@B,"data of VC6 library objects, its data section matched"
 0x007B227C,___dnames,"data of VC6 library objects, its data section matched"
 0x007B2294,___mnames,"data of VC6 library objects, its data section matched"
+0x007D5504,?_Table@CRC@@0PAIA,"data compiled from src/crc.cpp, matched (1,024 bytes at exactly one address)"
 0x0082EC90,__iob,"data of VC6 library objects, its data section matched"
 0x0082F000,__clocalestr,"data of VC6 library objects, its data section matched"
 0x0082F004,_?cachein@?1??_expandlocale@@9@9,"data of VC6 library objects, its data section matched"

@@ -1820,6 +1820,8 @@ field,type,target,addend,evidence
 0x00493E56,DIR32,0x007D5504,0,"Tiberian Sun reconstruction, matched"
 0x00493EEE,DIR32,0x007D5504,0,"Tiberian Sun reconstruction, matched"
 0x00493F22,REL32,0x00493FC0,0,"Tiberian Sun reconstruction, matched"
+0x00493F40,REL32,0x00493FC0,0,"compiled from src/crc.cpp, matched"
+0x00493F60,REL32,0x00493FC0,0,"compiled from src/crc.cpp, matched"
 0x00493F88,REL32,0x00493FC0,0,"Tiberian Sun reconstruction, matched"
 0x00493FAD,REL32,0x00493FC0,0,"Tiberian Sun reconstruction, matched"
 0x0049402C,REL32,0x00494190,0,"Tiberian Sun reconstruction, matched"

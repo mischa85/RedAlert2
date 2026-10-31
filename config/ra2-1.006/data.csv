@@ -1,3 +1,5 @@
 unit,start,end,evidence
 unk_0079A000,0x0079A000,0x007C8C36,the whole initialized .rdata section
-unk_007C9000,0x007C9000,0x00831000,the whole initialized .data section
+unk_007C9000,0x007C9000,0x007D5504,initialized .data not assigned to a module
+crc,0x007D5504,0x007D5904,"data compiled from src/crc.cpp, matched (?_Table@CRC@@0PAIA); one object inferred from alphabetical link order"
+unk_007D5904,0x007D5904,0x00831000,initialized .data not assigned to a module
