@@ -1,0 +1,5 @@
+# Includes mirror the original source: a header can change how VC6 compiles a
+# file (pragmas, declarations) without any of its symbols being used.
+Diagnostics:
+  UnusedIncludes: None
+  MissingIncludes: None

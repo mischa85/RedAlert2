@@ -1,0 +1,16 @@
+#!/bin/sh
+# Checks run before every commit. Enable once per clone:
+#   git config core.hooksPath hooks
+# Skip in an emergency with git commit --no-verify.
+set -e
+cd "$(git rev-parse --show-toplevel)"
+
+# With your copy of the game present: the config is consistent with its
+# bytes, and the build is still byte-identical.
+if [ -f orig/ra2-1.006/game.exe ]; then
+    python3 -I configure.py
+    output=$(python3 -I build.py) || { echo "$output"; exit 1; }
+    echo "$output" | grep '^OK:'
+else
+    echo "pre-commit: orig/ra2-1.006/game.exe not present; configure.py and build.py skipped"
+fi

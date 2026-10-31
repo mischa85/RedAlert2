@@ -1,0 +1,3 @@
+unit,start,end,evidence
+unk_0079A000,0x0079A000,0x007C8C36,the whole initialized .rdata section
+unk_007C9000,0x007C9000,0x00831000,the whole initialized .data section

@@ -1,0 +1,13 @@
+-xc++
+--target=i686-pc-windows-msvc
+-fms-extensions
+-fms-compatibility
+-fms-compatibility-version=12.0
+-fdelayed-template-parsing
+-DNDEBUG
+-nostdlibinc
+-Iinclude
+-Isrc
+-isystem
+toolchain/msvc6/VC98/Include
+-Wno-nonportable-include-path

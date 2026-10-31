@@ -1,0 +1,33 @@
+#!/bin/sh
+# Uploads a progress report to ByteMatch when main is pushed. Enable once per
+# clone with git config core.hooksPath hooks, and give it an upload token from
+# the project's manage page:
+#   git config bytematch.token <token>
+# It never blocks a push; skip it with git push --no-verify.
+cd "$(git rev-parse --show-toplevel)"
+token=${BYTEMATCH_TOKEN:-$(git config bytematch.token)}
+
+while read -r local_ref local_sha remote_ref remote_sha; do
+    [ "$remote_ref" = refs/heads/main ] || continue
+    if [ -z "$token" ] || [ ! -f orig/ra2-1.006/game.exe ] ||
+        ! command -v objdiff-cli >/dev/null; then
+        echo "pre-push: no token, game.exe or objdiff-cli; report not uploaded"
+        exit 0
+    fi
+    # The report is made from the working tree, so it must be the pushed commit.
+    if [ "$local_sha" != "$(git rev-parse HEAD)" ] ||
+        ! git diff --quiet HEAD; then
+        echo "pre-push: working tree is not the pushed commit; report not uploaded"
+        exit 0
+    fi
+    python3 -I configure.py >/dev/null &&
+        python3 -I compile.py >/dev/null &&
+        objdiff-cli report generate -o build/ra2-1.006/report.json 2>/dev/null &&
+        curl --fail --silent --show-error -w '\n' -X POST \
+            -H "Authorization: Bearer $token" \
+            --data-binary @build/ra2-1.006/report.json \
+            "https://bytematch.dev/api/v1/projects/mischa85/RedAlert2/reports?version=ra2-1.006&commit=$local_sha" &&
+        echo "pre-push: report for $local_sha uploaded to ByteMatch" ||
+        echo "pre-push: report not uploaded"
+done
+exit 0
