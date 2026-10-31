@@ -138,5 +138,7 @@ decompilation of Yuri's Revenge.
 
 ## License
 
-GPL-3.0-or-later. The source will build on the Tiberian Sun reconstruction,
-which is licensed the same way.
+GPL-3.0-or-later, with the additional terms under GPL section 7 that apply to
+material derived from Electronic Arts' source code; see
+[LICENSE.md](LICENSE.md). The files concerned carry an Electronic Arts
+copyright notice in their header.
