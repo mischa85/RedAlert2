@@ -689,13 +689,7 @@ unk_005DD660,0x005DD660,0x005DD760,tibsun,matched functions of one source file o
 unk_005DD760,0x005DD760,0x005DDB40,unknown,code not assigned to a module
 unk_005DDB40,0x005DDB40,0x005DDB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005DDB90,0x005DDB90,0x00602A60,unknown,code not assigned to a module
-unk_00602A60,0x00602A60,0x00602A90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00602A90,0x00602A90,0x00602AA0,unknown,code not assigned to a module
-unk_00602AA0,0x00602AA0,0x00602D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00602D10,0x00602D10,0x00602EA0,unknown,code not assigned to a module
-unk_00602EA0,0x00602EA0,0x00602F10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00602F10,0x00602F10,0x00602F60,unknown,code not assigned to a module
-unk_00602F60,0x00602F60,0x00602FD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+packet,0x00602A60,0x00602FD0,tibsun,"functions compiled from src/packet.cpp, matched, without gaps; six placed by definition order"
 palette,0x00602FD0,0x00603200,tibsun,"functions compiled from src/palette.cpp, matched, without gaps"
 unk_00603200,0x00603200,0x00603FA0,unknown,code not assigned to a module
 unk_00603FA0,0x00603FA0,0x00603FD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
