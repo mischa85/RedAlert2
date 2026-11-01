@@ -959,11 +959,7 @@ unk_00732BE0,0x00732BE0,0x00732C10,tibsun,matched functions of one source file o
 unk_00732C10,0x00732C10,0x00733A20,unknown,code not assigned to a module
 unk_00733A20,0x00733A20,0x00733A60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00733A60,0x00733A60,0x00734120,unknown,code not assigned to a module
-unk_00734120,0x00734120,0x007348A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_007348A0,0x007348A0,0x007348B0,unknown,code not assigned to a module
-unk_007348B0,0x007348B0,0x007354A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_007354A0,0x007354A0,0x007354D0,unknown,code not assigned to a module
-unk_007354D0,0x007354D0,0x00735610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+wincomm,0x00734120,0x00735610,tibsun,"functions compiled from src/wincomm.cpp, matched, without gaps"
 unk_00735610,0x00735610,0x00735690,unknown,code not assigned to a module
 unk_00735690,0x00735690,0x00735700,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00735700,0x00735700,0x00735910,unknown,code not assigned to a module
