@@ -17,6 +17,9 @@ address,symbol,evidence
 0x004384B0,??0BufferClass@@QAE@H@Z,"compiled from src/buffer.cpp, matched"
 0x004384D0,??0BufferClass@@QAE@XZ,"compiled from src/buffer.cpp, matched"
 0x004384E0,??1BufferClass@@QAE@XZ,"compiled from src/buffer.cpp, matched"
+0x00468EA0,?Description_From_Category@@YIPBDW4CategoryType@@@Z,"compiled from src/category.cpp, matched; identical code at two addresses, placed by definition order"
+0x00468EC0,?Name_From_Category@@YIPBDW4CategoryType@@@Z,"compiled from src/category.cpp, matched; identical code at two addresses, placed by definition order"
+0x00468EE0,?Category_From_Name@@YI?AW4CategoryType@@PBD@Z,"compiled from src/category.cpp, matched"
 0x0046CB80,?End@Pipe@@UAEHXZ,"inferred: entry of ??_7Pipe@@6B@ in Pipe::End's slot; its code matches the inline Pipe::End compiled from src/pipe.cpp"
 0x00493DF0,??RCRCEngine@@QAEXD@Z,"compiled from src/crc.cpp, matched"
 0x00493E80,??RCRCEngine@@QAEX_N@Z,"compiled from src/crc.cpp, matched"
@@ -147,6 +150,7 @@ address,symbol,evidence
 0x00781E9A,_shortsort,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781EE8,_swap,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781F20,__strcmpi,symbol of VC6 LIBCMT.LIB stricmp.obj; alias: __stricmp
+0x00781F20,_stricmp,"alias of __strcmpi: VC6 OLDNAMES.LIB stricmp.obj defines _stricmp as a weak external for __stricmp, which LIBCMT.LIB stricmp.obj defines here; referenced by matched src/category.cpp"
 0x00781FF0,_strrchr,symbol of VC6 LIBCMT.LIB strrchr.obj
 0x00782017,??2@YAPAXI@Z,"inferred: called as ??2@YAPAXI@Z by matched VC6 LIBCMT.LIB stdexcpt.obj (2 call sites) and by matched Tiberian Sun functions (276 call sites); the code section of VC6 LIBCMT.LIB new.obj, too short for the match rule, occurs here calling __nh_malloc and nowhere else with that call"
 0x00782025,_bsearch,symbol of VC6 LIBCMT.LIB bsearch.obj
@@ -590,7 +594,9 @@ address,symbol,evidence
 0x007B1848,_?ExceptionTemplate@?1??_CxxThrowException@@9@8@4UEHExceptionRecord@@B,"data of VC6 library objects, its data section matched"
 0x007B227C,___dnames,"data of VC6 library objects, its data section matched"
 0x007B2294,___mnames,"data of VC6 library objects, its data section matched"
+0x007CDECC,??_C@_06CPHF@?$DMnone?$DO?$AA@,"inferred: referenced by matched src/category.cpp (22 references); across all matched code never at another address, and no other symbol here"
 0x007CF378,??_C@_0EB@KOEG@ABCDEFGHIJKLMNOPQRSTUVWXYZabcdef@,"compiled from src/base64.cpp, matched"
+0x007D17E0,__categories,"inferred: referenced by matched src/category.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x007D5504,?_Table@CRC@@0PAIA,"data compiled from src/crc.cpp, matched (1,024 bytes at exactly one address)"
 0x007D5E9C,??_C@_0O@CDEE@DllGetVersion?$AA@,"inferred: referenced by matched src/dllver.cpp (1 reference); across all matched code never at another address, and no other symbol here; its bytes are that string, too short for the match rule"
 0x008015A3,_CPUType,"inferred: referenced by matched src/getcpu.cpp (1 reference); across all matched code never at another address, and no other symbol here"
