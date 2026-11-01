@@ -50,11 +50,13 @@ address,symbol,evidence
 0x007738A0,?Get@FileStraw@@UAEHPAXH@Z,"compiled from src/xstraw.cpp, matched"
 0x00773900,??1FileStraw@@UAE@XZ,"compiled from src/xstraw.cpp, matched"
 0x00781C8C,??1type_info@@UAE@XZ,symbol of VC6 LIBCMT.LIB typinfo.obj
+0x00781D3B,??3@YAXPAX@Z,"inferred: called as ??3@YAXPAX@Z by matched Tiberian Sun functions (611 call sites), and by VC6 LIBCMT.LIB stdexcpt.obj's ??1exception@@UAE@XZ, unique at 0x0078B1D1 but too short for the match rule; the code section of VC6 LIBCMT.LIB delete.obj, too short for the match rule, occurs here calling _free and nowhere else with that call"
 0x00781D46,_qsort,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781E9A,_shortsort,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781EE8,_swap,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781F20,__strcmpi,symbol of VC6 LIBCMT.LIB stricmp.obj; alias: __stricmp
 0x00781FF0,_strrchr,symbol of VC6 LIBCMT.LIB strrchr.obj
+0x00782017,??2@YAPAXI@Z,"inferred: called as ??2@YAPAXI@Z by matched VC6 LIBCMT.LIB stdexcpt.obj (2 call sites) and by matched Tiberian Sun functions (276 call sites); the code section of VC6 LIBCMT.LIB new.obj, too short for the match rule, occurs here calling __nh_malloc and nowhere else with that call"
 0x00782025,_bsearch,symbol of VC6 LIBCMT.LIB bsearch.obj
 0x007820C0,__allmul,symbol of VC6 LIBCMT.LIB llmul.obj / MSVCRTD.LIB llmul.obj
 0x007820F4,_sprintf,symbol of VC6 LIBCMT.LIB sprintf.obj
