@@ -8,7 +8,7 @@ unk_00410260,0x00410260,0x00410290,tibsun,matched functions of one source file o
 unk_00410290,0x00410290,0x00410BD0,unknown,code not assigned to a module
 unk_00410BD0,0x00410BD0,0x00410BF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00410BF0,0x00410BF0,0x00412390,unknown,code not assigned to a module
-unk_00412390,0x00412390,0x004123E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+ahtoi,0x00412390,0x004123E0,tibsun,"functions compiled from src/ahtoi.cpp, matched, without gaps"
 unk_004123E0,0x004123E0,0x0041E3E0,unknown,code not assigned to a module
 unk_0041E3E0,0x0041E3E0,0x0041E600,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0041E600,0x0041E600,0x0041F0C0,unknown,code not assigned to a module
