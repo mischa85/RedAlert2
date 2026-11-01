@@ -10216,3 +10216,5 @@ field,type,target,addend,evidence
 0x007973B1,REL32,0x00797330,0,VC6 LIBCMT.LIB putch.obj
 0x007973B6,DIR32,0x00830AA4,0,VC6 LIBCMT.LIB putch.obj
 0x007973CE,DIR32,0x0079A348,0,VC6 LIBCMT.LIB putch.obj
+0x0079C61C,DIR32,0x007CF3BC,0,"compiled from src/base64.cpp, matched"
+0x0079C620,DIR32,0x007CF378,0,"compiled from src/base64.cpp, matched"

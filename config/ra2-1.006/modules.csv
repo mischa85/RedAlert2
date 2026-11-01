@@ -51,7 +51,7 @@ unk_0042BF70,0x0042BF70,0x0042C000,tibsun,matched functions of one source file o
 unk_0042C000,0x0042C000,0x0042CA50,unknown,code not assigned to a module
 unk_0042CA50,0x0042CA50,0x0042CAD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0042CAD0,0x0042CAD0,0x0042D520,unknown,code not assigned to a module
-unk_0042D520,0x0042D520,0x0042D770,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+base64,0x0042D520,0x0042D770,tibsun,"functions compiled from src/base64.cpp, matched, without gaps"
 unk_0042D770,0x0042D770,0x0042F0C0,unknown,code not assigned to a module
 unk_0042F0C0,0x0042F0C0,0x0042F0F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0042F0F0,0x0042F0F0,0x0042F100,unknown,code not assigned to a module
