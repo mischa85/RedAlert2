@@ -88,6 +88,8 @@ address,symbol,evidence
 0x00534D40,?LCW_Comp@@YIHPBXPAXH@Z,"compiled from src/lcw.cpp, matched"
 0x00535530,_LCW_Uncompress,"compiled from src/lcwuncmp.cpp, matched"
 0x0053AEB0,?Uncompress_Data@@YIIPBXPAX@Z,"compiled from src/load.cpp, matched"
+0x0053E420,?lzo1x_1_compress@@YIHPBEIPAEPAIPAX@Z,"compiled from src/lzo1x_c.cpp, matched"
+0x0053E490,?do_compress@@YIHPBEIPAEPAIPAX@Z,"compiled from src/lzo1x_c.cpp, matched"
 0x005A7610,?XMP_DER_Encode@@YIHPBIPAEH@Z,"inferred: referenced by matched src/pk.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x005A76D0,?XMP_DER_Decode@@YIXPAIPBEH@Z,"inferred: referenced by matched src/pk.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x005A7CA0,?XMP_Init@@YIXPAIIH@Z,"inferred: referenced by matched src/pk.cpp (27 references); across all matched code never at another address, and no other symbol here"
