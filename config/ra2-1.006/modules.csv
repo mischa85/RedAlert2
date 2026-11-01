@@ -946,7 +946,7 @@ unk_0071BD00,0x0071BD00,0x0071C320,tibsun,matched functions of one source file o
 unk_0071C320,0x0071C320,0x0071D660,unknown,code not assigned to a module
 unk_0071D660,0x0071D660,0x0071D6E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0071D6E0,0x0071D6E0,0x0071DB20,unknown,code not assigned to a module
-unk_0071DB20,0x0071DB20,0x0071DC10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+vqoption,0x0071DB20,0x0071DC10,tibsun,"functions compiled from src/vqoption.cpp, matched, without gaps"
 unk_0071DC10,0x0071DC10,0x0071FB10,unknown,code not assigned to a module
 unk_0071FB10,0x0071FB10,0x0071FBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0071FBA0,0x0071FBA0,0x007200C0,unknown,code not assigned to a module
