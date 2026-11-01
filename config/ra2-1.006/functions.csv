@@ -1025,6 +1025,7 @@ address,size,evidence
 0x005A9E10,800,"function of the Tiberian Sun reconstruction, matched"
 0x005AA130,112,"function of the Tiberian Sun reconstruction, matched"
 0x005AA1A0,480,"function of the Tiberian Sun reconstruction, matched"
+0x005AA380,,"inferred: target of the call at 0x0060F1D9 in matched src/pk.cpp; size not known"
 0x005ABF20,64,"function of the Tiberian Sun reconstruction, matched"
 0x005ABF60,16,"code of src/mpu.cpp, matched: too short for the match rule"
 0x005ABF70,464,"function of the Tiberian Sun reconstruction, matched"
