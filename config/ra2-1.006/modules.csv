@@ -312,7 +312,7 @@ unk_004BAB30,0x004BAB30,0x004BABA0,unknown,code not assigned to a module
 unk_004BABA0,0x004BABA0,0x004BAD50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004BAD50,0x004BAD50,0x004BB160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004BB160,0x004BB160,0x004BBF00,unknown,code not assigned to a module
-unk_004BBF00,0x004BBF00,0x004BBF20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+flasher,0x004BBF00,0x004BBF20,tibsun,"functions compiled from src/flasher.cpp, matched, without gaps"
 unk_004BBF20,0x004BBF20,0x004BDC20,unknown,code not assigned to a module
 unk_004BDC20,0x004BDC20,0x004BDD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004BDD10,0x004BDD10,0x004CEDF0,unknown,code not assigned to a module
