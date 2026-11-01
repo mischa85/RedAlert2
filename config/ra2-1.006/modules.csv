@@ -61,8 +61,7 @@ unk_00434820,0x00434820,0x00435580,unknown,code not assigned to a module
 unk_00435580,0x00435580,0x004355F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004355F0,0x004355F0,0x00435600,unknown,code not assigned to a module
 unk_00435600,0x00435600,0x00435690,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00435690,0x00435690,0x00435800,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00435800,0x00435800,0x00435840,unknown,code not assigned to a module
+blowpipe,0x00435690,0x00435840,tibsun,"functions compiled from src/blowpipe.cpp, matched, without gaps; one placed by alphabetical order"
 unk_00435840,0x00435840,0x00435930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00435930,0x00435930,0x00436F80,unknown,code not assigned to a module
 unk_00436F80,0x00436F80,0x00436FF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction

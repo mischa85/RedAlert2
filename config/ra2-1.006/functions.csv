@@ -123,6 +123,7 @@ address,size,evidence
 0x00435660,48,"function of the Tiberian Sun reconstruction, matched"
 0x00435690,64,"function of the Tiberian Sun reconstruction, matched"
 0x004356D0,304,"function of the Tiberian Sun reconstruction, matched"
+0x00435800,64,"code of src/blowpipe.cpp, matched: two functions with identical code, in blowpipe.cpp and blwstraw.cpp, at exactly two addresses"
 0x00435840,240,"function of the Tiberian Sun reconstruction, matched"
 0x00436F80,64,"function of the Tiberian Sun reconstruction, matched"
 0x00436FC0,48,"function of the Tiberian Sun reconstruction, matched"
