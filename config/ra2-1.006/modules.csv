@@ -274,9 +274,7 @@ unk_004B2A60,0x004B2A60,0x004B2A90,tibsun,matched functions of one source file o
 unk_004B2A90,0x004B2A90,0x004B2C50,unknown,code not assigned to a module
 unk_004B2C50,0x004B2C50,0x004B2C90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004B2C90,0x004B2C90,0x004B3160,unknown,code not assigned to a module
-unk_004B3160,0x004B3160,0x004B3260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004B3260,0x004B3260,0x004B3270,unknown,code not assigned to a module
-unk_004B3270,0x004B3270,0x004B3580,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+effects,0x004B3160,0x004B3580,tibsun,"functions compiled from src/effects.cpp, matched, without gaps"
 unk_004B3580,0x004B3580,0x004B3670,unknown,code not assigned to a module
 unk_004B3670,0x004B3670,0x004B3690,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004B3690,0x004B3690,0x004B4860,unknown,code not assigned to a module

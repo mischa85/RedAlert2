@@ -539,6 +539,7 @@ address,size,evidence
 0x004B2A60,48,"function of the Tiberian Sun reconstruction, matched"
 0x004B2C50,64,"function of the Tiberian Sun reconstruction, matched"
 0x004B3160,256,"function of the Tiberian Sun reconstruction, matched"
+0x004B3260,16,"code of src/effects.cpp, matched: too short for the match rule"
 0x004B3270,320,"function of the Tiberian Sun reconstruction, matched"
 0x004B33B0,176,"function of the Tiberian Sun reconstruction, matched"
 0x004B3460,144,"function of the Tiberian Sun reconstruction, matched"
