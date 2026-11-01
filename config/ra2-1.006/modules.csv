@@ -230,7 +230,7 @@ unk_00496D30,0x00496D30,0x00496FE0,tibsun,matched functions of one source file o
 unk_00496FE0,0x00496FE0,0x004972E0,unknown,code not assigned to a module
 unk_004972E0,0x004972E0,0x00497320,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00497320,0x00497320,0x004981C0,unknown,code not assigned to a module
-unk_004981C0,0x004981C0,0x004983E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+dib,0x004981C0,0x004983E0,tibsun,"functions compiled from src/dib.cpp, matched, without gaps"
 unk_004983E0,0x004983E0,0x004985C0,unknown,code not assigned to a module
 unk_004985C0,0x004985C0,0x00498750,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00498750,0x00498750,0x00498950,unknown,code not assigned to a module

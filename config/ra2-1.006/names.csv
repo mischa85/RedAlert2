@@ -29,6 +29,9 @@ address,symbol,evidence
 0x00494290,?Get@CRCStraw@@UAEHPAXH@Z,"compiled from src/crcstraw.cpp, matched"
 0x004942D0,?Result@CRCStraw@@QBEHXZ,"compiled from src/crcstraw.cpp, matched; identical code also at 0x00494240, this one inferred from alphabetical link order"
 0x00494760,?Get@CacheStraw@@UAEHPAXH@Z,"compiled from src/cstraw.cpp, matched"
+0x004981C0,??0DIB8Class@@QAE@PAUHWND__@@HHAAVPaletteClass@@@Z,"compiled from src/dib.cpp, matched"
+0x00498370,??1DIB8Class@@QAE@XZ,"compiled from src/dib.cpp, matched"
+0x004983A0,?Clear@DIB8Class@@QAEXE@Z,"compiled from src/dib.cpp, matched"
 0x0049EE00,?GetDllVersion@@YIKPBD@Z,"compiled from src/dllver.cpp, matched"
 0x004BAD50,??0FieldClass@@QAE@PBDD@Z,"compiled from src/field.cpp, matched"
 0x004BADB0,??0FieldClass@@QAE@PBDE@Z,"compiled from src/field.cpp, matched"
@@ -461,6 +464,8 @@ address,symbol,evidence
 0x0079729C,__towlower_lk,symbol of VC6 LIBCMT.LIB towlower.obj
 0x0079734F,___termcon,symbol of VC6 LIBCMT.LIB initcon.obj
 0x0079739D,__putch_lk,symbol of VC6 LIBCMT.LIB putch.obj
+0x0079A058,__imp__DeleteObject@4,"import slot of DeleteObject (import table), referenced as __imp__DeleteObject@4 by matched src/dib.cpp"
+0x0079A0A8,__imp__CreateDIBSection@24,"import slot of CreateDIBSection (import table), referenced as __imp__CreateDIBSection@24 by matched src/dib.cpp"
 0x0079A0D0,__imp__GetSystemTime@4,"import slot of GetSystemTime (import table), referenced as __imp__GetSystemTime@4 by matched VC6 library code"
 0x0079A110,__imp__ReadFile@20,"import slot of ReadFile (import table), referenced as __imp__ReadFile@20 by matched VC6 library code"
 0x0079A12C,__imp__WriteFile@20,"import slot of WriteFile (import table), referenced as __imp__WriteFile@20 by matched VC6 library code"
@@ -535,6 +540,10 @@ address,symbol,evidence
 0x0079A33C,__imp__ReadConsoleInputA@16,"import slot of ReadConsoleInputA (import table), referenced as __imp__ReadConsoleInputA@16 by matched VC6 library code"
 0x0079A344,__imp__GetNumberOfConsoleInputEvents@8,"import slot of GetNumberOfConsoleInputEvents (import table), referenced as __imp__GetNumberOfConsoleInputEvents@8 by matched VC6 library code"
 0x0079A348,__imp__WriteConsoleA@20,"import slot of WriteConsoleA (import table), referenced as __imp__WriteConsoleA@20 by matched VC6 library code"
+0x0079A458,__imp__GetDC@4,"import slot of GetDC (import table), referenced as __imp__GetDC@4 by matched src/dib.cpp"
+0x0079A478,__imp__ReleaseDC@8,"import slot of ReleaseDC (import table), referenced as __imp__ReleaseDC@8 by matched src/dib.cpp"
+0x0079AEF8,??_7BSurface@@6B@,"inferred: referenced by matched src/dib.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x0079AF8C,??_7XSurface@@6B@,"inferred: referenced by matched src/dib.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x0079C61C,__pad,"compiled from src/base64.cpp, matched"
 0x0079C620,__encoder,"compiled from src/base64.cpp, matched"
 0x0079C624,__decoder,"compiled from src/base64.cpp, matched"
