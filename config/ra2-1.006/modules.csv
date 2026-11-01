@@ -443,7 +443,7 @@ unk_00533330,0x00533330,0x005348A0,unknown,code not assigned to a module
 unk_005348A0,0x005348A0,0x00534920,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00534920,0x00534920,0x00534980,unknown,code not assigned to a module
 unk_00534980,0x00534980,0x00534B50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00534B50,0x00534B50,0x00534EE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+lcw,0x00534B50,0x00534EE0,tibsun,"functions compiled from src/lcw.cpp, matched, without gaps"
 unk_00534EE0,0x00534EE0,0x00534F50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00534F50,0x00534F50,0x00534F90,unknown,code not assigned to a module
 unk_00534F90,0x00534F90,0x00535280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
