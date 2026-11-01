@@ -439,9 +439,7 @@ unk_00534980,0x00534980,0x00534B50,tibsun,matched functions of one source file o
 lcw,0x00534B50,0x00534EE0,tibsun,"functions compiled from src/lcw.cpp, matched, without gaps"
 lcwpipe,0x00534EE0,0x00535280,tibsun,"functions compiled from src/lcwpipe.cpp, matched, without gaps; one placed by alphabetical order"
 unk_00535280,0x00535280,0x005352D0,unknown,code not assigned to a module
-unk_005352D0,0x005352D0,0x00535340,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00535340,0x00535340,0x00535380,unknown,code not assigned to a module
-unk_00535380,0x00535380,0x005354E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+lcwstraw,0x005352D0,0x005354E0,tibsun,"functions compiled from src/lcwstraw.cpp, matched, without gaps; one placed by alphabetical order"
 unk_005354E0,0x005354E0,0x00535530,unknown,code not assigned to a module
 lcwuncmp,0x00535530,0x00535720,tibsun,"functions compiled from src/lcwuncmp.cpp, matched, without gaps"
 unk_00535720,0x00535720,0x00537830,unknown,code not assigned to a module
