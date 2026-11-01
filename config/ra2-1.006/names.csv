@@ -1,5 +1,7 @@
 address,symbol,evidence
 0x00412390,?ahtoi@@YIHPBD@Z,"compiled from src/ahtoi.cpp, matched"
+0x0042B670,?Put@Base64Pipe@@UAEHPBXH@Z,"compiled from src/b64pipe.cpp, matched"
+0x0042B800,?Flush@Base64Pipe@@UAEHXZ,"compiled from src/b64pipe.cpp, matched"
 0x0042D520,?Base64_Encode@@YIHPBXHPAXH@Z,"compiled from src/base64.cpp, matched"
 0x0042D640,?Base64_Decode@@YIHPBXHPAXH@Z,"compiled from src/base64.cpp, matched"
 0x0046CB80,?End@Pipe@@UAEHXZ,"inferred: entry of ??_7Pipe@@6B@ in Pipe::End's slot; its code matches the inline Pipe::End compiled from src/pipe.cpp"
