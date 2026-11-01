@@ -70,6 +70,7 @@ address,symbol,evidence
 0x00782F66,_atof,symbol of VC6 LIBCMT.LIB atof.obj
 0x00782FD4,_strtoxl,symbol of VC6 LIBCMT.LIB strtol.obj
 0x007831F0,__makepath,symbol of VC6 LIBCMT.LIB makepath.obj
+0x00783290,_memmove,"inferred: called as _memmove by matched VC6 LIBCMT.LIB objects (_fptostr.obj, sbheap.obj, w_str.obj) and by matched Tiberian Sun functions (52 call sites); the code section of VC6 LIBCMT.LIB memmove.obj matches here, and at 0x00788CB0, which matched objects call as _memcpy (memcpy.obj has the same code)"
 0x007835C5,_wcsrchr,symbol of VC6 LIBCMT.LIB wcsrchr.obj
 0x00783622,_wcsncpy,symbol of VC6 LIBCMT.LIB wcsncpy.obj
 0x0078365F,_wcscat,symbol of VC6 LIBCMT.LIB wcscat.obj
@@ -168,6 +169,7 @@ address,symbol,evidence
 0x0078861F,___sbh_heap_check,symbol of VC6 LIBCMT.LIB sbheap.obj
 0x00788993,__filbuf,symbol of VC6 LIBCMT.LIB _filbuf.obj
 0x00788AD4,__read_lk,symbol of VC6 LIBCMT.LIB read.obj
+0x00788CB0,_memcpy,"inferred: called as _memcpy by matched VC6 LIBCMT.LIB objects (a_env.obj, fread.obj, fwrite.obj, realloc.obj, setlocal.obj, strftime.obj, winsig.obj); the code section of VC6 LIBCMT.LIB memcpy.obj matches here, and at 0x00783290, which matched objects call as _memmove (memmove.obj has the same code)"
 0x0078904A,__write_lk,symbol of VC6 LIBCMT.LIB write.obj
 0x007891D5,_realloc,symbol of VC6 LIBCMT.LIB realloc.obj
 0x0078930D,__msize,symbol of VC6 LIBCMT.LIB msize.obj
