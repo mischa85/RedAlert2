@@ -1026,6 +1026,7 @@ address,size,evidence
 0x005AA130,112,"function of the Tiberian Sun reconstruction, matched"
 0x005AA1A0,480,"function of the Tiberian Sun reconstruction, matched"
 0x005ABF20,64,"function of the Tiberian Sun reconstruction, matched"
+0x005ABF60,16,"code of src/mpu.cpp, matched: too short for the match rule"
 0x005ABF70,464,"function of the Tiberian Sun reconstruction, matched"
 0x005AC810,32,"function of the Tiberian Sun reconstruction, matched"
 0x005AC830,32,"function of the Tiberian Sun reconstruction, matched"

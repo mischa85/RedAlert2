@@ -607,9 +607,7 @@ unk_005A97D0,0x005A97D0,0x005A9C90,tibsun,matched functions of one source file o
 unk_005A9C90,0x005A9C90,0x005A9CE0,unknown,code not assigned to a module
 unk_005A9CE0,0x005A9CE0,0x005AA380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005AA380,0x005AA380,0x005ABF20,unknown,code not assigned to a module
-unk_005ABF20,0x005ABF20,0x005ABF60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005ABF60,0x005ABF60,0x005ABF70,unknown,code not assigned to a module
-unk_005ABF70,0x005ABF70,0x005AC140,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+mpu,0x005ABF20,0x005AC140,tibsun,"functions compiled from src/mpu.cpp, matched, without gaps"
 unk_005AC140,0x005AC140,0x005AC810,unknown,code not assigned to a module
 unk_005AC810,0x005AC810,0x005AC850,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005AC850,0x005AC850,0x005ACD00,unknown,code not assigned to a module
