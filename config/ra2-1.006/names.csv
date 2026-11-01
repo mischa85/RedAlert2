@@ -51,6 +51,10 @@ address,symbol,evidence
 0x00773840,?Get@BufferStraw@@UAEHPAXH@Z,"compiled from src/xstraw.cpp, matched"
 0x007738A0,?Get@FileStraw@@UAEHPAXH@Z,"compiled from src/xstraw.cpp, matched"
 0x00773900,??1FileStraw@@UAE@XZ,"compiled from src/xstraw.cpp, matched"
+0x00781B66,_htonl@4,"inferred: import thunk, jmp through 0x0079A544, which the import table gives as WSOCK32.dll ordinal 8; VC6 WSOCK32.LIB imports _htonl@4 as that ordinal"
+0x00781B6C,_htons@4,"inferred: import thunk, jmp through 0x0079A53C, which the import table gives as WSOCK32.dll ordinal 9; VC6 WSOCK32.LIB imports _htons@4 as that ordinal"
+0x00781B72,_ntohl@4,"inferred: import thunk, jmp through 0x0079A538, which the import table gives as WSOCK32.dll ordinal 14; VC6 WSOCK32.LIB imports _ntohl@4 as that ordinal"
+0x00781B78,_ntohs@4,"inferred: import thunk, jmp through 0x0079A550, which the import table gives as WSOCK32.dll ordinal 15; VC6 WSOCK32.LIB imports _ntohs@4 as that ordinal"
 0x00781C8C,??1type_info@@UAE@XZ,symbol of VC6 LIBCMT.LIB typinfo.obj
 0x00781D3B,??3@YAXPAX@Z,"inferred: called as ??3@YAXPAX@Z by matched Tiberian Sun functions (611 call sites), and by VC6 LIBCMT.LIB stdexcpt.obj's ??1exception@@UAE@XZ, unique at 0x0078B1D1 but too short for the match rule; the code section of VC6 LIBCMT.LIB delete.obj, too short for the match rule, occurs here calling _free and nowhere else with that call"
 0x00781D46,_qsort,symbol of VC6 LIBCMT.LIB qsort.obj
