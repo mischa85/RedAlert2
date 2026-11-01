@@ -1203,6 +1203,7 @@ address,size,evidence
 0x00638C00,160,"function of the Tiberian Sun reconstruction, matched"
 0x00638CA0,176,"function of the Tiberian Sun reconstruction, matched"
 0x00638D50,64,"function of the Tiberian Sun reconstruction, matched"
+0x00638D90,,"inferred: target of the call at 0x0042FC6E in matched src/bfiofile.cpp; size not known"
 0x00638E80,304,"function of the Tiberian Sun reconstruction, matched"
 0x00638FB0,464,"function of the Tiberian Sun reconstruction, matched"
 0x00639180,128,"function of the Tiberian Sun reconstruction, matched"
