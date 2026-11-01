@@ -77,6 +77,8 @@ address,symbol,evidence
 0x00674E60,?Process_Block@SHAEngine@@ABEXPBXAATSHADigest@1@@Z,"compiled from src/sha.cpp, matched"
 0x00675380,?Put@SHAPipe@@UAEHPBXH@Z,"compiled from src/shapipe.cpp, matched"
 0x006753B0,?Result@SHAPipe@@QBEHPAX@Z,"compiled from src/shapipe.cpp, matched"
+0x006753C0,?Get@SHAStraw@@UAEHPAXH@Z,"compiled from src/shastraw.cpp, matched"
+0x00675400,?Result@SHAStraw@@QBEHPAX@Z,"compiled from src/shastraw.cpp, matched"
 0x0069B010,??1Straw@@UAE@XZ,"compiled from src/straw.cpp, matched"
 0x0069B050,?Get_From@Straw@@UAEXPAV1@@Z,"compiled from src/straw.cpp, matched"
 0x0069B0A0,?Get@Straw@@UAEHPAXH@Z,"compiled from src/straw.cpp, matched"
