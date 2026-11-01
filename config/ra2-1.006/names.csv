@@ -14,6 +14,7 @@ address,symbol,evidence
 0x00494240,?Result@CRCPipe@@QBEHXZ,"compiled from src/crcpipe.cpp, matched; identical code also at 0x004942D0, this one inferred from alphabetical link order"
 0x00494290,?Get@CRCStraw@@UAEHPAXH@Z,"compiled from src/crcstraw.cpp, matched"
 0x004942D0,?Result@CRCStraw@@QBEHXZ,"compiled from src/crcstraw.cpp, matched; identical code also at 0x00494240, this one inferred from alphabetical link order"
+0x00535530,_LCW_Uncompress,"compiled from src/lcwuncmp.cpp, matched"
 0x0060EA60,??1Pipe@@UAE@XZ,"compiled from src/pipe.cpp, matched"
 0x0060EAA0,?Put_To@Pipe@@UAEXPAV1@@Z,"compiled from src/pipe.cpp, matched"
 0x0060EAF0,?Put@Pipe@@UAEHPBXH@Z,"compiled from src/pipe.cpp, matched"
