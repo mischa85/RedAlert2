@@ -833,7 +833,9 @@ unk_00698860,0x00698860,0x0069A110,unknown,code not assigned to a module
 unk_0069A110,0x0069A110,0x0069A160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0069A160,0x0069A160,0x0069A1A0,unknown,code not assigned to a module
 unk_0069A1A0,0x0069A1A0,0x0069A1C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0069A1C0,0x0069A1C0,0x0069ADA0,unknown,code not assigned to a module
+unk_0069A1C0,0x0069A1C0,0x0069A430,unknown,code not assigned to a module
+stimer,0x0069A430,0x0069A450,tibsun,"functions compiled from src/stimer.cpp, matched, without gaps; two placed by definition order"
+unk_0069A450,0x0069A450,0x0069ADA0,unknown,code not assigned to a module
 unk_0069ADA0,0x0069ADA0,0x0069ADC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0069ADC0,0x0069ADC0,0x0069B010,unknown,code not assigned to a module
 straw,0x0069B010,0x0069B0C0,tibsun,"functions compiled from src/straw.cpp, matched, without gaps"
