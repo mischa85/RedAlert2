@@ -251,7 +251,7 @@ unk_0049E7D0,0x0049E7D0,0x0049E7F0,tibsun,matched functions of one source file o
 unk_0049E7F0,0x0049E7F0,0x0049E810,unknown,code not assigned to a module
 unk_0049E810,0x0049E810,0x0049E870,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0049E870,0x0049E870,0x0049EE00,unknown,code not assigned to a module
-unk_0049EE00,0x0049EE00,0x0049EE80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+dllver,0x0049EE00,0x0049EE80,tibsun,"functions compiled from src/dllver.cpp, matched, without gaps"
 unk_0049EE80,0x0049EE80,0x004A4ED0,unknown,code not assigned to a module
 unk_004A4ED0,0x004A4ED0,0x004A4F30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004A4F30,0x004A4F30,0x004A6330,unknown,code not assigned to a module
