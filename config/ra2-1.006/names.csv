@@ -30,6 +30,8 @@ address,symbol,evidence
 0x0060EAA0,?Put_To@Pipe@@UAEXPAV1@@Z,"compiled from src/pipe.cpp, matched"
 0x0060EAF0,?Put@Pipe@@UAEHPBXH@Z,"compiled from src/pipe.cpp, matched"
 0x0060EB10,?Flush@Pipe@@UAEHXZ,"compiled from src/pipe.cpp, matched"
+0x0061BE40,?Rasterize_Polygon@@YIXABUPolygonShapeStruct@@AAUPolygonRasterStruct@@@Z,"compiled from src/polygon.cpp, matched"
+0x0061C0A0,?Rasterize_Line_Span@@YIXHHHHHHAAPAVPoint2D@@@Z,"compiled from src/polygon.cpp, matched"
 0x006395C0,?Read_Line@@YIHAAVFileClass@@PADHAA_N@Z,"compiled from src/readline.cpp, matched"
 0x00639670,?Read_Line@@YIHAAVStraw@@PADHAA_N@Z,"compiled from src/readline.cpp, matched"
 0x00674BF0,?Process_Partial@SHAEngine@@AAEXAAPBXAAH@Z,"compiled from src/sha.cpp, matched"

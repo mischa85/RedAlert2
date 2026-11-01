@@ -715,7 +715,7 @@ unk_0060FA90,0x0060FA90,0x0060FD10,tibsun,matched functions of one source file o
 unk_0060FD10,0x0060FD10,0x0060FE30,unknown,code not assigned to a module
 unk_0060FE30,0x0060FE30,0x006100E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006100E0,0x006100E0,0x0061BE40,unknown,code not assigned to a module
-unk_0061BE40,0x0061BE40,0x0061C260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+polygon,0x0061BE40,0x0061C260,tibsun,"functions compiled from src/polygon.cpp, matched, without gaps"
 unk_0061C260,0x0061C260,0x0061D440,unknown,code not assigned to a module
 unk_0061D440,0x0061D440,0x0061D460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0061D460,0x0061D460,0x0061E2A0,unknown,code not assigned to a module
