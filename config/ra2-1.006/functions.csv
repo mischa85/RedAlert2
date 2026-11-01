@@ -1260,6 +1260,8 @@ address,size,evidence
 0x00674C90,128,"function of the Tiberian Sun reconstruction, matched"
 0x00674D10,336,"function of the Tiberian Sun reconstruction, matched"
 0x00674E60,416,"function of the Tiberian Sun reconstruction, matched"
+0x00675380,48,"code of src/shapipe.cpp, matched: same code with other call targets at 0x00494210 (CRCPipe::Put)"
+0x006753B0,16,"code of src/shapipe.cpp, matched"
 0x006753C0,64,"function of the Tiberian Sun reconstruction, matched"
 0x0067B6E0,32,"function of the Tiberian Sun reconstruction, matched"
 0x0067E720,32,"function of the Tiberian Sun reconstruction, matched"

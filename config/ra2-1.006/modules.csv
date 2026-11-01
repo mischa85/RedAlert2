@@ -805,7 +805,8 @@ unk_0066E0A0,0x0066E0A0,0x00671600,unknown,code not assigned to a module
 unk_00671600,0x00671600,0x00671670,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00671670,0x00671670,0x00674BF0,unknown,code not assigned to a module
 sha,0x00674BF0,0x00675000,tibsun,"functions compiled from src/sha.cpp, matched, without gaps"
-unk_00675000,0x00675000,0x006753C0,unknown,code not assigned to a module
+unk_00675000,0x00675000,0x00675380,unknown,code not assigned to a module
+shapipe,0x00675380,0x006753C0,tibsun,"functions compiled from src/shapipe.cpp, matched, without gaps"
 unk_006753C0,0x006753C0,0x00675400,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00675400,0x00675400,0x0067B6E0,unknown,code not assigned to a module
 unk_0067B6E0,0x0067B6E0,0x0067B700,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
