@@ -472,7 +472,7 @@ unk_0053D360,0x0053D360,0x0053E110,unknown,code not assigned to a module
 unk_0053E110,0x0053E110,0x0053E180,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0053E180,0x0053E180,0x0053E420,unknown,code not assigned to a module
 lzo1x_c,0x0053E420,0x0053E970,tibsun,"functions compiled from src/lzo1x_c.cpp, matched, without gaps"
-unk_0053E970,0x0053E970,0x0053EB40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+lzo1x_d,0x0053E970,0x0053EB40,tibsun,"functions compiled from src/lzo1x_d.cpp, matched, without gaps"
 unk_0053EB40,0x0053EB40,0x0053EBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0053EBA0,0x0053EBA0,0x0053EBE0,unknown,code not assigned to a module
 unk_0053EBE0,0x0053EBE0,0x0053EF60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
