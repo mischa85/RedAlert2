@@ -753,7 +753,7 @@ unk_0063C270,0x0063C270,0x0063C490,tibsun,matched functions of one source file o
 unk_0063C490,0x0063C490,0x0063CC80,unknown,code not assigned to a module
 unk_0063CC80,0x0063CC80,0x0063D150,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0063D150,0x0063D150,0x0063D2D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0063D2D0,0x0063D2D0,0x0063D890,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+rndstraw,0x0063D2D0,0x0063D890,tibsun,"functions compiled from src/rndstraw.cpp, matched, without gaps"
 unk_0063D890,0x0063D890,0x0064DB60,unknown,code not assigned to a module
 unk_0064DB60,0x0064DB60,0x0064DD90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0064DD90,0x0064DD90,0x00657FA0,unknown,code not assigned to a module
