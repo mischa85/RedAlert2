@@ -779,6 +779,7 @@ address,size,evidence
 0x0053E490,1248,"function of the Tiberian Sun reconstruction, matched"
 0x0053E970,464,"function of the Tiberian Sun reconstruction, matched"
 0x0053EB40,96,"function of the Tiberian Sun reconstruction, matched"
+0x0053EBA0,64,"code of src/lzopipe.cpp, matched: four functions with identical code, in lcwpipe.cpp, lcwstraw.cpp, lzopipe.cpp and lzostraw.cpp, at exactly four addresses"
 0x0053EBE0,656,"function of the Tiberian Sun reconstruction, matched"
 0x0053EE70,240,"function of the Tiberian Sun reconstruction, matched"
 0x0053EFB0,96,"function of the Tiberian Sun reconstruction, matched"
