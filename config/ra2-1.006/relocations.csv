@@ -1835,6 +1835,7 @@ field,type,target,addend,evidence
 0x00494279,REL32,0x00494190,0,"compiled from src/crcpipe.cpp, matched"
 0x004942A9,REL32,0x0069B0A0,0,"Tiberian Sun reconstruction, matched"
 0x004942B5,REL32,0x00493FC0,0,"Tiberian Sun reconstruction, matched"
+0x00494309,REL32,0x00494190,0,"compiled from src/crcstraw.cpp, matched"
 0x0049479D,REL32,0x00783290,0,"Tiberian Sun reconstruction, matched"
 0x004947D1,REL32,0x0069B0A0,0,"Tiberian Sun reconstruction, matched"
 0x0049481A,REL32,0x00782017,0,"Tiberian Sun reconstruction, matched"

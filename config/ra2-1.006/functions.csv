@@ -437,6 +437,7 @@ address,size,evidence
 0x00494210,48,"code of src/crcpipe.cpp, matched: same code with other call targets at 0x00675380"
 0x00494240,80,"code of src/crcpipe.cpp, matched: identical code also at 0x004942D0 (CRCStraw::Result); this one inferred from alphabetical link order"
 0x00494290,64,"function of the Tiberian Sun reconstruction, matched"
+0x004942D0,80,"code of src/crcstraw.cpp, matched: identical code also at 0x00494240 (CRCPipe::Result); this one inferred from alphabetical link order"
 0x00494510,32,"function of the Tiberian Sun reconstruction, matched"
 0x00494760,160,"function of the Tiberian Sun reconstruction, matched"
 0x00494800,96,"function of the Tiberian Sun reconstruction, matched"

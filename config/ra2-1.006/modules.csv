@@ -202,8 +202,8 @@ unk_00493930,0x00493930,0x004939A0,tibsun,matched functions of one source file o
 unk_004939A0,0x004939A0,0x00493DF0,unknown,code not assigned to a module
 crc,0x00493DF0,0x00494210,tibsun,"functions compiled from src/crc.cpp, matched, without gaps; two placed by definition order"
 crcpipe,0x00494210,0x00494290,tibsun,"functions compiled from src/crcpipe.cpp, matched, without gaps; one object inferred from alphabetical link order"
-unk_00494290,0x00494290,0x004942D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004942D0,0x004942D0,0x00494510,unknown,code not assigned to a module
+crcstraw,0x00494290,0x00494320,tibsun,"functions compiled from src/crcstraw.cpp, matched, without gaps; one object inferred from alphabetical link order"
+unk_00494320,0x00494320,0x00494510,unknown,code not assigned to a module
 unk_00494510,0x00494510,0x00494530,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00494530,0x00494530,0x00494760,unknown,code not assigned to a module
 unk_00494760,0x00494760,0x00494800,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
