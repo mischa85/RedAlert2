@@ -74,9 +74,7 @@ unk_00437CC0,0x00437CC0,0x00437D30,unknown,code not assigned to a module
 unk_00437D30,0x00437D30,0x00437DA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00437DA0,0x00437DA0,0x004382C0,unknown,code not assigned to a module
 buff,0x004382C0,0x00438470,tibsun,"functions compiled from src/buff.cpp, matched, without gaps; five placed by definition order"
-unk_00438470,0x00438470,0x004384D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004384D0,0x004384D0,0x004384E0,unknown,code not assigned to a module
-unk_004384E0,0x004384E0,0x00438500,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+buffer,0x00438470,0x00438500,tibsun,"functions compiled from src/buffer.cpp, matched, without gaps"
 unk_00438500,0x00438500,0x00456030,unknown,code not assigned to a module
 unk_00456030,0x00456030,0x00457A50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00457A50,0x00457A50,0x0045D830,unknown,code not assigned to a module

@@ -139,6 +139,7 @@ address,size,evidence
 0x00438440,48,"code of src/buff.cpp, matched: two functions with identical code, at exactly two addresses"
 0x00438470,64,"function of the Tiberian Sun reconstruction, matched"
 0x004384B0,32,"function of the Tiberian Sun reconstruction, matched"
+0x004384D0,16,"code of src/buffer.cpp, matched: too short for the match rule"
 0x004384E0,32,"function of the Tiberian Sun reconstruction, matched"
 0x00453E40,48,"function of the Tiberian Sun reconstruction, matched"
 0x00456030,6688,"function of the Tiberian Sun reconstruction, matched"
