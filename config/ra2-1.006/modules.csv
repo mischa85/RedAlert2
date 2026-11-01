@@ -206,7 +206,7 @@ crcstraw,0x00494290,0x00494320,tibsun,"functions compiled from src/crcstraw.cpp,
 unk_00494320,0x00494320,0x00494510,unknown,code not assigned to a module
 unk_00494510,0x00494510,0x00494530,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00494530,0x00494530,0x00494760,unknown,code not assigned to a module
-unk_00494760,0x00494760,0x00494800,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+cstraw,0x00494760,0x00494800,tibsun,"functions compiled from src/cstraw.cpp, matched, without gaps"
 unk_00494800,0x00494800,0x00494910,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00494910,0x00494910,0x00494930,unknown,code not assigned to a module
 unk_00494930,0x00494930,0x00494CB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
