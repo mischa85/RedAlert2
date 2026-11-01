@@ -1033,7 +1033,7 @@ unk_0076EE70,0x0076EE70,0x0076EF40,unknown,code not assigned to a module
 unk_0076EF40,0x0076EF40,0x0076EF90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0076EF90,0x0076EF90,0x00773730,unknown,code not assigned to a module
 xpipe,0x00773730,0x00773840,tibsun,"functions compiled from src/xpipe.cpp, matched, without gaps"
-unk_00773840,0x00773840,0x00773930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+xstraw,0x00773840,0x00773930,tibsun,"functions compiled from src/xstraw.cpp, matched, without gaps"
 unk_00773930,0x00773930,0x00774130,unknown,code not assigned to a module
 unk_00774130,0x00774130,0x007741D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_007741D0,0x007741D0,0x00774C90,unknown,code not assigned to a module

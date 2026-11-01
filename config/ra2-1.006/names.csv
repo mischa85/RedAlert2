@@ -38,6 +38,9 @@ address,symbol,evidence
 0x00773790,??1FilePipe@@UAE@XZ,"compiled from src/xpipe.cpp, matched"
 0x007737C0,?End@FilePipe@@UAEHXZ,"compiled from src/xpipe.cpp, matched"
 0x007737F0,?Put@FilePipe@@UAEHPBXH@Z,"compiled from src/xpipe.cpp, matched"
+0x00773840,?Get@BufferStraw@@UAEHPAXH@Z,"compiled from src/xstraw.cpp, matched"
+0x007738A0,?Get@FileStraw@@UAEHPAXH@Z,"compiled from src/xstraw.cpp, matched"
+0x00773900,??1FileStraw@@UAE@XZ,"compiled from src/xstraw.cpp, matched"
 0x00781C8C,??1type_info@@UAE@XZ,symbol of VC6 LIBCMT.LIB typinfo.obj
 0x00781D46,_qsort,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781E9A,_shortsort,symbol of VC6 LIBCMT.LIB qsort.obj
@@ -459,6 +462,7 @@ address,symbol,evidence
 0x0079A33C,__imp__ReadConsoleInputA@16,"import slot of ReadConsoleInputA (import table), referenced as __imp__ReadConsoleInputA@16 by matched VC6 library code"
 0x0079A344,__imp__GetNumberOfConsoleInputEvents@8,"import slot of GetNumberOfConsoleInputEvents (import table), referenced as __imp__GetNumberOfConsoleInputEvents@8 by matched VC6 library code"
 0x0079A348,__imp__WriteConsoleA@20,"import slot of WriteConsoleA (import table), referenced as __imp__WriteConsoleA@20 by matched VC6 library code"
+0x0079D9AC,??_7FileStraw@@6B@,"inferred: DIR32 target of src/xstraw.cpp's ??1FileStraw@@UAE@XZ at 0x00773908; its entries 0x0069B050 and 0x007738A0 are Straw::Get_From and FileStraw::Get"
 0x0079D9BC,??_7FilePipe@@6B@,"inferred: DIR32 target of src/xpipe.cpp's ??1FilePipe@@UAE@XZ at 0x00773798; its entries 0x0060EB10, 0x007737C0, 0x0060EAA0 and 0x007737F0 are Pipe::Flush, FilePipe::End, Pipe::Put_To and FilePipe::Put"
 0x0079E9F8,??_7Straw@@6B@,"inferred: DIR32 target of src/straw.cpp's ??1Straw@@UAE@XZ at 0x0069B01B; its entries 0x0069B050 and 0x0069B0A0 are Straw::Get_From and Straw::Get"
 0x0079EA20,??_7Pipe@@6B@,"inferred: DIR32 target of src/pipe.cpp's ??1Pipe@@UAE@XZ at 0x0060EA6B; its entries 0x0060EB10, 0x0046CB80, 0x0060EAA0 and 0x0060EAF0 are Pipe::Flush, End, Put_To and Put"
