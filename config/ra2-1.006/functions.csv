@@ -1562,6 +1562,8 @@ address,size,evidence
 0x00775AB0,48,"function of the Tiberian Sun reconstruction, matched"
 0x00775AE0,32,"function of the Tiberian Sun reconstruction, matched"
 0x00775B00,48,"function of the Tiberian Sun reconstruction, matched"
+0x0077F14D,,"inferred: target of the call at 0x004D2A27 in matched src/getcpu.cpp; size not known"
+0x0077F20F,,"inferred: target of the call at 0x004D2A2E in matched src/getcpu.cpp; size not known"
 0x00781B66,6,"inferred: import thunk, jmp through 0x0079A544, which the import table gives as WSOCK32.dll ordinal 8; VC6 WSOCK32.LIB imports _htonl@4 as that ordinal"
 0x00781B6C,6,"inferred: import thunk, jmp through 0x0079A53C, which the import table gives as WSOCK32.dll ordinal 9; VC6 WSOCK32.LIB imports _htons@4 as that ordinal"
 0x00781B72,6,"inferred: import thunk, jmp through 0x0079A538, which the import table gives as WSOCK32.dll ordinal 14; VC6 WSOCK32.LIB imports _ntohl@4 as that ordinal"
