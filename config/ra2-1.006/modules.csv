@@ -838,7 +838,7 @@ unk_0069A1A0,0x0069A1A0,0x0069A1C0,tibsun,matched functions of one source file o
 unk_0069A1C0,0x0069A1C0,0x0069ADA0,unknown,code not assigned to a module
 unk_0069ADA0,0x0069ADA0,0x0069ADC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0069ADC0,0x0069ADC0,0x0069B010,unknown,code not assigned to a module
-unk_0069B010,0x0069B010,0x0069B0C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+straw,0x0069B010,0x0069B0C0,tibsun,"functions compiled from src/straw.cpp, matched, without gaps"
 unk_0069B0C0,0x0069B0C0,0x0069FA60,unknown,code not assigned to a module
 unk_0069FA60,0x0069FA60,0x0069FB10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0069FB10,0x0069FB10,0x0069FB20,unknown,code not assigned to a module

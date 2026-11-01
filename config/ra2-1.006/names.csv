@@ -14,7 +14,9 @@ address,symbol,evidence
 0x00494290,?Get@CRCStraw@@UAEHPAXH@Z,"compiled from src/crcstraw.cpp, matched"
 0x004942D0,?Result@CRCStraw@@QBEHXZ,"compiled from src/crcstraw.cpp, matched; identical code also at 0x00494240, this one inferred from alphabetical link order"
 0x0060EAF0,?Put@Pipe@@UAEHPBXH@Z,"inferred: called by src/crcpipe.cpp from 0x0049422C, and its code matches Pipe::Put of the Tiberian Sun reconstruction"
-0x0069B0A0,?Get@Straw@@UAEHPAXH@Z,"inferred: called by src/crcstraw.cpp from 0x004942A9, and its code matches Straw::Get of the Tiberian Sun reconstruction"
+0x0069B010,??1Straw@@UAE@XZ,"compiled from src/straw.cpp, matched"
+0x0069B050,?Get_From@Straw@@UAEXPAV1@@Z,"compiled from src/straw.cpp, matched"
+0x0069B0A0,?Get@Straw@@UAEHPAXH@Z,"compiled from src/straw.cpp, matched"
 0x00781C8C,??1type_info@@UAE@XZ,symbol of VC6 LIBCMT.LIB typinfo.obj
 0x00781D46,_qsort,symbol of VC6 LIBCMT.LIB qsort.obj
 0x00781E9A,_shortsort,symbol of VC6 LIBCMT.LIB qsort.obj
@@ -434,6 +436,7 @@ address,symbol,evidence
 0x0079A33C,__imp__ReadConsoleInputA@16,"import slot of ReadConsoleInputA (import table), referenced as __imp__ReadConsoleInputA@16 by matched VC6 library code"
 0x0079A344,__imp__GetNumberOfConsoleInputEvents@8,"import slot of GetNumberOfConsoleInputEvents (import table), referenced as __imp__GetNumberOfConsoleInputEvents@8 by matched VC6 library code"
 0x0079A348,__imp__WriteConsoleA@20,"import slot of WriteConsoleA (import table), referenced as __imp__WriteConsoleA@20 by matched VC6 library code"
+0x0079E9F8,??_7Straw@@6B@,"inferred: DIR32 target of src/straw.cpp's ??1Straw@@UAE@XZ at 0x0069B01B; its entries 0x0069B050 and 0x0069B0A0 are Straw::Get_From and Straw::Get"
 0x007B170C,___lookuptable,"data of VC6 library objects, its data section matched"
 0x007B17D4,DblMax,"data of VC6 library objects, its data section matched"
 0x007B17DC,DblMin,"data of VC6 library objects, its data section matched"
