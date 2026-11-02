@@ -613,7 +613,9 @@ unk_005B5C60,0x005B5C60,0x005B5D80,unknown,code not assigned to a module
 unk_005B5D80,0x005B5D80,0x005B5DC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005B5DC0,0x005B5DC0,0x005B6060,unknown,code not assigned to a module
 unk_005B6060,0x005B6060,0x005B6210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005B6210,0x005B6210,0x005BB9D0,unknown,code not assigned to a module
+unk_005B6210,0x005B6210,0x005B6A00,unknown,code not assigned to a module
+mstimer,0x005B6A00,0x005B6A40,tibsun,"functions compiled from src/mstimer.cpp, matched, without gaps; two placed by definition and alphabetical order; one placed by the gap"
+unk_005B6A40,0x005B6A40,0x005BB9D0,unknown,code not assigned to a module
 unk_005BB9D0,0x005BB9D0,0x005BBA50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005BBA50,0x005BBA50,0x005BCE90,unknown,code not assigned to a module
 unk_005BCE90,0x005BCE90,0x005BD070,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
