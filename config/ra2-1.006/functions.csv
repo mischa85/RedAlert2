@@ -1165,6 +1165,8 @@ address,size,evidence
 0x0060FEA0,80,"function of the Tiberian Sun reconstruction, matched"
 0x0060FEF0,32,"function of the Tiberian Sun reconstruction, matched"
 0x0060FF10,464,"function of the Tiberian Sun reconstruction, matched"
+0x006100E0,48,"code of src/pkstraw.cpp, matched: two functions with identical code, in pkpipe.cpp and pkstraw.cpp, at exactly two addresses"
+0x00610110,48,"code of src/pkstraw.cpp, matched: two functions with identical code, in pkpipe.cpp and pkstraw.cpp, at exactly two addresses"
 0x0061A8E0,64,"function of the Tiberian Sun reconstruction, matched"
 0x0061BE40,608,"function of the Tiberian Sun reconstruction, matched"
 0x0061C0A0,448,"function of the Tiberian Sun reconstruction, matched"
