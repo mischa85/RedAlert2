@@ -58,9 +58,7 @@ bfiofile,0x0042F200,0x0042FDF0,tibsun,"functions compiled from src/bfiofile.cpp,
 unk_0042FDF0,0x0042FDF0,0x004347C0,unknown,code not assigned to a module
 unk_004347C0,0x004347C0,0x00434820,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00434820,0x00434820,0x00435580,unknown,code not assigned to a module
-unk_00435580,0x00435580,0x004355F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004355F0,0x004355F0,0x00435600,unknown,code not assigned to a module
-unk_00435600,0x00435600,0x00435690,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+blowfish,0x00435580,0x00435690,tibsun,"functions compiled from src/blowfish.cpp, matched, without gaps; one placed by the gap"
 blowpipe,0x00435690,0x00435840,tibsun,"functions compiled from src/blowpipe.cpp, matched, without gaps; one placed by alphabetical order"
 blwstraw,0x00435840,0x00435970,tibsun,"functions compiled from src/blwstraw.cpp, matched, without gaps; one placed by alphabetical order"
 unk_00435970,0x00435970,0x00436F80,unknown,code not assigned to a module
