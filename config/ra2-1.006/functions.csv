@@ -1121,6 +1121,7 @@ address,size,evidence
 0x005D2030,32,"function of the Tiberian Sun reconstruction, matched"
 0x005D2050,160,"function of the Tiberian Sun reconstruction, matched"
 0x005D4A60,80,"function of the Tiberian Sun reconstruction, matched"
+0x005D4AE0,,"inferred: target of the call at 0x005349CC in matched src/layer.cpp; size not known"
 0x005D5D10,32,"function of the Tiberian Sun reconstruction, matched"
 0x005D7E80,32,"function of the Tiberian Sun reconstruction, matched"
 0x005D8070,32,"function of the Tiberian Sun reconstruction, matched"
