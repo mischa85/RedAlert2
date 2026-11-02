@@ -172,9 +172,7 @@ unk_00491620,0x00491620,0x004916D0,tibsun,matched functions of one source file o
 unk_004916D0,0x004916D0,0x00491880,unknown,code not assigned to a module
 unk_00491880,0x00491880,0x004918F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004918F0,0x004918F0,0x00491C00,unknown,code not assigned to a module
-unk_00491C00,0x00491C00,0x00491C20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00491C20,0x00491C20,0x00491C50,unknown,code not assigned to a module
-unk_00491C50,0x00491C50,0x00491F00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+counter,0x00491C00,0x00491F00,tibsun,"functions compiled from src/counter.cpp, matched, without gaps; one placed by the gap"
 unk_00491F00,0x00491F00,0x00492140,unknown,code not assigned to a module
 unk_00492140,0x00492140,0x004921F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004921F0,0x004921F0,0x00492210,unknown,code not assigned to a module

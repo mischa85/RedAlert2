@@ -399,6 +399,7 @@ address,size,evidence
 0x00491620,176,"function of the Tiberian Sun reconstruction, matched"
 0x00491880,112,"function of the Tiberian Sun reconstruction, matched"
 0x00491C00,32,"function of the Tiberian Sun reconstruction, matched"
+0x00491C20,48,"code of src/counter.cpp, matched: its code occurs at 5 addresses; placed by the gap the other functions of the file leave"
 0x00491C50,96,"function of the Tiberian Sun reconstruction, matched"
 0x00491CB0,96,"function of the Tiberian Sun reconstruction, matched"
 0x00491D10,96,"function of the Tiberian Sun reconstruction, matched"
