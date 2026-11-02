@@ -699,12 +699,8 @@ unk_00630320,0x00630320,0x00630340,tibsun,matched functions of one source file o
 unk_00630340,0x00630340,0x00631C40,unknown,code not assigned to a module
 unk_00631C40,0x00631C40,0x00631C80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00631C80,0x00631C80,0x00638310,unknown,code not assigned to a module
-unk_00638310,0x00638310,0x006383A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006383A0,0x006383A0,0x00638410,unknown,code not assigned to a module
-unk_00638410,0x00638410,0x00638560,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00638560,0x00638560,0x00638570,unknown,code not assigned to a module
-unk_00638570,0x00638570,0x00638600,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00638600,0x00638600,0x00638700,unknown,code not assigned to a module
+ramfile,0x00638310,0x00638610,tibsun,"functions compiled from src/ramfile.cpp, matched, without gaps; two placed by definition order; two placed by the gap"
+unk_00638610,0x00638610,0x00638700,unknown,code not assigned to a module
 unk_00638700,0x00638700,0x00638790,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00638790,0x00638790,0x00638950,unknown,code not assigned to a module
 unk_00638950,0x00638950,0x00638AC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
