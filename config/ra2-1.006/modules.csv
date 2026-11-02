@@ -174,17 +174,7 @@ unk_00491880,0x00491880,0x004918F0,tibsun,matched functions of one source file o
 unk_004918F0,0x004918F0,0x00491C00,unknown,code not assigned to a module
 counter,0x00491C00,0x00491F00,tibsun,"functions compiled from src/counter.cpp, matched, without gaps; one placed by the gap"
 unk_00491F00,0x00491F00,0x00492140,unknown,code not assigned to a module
-unk_00492140,0x00492140,0x004921F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004921F0,0x004921F0,0x00492210,unknown,code not assigned to a module
-unk_00492210,0x00492210,0x00492380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00492380,0x00492380,0x00492390,unknown,code not assigned to a module
-unk_00492390,0x00492390,0x00492720,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00492720,0x00492720,0x00492740,unknown,code not assigned to a module
-unk_00492740,0x00492740,0x00492B90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00492B90,0x00492B90,0x00492BB0,unknown,code not assigned to a module
-unk_00492BB0,0x00492BB0,0x00492D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00492D10,0x00492D10,0x00492D20,unknown,code not assigned to a module
-unk_00492D20,0x00492D20,0x00493010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+cpoint,0x00492140,0x00493010,tibsun,"functions compiled from src/cpoint.cpp, matched, without gaps; one placed by the gap"
 unk_00493010,0x00493010,0x00493930,unknown,code not assigned to a module
 unk_00493930,0x00493930,0x004939A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004939A0,0x004939A0,0x00493DF0,unknown,code not assigned to a module
