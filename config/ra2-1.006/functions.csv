@@ -985,6 +985,7 @@ address,size,evidence
 0x0059B050,64,"function of the Tiberian Sun reconstruction, matched"
 0x0059CBA0,352,"function of the Tiberian Sun reconstruction, matched"
 0x0059CD00,2032,"function of the Tiberian Sun reconstruction, matched"
+0x0059D4F0,16,"code of src/modemreg.cpp, matched: its code occurs at 104 addresses; placed by the gap the other functions of the file leave"
 0x0059D500,144,"function of the Tiberian Sun reconstruction, matched"
 0x0059EB70,48,"function of the Tiberian Sun reconstruction, matched"
 0x0059ED30,144,"function of the Tiberian Sun reconstruction, matched"

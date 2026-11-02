@@ -550,9 +550,7 @@ unk_0059AC80,0x0059AC80,0x0059AFD0,tibsun,matched functions of one source file o
 unk_0059AFD0,0x0059AFD0,0x0059B050,unknown,code not assigned to a module
 unk_0059B050,0x0059B050,0x0059B090,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0059B090,0x0059B090,0x0059CBA0,unknown,code not assigned to a module
-unk_0059CBA0,0x0059CBA0,0x0059D4F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0059D4F0,0x0059D4F0,0x0059D500,unknown,code not assigned to a module
-unk_0059D500,0x0059D500,0x0059D590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+modemreg,0x0059CBA0,0x0059D590,tibsun,"functions compiled from src/modemreg.cpp, matched, without gaps; one placed by the gap"
 unk_0059D590,0x0059D590,0x0059EB70,unknown,code not assigned to a module
 unk_0059EB70,0x0059EB70,0x0059EBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0059EBA0,0x0059EBA0,0x0059ED30,unknown,code not assigned to a module
