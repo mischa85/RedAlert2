@@ -689,8 +689,8 @@ pipe,0x0060EA60,0x0060EB20,tibsun,"functions compiled from src/pipe.cpp, matched
 unk_0060EB20,0x0060EB20,0x0060ED40,unknown,code not assigned to a module
 pk,0x0060ED40,0x0060F7A0,tibsun,"functions compiled from src/pk.cpp, matched, without gaps"
 unk_0060F7A0,0x0060F7A0,0x0060FA90,unknown,code not assigned to a module
-unk_0060FA90,0x0060FA90,0x0060FD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0060FD10,0x0060FD10,0x0060FE30,unknown,code not assigned to a module
+pkpipe,0x0060FA90,0x0060FD70,tibsun,"functions compiled from src/pkpipe.cpp, matched, without gaps; two placed by alphabetical order"
+unk_0060FD70,0x0060FD70,0x0060FE30,unknown,code not assigned to a module
 unk_0060FE30,0x0060FE30,0x006100E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006100E0,0x006100E0,0x0061BE40,unknown,code not assigned to a module
 polygon,0x0061BE40,0x0061C260,tibsun,"functions compiled from src/polygon.cpp, matched, without gaps"
