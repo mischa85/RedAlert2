@@ -259,7 +259,7 @@ effects,0x004B3160,0x004B3580,tibsun,"functions compiled from src/effects.cpp, m
 unk_004B3580,0x004B3580,0x004B3670,unknown,code not assigned to a module
 unk_004B3670,0x004B3670,0x004B3690,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004B3690,0x004B3690,0x004B4860,unknown,code not assigned to a module
-emember,0x004B4860,0x004B4970,tibsun,"functions compiled from src/emember.cpp, without gaps; matched except ?Build_INI_Entry@EnlistedMemberClass@@QBEPBDXZ"
+emember,0x004B4860,0x004B4970,tibsun,"functions compiled from src/emember.cpp, matched, without gaps"
 unk_004B4970,0x004B4970,0x004B5A70,unknown,code not assigned to a module
 unk_004B5A70,0x004B5A70,0x004B5AA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004B5AA0,0x004B5AA0,0x004B5C50,unknown,code not assigned to a module

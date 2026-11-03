@@ -569,6 +569,7 @@ address,size,evidence
 0x004B34F0,144,"function of the Tiberian Sun reconstruction, matched"
 0x004B3670,32,"function of the Tiberian Sun reconstruction, matched"
 0x004B4860,160,"function of the Tiberian Sun reconstruction, matched"
+0x004B4900,48,"code of src/emember.cpp, matched"
 0x004B4930,64,"function of the Tiberian Sun reconstruction, matched"
 0x004B5A70,48,"function of the Tiberian Sun reconstruction, matched"
 0x004B5C50,32,"function of the Tiberian Sun reconstruction, matched"
