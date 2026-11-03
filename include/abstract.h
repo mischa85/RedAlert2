@@ -61,7 +61,23 @@ class MonoClass;
 **	This class is the base class for all game objects that have an existence on the
 **	battlefield.
 */
-class AbstractClass : public IPersistStream, public IRTTITypeInfo
+// RA2: AbstractClass has two more base classes, which RTTI names INoticeSink and INoticeSource
+// RA2: (this-offsets 8 and 12). Each has one virtual; their names and parameter types are not known.
+class INoticeSink
+{
+	public:
+		// RA2: returns bool and takes 8 bytes of arguments (AbstractClass's version: xor al, al; ret 8).
+		virtual bool Unknown_Virtual_0(int, int) = 0;
+};
+
+class INoticeSource
+{
+	public:
+		// RA2: returns nothing and takes 4 bytes of arguments (AbstractClass's version: ret 4).
+		virtual void Unknown_Virtual_0(int) = 0;
+};
+
+class AbstractClass : public IPersistStream, public IRTTITypeInfo, public INoticeSink, public INoticeSource // RA2: INoticeSink and INoticeSource added
 {
 	public:
 
@@ -84,6 +100,12 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 		__declspec(property(get = Fetch_RTTI)) RTTIType RTTI;
 		int ID;
 
+		// RA2: +0x14 is a bit field; the constructor clears its low three bits. Its name is not known.
+		unsigned Unknown_14 : 3;
+
+		// RA2: +0x18 is a 4-byte member the constructor sets to 0. Its name and type are not known.
+		int Unknown_18;
+
 		/*
 		 * This is the count of outstanding COM references to this object. Only projectiles
 		 * are genuinely reference counted -- everything else answers 1 to AddRef and to
@@ -103,6 +125,10 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 		AbstractClass(void);
 		AbstractClass(NoInitClass const & x);
 		virtual ~AbstractClass(void);
+
+		// RA2: AbstractClass's versions of the INoticeSink and INoticeSource virtuals.
+		virtual bool Unknown_Virtual_0(int, int) override;
+		virtual void Unknown_Virtual_0(int) override;
 
 		virtual HRESULT STDMETHODCALLTYPE QueryInterface(REFIID riid, LPVOID * ppvObject) override;
 		virtual ULONG STDMETHODCALLTYPE AddRef(void) override;
@@ -132,8 +158,8 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo
 		**	Query functions.
 		*/
 		virtual RTTIType Fetch_RTTI(void) const = 0;
-		virtual int Fetch_Object_Size(bool oldsave) const = 0;
-		virtual int Get_Object_Size_Delta(void) const;
+		virtual int Fetch_Object_Size(void) const = 0; // RA2: no argument; every override returns with a plain ret
+		// RA2: Get_Object_Size_Delta is not in RA2's vtables (Compute_CRC follows Fetch_Object_Size).
 		virtual void Compute_CRC(CRCEngine &) const;
 
 		virtual HousesType Owner(void) const;

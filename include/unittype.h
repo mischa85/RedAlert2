@@ -300,8 +300,8 @@ class UnitTypeClass : public TechnoTypeClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
-		virtual int Get_Object_Size_Delta(void) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
+		// RA2: Get_Object_Size_Delta is not in RA2's vtables (see abstract.h).
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual int Fetch_Heap_ID(void) const override;
 

@@ -63,7 +63,7 @@ class AircraftTypeClass : public TechnoTypeClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_AIRCRAFTTYPE);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this) - (oldsave ? Get_Object_Size_Delta() : 0));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument, no size delta
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual int Fetch_Heap_ID(void) const override {return(HeapID);}
 

@@ -682,7 +682,7 @@ class TechnoTypeClass : public ObjectTypeClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
 
-		virtual int Get_Object_Size_Delta(void) const override {return(sizeof(CollateralDamageCoefficient) + sizeof(Unused1));};
+		// RA2: Get_Object_Size_Delta is not in RA2's vtables (see abstract.h).
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		bool Is_Two_Shooter(void) const;
 		virtual bool Legal_Placement(Cell const & pos, HouseClass * house) const;
