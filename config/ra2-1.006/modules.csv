@@ -16,11 +16,7 @@ unk_0041F0C0,0x0041F0C0,0x0041F0F0,tibsun,matched functions of one source file o
 unk_0041F0F0,0x0041F0F0,0x0041F950,unknown,code not assigned to a module
 unk_0041F950,0x0041F950,0x0041F9C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0041F9C0,0x0041F9C0,0x00423F90,unknown,code not assigned to a module
-unk_00423F90,0x00423F90,0x00424060,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00424060,0x00424060,0x00424070,unknown,code not assigned to a module
-unk_00424070,0x00424070,0x00424390,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00424390,0x00424390,0x004246F0,unknown,code not assigned to a module
-unk_004246F0,0x004246F0,0x00424B90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+animfile,0x00423F90,0x00424B90,tibsun,"functions compiled from src/animfile.cpp, matched, without gaps"
 unk_00424B90,0x00424B90,0x00426B70,unknown,code not assigned to a module
 unk_00426B70,0x00426B70,0x00426CE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00426CE0,0x00426CE0,0x00426E50,unknown,code not assigned to a module
