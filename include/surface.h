@@ -79,6 +79,8 @@ class Surface
 		virtual bool Draw_Depth_Shaded_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, unsigned color, int start_depth, int end_depth, bool write_depth = false) = 0;
 		virtual bool Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, int glow_strength, int start_depth, int end_depth, bool write_depth = false) = 0;
 		virtual bool Draw_Depth_Antialiased_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, RGBClass & color, int start_depth, int end_depth, bool write_depth, bool blend_red, bool blend_green, bool blend_blue, float intensity) = 0;
+		// RA2: vtable slot +0x40 is a virtual Tiberian Sun does not have; it returns bool and takes 28 bytes of arguments. Its name and parameter types are not known.
+		virtual bool Unknown_Virtual_40(int, int, int, int, int, int, int) = 0;
 
 		virtual bool Plot_Line(Rect const &area, Point2D &start, Point2D &end, void(*drawer_callback)(Point2D const &)) = 0;
 
