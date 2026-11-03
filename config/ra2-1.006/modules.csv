@@ -414,7 +414,7 @@ unk_00532290,0x00532290,0x005322C0,tibsun,matched functions of one source file o
 unk_005322C0,0x005322C0,0x005332B0,unknown,code not assigned to a module
 unk_005332B0,0x005332B0,0x00533330,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00533330,0x00533330,0x005348A0,unknown,code not assigned to a module
-layer,0x005348A0,0x00534B50,tibsun,"functions compiled from src/layer.cpp, without gaps; matched except ?Sort@LayerClass@@QAEXXZ"
+layer,0x005348A0,0x00534B50,tibsun,"functions compiled from src/layer.cpp, matched, without gaps"
 lcw,0x00534B50,0x00534EE0,tibsun,"functions compiled from src/lcw.cpp, matched, without gaps"
 lcwpipe,0x00534EE0,0x00535280,tibsun,"functions compiled from src/lcwpipe.cpp, matched, without gaps; one placed by alphabetical order"
 unk_00535280,0x00535280,0x005352D0,unknown,code not assigned to a module

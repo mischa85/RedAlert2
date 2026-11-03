@@ -161,6 +161,7 @@ address,symbol,evidence
 0x0052EE40,?Set_Bit@@YIXPAXHH@Z,"inferred: referenced by matched src/vector.cpp (7 references); across all matched code never at another address, and no other symbol here"
 0x0052EE90,?Get_Bit@@YIHPBXH@Z,"inferred: referenced by matched src/vector.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x005348A0,?Submit@LayerClass@@UAE_NPBVObjectClass@@_N@Z,"compiled from src/layer.cpp, matched"
+0x00534920,?Sort@LayerClass@@QAEXXZ,"compiled from src/layer.cpp, matched"
 0x00534980,?Sorted_Add@LayerClass@@QAEHQBVObjectClass@@@Z,"compiled from src/layer.cpp, matched"
 0x00534A10,?Save@LayerClass@@QAEJPAUIStream@@@Z,"compiled from src/layer.cpp, matched"
 0x00534A80,?Load@LayerClass@@QAEJPAUIStream@@@Z,"compiled from src/layer.cpp, matched"
