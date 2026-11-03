@@ -5,9 +5,9 @@ unk_0040D810,0x0040D810,0x0040DB60,unknown,code not assigned to a module
 unk_0040DB60,0x0040DB60,0x0040DB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0040DB90,0x0040DB90,0x00410260,unknown,code not assigned to a module
 unk_00410260,0x00410260,0x00410290,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00410290,0x00410290,0x00410BD0,unknown,code not assigned to a module
-unk_00410BD0,0x00410BD0,0x00410BF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00410BF0,0x00410BF0,0x00412390,unknown,code not assigned to a module
+unk_00410290,0x00410290,0x00410A60,unknown,code not assigned to a module
+abuffer,0x00410A60,0x00411270,tibsun,"functions compiled from src/abuffer.cpp, without gaps; matched except ?Pan@ABuffer@@QAEXHHG@Z; five placed by alphabetical order"
+unk_00411270,0x00411270,0x00412390,unknown,code not assigned to a module
 ahtoi,0x00412390,0x004123E0,tibsun,"functions compiled from src/ahtoi.cpp, matched, without gaps"
 unk_004123E0,0x004123E0,0x0041E3E0,unknown,code not assigned to a module
 unk_0041E3E0,0x0041E3E0,0x0041E600,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
