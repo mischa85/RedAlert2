@@ -1,5 +1,9 @@
 address,symbol,evidence
 0x004068F0,?DebugString@@YAXPBDZZ,"inferred: referenced by matched src/wincomm.cpp (134 references); across all matched code never at another address, and no other symbol here"
+0x0040DB60,?Name_From_RTTI@@YIPBDW4RTTIType@@@Z,"compiled from src/_rtti.cpp, matched"
+0x0040DB90,?RTTI_From_Name@@YI?AW4RTTIType@@PBD@Z,"compiled from src/_rtti.cpp, matched; code at 2 addresses, placed by the gap"
+0x0040DBD0,?Dynamic_Cast@@YIPBVTechnoClass@@PBVAbstractClass@@@Z,"compiled from src/_rtti.cpp, matched; identical code at two addresses, placed by definition order"
+0x0040DC20,?Dynamic_Cast@@YIPAVTechnoClass@@PAVAbstractClass@@@Z,"compiled from src/_rtti.cpp, matched; identical code at two addresses, placed by definition order"
 0x0040FF10,??0AbstractClass@@QAE@XZ,"inferred: referenced by matched src/brain.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x0040FF60,??0AbstractClass@@QAE@ABVNoInitClass@@@Z,"inferred: referenced by matched src/brain.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x0040FF90,??1AbstractClass@@UAE@XZ,"inferred: referenced by matched src/brain.cpp (2 references); across all matched code never at another address, and no other symbol here"
@@ -1366,6 +1370,7 @@ address,symbol,evidence
 0x007B227C,___dnames,"data of VC6 library objects, its data section matched"
 0x007B2294,___mnames,"data of VC6 library objects, its data section matched"
 0x007CC944,??_C@_01PCFE@?2?$AA@,"inferred: referenced by matched src/modemreg.cpp (6 references); across all matched code never at another address, and no other symbol here"
+0x007CDBB0,_UNKNOWN_RTTI_NAME,"inferred: referenced by matched src/_rtti.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x007CDECC,??_C@_06CPHF@?$DMnone?$DO?$AA@,"inferred: referenced by matched src/category.cpp (22 references); across all matched code never at another address, and no other symbol here"
 0x007CE168,?ZGradients@@3PAUZGradStruct@@A,"inferred: referenced by matched src/blit.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007CE610,__GUID_00000000_0000_0000_c000_000000000046,"inferred: referenced by matched src/blowfish.cpp (1 reference); across all matched code never at another address, and no other symbol here"
