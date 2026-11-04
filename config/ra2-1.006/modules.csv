@@ -324,9 +324,7 @@ unk_004E08D0,0x004E08D0,0x004E08F0,tibsun,matched functions of one source file o
 unk_004E08F0,0x004E08F0,0x004E0960,unknown,code not assigned to a module
 unk_004E0960,0x004E0960,0x004E0980,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004E0980,0x004E0980,0x004E12B0,unknown,code not assigned to a module
-unk_004E12B0,0x004E12B0,0x004E1350,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004E1350,0x004E1350,0x004E13C0,unknown,code not assigned to a module
-unk_004E13C0,0x004E13C0,0x004E13F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+hicolor,0x004E12B0,0x004E13F0,tibsun,"functions compiled from src/hicolor.cpp, without gaps; matched except ?rgb24_to_rgb1555@@YIXPAEHHHH@Z"
 unk_004E13F0,0x004E13F0,0x004E2AD0,unknown,code not assigned to a module
 unk_004E2AD0,0x004E2AD0,0x004E2AF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004E2AF0,0x004E2AF0,0x004E3640,unknown,code not assigned to a module
