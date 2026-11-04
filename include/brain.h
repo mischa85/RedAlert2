@@ -31,7 +31,7 @@ class NeuronClass : public AbstractClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override { return(RTTI_NEURON); }
-		virtual int Fetch_Object_Size(bool oldsave) const override { return(sizeof(NeuronClass)); }
+		virtual int Fetch_Object_Size(void) const override { return(sizeof(NeuronClass)); } // RA2: no argument
 
 		virtual void Compute_CRC(CRCEngine &) const override;
 
