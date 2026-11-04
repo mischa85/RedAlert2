@@ -131,8 +131,8 @@ unk_0046FE10,0x0046FE10,0x0046FE20,unknown,code not assigned to a module
 unk_0046FE20,0x0046FE20,0x00470490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00470490,0x00470490,0x004763D0,unknown,code not assigned to a module
 unk_004763D0,0x004763D0,0x00476460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00476460,0x00476460,0x0047D270,unknown,code not assigned to a module
-unk_0047D270,0x0047D270,0x0047D2C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00476460,0x00476460,0x0047D150,unknown,code not assigned to a module
+checkbox,0x0047D150,0x0047D2C0,tibsun,"functions compiled from src/checkbox.cpp, matched, without gaps"
 unk_0047D2C0,0x0047D2C0,0x0047D330,unknown,code not assigned to a module
 unk_0047D330,0x0047D330,0x0047D3B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0047D3B0,0x0047D3B0,0x0047D3C0,unknown,code not assigned to a module
