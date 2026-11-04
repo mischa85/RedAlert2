@@ -975,14 +975,8 @@ unk_0076EF40,0x0076EF40,0x0076EF90,tibsun,matched functions of one source file o
 unk_0076EF90,0x0076EF90,0x00773730,unknown,code not assigned to a module
 xpipe,0x00773730,0x00773840,tibsun,"functions compiled from src/xpipe.cpp, matched, without gaps"
 xstraw,0x00773840,0x00773930,tibsun,"functions compiled from src/xstraw.cpp, matched, without gaps"
-unk_00773930,0x00773930,0x00774130,unknown,code not assigned to a module
-unk_00774130,0x00774130,0x007741D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_007741D0,0x007741D0,0x00774C90,unknown,code not assigned to a module
-unk_00774C90,0x00774C90,0x00774E20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00774E20,0x00774E20,0x00775190,unknown,code not assigned to a module
-unk_00775190,0x00775190,0x00775360,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00775360,0x00775360,0x00775620,unknown,code not assigned to a module
-unk_00775620,0x00775620,0x00775980,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00773930,0x00773930,0x00773950,unknown,code not assigned to a module
+xsurface,0x00773950,0x00775980,tibsun,"functions compiled from src/xsurface.cpp, without gaps; matched except ?Plot_Line@XSurface@@UAE_NABV?$TRect@H@@AAVPoint2D@@1P6IXABV3@@Z@Z and ?Draw_Ellipse@XSurface@@UAE_NVPoint2D@@HHV?$TRect@H@@H@Z; five placed by definition order; three placed by the gap"
 unk_00775980,0x00775980,0x00775B80,unknown,code not assigned to a module
 zbuffer,0x00775B80,0x00776380,tibsun,"functions compiled from src/zbuffer.cpp, without gaps; matched except ?Pan@ZBuffer@@QAEXHHG@Z; five placed by alphabetical order"
 unk_00776380,0x00776380,0x00781C8C,unknown,code not assigned to a module
