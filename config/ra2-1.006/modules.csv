@@ -39,10 +39,8 @@ unk_0042AA30,0x0042AA30,0x0042B670,unknown,code not assigned to a module
 b64pipe,0x0042B670,0x0042B850,tibsun,"functions compiled from src/b64pipe.cpp, matched, without gaps"
 b64straw,0x0042B850,0x0042B950,tibsun,"functions compiled from src/b64straw.cpp, matched, without gaps"
 unk_0042B950,0x0042B950,0x0042B970,unknown,code not assigned to a module
-unk_0042B970,0x0042B970,0x0042B9C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0042B9C0,0x0042B9C0,0x0042B9D0,unknown,code not assigned to a module
-unk_0042B9D0,0x0042B9D0,0x0042BA10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0042BA10,0x0042BA10,0x0042BEE0,unknown,code not assigned to a module
+bar,0x0042B970,0x0042BCD0,tibsun,"functions compiled from src/bar.cpp, matched, without gaps"
+unk_0042BCD0,0x0042BCD0,0x0042BEE0,unknown,code not assigned to a module
 unk_0042BEE0,0x0042BEE0,0x0042BF60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0042BF60,0x0042BF60,0x0042BF70,unknown,code not assigned to a module
 unk_0042BF70,0x0042BF70,0x0042C000,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
