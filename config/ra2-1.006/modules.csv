@@ -193,9 +193,7 @@ ddraw,0x004955D0,0x00496460,tibsun,"functions compiled from src/ddraw.cpp, witho
 unk_00496460,0x00496460,0x00496A20,unknown,code not assigned to a module
 delay,0x00496A20,0x00496D10,tibsun,"functions compiled from src/delay.cpp, matched, without gaps"
 unk_00496D10,0x00496D10,0x00496D30,unknown,code not assigned to a module
-unk_00496D30,0x00496D30,0x00496FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00496FE0,0x00496FE0,0x004972E0,unknown,code not assigned to a module
-unk_004972E0,0x004972E0,0x00497320,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+dial8,0x00496D30,0x00497320,tibsun,"functions compiled from src/dial8.cpp, without gaps; matched except ?Action@Dial8Class@@MAEHIAAW4KeyNumType@@@Z; one placed by the gap"
 unk_00497320,0x00497320,0x004981C0,unknown,code not assigned to a module
 dib,0x004981C0,0x004983E0,tibsun,"functions compiled from src/dib.cpp, matched, without gaps"
 unk_004983E0,0x004983E0,0x004985C0,unknown,code not assigned to a module
