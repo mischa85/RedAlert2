@@ -259,15 +259,7 @@ unk_004B8970,0x004B8970,0x004B89C0,tibsun,matched functions of one source file o
 unk_004B89C0,0x004B89C0,0x004B89D0,unknown,code not assigned to a module
 facing,0x004B89D0,0x004B8EB0,tibsun,"functions compiled from src/facing.cpp, without gaps; matched except ?Set_Desired@FacingClass@@QAE_NABVDirType@@@Z and ?Is_Rotating_CCW@FacingClass@@QBE_NXZ"
 unk_004B8EB0,0x004B8EB0,0x004BA410,unknown,code not assigned to a module
-unk_004BA410,0x004BA410,0x004BA580,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004BA580,0x004BA580,0x004BA5B0,unknown,code not assigned to a module
-unk_004BA5B0,0x004BA5B0,0x004BA6C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004BA6C0,0x004BA6C0,0x004BA830,unknown,code not assigned to a module
-unk_004BA830,0x004BA830,0x004BAA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004BAA60,0x004BAA60,0x004BAA90,unknown,code not assigned to a module
-unk_004BAA90,0x004BAA90,0x004BAB30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004BAB30,0x004BAB30,0x004BABA0,unknown,code not assigned to a module
-unk_004BABA0,0x004BABA0,0x004BAD50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+fastmath,0x004BA410,0x004BAD50,tibsun,"functions compiled from src/fastmath.cpp, without gaps; matched except ?init_sqrt_tab@@YIXXZ and ?init_atan_tab@@YIXXZ; three placed by the gap"
 field,0x004BAD50,0x004BB160,tibsun,"functions compiled from src/field.cpp, matched, without gaps"
 unk_004BB160,0x004BB160,0x004BBF00,unknown,code not assigned to a module
 flasher,0x004BBF00,0x004BBF20,tibsun,"functions compiled from src/flasher.cpp, matched, without gaps"
