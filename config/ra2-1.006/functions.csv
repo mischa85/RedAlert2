@@ -34,6 +34,7 @@ address,size,evidence
 0x00410240,16,"code of src/abstract.cpp, matched: its code occurs at 41 addresses; placed by the gap the other functions of the file leave"
 0x00410250,16,"code of src/abstract.cpp, matched: its code occurs at 41 addresses; placed by the gap the other functions of the file leave"
 0x00410260,48,"function of the Tiberian Sun reconstruction, matched"
+0x00410290,48,"code of src/abstract.cpp, matched: its code occurs at 3 addresses; placed by the gap the other functions of the file leave"
 0x004102C0,16,"code of src/abstract.cpp, matched: its code occurs at 58 addresses; placed by the gap the other functions of the file leave, up to the copy of ??_GAbstractClass@@UAEPAXI@Z at 0x00410340"
 0x004102D0,16,"code of src/abstract.cpp, matched: its code occurs at 58 addresses; placed by the gap the other functions of the file leave, up to the copy of ??_GAbstractClass@@UAEPAXI@Z at 0x00410340"
 0x004102E0,48,"code of src/abstract.cpp, matched: its code occurs at 3 addresses; placed by the gap the other functions of the file leave, up to the copy of ??_GAbstractClass@@UAEPAXI@Z at 0x00410340"
