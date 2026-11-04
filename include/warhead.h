@@ -60,7 +60,7 @@ class WarheadTypeClass : public AbstractTypeClass
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 
 		virtual void Compute_CRC(CRCEngine &) const override;
 
@@ -218,5 +218,9 @@ class WarheadTypeClass : public AbstractTypeClass
 		 * retaliates against the veinhole that owns the veins it is standing in.
 		 */
 		bool IsVeinhole;
+
+		// RA2: WarheadTypeClass is 376 bytes (Warhead_From_Name allocates 376, Tiberian Sun 240); where the 136 bytes
+		// RA2: Tiberian Sun does not have lie is not known.
+		int Unknown_F0[34];
 
 };
