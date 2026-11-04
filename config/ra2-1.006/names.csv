@@ -431,6 +431,7 @@ address,symbol,evidence
 0x005B6A30,??BMillisecondSystemTimerClass@@QBEHXZ,"compiled from src/mstimer.cpp, matched; identical code at three addresses, placed by definition and alphabetical order"
 0x005D4AE0,??OObjectClass@@QBE_NABV0@@Z,"inferred: referenced by matched src/layer.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x005D7EF0,?Clear_Voxel_Indexes@ObjectTypeClass@@SIXXZ,"inferred: referenced by matched src/voxel.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x005D8390,?Obfuscate@@YIHPBD@Z,"compiled from src/obscure.cpp, matched"
 0x00602A60,??1PacketClass@@QAE@XZ,"compiled from src/packet.cpp, matched"
 0x00602A90,?Add_Field@PacketClass@@QAEXPAVFieldClass@@@Z,"compiled from src/packet.cpp, matched"
 0x00602AA0,??0PacketClass@@QAE@PAD@Z,"compiled from src/packet.cpp, matched"
@@ -1062,6 +1063,7 @@ address,symbol,evidence
 0x00796EF6,__wcsupr,symbol of VC6 LIBCMT.LIB wcsupr.obj
 0x00797033,__wcsdup,symbol of VC6 LIBCMT.LIB wcsdup.obj
 0x00797070,__strrev,symbol of VC6 LIBCMT.LIB strrev.obj
+0x00797070,_strrev,"alias of __strrev: VC6 OLDNAMES.LIB strrev.obj defines _strrev as a weak external for __strrev, which LIBCMT.LIB strrev.obj defines here; referenced by matched src/obscure.cpp"
 0x007970A0,__wcsnicmp,symbol of VC6 LIBCMT.LIB wcsnicmp.obj
 0x00797198,__filelength,symbol of VC6 LIBCMT.LIB flength.obj
 0x00797222,_towlower,symbol of VC6 LIBCMT.LIB towlower.obj
