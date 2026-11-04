@@ -905,10 +905,8 @@ unk_00721DB0,0x00721DB0,0x00721EB0,tibsun,matched functions of one source file o
 unk_00721EB0,0x00721EB0,0x007220C0,unknown,code not assigned to a module
 unk_007220C0,0x007220C0,0x00722190,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00722190,0x00722190,0x007249F0,unknown,code not assigned to a module
-unk_007249F0,0x007249F0,0x00724AD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00724AD0,0x00724AD0,0x00724AE0,unknown,code not assigned to a module
-unk_00724AE0,0x00724AE0,0x00724B00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00724B00,0x00724B00,0x00726930,unknown,code not assigned to a module
+waypoint,0x007249F0,0x00725200,tibsun,"functions compiled from src/waypoint.cpp, matched, without gaps; _$E5 and _$E3 not placed; four placed by the gap"
+unk_00725200,0x00725200,0x00726930,unknown,code not assigned to a module
 unk_00726930,0x00726930,0x007269B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_007269B0,0x007269B0,0x0072A7C0,unknown,code not assigned to a module
 unk_0072A7C0,0x0072A7C0,0x0072A840,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
