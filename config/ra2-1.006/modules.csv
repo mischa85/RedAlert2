@@ -3,9 +3,9 @@ unk_00401000,0x00401000,0x0040D7D0,unknown,code not assigned to a module
 unk_0040D7D0,0x0040D7D0,0x0040D810,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0040D810,0x0040D810,0x0040DB60,unknown,code not assigned to a module
 unk_0040DB60,0x0040DB60,0x0040DB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0040DB90,0x0040DB90,0x00410260,unknown,code not assigned to a module
-unk_00410260,0x00410260,0x00410290,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00410290,0x00410290,0x00410A60,unknown,code not assigned to a module
+unk_0040DB90,0x0040DB90,0x0040FF10,unknown,code not assigned to a module
+abstract,0x0040FF10,0x00410340,tibsun,"functions compiled from src/abstract.cpp, without gaps; matched except ??0AbstractClass@@QAE@XZ and ?Destination_Coord@AbstractClass@@UBE?AVCoord@@XZ; 16 placed by the gap"
+unk_00410340,0x00410340,0x00410A60,unknown,code not assigned to a module
 abuffer,0x00410A60,0x00411270,tibsun,"functions compiled from src/abuffer.cpp, without gaps; matched except ?Pan@ABuffer@@QAEXHHG@Z; five placed by alphabetical order"
 unk_00411270,0x00411270,0x00412390,unknown,code not assigned to a module
 ahtoi,0x00412390,0x004123E0,tibsun,"functions compiled from src/ahtoi.cpp, matched, without gaps"
