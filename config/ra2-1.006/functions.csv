@@ -672,6 +672,7 @@ address,size,evidence
 0x004CF660,32,"function of the Tiberian Sun reconstruction, matched"
 0x004CF680,32,"function of the Tiberian Sun reconstruction, matched"
 0x004CF6A0,112,"function of the Tiberian Sun reconstruction, matched"
+0x004D0040,16,"code of src/gametime.cpp, matched: too short for the match rule"
 0x004D0050,32,"function of the Tiberian Sun reconstruction, matched"
 0x004D0070,32,"function of the Tiberian Sun reconstruction, matched"
 0x004D0090,64,"function of the Tiberian Sun reconstruction, matched"

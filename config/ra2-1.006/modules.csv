@@ -299,8 +299,8 @@ unk_004CF5A0,0x004CF5A0,0x004CF5B0,unknown,code not assigned to a module
 unk_004CF5B0,0x004CF5B0,0x004CF630,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004CF630,0x004CF630,0x004CF640,unknown,code not assigned to a module
 unk_004CF640,0x004CF640,0x004CF6A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004CF6A0,0x004CF6A0,0x004D0050,unknown,code not assigned to a module
-unk_004D0050,0x004D0050,0x004D00D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_004CF6A0,0x004CF6A0,0x004D0040,unknown,code not assigned to a module
+gametime,0x004D0040,0x004D00D0,tibsun,"functions compiled from src/gametime.cpp, matched, without gaps; _$E2 not placed"
 unk_004D00D0,0x004D00D0,0x004D00F0,unknown,code not assigned to a module
 unk_004D00F0,0x004D00F0,0x004D0280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004D0280,0x004D0280,0x004D0630,unknown,code not assigned to a module
