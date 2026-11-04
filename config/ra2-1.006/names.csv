@@ -109,7 +109,10 @@ address,symbol,evidence
 0x00468EA0,?Description_From_Category@@YIPBDW4CategoryType@@@Z,"compiled from src/category.cpp, matched; identical code at two addresses, placed by definition order"
 0x00468EC0,?Name_From_Category@@YIPBDW4CategoryType@@@Z,"compiled from src/category.cpp, matched; identical code at two addresses, placed by definition order"
 0x00468EE0,?Category_From_Name@@YI?AW4CategoryType@@PBD@Z,"compiled from src/category.cpp, matched"
+0x00469000,?Error@CCFileClass@@UAEXHHPBD@Z,"inferred: referenced by matched src/mixfile.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x00469220,?Open@CCFileClass@@UAEHH@Z,"inferred: referenced by matched src/mixfile.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x0046CB80,?End@Pipe@@UAEHXZ,"inferred: entry of ??_7Pipe@@6B@ in Pipe::End's slot; its code matches the inline Pipe::End compiled from src/pipe.cpp"
+0x00481FB0,?Call_Back@@YIXXZ,"inferred: referenced by matched src/mixfile.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x00483430,??0ControlClass@@QAE@IHHHHI_N@Z,"compiled from src/control.cpp, matched"
 0x00483480,??0ControlClass@@QAE@ABV0@@Z,"compiled from src/control.cpp, matched"
 0x004834B0,?Action@ControlClass@@MAEHIAAW4KeyNumType@@@Z,"compiled from src/control.cpp, matched"
@@ -363,6 +366,18 @@ address,symbol,evidence
 0x00591180,??D@YI?AVMatrix3D@@ABV0@0@Z,"compiled from src/matrix3d.cpp, matched"
 0x00591400,?Matrix3DStruct_To_Matrix3D@Matrix3D@@SIAAV1@AAV1@ABUMatrix3DStruct@@@Z,"compiled from src/matrix3d.cpp, matched"
 0x00591420,?Orthogonal_Inverse@Matrix3D@@SI?AV1@ABV1@@Z,"compiled from src/matrix3d.cpp, matched"
+0x00595190,_$E19,"compiled from src/mixfile.cpp, matched"
+0x005951E0,_$E16,"compiled from src/mixfile.cpp, matched"
+0x005952D0,?compfunc@@YAHPBX0@Z,"compiled from src/mixfile.cpp, matched"
+0x00595560,?Free@MixFileClass@@SI_NPBD@Z,"compiled from src/mixfile.cpp, matched"
+0x00595620,??1MixFileClass@@UAE@XZ,"compiled from src/mixfile.cpp, matched"
+0x005956C0,?Retrieve@MixFileClass@@SIPBXPBD@Z,"compiled from src/mixfile.cpp, matched"
+0x005956E0,?Finder@MixFileClass@@CIPAV1@PBD@Z,"compiled from src/mixfile.cpp, matched"
+0x00595770,?Cache@MixFileClass@@SI_NPBDPBVBuffer@@@Z,"compiled from src/mixfile.cpp, matched"
+0x00595810,?Cache@MixFileClass@@QAE_NPBVBuffer@@@Z,"compiled from src/mixfile.cpp, matched"
+0x00595A70,?Free@MixFileClass@@QAEXXZ,"compiled from src/mixfile.cpp, matched"
+0x00595AA0,?Offset@MixFileClass@@SI_NPBDPAPAXPAPAV1@PAH3@Z,"compiled from src/mixfile.cpp, matched"
+0x00595D10,??0SHAEngine@@QAE@XZ,"inferred: referenced by matched src/mixfile.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0059CBA0,?Search_Registry_Key@@YIPAUHKEY__@@PAU1@PBD1@Z,"compiled from src/modemreg.cpp, matched"
 0x0059CD00,??0ModemRegistryEntryClass@@QAE@H@Z,"compiled from src/modemreg.cpp, matched"
 0x0059D4F0,??1ModemRegistryEntryClass@@QAE@XZ,"compiled from src/modemreg.cpp, matched; code at 104 addresses, placed by the gap"
@@ -691,7 +706,7 @@ address,symbol,evidence
 0x0078266E,__heap_alloc,symbol of VC6 LIBCMT.LIB malloc.obj
 0x007826EB,__fread_lk,symbol of VC6 LIBCMT.LIB fread.obj
 0x00782802,__fwrite_lk,symbol of VC6 LIBCMT.LIB fwrite.obj
-0x0078298A,_atexit,"inferred: referenced by matched src/swizzle.cpp (6 references); across all matched code never at another address, and no other symbol here"
+0x0078298A,_atexit,"inferred: referenced by matched src/swizzle.cpp (7 references); across all matched code never at another address, and no other symbol here"
 0x007829D3,_toupper,symbol of VC6 LIBCMT.LIB toupper.obj
 0x00782A42,__toupper_lk,symbol of VC6 LIBCMT.LIB toupper.obj
 0x00782B0E,_isalpha,symbol of VC6 LIBCMT.LIB _ctype.obj
@@ -1009,6 +1024,7 @@ address,symbol,evidence
 0x0079602E,??0_com_error@@QAE@ABV0@@Z,symbol of VC6 COMSUPP.LIB comraise.obj
 0x0079605B,??1_com_error@@UAE@XZ,symbol of VC6 COMSUPP.LIB comraise.obj
 0x007961E4,__strupr,symbol of VC6 LIBCMT.LIB strupr.obj
+0x007961E4,_strupr,"alias of __strupr: VC6 OLDNAMES.LIB strupr.obj defines _strupr as a weak external for __strupr, which LIBCMT.LIB strupr.obj defines here; referenced by matched src/mixfile.cpp"
 0x00796318,__wcsicmp,symbol of VC6 LIBCMT.LIB wcsicmp.obj
 0x0079642F,__getch_lk,symbol of VC6 LIBCMT.LIB getch.obj
 0x00796500,__getche_lk,symbol of VC6 LIBCMT.LIB getch.obj
@@ -1140,6 +1156,10 @@ address,symbol,evidence
 0x0079A52C,__imp__timeBeginPeriod@4,"import slot of timeBeginPeriod (import table), referenced as __imp__timeBeginPeriod@4 by matched src/mstimer.cpp"
 0x0079A5F0,__imp__CoCreateInstance@20,"import slot of CoCreateInstance (import table), referenced as __imp__CoCreateInstance@20 by matched src/blowfish.cpp"
 0x0079A5F4,__imp__OleRun@4,"import slot of OleRun (import table), referenced as __imp__OleRun@4 by matched src/blowfish.cpp"
+0x0079A658,??_7CDFileClass@@6B@,"inferred: referenced by matched src/mixfile.cpp (20 references); across all matched code never at another address, and no other symbol here"
+0x0079A6A0,??_7CCFileClass@@6B@,"inferred: referenced by matched src/mixfile.cpp (20 references); across all matched code never at another address, and no other symbol here"
+0x0079AAF4,??_7GenericList@@6B@,"inferred: referenced by matched src/mixfile.cpp (4 references); across all matched code never at another address, and no other symbol here"
+0x0079AAFC,??_7GenericNode@@6B@,"inferred: referenced by matched src/mixfile.cpp (10 references); across all matched code never at another address, and no other symbol here"
 0x0079AEF8,??_7BSurface@@6B@,"inferred: referenced by matched src/dib.cpp (6 references); across all matched code never at another address, and no other symbol here"
 0x0079AF8C,??_7XSurface@@6B@,"inferred: referenced by matched src/dib.cpp (6 references); across all matched code never at another address, and no other symbol here"
 0x0079C294,??_7AnimFile@@6B@,"inferred: referenced by matched src/animfile.cpp (2 references); across all matched code never at another address, and no other symbol here"
@@ -1181,7 +1201,10 @@ address,symbol,evidence
 0x007A5464,??_7LCWPipe@@6B@,"inferred: referenced by matched src/lcwpipe.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007A547C,??_7LCWStraw@@6B@,"inferred: referenced by matched src/lcwstraw.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007A58B4,??_7LZOPipe@@6B@,"inferred: referenced by matched src/lzopipe.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x007A6458,??_7?$List@PAVMixFileClass@@@@6B@,"inferred: referenced by matched src/mixfile.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x007A6460,??_7BlowStraw@@6B@,"inferred: referenced by matched src/pkstraw.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x007A6470,??_7MixFileClass@@6B@,"inferred: referenced by matched src/mixfile.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x007A6478,??_7SHAStraw@@6B@,"inferred: referenced by matched src/mixfile.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007A8184,??_7PKPipe@@6B@,"inferred: referenced by matched src/pkpipe.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x007A81A0,??_7BlowPipe@@6B@,"inferred: referenced by matched src/pkpipe.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x007A81B8,??_7PKStraw@@6B@,"inferred: referenced by matched src/pkstraw.cpp (2 references); across all matched code never at another address, and no other symbol here"
@@ -1414,6 +1437,7 @@ address,symbol,evidence
 0x00A417C0,?Error@?$Int@$0EA@@@2HA,"inferred: referenced by matched src/pk.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x00A417C5,?Borrow@?$Int@$0EA@@@2_NA,"inferred: referenced by matched src/pk.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x00A6EB14,?COMRefCount@@3KA,"inferred: referenced by matched src/cpoint.cpp (16 references); across all matched code never at another address, and no other symbol here"
+0x00A70CC0,?List@MixFileClass@@0V?$List@PAVMixFileClass@@@@A,"inferred: referenced by matched src/mixfile.cpp (31 references); across all matched code never at another address, and no other symbol here"
 0x00A7177C,_TSC_High,"inferred: referenced by matched src/mpu.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00A71780,_TSC_Low,"inferred: referenced by matched src/mpu.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00AB6841,?BlackColor@@3VRGBClass@@B,"inferred: referenced by matched src/palette.cpp (2 references); across all matched code never at another address, and no other symbol here"

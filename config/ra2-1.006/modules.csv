@@ -501,10 +501,8 @@ unk_00593680,0x00593680,0x00594DB0,unknown,code not assigned to a module
 unk_00594DB0,0x00594DB0,0x00594FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00594FE0,0x00594FE0,0x00595020,unknown,code not assigned to a module
 unk_00595020,0x00595020,0x00595040,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00595040,0x00595040,0x005951E0,unknown,code not assigned to a module
-unk_005951E0,0x005951E0,0x005952F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005952F0,0x005952F0,0x00595560,unknown,code not assigned to a module
-unk_00595560,0x00595560,0x00595BC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00595040,0x00595040,0x00595190,unknown,code not assigned to a module
+mixfile,0x00595190,0x00595BC0,tibsun,"functions compiled from src/mixfile.cpp, without gaps; matched except ??0MixFileClass@@QAE@PBDPBVPKey@@@Z"
 unk_00595BC0,0x00595BC0,0x00596FC0,unknown,code not assigned to a module
 unk_00596FC0,0x00596FC0,0x00597010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00597010,0x00597010,0x0059AA20,unknown,code not assigned to a module
