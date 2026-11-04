@@ -879,13 +879,7 @@ unk_00735BC0,0x00735BC0,0x00735D70,tibsun,matched functions of one source file o
 unk_00735D70,0x00735D70,0x00735DB0,unknown,code not assigned to a module
 unk_00735DB0,0x00735DB0,0x00736210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00736210,0x00736210,0x00736230,unknown,code not assigned to a module
-unk_00736230,0x00736230,0x00736880,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00736880,0x00736880,0x007368A0,unknown,code not assigned to a module
-unk_007368A0,0x007368A0,0x00736D40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00736D40,0x00736D40,0x00736D80,unknown,code not assigned to a module
-unk_00736D80,0x00736D80,0x00736EA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00736EA0,0x00736EA0,0x00736EB0,unknown,code not assigned to a module
-unk_00736EB0,0x00736EB0,0x007371B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+winfix,0x00736230,0x007371B0,tibsun,"functions compiled from src/winfix.cpp, matched, without gaps; one placed by the gap"
 unk_007371B0,0x007371B0,0x00737A60,unknown,code not assigned to a module
 unk_00737A60,0x00737A60,0x00737AF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00737AF0,0x00737AF0,0x00737B00,unknown,code not assigned to a module
