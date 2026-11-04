@@ -494,7 +494,7 @@ unk_00591840,0x00591840,0x00591860,tibsun,matched functions of one source file o
 unk_00591860,0x00591860,0x00591900,unknown,code not assigned to a module
 unk_00591900,0x00591900,0x00591950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00591950,0x00591950,0x00593530,unknown,code not assigned to a module
-unk_00593530,0x00593530,0x00593680,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+milsectmr,0x00593530,0x00593680,tibsun,"functions compiled from src/milsectmr.cpp, matched, without gaps"
 unk_00593680,0x00593680,0x00594DB0,unknown,code not assigned to a module
 unk_00594DB0,0x00594DB0,0x00594FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00594FE0,0x00594FE0,0x00595020,unknown,code not assigned to a module
