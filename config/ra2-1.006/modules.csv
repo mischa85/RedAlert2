@@ -686,13 +686,7 @@ unk_00638610,0x00638610,0x00638700,unknown,code not assigned to a module
 unk_00638700,0x00638700,0x00638790,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00638790,0x00638790,0x00638950,unknown,code not assigned to a module
 unk_00638950,0x00638950,0x00638AC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00638AC0,0x00638AC0,0x00638B30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00638B30,0x00638B30,0x00638B40,unknown,code not assigned to a module
-unk_00638B40,0x00638B40,0x00638BE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00638BE0,0x00638BE0,0x00638C00,unknown,code not assigned to a module
-unk_00638C00,0x00638C00,0x00638D90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00638D90,0x00638D90,0x00638E80,unknown,code not assigned to a module
-unk_00638E80,0x00638E80,0x00639450,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+rawfile,0x00638AC0,0x00639450,tibsun,"functions compiled from src/rawfile.cpp, without gaps; matched except ?Read@RawFileClass@@UAEHPAXH@Z; two placed by the gap"
 unk_00639450,0x00639450,0x006395C0,unknown,code not assigned to a module
 readline,0x006395C0,0x00639710,tibsun,"functions compiled from src/readline.cpp, matched, without gaps"
 unk_00639710,0x00639710,0x0063BB40,unknown,code not assigned to a module
