@@ -839,7 +839,7 @@ unk_0071A950,0x0071A950,0x0071B220,unknown,code not assigned to a module
 unk_0071B220,0x0071B220,0x0071BAA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0071BAA0,0x0071BAA0,0x0071BC30,unknown,code not assigned to a module
 unk_0071BC30,0x0071BC30,0x0071BD00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0071BD00,0x0071BD00,0x0071C320,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+voxpal,0x0071BD00,0x0071C320,tibsun,"functions compiled from src/voxpal.cpp, matched, without gaps"
 unk_0071C320,0x0071C320,0x0071D660,unknown,code not assigned to a module
 unk_0071D660,0x0071D660,0x0071D6E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0071D6E0,0x0071D6E0,0x0071DB20,unknown,code not assigned to a module
