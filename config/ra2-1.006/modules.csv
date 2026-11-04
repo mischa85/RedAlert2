@@ -832,13 +832,7 @@ unk_00717B10,0x00717B10,0x00717C10,tibsun,matched functions of one source file o
 unk_00717C10,0x00717C10,0x00717C30,unknown,code not assigned to a module
 unk_00717C30,0x00717C30,0x00717CD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00717CD0,0x00717CD0,0x00717F90,unknown,code not assigned to a module
-unk_00717F90,0x00717F90,0x00717FB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00717FB0,0x00717FB0,0x00718D40,unknown,code not assigned to a module
-unk_00718D40,0x00718D40,0x00718E70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00718E70,0x00718E70,0x00718E80,unknown,code not assigned to a module
-unk_00718E80,0x00718E80,0x00719000,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00719000,0x00719000,0x00719010,unknown,code not assigned to a module
-unk_00719010,0x00719010,0x00719040,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+voxel,0x00717F90,0x00719040,tibsun,"functions compiled from src/voxel.cpp, without gaps; matched except ?Init_Voxel_Matrices@@YIXXZ; _$E9, _$E12, _$E15, _$E18, _$E21, _$E24, _$E27 and _$E30 not placed; two placed by the gap"
 unk_00719040,0x00719040,0x00719060,unknown,code not assigned to a module
 unk_00719060,0x00719060,0x007190C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_007190C0,0x007190C0,0x00719860,unknown,code not assigned to a module
