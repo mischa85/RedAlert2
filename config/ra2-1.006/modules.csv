@@ -191,9 +191,7 @@ unk_004954E0,0x004954E0,0x00495590,tibsun,matched functions of one source file o
 unk_00495590,0x00495590,0x004955D0,unknown,code not assigned to a module
 ddraw,0x004955D0,0x00496460,tibsun,"functions compiled from src/ddraw.cpp, without gaps; matched except ?GetVideoMemory@@YIKXZ"
 unk_00496460,0x00496460,0x00496A20,unknown,code not assigned to a module
-unk_00496A20,0x00496A20,0x00496C50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00496C50,0x00496C50,0x00496C70,unknown,code not assigned to a module
-unk_00496C70,0x00496C70,0x00496D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+delay,0x00496A20,0x00496D10,tibsun,"functions compiled from src/delay.cpp, matched, without gaps"
 unk_00496D10,0x00496D10,0x00496D30,unknown,code not assigned to a module
 unk_00496D30,0x00496D30,0x00496FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00496FE0,0x00496FE0,0x004972E0,unknown,code not assigned to a module
