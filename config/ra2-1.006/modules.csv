@@ -787,14 +787,8 @@ unk_0069A450,0x0069A450,0x0069ADA0,unknown,code not assigned to a module
 unk_0069ADA0,0x0069ADA0,0x0069ADC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0069ADC0,0x0069ADC0,0x0069B010,unknown,code not assigned to a module
 straw,0x0069B010,0x0069B0C0,tibsun,"functions compiled from src/straw.cpp, matched, without gaps"
-unk_0069B0C0,0x0069B0C0,0x0069FA60,unknown,code not assigned to a module
-unk_0069FA60,0x0069FA60,0x0069FB10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0069FB10,0x0069FB10,0x0069FB20,unknown,code not assigned to a module
-unk_0069FB20,0x0069FB20,0x0069FC00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0069FC00,0x0069FC00,0x0069FC30,unknown,code not assigned to a module
-unk_0069FC30,0x0069FC30,0x0069FD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0069FD10,0x0069FD10,0x0069FD70,unknown,code not assigned to a module
-unk_0069FD70,0x0069FD70,0x0069FD90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0069B0C0,0x0069B0C0,0x0069F950,unknown,code not assigned to a module
+swizzle,0x0069F950,0x0069FD90,tibsun,"functions compiled from src/swizzle.cpp, matched, without gaps; two placed by the gap"
 unk_0069FD90,0x0069FD90,0x006A3020,unknown,code not assigned to a module
 unk_006A3020,0x006A3020,0x006A33E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006A33E0,0x006A33E0,0x006A6570,unknown,code not assigned to a module
