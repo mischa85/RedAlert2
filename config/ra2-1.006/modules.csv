@@ -350,7 +350,7 @@ unk_004FC8D0,0x004FC8D0,0x004FC900,tibsun,matched functions of one source file o
 unk_004FC900,0x004FC900,0x004FEBD0,unknown,code not assigned to a module
 unk_004FEBD0,0x004FEBD0,0x004FEC80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004FEC80,0x004FEC80,0x004FEF70,unknown,code not assigned to a module
-unk_004FEF70,0x004FEF70,0x004FF170,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+hsv,0x004FEF70,0x004FF170,tibsun,"functions compiled from src/hsv.cpp, matched, without gaps; _$E3 not placed"
 unk_004FF170,0x004FF170,0x0050B8D0,unknown,code not assigned to a module
 unk_0050B8D0,0x0050B8D0,0x0050B9A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0050B9A0,0x0050B9A0,0x0050BBE0,unknown,code not assigned to a module
