@@ -68,7 +68,7 @@ class ToggleClass : public ControlClass
 		**	examine the IsOn flag and display accordingly. If this flag is false, then the
 		**	IsOn flag will not be changed, regardless of button clicking.
 		*/
-		bool IsToggleType;
+		int IsToggleType; // RA2: 4 bytes at +0x30; the constructor zeroes it as a dword and Action compares it with 1 and 2
 
 	protected:
 
