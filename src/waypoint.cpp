@@ -381,7 +381,7 @@ HRESULT STDMETHODCALLTYPE WaypointPathClass::Save(IStream *stream, int cleardirt
 /// This routine is used by the save process to know how many bytes the object occupies.
 /// </summary>
 /// <returns>Returns with the size of this object, in bytes.</returns>
-int WaypointPathClass::Fetch_Object_Size(bool) const
+int WaypointPathClass::Fetch_Object_Size(void) const // RA2: no argument
 {
 	return(sizeof(*this));
 }

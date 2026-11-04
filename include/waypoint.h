@@ -48,7 +48,7 @@ class WaypointPathClass : public AbstractClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		int Current_Waypoint(void) const {return(CurrentWaypoint);}
