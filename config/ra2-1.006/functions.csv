@@ -13,7 +13,7 @@ address,size,evidence
 0x0040DC20,80,"code of src/_rtti.cpp, matched: two functions with identical code, at exactly two addresses"
 0x0040E160,32,"function of the Tiberian Sun reconstruction, matched"
 0x0040E180,80,"function of the Tiberian Sun reconstruction, matched"
-0x0040FF10,,"inferred: target of the call at 0x00437914 in matched src/brain.cpp; size not known"
+0x0040FF10,80,"code of src/abstract.cpp, matched"
 0x0040FF60,,"inferred: target of the call at 0x00437B20 in matched src/brain.cpp; size not known"
 0x0040FF90,,"inferred: target of the call at 0x00437AB4 in matched src/brain.cpp; size not known"
 0x0040FFB0,16,"code of src/abstract.cpp, matched: too short for the match rule"
