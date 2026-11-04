@@ -412,7 +412,7 @@ Coord AbstractClass::Center_Coord(void) const
 /// override this. By default an object is approached at its center.
 /// </summary>
 /// <returns>Returns with the coordinate another object should head for.</returns>
-Coord AbstractClass::Destination_Coord(void) const
+Coord AbstractClass::Destination_Coord(int) const // RA2: see abstract.h
 {
 	assert(this != NULL);
 
