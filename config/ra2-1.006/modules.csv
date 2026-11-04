@@ -61,11 +61,9 @@ blowpipe,0x00435690,0x00435840,tibsun,"functions compiled from src/blowpipe.cpp,
 blwstraw,0x00435840,0x00435970,tibsun,"functions compiled from src/blwstraw.cpp, matched, without gaps; one placed by alphabetical order"
 unk_00435970,0x00435970,0x00436F80,unknown,code not assigned to a module
 unk_00436F80,0x00436F80,0x00436FF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00436FF0,0x00436FF0,0x00437BC0,unknown,code not assigned to a module
-unk_00437BC0,0x00437BC0,0x00437CC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00437CC0,0x00437CC0,0x00437D30,unknown,code not assigned to a module
-unk_00437D30,0x00437D30,0x00437DA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00437DA0,0x00437DA0,0x004382C0,unknown,code not assigned to a module
+unk_00436FF0,0x00436FF0,0x00437910,unknown,code not assigned to a module
+brain,0x00437910,0x00437F60,tibsun,"functions compiled from src/brain.cpp, matched, without gaps; three placed by the gap"
+unk_00437F60,0x00437F60,0x004382C0,unknown,code not assigned to a module
 buff,0x004382C0,0x00438470,tibsun,"functions compiled from src/buff.cpp, matched, without gaps; five placed by definition order"
 buffer,0x00438470,0x00438500,tibsun,"functions compiled from src/buffer.cpp, matched, without gaps"
 unk_00438500,0x00438500,0x00456030,unknown,code not assigned to a module
