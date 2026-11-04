@@ -181,11 +181,7 @@ unk_00494320,0x00494320,0x00494510,unknown,code not assigned to a module
 unk_00494510,0x00494510,0x00494530,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00494530,0x00494530,0x00494760,unknown,code not assigned to a module
 cstraw,0x00494760,0x00494800,tibsun,"functions compiled from src/cstraw.cpp, matched, without gaps"
-unk_00494800,0x00494800,0x00494910,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00494910,0x00494910,0x00494930,unknown,code not assigned to a module
-unk_00494930,0x00494930,0x00494CB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00494CB0,0x00494CB0,0x00494DE0,unknown,code not assigned to a module
-unk_00494DE0,0x00494DE0,0x004950F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+cstream,0x00494800,0x004950F0,tibsun,"functions compiled from src/cstream.cpp, without gaps; matched except ?Write@CStreamClass@@UAGJPBXKPAK@Z"
 unk_004950F0,0x004950F0,0x00495230,unknown,code not assigned to a module
 unk_00495230,0x00495230,0x00495270,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00495270,0x00495270,0x004953B0,unknown,code not assigned to a module

@@ -497,6 +497,7 @@ address,size,evidence
 0x00494760,160,"function of the Tiberian Sun reconstruction, matched"
 0x00494800,96,"function of the Tiberian Sun reconstruction, matched"
 0x00494860,176,"function of the Tiberian Sun reconstruction, matched"
+0x00494910,32,"code of src/cstream.cpp, matched"
 0x00494930,64,"function of the Tiberian Sun reconstruction, matched"
 0x00494970,144,"function of the Tiberian Sun reconstruction, matched"
 0x00494A00,144,"function of the Tiberian Sun reconstruction, matched"
