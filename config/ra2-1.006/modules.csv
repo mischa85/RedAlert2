@@ -535,11 +535,9 @@ unk_0059AFD0,0x0059AFD0,0x0059B050,unknown,code not assigned to a module
 unk_0059B050,0x0059B050,0x0059B090,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0059B090,0x0059B090,0x0059CBA0,unknown,code not assigned to a module
 modemreg,0x0059CBA0,0x0059D590,tibsun,"functions compiled from src/modemreg.cpp, matched, without gaps; one placed by the gap"
-unk_0059D590,0x0059D590,0x0059EB70,unknown,code not assigned to a module
-unk_0059EB70,0x0059EB70,0x0059EBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0059EBA0,0x0059EBA0,0x0059ED30,unknown,code not assigned to a module
-unk_0059ED30,0x0059ED30,0x0059EDC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0059EDC0,0x0059EDC0,0x0059F1D0,unknown,code not assigned to a module
+unk_0059D590,0x0059D590,0x0059EB60,unknown,code not assigned to a module
+motlib,0x0059EB60,0x0059EDE0,tibsun,"functions compiled from src/motlib.cpp, without gaps; matched except ?Read_File@MotionLibrary@@QAEHAAVFileClass@@@Z; two placed by definition order"
+unk_0059EDE0,0x0059EDE0,0x0059F1D0,unknown,code not assigned to a module
 unk_0059F1D0,0x0059F1D0,0x0059F250,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0059F250,0x0059F250,0x005A0250,unknown,code not assigned to a module
 unk_005A0250,0x005A0250,0x005A02B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
