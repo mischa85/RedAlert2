@@ -203,7 +203,7 @@ HRESULT STDMETHODCALLTYPE AbstractClass::Save(IStream * stream, BOOL cleardirty)
 
 	HRESULT result = stream->Write(&id, sizeof(id), NULL);
 	if (SUCCEEDED(result)) {
-		result = stream->Write(this, Fetch_Object_Size(false), NULL);
+		result = stream->Write(this, Fetch_Object_Size(), NULL); // RA2: Fetch_Object_Size takes no argument
 		if (SUCCEEDED(result)) {
 
 			if (cleardirty) {
@@ -240,7 +240,7 @@ HRESULT STDMETHODCALLTYPE AbstractClass::Load(IStream * stream)
 		Swizzle_Here_I_Am(id, this);
 		int ref = RefCount;
 
-		result = stream->Read(this, Fetch_Object_Size(IsOldSaveGame), NULL);
+		result = stream->Read(this, Fetch_Object_Size(), NULL); // RA2: Fetch_Object_Size takes no argument
 
 		RefCount = ref;
 	}
@@ -259,7 +259,7 @@ HRESULT STDMETHODCALLTYPE AbstractClass::GetSizeMax(ULARGE_INTEGER *pcbSize)
 		return(E_POINTER);
 	}
 
-	pcbSize->QuadPart = sizeof(int) + Fetch_Object_Size(false);
+	pcbSize->QuadPart = sizeof(int) + Fetch_Object_Size(); // RA2: Fetch_Object_Size takes no argument
 	return(S_OK);
 }
 
@@ -294,16 +294,7 @@ bool AbstractClass::Is_Inactive(void) const
 }
 
 
-/// <summary>
-/// Determines if this object is a techno object.
-/// Techno objects are the ownable and targetable ones -- infantry, units,
-/// aircraft and buildings.
-/// </summary>
-/// <returns>bool; Is this object derived from TechnoClass?</returns>
-bool AbstractClass::Is_Techno(void) const
-{
-	return(::Dynamic_Cast<TechnoClass const *>(this) != NULL);
-}
+// RA2: Is_Techno is not defined here: Is_Inactive (0x004101E0) is directly followed by IsDirty (0x004101F0).
 
 
 /// <summary>
@@ -347,20 +338,7 @@ void AbstractClass::Detach(AbstractClass const * target, bool all)
 }
 
 
-/// <summary>
-/// Fetches the save image size adjustment for this object.
-/// A save game written by an earlier version can store an object at a different
-/// size than the current build uses. Fetch_Object_Size adds this difference in when
-/// it is loading an old save, so the image is read back at the size it was written.
-/// </summary>
-/// <returns>Returns with the size difference in bytes; zero when the object has
-/// not changed size.</returns>
-int AbstractClass::Get_Object_Size_Delta(void) const
-{
-	assert(this != NULL);
-
-	return(0);
-}
+// RA2: Get_Object_Size_Delta is not in RA2's vtables (see abstract.h).
 
 
 /// <summary>
@@ -482,4 +460,15 @@ Coord AbstractClass::As_Coord(void) const
 void AbstractClass::AI(void)
 {
 	assert(this != NULL);
+}
+
+
+bool AbstractClass::Unknown_Virtual_0(int, int) // RA2: see INoticeSink (abstract.h)
+{
+	return(false); // RA2: AbstractClass's version is xor al, al; ret 8
+}
+
+
+void AbstractClass::Unknown_Virtual_0(int) // RA2: see INoticeSource (abstract.h); AbstractClass's version is ret 4
+{
 }
