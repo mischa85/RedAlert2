@@ -488,13 +488,7 @@ unk_0058B3E0,0x0058B3E0,0x0058B400,tibsun,matched functions of one source file o
 unk_0058B400,0x0058B400,0x0058B420,unknown,code not assigned to a module
 unk_0058B420,0x0058B420,0x0058DA10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0058DA10,0x0058DA10,0x0058FDE0,unknown,code not assigned to a module
-unk_0058FDE0,0x0058FDE0,0x00590550,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00590550,0x00590550,0x00590650,unknown,code not assigned to a module
-unk_00590650,0x00590650,0x00590D50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00590D50,0x00590D50,0x00590F10,unknown,code not assigned to a module
-unk_00590F10,0x00590F10,0x00591380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00591380,0x00591380,0x00591400,unknown,code not assigned to a module
-unk_00591400,0x00591400,0x005914E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+matrix3d,0x0058FDE0,0x005914E0,tibsun,"functions compiled from src/matrix3d.cpp, without gaps; matched except ?Pre_Rotate_Y@Matrix3D@@QAEXM@Z and ?Look_At@Matrix3D@@QAEXABVVector3@@0M@Z and ??D@YI?AVVector3@@ABVMatrix3D@@ABV0@@Z"
 unk_005914E0,0x005914E0,0x00591760,unknown,code not assigned to a module
 unk_00591760,0x00591760,0x005917C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005917C0,0x005917C0,0x00591840,unknown,code not assigned to a module
