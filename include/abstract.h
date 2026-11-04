@@ -101,7 +101,7 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo, public INotic
 		int ID;
 
 		// RA2: +0x14 is a bit field; the constructor clears its low three bits. Its name is not known.
-		unsigned Unknown_14 : 3;
+		unsigned char Unknown_14 : 3; // RA2: a byte: the constructor reads and writes it with byte instructions
 
 		// RA2: +0x18 is a 4-byte member the constructor sets to 0. Its name and type are not known.
 		int Unknown_18;

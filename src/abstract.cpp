@@ -57,9 +57,11 @@
 /// </summary>
 AbstractClass::AbstractClass(void) :
 	ID(-1),
+	Unknown_18(0), // RA2: the constructor sets Unknown_18 to 0
 	RefCount(0),
 	Dirty(false)
 {
+	Unknown_14 = 0; // RA2: the constructor clears Unknown_14
 }
 
 
