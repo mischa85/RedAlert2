@@ -463,6 +463,12 @@ bool XSurface::Draw_Depth_Antialiased_Line(Rect const & cliprect, Point2D const 
 }
 
 
+bool XSurface::Unknown_Virtual_40(int, int, int, int, int, int, int) // RA2: see Surface::Unknown_Virtual_40 (surface.h)
+{
+	return(false); // RA2: XSurface's version returns false
+}
+
+
 /// <summary>
 /// Walks a clipped line, handing each point to a callback.
 /// This routine is for callers that must do more at each step than store a color -- the
