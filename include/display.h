@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -85,6 +86,13 @@ class DisplayClass: public MapClass
 		Cell const *CursorSize;
 		bool ProximityCheck;				// Is proximity check ok?
 		bool ShroudCheck;					/// Is shroud check ok?
+
+		Cell CopyZoneCell; // RA2: a second footprint, copying the placement cursor (+0x117E)
+		Cell CopyZoneOffset; // RA2: +0x1182
+		Cell const *CopyCursorSize; // RA2: +0x1188
+		ObjectClass * CopyPendingObjectPtr; // RA2: +0x118C
+		ObjectTypeClass const * CopyPendingObject; // RA2: +0x1190
+		HousesType CopyPendingHouse; // RA2: +0x1194
 
 		/*
 		 * These record the object that the tactical view is following, if any. While the
@@ -222,6 +230,8 @@ class DisplayClass: public MapClass
 		 * true. While in this mode, the player can manage waypoint paths.
 		 */
 		bool IsWaypointMode;
+
+		bool IsBeaconMode; // RA2: +0x11B0, placing a beacon
 
 		/*
 		**	If the player is currently in ion cannon targeting mode, then this
