@@ -83,6 +83,8 @@ class BitFont
 		int Char_Width(wchar_t ch);
 		void Reset(void);
 
+		static BitFont * Instance;
+
 		InternalData * Data;
 		void * MissingChar;
 		short * Buffer;
