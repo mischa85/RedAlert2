@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -161,6 +162,7 @@ int LZOStraw::Get(void * destbuf, int slen)
 			char *staging_buffer = new char [BlockHeader.CompCount];
 			incount = BASECLASS::Get(staging_buffer, BlockHeader.CompCount);
 			if (incount != BlockHeader.CompCount) {
+				if (staging_buffer != NULL) delete [] staging_buffer; // RA2: a short read frees the staging buffer before leaving the loop
  				break;
 			}
 			unsigned int length = sizeof(Buffer);
