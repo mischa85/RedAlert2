@@ -703,7 +703,9 @@ unk_0066E0A0,0x0066E0A0,0x00671600,unknown,code not assigned to a module
 unk_00671600,0x00671600,0x00671670,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00671670,0x00671670,0x00674BF0,unknown,code not assigned to a module
 sha,0x00674BF0,0x00675000,tibsun,"functions compiled from src/sha.cpp, matched, without gaps"
-unk_00675000,0x00675000,0x00675380,unknown,code not assigned to a module
+unk_00675000,0x00675000,0x00675020,unknown,code not assigned to a module
+shapebtn,0x00675020,0x00675370,tibsun,"functions compiled from src/shapebtn.cpp, matched, without gaps; ?Is_Flash_On@ShapeButtonClass@@QAE_NXZ not placed"
+unk_00675370,0x00675370,0x00675380,unknown,code not assigned to a module
 shapipe,0x00675380,0x006753C0,tibsun,"functions compiled from src/shapipe.cpp, matched, without gaps"
 shastraw,0x006753C0,0x00675410,tibsun,"functions compiled from src/shastraw.cpp, matched, without gaps"
 unk_00675410,0x00675410,0x0067B6E0,unknown,code not assigned to a module
