@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -32,6 +33,7 @@
 
 #pragma once
 
+#include "audioctl.h" // RA2: MovieSound
 #include "coord.h"
 #include "display.h"
 #include "hashtable.h"
@@ -345,6 +347,12 @@ class RadarClass: public DisplayClass
 		 * The radar returns to it when the movie ends, so the interruption leaves no trace.
 		 */
 		int SuspendedRadarMode;
+
+		int TransmissionState; // RA2: +0x14B4; 0 plays the EVA voice, 1 waits for it, 2 starts the radar movie
+		bool IsScenarioHeld; // RA2: +0x14B8; the radar movie holds the scenario
+		bool IsMoviePlaying; // RA2: +0x14B9; the radar movie has frames left
+		AudioController MovieSound; // RA2: +0x14BC; the looping MovieOn or MovieOff sound
+		int TransmissionVoice; // RA2: +0x14D0; EVA index of EVA_IncomingTransmission
 
 		/*
 		**	If the radar map is visible then this flag is true.
