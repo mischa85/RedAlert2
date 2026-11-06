@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -21,9 +22,9 @@
 class ToolTip
 {
 public:
-	ToolTip(void) : ID(0), Region(0, 0, 0, 0), Text(0) {}
+	ToolTip(void) : ID(0), Region(0, 0, 0, 0), Text(0), IsAnchored(false) {} // RA2: IsAnchored
 	~ToolTip(void){}
-	ToolTip(ToolTip const &that) : ID(that.ID), Region(that.Region), Text(that.Text) {}
+	ToolTip(ToolTip const &that) : ID(that.ID), Region(that.Region), Text(that.Text), IsAnchored(that.IsAnchored) {} // RA2: IsAnchored
 	ToolTip(NoInitClass const &) {}
 
 	/*
@@ -44,6 +45,8 @@ public:
 	 * no text of its own and the manager is asked to supply some for this identifier.
 	 */
 	int Text;
+
+	bool IsAnchored; // RA2: shown at the corner of Region rather than at the mouse
 };
 
 
@@ -52,7 +55,7 @@ struct ToolTipText
 	POINT Pos;
 	int TextWidth;
 	int TextHeight;
-	char Text[256];
+	wchar_t Text[256]; // RA2: wide text
 };
 
 class ToolTipManager
@@ -97,7 +100,13 @@ class ToolTipManager
 			TOOLTIP_LIFETIME = 10000, /// 10 seconds
 		};
 
-	private:
+	protected: // RA2: CCToolTip reads CurrentToolTip
+		/*
+		 * This points to the tooltip the mouse is currently resting over, or NULL when
+		 * nothing is on display. It is cleared whenever the tooltip must go away.
+		 */
+		ToolTip const * CurrentToolTip; // RA2: the first member, at +4
+
 		/*
 		 * This is the window whose tooltips this manager looks after. Mouse positions are
 		 * expressed in its client coordinates, and it is the window the hover timer is hung
@@ -118,11 +127,6 @@ class ToolTipManager
 		 */
 		POINT LastMousePos;
 
-		/*
-		 * This points to the tooltip the mouse is currently resting over, or NULL when
-		 * nothing is on display. It is cleared whenever the tooltip must go away.
-		 */
-		ToolTip const * CurrentToolTip;
 
 		/*
 		 * This is the assembled text and placement of the tooltip on display. It is built
@@ -135,6 +139,8 @@ class ToolTipManager
 		 * milliseconds. The countdown starts over on every mouse movement.
 		 */
 		int ToolTipDelay;
+
+		int SavedToolTipDelay; // RA2: 4 bytes after ToolTipDelay; CCToolTip::UseSidebarSurface is at +0x260
 
 		/*
 		 * This is how long a tooltip stays on screen before it is taken down again,

@@ -26,6 +26,8 @@ class BitText
 		int Print_Bold(BitFont * font, Surface * surface, wchar_t const * text, int x, int y, int maxchars);
 		bool Draw_Text(BitFont * font, Surface * surface, wchar_t const * text, int x, int y, int w, int h, int flags, int shown, int fade);
 		bool Draw_Shadow(BitFont * font, Surface * surface, wchar_t const * text, int x, int y, int w, int h, int flags, int shown, int fade);
+		static BitText * Instance;
+
 		bool Draw_Bold(BitFont * font, Surface * surface, wchar_t const * text, int x, int y, int w, int h, int flags, int shown, int fade);
 };
 

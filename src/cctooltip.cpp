@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -20,6 +21,10 @@
 #include "goptions.h"
 #include "scheme.h"
 #include "wwfont.h"
+#include "bitfont.h" // RA2: text is drawn with BitFont
+#include "bittext.h" // RA2: and BitText
+
+extern RGBClass TooltipColor; // RA2: the outline colour of a tooltip
 
 #include "color.hh"
 
@@ -31,28 +36,21 @@
 /// within that region rather than hanging off the edge of it.
 /// </summary>
 /// <returns>bool; Is the tooltip fit to be shown? A hidden mouse suppresses it.</returns>
-bool CCToolTip::Update(ToolTipText * text)
+bool CCToolTip::Update(ToolTipText * text) // RA2: measures with BitFont; places an anchored tooltip at its region
 {
 	if (Get_Mouse_State() >= 0) {
-		FontClass *font = Font_From_TPF(Style);
-		char *string = text->Text;
-		Rect rect;
-		font->String_Pixel_Bounds(text->Text, rect);
-		rect.Width += 4;
-		rect.Height += 3;
-		text->TextWidth = max(rect.Width, text->TextWidth);
-		text->TextHeight = max(rect.Height, text->TextHeight);
-
-		Rect * trect;
+		BitFont *font = BitFont::Instance;
+		Rect *trect;
+		POINT &position = text->Pos;
 		if (Options.IsSidebarOnRight == true) {
-			if (text->Pos.x <= TacticalRect.X + TacticalRect.Width) {
+			if (position.x <= TacticalRect.X + TacticalRect.Width) {
 				trect = &TacticalRect;
 			} else {
 				trect = &SidebarRect;
 				Map.SidebarClass::IsToRedraw = true;
 			}
 		} else {
-			if (text->Pos.x <= SidebarRect.X + SidebarRect.Width) {
+			if (position.x <= SidebarRect.X + SidebarRect.Width) {
 				trect = &SidebarRect;
 				Map.SidebarClass::IsToRedraw = true;
 			} else {
@@ -60,27 +58,47 @@ bool CCToolTip::Update(ToolTipText * text)
 			}
 		}
 
-		if (trect != NULL) {
+		if (trect) {
+			int width;
+			int height;
+			font->Text_Dimensions(text->Text, &width, &height, trect->Width);
+			width += 4;
+			height += 3;
+			text->TextWidth = max(width, text->TextWidth);
+			text->TextHeight = max(height, text->TextHeight);
 			if (text->TextWidth >= trect->Width) {
-				Format_Window_String(string, font, trect->Width - 4, text->TextWidth, text->TextHeight);
-				font->String_Pixel_Bounds(text->Text, rect);
-				rect.Width += 4;
-				rect.Height += 3;
-				text->TextWidth = max(rect.Width, text->TextWidth);
-				text->TextHeight = max(rect.Height, text->TextHeight);
+				font->Text_Dimensions(text->Text, &width, &height, trect->Width - 4);
+				width += 4;
+				height += 3;
+				text->TextWidth = max(width, text->TextWidth);
+				text->TextHeight = max(height, text->TextHeight);
 			}
+			if (CurrentToolTip && CurrentToolTip->IsAnchored) {
+				Rect owner = CurrentToolTip->Region;
+				if (owner.X < trect->X + trect->Width / 2) {
+					position.x = owner.X + owner.Width - 5;
+				} else {
+					position.x = owner.X - width + 5;
+				}
+				position.x = MAX(trect->X, position.x);
+				if (owner.Y < trect->Y + trect->Height / 2) {
+					position.y = owner.Y + owner.Height - 5;
+				} else {
+					position.y = owner.Y - height + 5;
+				}
+				position.y = MAX(trect->Y, position.y);
+			} else {
+				int x = position.x + text->TextWidth - trect->Width - trect->X;
+				if (x > 0) {
+					position.x -= x;
+				}
 
-			int x = text->Pos.x + text->TextWidth - trect->Width - trect->X;
-			if (x > 0) {
-				text->Pos.x -= x;
-			}
-
-			text->Pos.y += 16;
-			if (text->Pos.y + text->TextHeight - trect->Height - trect->Y > 0) {
-				text->Pos.y = text->Pos.y - text->TextHeight - 16;
+				position.y += 16;
+				if (position.y + text->TextHeight - trect->Height - trect->Y > 0) {
+					position.y = position.y - text->TextHeight - 16;
+				}
 			}
 		}
-
 		return(true);
 	}
 
@@ -135,17 +153,16 @@ void CCToolTip::Draw_Current(bool sidebar)
 /// tactical composite or the sidebar -- and paints the frame and the text there. A
 /// tooltip that lands across the boundary between the two is not drawn at all.
 /// </summary>
-void CCToolTip::Draw(const ToolTipText * text)
+void CCToolTip::Draw(ToolTipText const * text) // RA2: draws a framed box and the text with BitText
 {
 	Rect drawrect;
-	Point2D point = Point2D(text->Pos.x, text->Pos.y);
+	Point2D point(text->Pos.x, text->Pos.y);
 	Surface * surface = NULL;
-
 	if (Options.IsSidebarOnRight == true) {
 		int offset = TacticalRect.X + TacticalRect.Width;
 		if (point.X + text->TextWidth <= offset) {
 			surface = CompositeSurface;
-		} else if (UseSidebarSurface == true && point.X > offset) {
+		} else if (UseSidebarSurface == true && point.X >= offset) {
 			surface = SidebarSurface;
 			point.X -= offset;
 			Map.IsToBlitSidebar = true;
@@ -160,14 +177,30 @@ void CCToolTip::Draw(const ToolTipText * text)
 			Map.IsToBlitSidebar = true;
 		}
 	}
-
-	if (surface != NULL) {
-		drawrect.Set(point.X, point.Y, text->TextWidth, text->TextHeight);
+	if (surface) {
+		LTRBStruct bounds;
+		bounds.Right = bounds.Left = point.X;
+		bounds.Bottom = bounds.Top = point.Y;
+		BitFont * font = BitFont::Instance;
+		int textwidth;
+		int textheight;
+		font->Text_Dimensions(text->Text, &textwidth, &textheight, surface->Get_Width());
+		bounds.Right = bounds.Left + textwidth;
+		bounds.Bottom = bounds.Top + textheight;
+		int width = bounds.Right - bounds.Left + 8;
+		int height = bounds.Bottom - bounds.Top + 4;
+		if (bounds.Left + width > surface->Get_Width()) bounds.Left = surface->Get_Width() - width;
+		bounds.Right = bounds.Left + width;
+		bounds.Bottom = bounds.Top + height;
+		int color = DSurface::Build_Hicolor_Pixel(TooltipColor);
+		drawrect.Set(bounds.Left, bounds.Top, width, height);
 		surface->Fill_Rect(drawrect, TBLACK);
-		surface->Draw_Rect(drawrect, DSurface::Build_Hicolor_Pixel(0, 255, 0));
-		point.X = 2;
-		point.Y = 1;
-		Fancy_Text_Print(text->Text, *surface, drawrect, point, Fetch_Scheme_By_Name("Green"), TBLACK, Style);
+		surface->Draw_Rect(drawrect, color);
+		font->Set_Clip(true);
+		font->Set_Bounds(&bounds);
+		font->Set_Color(color);
+		BitText::Instance->Draw_Text(font, surface, text->Text, bounds.Left + 4, bounds.Top + 2,
+			bounds.Right - bounds.Left, bounds.Bottom - bounds.Top, 0, 0, 0);
 	}
 }
 
