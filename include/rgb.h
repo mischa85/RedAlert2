@@ -95,3 +95,4 @@ class RGBClass
 };
 
 extern RGBClass const BlackColor;
+extern RGBClass const WhiteColor; // RA2: (255, 255, 255) at 0x00AB6849, set by a static initializer
