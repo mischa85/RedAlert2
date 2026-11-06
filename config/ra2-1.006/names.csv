@@ -323,6 +323,8 @@ address,symbol,evidence
 0x004972D0,?Get_Direction@Dial8Class@@QBE?AW4Dir256@@XZ,"compiled from src/dial8.cpp, matched; code at 2 addresses, placed by the gap"
 0x004972E0,?Set_Direction@Dial8Class@@QAEXW4Dir256@@@Z,"compiled from src/dial8.cpp, matched"
 0x004973D0,?Draw_Box@@YIXABV?$TRect@H@@W4BoxStyleEnum@@_N@Z,"inferred: referenced by matched src/checkbox.cpp (11 references); across all matched code never at another address, and no other symbol here"
+0x00497A50,?Font_From_TPF@@YIPAVBitFont@@W4TextPrintType@@@Z,"inferred: referenced by matched src/statbtn.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x00497B40,?Fancy_Text_Print@@YA?AVPoint2D@@PBGAAVSurface@@ABV?$TRect@H@@ABV1@PAVColorScheme@@HW4TextPrintType@@ZZ,"inferred: referenced by matched src/statbtn.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00497E80,?Conquer_Clip_Text_Print@@YI?AVPoint2D@@PBDAAVSurface@@ABV?$TRect@H@@ABV1@PAVColorScheme@@HW4TextPrintType@@HPBH@Z,"inferred: referenced by matched src/colrlist.cpp (7 references); across all matched code never at another address, and no other symbol here"
 0x004981C0,??0DIB8Class@@QAE@PAUHWND__@@HHAAVPaletteClass@@@Z,"compiled from src/dib.cpp, matched"
 0x00498370,??1DIB8Class@@QAE@XZ,"compiled from src/dib.cpp, matched"
@@ -761,6 +763,13 @@ address,symbol,evidence
 0x0068B800,?Scale_Rotate@@YIXAAVSurface@@AAVBitmapClass@@ABVPoint2D@@HE@Z,"compiled from src/sprite.cpp, matched"
 0x00691310,?Exit_Process@@YIXH@Z,"inferred: referenced by matched src/jshell.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00691320,?Emergency_Exit@@YIXXZ,"inferred: referenced by matched src/jshell.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x00698760,??0StaticButtonClass@@QAE@IPBGW4TextPrintType@@HHHH@Z,"compiled from src/statbtn.cpp, matched"
+0x006987F0,??0StaticButtonClass@@QAE@XZ,"compiled from src/statbtn.cpp, matched"
+0x00698830,??1StaticButtonClass@@UAE@XZ,"compiled from src/statbtn.cpp, matched"
+0x00698860,?Draw_Me@StaticButtonClass@@UAEHH@Z,"compiled from src/statbtn.cpp, matched"
+0x006988A0,?Set_Text@StaticButtonClass@@UAEXPBG_N@Z,"compiled from src/statbtn.cpp, matched"
+0x00698960,?Draw_Background@StaticButtonClass@@MAEXXZ,"compiled from src/statbtn.cpp, matched"
+0x00698A10,?Draw_Text@StaticButtonClass@@MAEXPBG@Z,"compiled from src/statbtn.cpp, matched"
 0x0069A1A0,??0StaticBufferClass@@QAE@H@Z,"compiled from src/stbuffer.cpp, matched"
 0x0069A1C0,??1StaticBufferClass@@QAE@XZ,"compiled from src/stbuffer.cpp, matched"
 0x0069A1D0,?Add@StaticBufferClass@@QAEPAUEntry@1@AAVSurface@@ABUSurfaceRegion@@@Z,"compiled from src/stbuffer.cpp, matched"
@@ -1001,6 +1010,7 @@ address,symbol,evidence
 0x007831F0,__makepath,symbol of VC6 LIBCMT.LIB makepath.obj
 0x00783290,_memmove,"inferred: called as _memmove by matched VC6 LIBCMT.LIB objects (_fptostr.obj, sbheap.obj, w_str.obj) and by matched Tiberian Sun functions (52 call sites); the code section of VC6 LIBCMT.LIB memmove.obj matches here, and at 0x00788CB0, which matched objects call as _memcpy (memcpy.obj has the same code)"
 0x007835C5,_wcsrchr,symbol of VC6 LIBCMT.LIB wcsrchr.obj
+0x00783605,_wcslen,"inferred: referenced by matched src/statbtn.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x00783622,_wcsncpy,symbol of VC6 LIBCMT.LIB wcsncpy.obj
 0x0078365F,_wcscat,symbol of VC6 LIBCMT.LIB wcscat.obj
 0x00783689,_wcscpy,symbol of VC6 LIBCMT.LIB wcscat.obj
@@ -1540,6 +1550,7 @@ address,symbol,evidence
 0x007A8C7C,??_7FileClass@@6B@,"inferred: referenced by matched src/ramfile.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007A8CC4,??_7RawFileClass@@6B@,"inferred: referenced by matched src/rawfile.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x007A8EBC,??_7RandomStraw@@6B@,"inferred: referenced by matched src/rndstraw.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x007AC0D0,??_7StaticButtonClass@@6B@,"inferred: referenced by matched src/statbtn.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x007AC330,??_7SwizzleManagerClass@@6B@,"inferred: referenced by matched src/swizzle.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x007AC35C,??_7?$DynamicVectorClass@VSwizzlePointerClass@@@@6B@,"inferred: referenced by matched src/swizzle.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x007AC37C,??_7?$VectorClass@VSwizzlePointerClass@@@@6B@,"inferred: referenced by matched src/swizzle.cpp (4 references); across all matched code never at another address, and no other symbol here"
@@ -1767,7 +1778,7 @@ address,symbol,evidence
 0x00839640,?VisibleRect@@3V?$TRect@H@@A,"inferred: referenced by matched src/shapebtn.cpp (5 references); across all matched code never at another address, and no other symbol here"
 0x00839948,?SidebarSurface@@3PAVSurface@@A,"inferred: referenced by matched src/shapebtn.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00839950,?VisibleSurface@@3PAVSurface@@A,"inferred: referenced by matched src/ddraw.cpp (4 references); across all matched code never at another address, and no other symbol here"
-0x0083995C,?LogicalSurface@@3PAVSurface@@A,"inferred: referenced by matched src/checkbox.cpp (45 references); across all matched code never at another address, and no other symbol here"
+0x0083995C,?LogicalSurface@@3PAVSurface@@A,"inferred: referenced by matched src/checkbox.cpp (50 references); across all matched code never at another address, and no other symbol here"
 0x00839B00,?Warheads@@3V?$DynamicVectorClass@PAVWarheadTypeClass@@@@A,"inferred: referenced by matched src/_warhead.cpp (7 references); across all matched code never at another address, and no other symbol here"
 0x00839BC0,?WinVersion@@3VWindowsVersionInfo@@A,"inferred: referenced by matched src/modemreg.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x00839C68,?MouseCursor@@3PAVMouse@@A,"inferred: referenced by matched src/winfix.cpp (27 references); across all matched code never at another address, and no other symbol here"
@@ -1814,7 +1825,7 @@ address,symbol,evidence
 0x00A71780,_TSC_Low,"inferred: referenced by matched src/mpu.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00AB6841,?BlackColor@@3VRGBClass@@B,"inferred: referenced by matched src/palette.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x00AB6849,?WhiteColor@@3VRGBClass@@B,"inferred: referenced by matched src/bitfont.cpp (4 references); across all matched code never at another address, and no other symbol here"
-0x00AB6EF8,?ColorSchemes@@3V?$DynamicVectorClass@PAVColorScheme@@@@A,"inferred: referenced by matched src/dial8.cpp (44 references); across all matched code never at another address, and no other symbol here"
+0x00AB6EF8,?ColorSchemes@@3V?$DynamicVectorClass@PAVColorScheme@@@@A,"inferred: referenced by matched src/dial8.cpp (45 references); across all matched code never at another address, and no other symbol here"
 0x00ABD548,_CompressionBuffer,"inferred: referenced by matched src/stbuffer.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x00ABD868,?Swizzler@@3VSwizzleManagerClass@@A,"inferred: referenced by matched src/layer.cpp (31 references); across all matched code never at another address, and no other symbol here"
 0x00AC0C18,?TeamPtrTracker@@3V?$DynamicVectorClass@PAVAbstractClass@@@@A,"inferred: referenced by matched src/brain.cpp (24 references); across all matched code never at another address, and no other symbol here"

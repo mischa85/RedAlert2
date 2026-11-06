@@ -724,9 +724,9 @@ unk_0068C040,0x0068C040,0x0068CA20,unknown,code not assigned to a module
 unk_0068CA20,0x0068CA20,0x0068CB20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0068CB20,0x0068CB20,0x0068DBC0,unknown,code not assigned to a module
 unk_0068DBC0,0x0068DBC0,0x0068E1C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0068E1C0,0x0068E1C0,0x006987F0,unknown,code not assigned to a module
-unk_006987F0,0x006987F0,0x00698860,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00698860,0x00698860,0x0069A110,unknown,code not assigned to a module
+unk_0068E1C0,0x0068E1C0,0x00698760,unknown,code not assigned to a module
+statbtn,0x00698760,0x00698AA0,tibsun,"functions compiled from src/statbtn.cpp, matched, without gaps"
+unk_00698AA0,0x00698AA0,0x0069A110,unknown,code not assigned to a module
 unk_0069A110,0x0069A110,0x0069A160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0069A160,0x0069A160,0x0069A1A0,unknown,code not assigned to a module
 stbuffer,0x0069A1A0,0x0069A430,tibsun,"functions compiled from src/stbuffer.cpp, matched, without gaps"
