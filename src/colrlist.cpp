@@ -125,27 +125,7 @@ int ColorListClass::Add_Item(char const * text, int color)
 }
 
 
-/***************************************************************************
- * ColorListClass::Add_Item -- Adds an item to the list                    *
- *                                                                         *
- * INPUT:                                                                  *
- *      text      text to add to list                                      *
- *      color      color for item                                          *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      position of item in the list                                       *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   04/19/1995 BRR : Created.                                             *
- *=========================================================================*/
-int ColorListClass::Add_Item(int text, int color)
-{
-	Colors.Add(color);
-	return(BASECLASS::Add_Item(text));
-}
+// RA2: no ColorListClass::Add_Item(int text, int color); the vtable has no slot for it
 
 
 /***************************************************************************

@@ -63,7 +63,7 @@ class ListClass : public ControlClass
 		virtual ~ListClass(void) override;
 
 		virtual int Add_Item(char const * text);
-		virtual int Add_Item(int text);
+		// RA2: no Add_Item(int text); the vtable goes from Add_Item(char const *) to Add_Scroll_Bar
 		virtual int Add_Scroll_Bar(void);
 		virtual void Bump(int up);
 		virtual int Count(void) const {return(List.Count());};
