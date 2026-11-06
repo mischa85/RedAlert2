@@ -280,10 +280,8 @@ unk_004CF640,0x004CF640,0x004CF6A0,tibsun,matched functions of one source file o
 unk_004CF6A0,0x004CF6A0,0x004D0040,unknown,code not assigned to a module
 gametime,0x004D0040,0x004D00D0,tibsun,"functions compiled from src/gametime.cpp, matched, without gaps; _$E2 not placed"
 unk_004D00D0,0x004D00D0,0x004D00F0,unknown,code not assigned to a module
-unk_004D00F0,0x004D00F0,0x004D0280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004D0280,0x004D0280,0x004D0630,unknown,code not assigned to a module
-unk_004D0630,0x004D0630,0x004D0730,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004D0730,0x004D0730,0x004D2940,unknown,code not assigned to a module
+gauge,0x004D00F0,0x004D0C80,tibsun,"functions compiled from src/gauge.cpp, matched, without gaps"
+unk_004D0C80,0x004D0C80,0x004D2940,unknown,code not assigned to a module
 unk_004D2940,0x004D2940,0x004D2A10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004D2A10,0x004D2A10,0x004D2A20,unknown,code not assigned to a module
 getcpu,0x004D2A20,0x004D2A60,tibsun,"functions compiled from src/getcpu.cpp, matched, without gaps"
