@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -27,14 +28,11 @@
 /// <remarks>The volume scan is disabled at present, so this check always succeeds.</remarks>
 bool VolumeCheck(void)
 {
-	return(true);
-
 #ifdef _DEMO
 	return(true);
 #endif
 
-/// This is the volume scan from TS 1.13, kept here for reference rather than compiled.
-#if 0
+// RA2: the volume scan from TS 1.13 is compiled, not skipped by an early return
 	char buffer[260];
 	VolInfo info;
 
@@ -61,7 +59,7 @@ bool VolumeCheck(void)
 				/// Is this the game CD?
 				char name[32];
 				for (int i = 0; i < 8; i++) {
-					sprintf(name, "TS%d", i + 1);
+					sprintf(name, "RA%d", i + 1); // RA2: looks for volumes RA1 to RA8
 					if (!stricmp(name, info.VolumeName)) {
 						return (true);
 					}
@@ -79,7 +77,6 @@ bool VolumeCheck(void)
 		return (true);
 	}
 	return (false);
-#endif
 }
 
 
