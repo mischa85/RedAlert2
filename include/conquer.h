@@ -48,6 +48,7 @@ TechnoTypeClass const * Fetch_Techno_Type(RTTIType type, int id);
 unsigned int Disk_Space_Available(void);
 
 void Emergency_Exit(void);
+void Exit_Process(int code); // RA2: calls exit with the code
 
 void Main_Game(int argc, char * argv[]);
 

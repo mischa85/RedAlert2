@@ -55,6 +55,7 @@ class MonoClass {
 		static void Enable(void) {Enabled = true;};
 		static void Disable(void) {Enabled = false;};
 		static bool Is_Enabled(void) {return(Enabled);};
+		static MonoClass * Get_Page(int index); // RA2: returns the mono page of that index
 
 		void Sub_Window(int x=0, int y=0, int w=80, int h=25);
 		void Fill_Attrib(int x, int y, int w, int h, MonoAttribute attrib);

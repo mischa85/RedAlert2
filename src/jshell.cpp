@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -67,8 +68,8 @@ void __cdecl Fatal(char const * message, ...)
 	va_start(va, message);
 	Emergency_Exit();
 	vfprintf(stderr, message, va);
-	Mono_Printf(message);
-	exit(EXIT_FAILURE);
+	MonoClass::Get_Page(4)->Printf(message); // RA2: prints to mono page 4
+	Exit_Process(EXIT_FAILURE); // RA2: exits through a function that calls exit
 }
 
 
