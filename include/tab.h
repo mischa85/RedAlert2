@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -33,9 +34,10 @@
 #pragma once
 
 #include "credits.h"
+#include "abstract.h" // RA2: INoticeSink
 #include "sidebar.h"
 
-class TabClass: public SidebarClass
+class TabClass: public SidebarClass, public INoticeSink // RA2: INoticeSink added; its vtable pointer is at +0x4EE8
 {
 		typedef SidebarClass BASECLASS;
 
@@ -54,21 +56,28 @@ class TabClass: public SidebarClass
 
 		virtual void Init_For_House(void) override;
 
+		virtual bool Unknown_Virtual_0(int, int) override; // RA2: TabClass's INoticeSink virtual
+
 		CreditClass Credits;
 
 		CDTimerClass<FrameTimerClass> FlasherTimer;
-
-	protected:
-
-		/*
-		**	If the tab graphic is to be redrawn, then this flag is true.
-		*/
-		bool IsToRedraw;
 
 	private:
 		void Set_Active(int select);
 
 		CDTimerClass<FrameTimerClass> MoneyFlashTimer;
+
+	protected:
+		bool IsThumbActive; // RA2: +0x4F14; picks which of two buttons the tab bar draws
+
+		/*
+		**	If the tab graphic is to be redrawn, then this flag is true.
+		*/
+		bool IsToRedraw; // RA2: after MoneyFlashTimer, at +0x4F15
+
+		bool IsDrawn; // RA2: +0x4F16; set once the tab bar has been drawn
+
+	private:
 
 		static ShapeSet const * TabShape;
 };
