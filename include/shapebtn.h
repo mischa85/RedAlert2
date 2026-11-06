@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -44,15 +45,27 @@ class ShapeButtonClass : public ToggleClass
 	public:
 		ShapeButtonClass(void);
 		ShapeButtonClass(unsigned id, ShapeSet const * shapes, int x, int y, int override_width = 0, int override_height = 0, bool faded = false);
+		virtual ~ShapeButtonClass(void) override; // RA2: frees a shape the button owns
 		virtual int Draw_Me(int forced=false) override;
 		virtual void Set_Shape(ShapeSet const * data, int override_width = 0, int override_height = 0);
 		ShapeSet const * Get_Shape_Data(void) {return(ShapeData);};
+		void Set_Shape_Loaded(bool loaded); // RA2: marks the shape as owned by the button
+		void Clear_Shape(void); // RA2: frees an owned shape
+		bool Stop_Flashing(void); // RA2: stops flashing
+		bool Start_Flashing(int delay, int initdelay, bool start); // RA2: starts flashing
+		bool AI(void); // RA2: counts down the flash period
+		bool Is_Flashing(void); // RA2: a flash period is set
+		bool Is_Flash_On(void); // RA2: lit in this flash period
 
 		enum ShapeButtonClassEnums {
 			UP_SHAPE,				// Shape to use when button is "up".
 			DOWN_SHAPE,				// Shape to use when button is "down".
 			DISABLED_SHAPE			// Shape to use when button is disabled.
 		};
+
+		bool IsFlashOn; // RA2: lit in this flash period
+		int FlashDelay; // RA2: AI calls per flash period; 0 when not flashing
+		int FlashCounter; // RA2: AI calls left in this flash period
 
 		bool ReflectButtonState;
 
@@ -96,4 +109,6 @@ class ShapeButtonClass : public ToggleClass
 		**	for this button in the offsets specified above.
 		*/
 		ShapeSet const * ShapeData;
+
+		bool IsShapeLoaded; // RA2: the button owns ShapeData and frees it
 };

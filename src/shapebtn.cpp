@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -60,12 +61,16 @@
  *=============================================================================================*/
 ShapeButtonClass::ShapeButtonClass(void) :
 	BASECLASS(0, 0, 0, 0, 0),
+	IsFlashOn(false), // RA2: not flashing
+	FlashDelay(0), // RA2: not flashing
+	FlashCounter(0), // RA2: not flashing
 	ReflectButtonState(false),
 	DrawOffsetX(0),
 	DrawOffsetY(0),
 	DrawOnSidebar(0),
 	DrawFaded(0),
-	ShapeDrawer(NormalDrawer)
+	ShapeDrawer(NormalDrawer),
+	IsShapeLoaded(false) // RA2: the shape is not owned
 {
 }
 
@@ -95,14 +100,23 @@ ShapeButtonClass::ShapeButtonClass(void) :
  *=============================================================================================*/
 ShapeButtonClass::ShapeButtonClass(unsigned id, ShapeSet const * shape, int x, int y, int override_width, int override_height, bool faded) :
 	BASECLASS(id, x, y, 0, 0),
+	IsFlashOn(false), // RA2: not flashing; this constructor leaves FlashCounter as is
+	FlashDelay(0), // RA2: not flashing
 	ReflectButtonState(false),
 	DrawOffsetX(0),
 	DrawOffsetY(0),
 	DrawOnSidebar(0),
 	ShapeDrawer(NormalDrawer),
-	DrawFaded(faded)
+	DrawFaded(faded),
+	IsShapeLoaded(false) // RA2: the shape is not owned
 {
 	Set_Shape(shape, override_width, override_height);
+}
+
+
+ShapeButtonClass::~ShapeButtonClass(void) // RA2: frees an owned shape
+{
+	Clear_Shape();
 }
 
 
@@ -122,10 +136,14 @@ ShapeButtonClass::ShapeButtonClass(unsigned id, ShapeSet const * shape, int x, i
  *=============================================================================================*/
 void ShapeButtonClass::Set_Shape(ShapeSet const * data, int override_width, int override_height)
 {
+	Clear_Shape(); // RA2: frees an owned shape first
 	ShapeData = data;
 	if (ShapeData) {
 		Width = ShapeData->Get_Width();
 		Height = ShapeData->Get_Height();
+	} else { // RA2: a null shape clears the size
+		Width = 0; // RA2: no shape, no size
+		Height = 0; // RA2: no shape, no size
 	}
 	if (override_width != 0) {
 		Width = override_width;
@@ -133,6 +151,24 @@ void ShapeButtonClass::Set_Shape(ShapeSet const * data, int override_width, int 
 	if (override_height != 0) {
 		Height = override_height;
 	}
+}
+
+
+void ShapeButtonClass::Clear_Shape(void) // RA2: frees the shape if the button owns it
+{
+	if (IsShapeLoaded && ShapeData) {
+		delete (void *)ShapeData;
+		ShapeData = 0;
+		IsShapeLoaded = false;
+		Width = 0;
+		Height = 0;
+	}
+}
+
+
+void ShapeButtonClass::Set_Shape_Loaded(bool loaded) // RA2: records whether the button owns its shape
+{
+	IsShapeLoaded = loaded;
 }
 
 
@@ -162,16 +198,14 @@ int ShapeButtonClass::Draw_Me(int forced)
 		if (IsDisabled) {
 			shapenum = DISABLED_SHAPE;
 		} else {
-
-			if (!ReflectButtonState) {
-
-				if (IsPressed) {
-					shapenum = DOWN_SHAPE;
+			if (ReflectButtonState) {
+				if (IsFlashOn) { // RA2: a lit flashing button uses shapes 3 and 4
+					shapenum = (IsOn != 0) + 3; // RA2: shape 3 off, 4 on
 				} else {
-					shapenum = UP_SHAPE;
+					shapenum = (IsOn != 0); // RA2: computed by comparison
 				}
 			} else {
-				shapenum = IsOn;
+				shapenum = (IsPressed != 0); // RA2: computed by comparison, ReflectButtonState tested first
 			}
 		}
 		Surface *surf = SidebarSurface;
@@ -184,4 +218,61 @@ int ShapeButtonClass::Draw_Me(int forced)
 		return(true);
 	}
 	return(false);
+}
+
+
+bool ShapeButtonClass::Start_Flashing(int delay, int initdelay, bool start) // RA2: starts flashing unless already flashing
+{
+	if (FlashDelay == 0) {
+		FlashDelay = delay;
+		FlashCounter = delay + initdelay;
+		IsFlashOn = start;
+		return(true);
+	}
+	return(false);
+}
+
+
+bool ShapeButtonClass::Stop_Flashing(void) // RA2: stops flashing; false if not flashing
+{
+	if (FlashDelay != 0) {
+		IsFlashOn = false;
+		FlashCounter = 0;
+		FlashDelay = 0;
+		return(true);
+	}
+	return(false);
+}
+
+
+bool ShapeButtonClass::AI(void) // RA2: counts down the flash period; true when the imagery changes
+{
+	if (IsDisabled) {
+		if (FlashDelay != 0) {
+			IsFlashOn = false;
+			FlashCounter = 0;
+			FlashDelay = 0;
+			return(true);
+		}
+	} else if (FlashCounter != 0) {
+		FlashCounter--;
+		if (FlashCounter == 0) {
+			IsFlashOn = !IsFlashOn;
+			FlashCounter = FlashDelay;
+			return(true);
+		}
+	}
+	return(false);
+}
+
+
+bool ShapeButtonClass::Is_Flashing(void) // RA2: flashing while a flash period is set
+{
+	return(FlashDelay != 0);
+}
+
+
+bool ShapeButtonClass::Is_Flash_On(void) // RA2: lit in this flash period
+{
+	return(IsFlashOn);
 }
