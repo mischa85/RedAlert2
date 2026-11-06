@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -31,6 +32,9 @@ enum MZoneType {
 	MZONE_INFANTRY,
 	MZONE_INFANTRY_DESTROYER,
 	MZONE_FLYER,
+	MZONE_WATER, // RA2: "Water" in the zone names at 0x007D1A68
+	MZONE_WATER_BEACH, // RA2: "WaterBeach"
+	MZONE_CRUSHER_ALL, // RA2: a 13th zone without a name in that table; MapClass has 13 zone arrays
 
 	MZONE_COUNT,
 	MZONE_FIRST=0,

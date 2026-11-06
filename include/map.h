@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -406,13 +407,7 @@ class MapClass: public GScreenClass
 		 */
 		DynamicVectorClass<Cell> PendingBridgeCells;
 
-		/*
-		 * These are the cells whose ice has been broken since the last recalculation. Ice
-		 * cracks a cell at a time, but the attribute and zone bookkeeping it disturbs is far
-		 * cheaper to redo in one go, so the cells are collected here and brought up to date
-		 * once the frame's damage has been tallied.
-		 */
-		DynamicVectorClass<Cell> DirtyIceCells;
+		// RA2: no DirtyIceCells; PlayRect follows PendingBridgeCells
 
 		/*
 		 * This is the size of the whole isometric playfield -- the rotated "diamond" of cells
@@ -475,29 +470,15 @@ class MapClass: public GScreenClass
 
 	protected:
 
-		/*
-		 * These record the unfinished half of a terrain deformation. When an explosion
-		 * craters a cell, one corner of it slumps immediately and DeformMask keeps the
-		 * corners still to come at DeformCell, which are reshaped once the game frame
-		 * reaches DeformFrame. The delay is what makes the ground appear to cave in rather
-		 * than snap into its new shape.
-		 */
-		int DeformMask;
-		Cell DeformCell;
-		int DeformFrame;
-
-		/*
-		 * These are the ice cells that are currently cracked, each one waiting for the frame
-		 * at which it may freeze over again. Only the cells on this list have to be revisited
-		 * as the ice recovers, rather than every cell of the playfield.
-		 */
-		DynamicVectorClass<CrackedIceStruct> CrackedIce;
+		// RA2: no DeformMask, DeformCell, DeformFrame or CrackedIce; Array follows TotalValue
 
 	public:
 		/*
 		**	This is the array of cell objects.
 		*/
 		VectorClass<CellClass *> Array;
+
+		int MaxLevel; // RA2: after Array
 
 	protected:
 		/*
