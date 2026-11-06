@@ -1563,6 +1563,7 @@ address,size,evidence
 0x007134E0,48,"function of the Tiberian Sun reconstruction, matched"
 0x00713520,48,"function of the Tiberian Sun reconstruction, matched"
 0x00713550,48,"function of the Tiberian Sun reconstruction, matched"
+0x00715090,416,"code of src/volinfo.cpp, matched"
 0x00715230,208,"function of the Tiberian Sun reconstruction, matched"
 0x00715300,384,"function of the Tiberian Sun reconstruction, matched"
 0x007166C0,96,"function of the Tiberian Sun reconstruction, matched"
