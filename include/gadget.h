@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -155,6 +156,8 @@ class GadgetClass : public LinkClass
 		**	General render function.
 		*/
 		virtual int Draw_Me(int forced=false);
+		virtual void Mouse_Enter(void); // RA2: vtable +0x70; called on the gadget the mouse moves onto
+		virtual void Mouse_Leave(void); // RA2: vtable +0x74; called on the gadget the mouse leaves
 
 		/*
 		**	Sets the current color scheme
