@@ -363,7 +363,9 @@ unk_00515AC0,0x00515AC0,0x00519240,unknown,code not assigned to a module
 unk_00519240,0x00519240,0x00519480,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00519480,0x00519480,0x0051E820,unknown,code not assigned to a module
 interpal,0x0051E820,0x0051ECF0,tibsun,"functions compiled from src/interpal.cpp, matched, without gaps"
-unk_0051ECF0,0x0051ECF0,0x00522040,unknown,code not assigned to a module
+unk_0051ECF0,0x0051ECF0,0x0051EEE0,unknown,code not assigned to a module
+intro,0x0051EEE0,0x0051EF10,tibsun,"functions compiled from src/intro.cpp, matched, without gaps"
+unk_0051EF10,0x0051EF10,0x00522040,unknown,code not assigned to a module
 unk_00522040,0x00522040,0x005221A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005221A0,0x005221A0,0x00523410,unknown,code not assigned to a module
 unk_00523410,0x00523410,0x00523440,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
