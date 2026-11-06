@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -75,7 +76,8 @@ class SidebarClass : public PowerClass
 
 			GADGET_CAMEO=1000,				/// Tooltip ID of the first cameo slot.
 
-			COLUMNS=2						// Number of side strips on sidebar.
+			COLUMNS=2,						// Number of side strips on sidebar.
+			STRIPS=4 // RA2: four strips, one per tab
 		};
 
 		static ShapeSet const * SidebarShape;
@@ -202,6 +204,7 @@ class SidebarClass : public PowerClass
 				**	This is the coordinate of the upper left corner that this side strip
 				**	uses for rendering.
 				*/
+				bool AllowedToDraw; // RA2: before X,Y; X at +0x1C
 				int X,Y;
 
 				/*
@@ -314,7 +317,11 @@ class SidebarClass : public PowerClass
 
 					int BuildableID;
 					RTTIType BuildableType;
+					BOOL IsAlt; // RA2: +0x08, set for building types
 					FactoryClass * Factory;								// Production manager.
+					int Unknown_10; // RA2: +0x10, cleared by StripClass::Add
+					StageClass Progress; // RA2: +0x14
+					int FlashEndFrame; // RA2: +0x2C; an entry is 0x30 bytes
 				};
 				BuildType Buildables[MAX_BUILDABLES];
 
@@ -336,7 +343,12 @@ class SidebarClass : public PowerClass
 				static ShapeButtonClass DownButton[COLUMNS];
 				static SelectClass SelectButton[COLUMNS][MAX_SLOTS];
 
-		} Column[COLUMNS];
+		} Column[STRIPS]; // RA2: four strips of 0xE64 bytes from +0x1540
+
+		int ShutterFrame; // RA2: +0x4ED0; frame of the animation drawn over the sidebar as tabs empty or fill
+		int ShutterStep; // RA2: +0x4ED4; +1 or -1
+		int ActiveTabIndex; // RA2: +0x4ED8
+		int RedrawUntilFrame; // RA2: +0x4EDC; the active strip redraws until this frame
 
 		/*
 		 * If the player has asked for cameo text, then this flag will be true. With it
@@ -409,7 +421,6 @@ class SidebarClass : public PowerClass
 		bool Activate_Demolish(int control);
 		int Which_Column(RTTIType type);
 
-		bool IsRepairActive;
-		bool IsUpgradeActive;
-		bool IsDemolishActive;
+		bool IsDemolishActive; // RA2: +0x4EE5
+		bool IsRepairActive; // RA2: +0x4EE6; RA2 has no upgrade mode
 };
