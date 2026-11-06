@@ -116,8 +116,8 @@ unk_0046B930,0x0046B930,0x0046BF60,unknown,code not assigned to a module
 unk_0046BF60,0x0046BF60,0x0046C2E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0046C2E0,0x0046C2E0,0x0046CA80,unknown,code not assigned to a module
 unk_0046CA80,0x0046CA80,0x0046CB80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0046CB80,0x0046CB80,0x0046E470,unknown,code not assigned to a module
-unk_0046E470,0x0046E470,0x0046E4A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0046CB80,0x0046CB80,0x0046DFC0,unknown,code not assigned to a module
+cctooltip,0x0046DFC0,0x0046E4A0,tibsun,"functions compiled from src/cctooltip.cpp, matched, without gaps"
 unk_0046E4A0,0x0046E4A0,0x0046E4D0,unknown,code not assigned to a module
 unk_0046E4D0,0x0046E4D0,0x0046E4F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0046E4F0,0x0046E4F0,0x0046EA40,unknown,code not assigned to a module
