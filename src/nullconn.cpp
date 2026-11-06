@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -141,7 +142,7 @@ void NullModemConnClass::Init (HANDLE port_handle)
  * HISTORY:                                                                *
  *   12/20/1994 BR : Created.                                              *
  *=========================================================================*/
-int NullModemConnClass::Send (char *buf, int buflen, void *, int )
+int NullModemConnClass::Send (char *buf, int buflen, void *, int, bool, unsigned short) // RA2: two more arguments; returns with ret 24
 {
 	int *ibuf;
 	SerialHeaderType *header;

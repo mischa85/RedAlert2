@@ -215,7 +215,7 @@ class ConnectionClass
 		application.
 		.....................................................................*/
 		virtual int Send(char *buf, int buflen, void *extrabuf,
-			int extralen) = 0;
+			int extralen, bool flag, unsigned short port) = 0; // RA2: two more arguments; IPXConnClass::Send_To at 0x00523D90 tests flag as a byte and sends to port
 
 		/*
 		 * This is the number of times a packet had to be transmitted again because no ACK

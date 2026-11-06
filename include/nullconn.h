@@ -117,7 +117,7 @@ class NullModemConnClass : public ConnectionClass
 		/*.....................................................................
 		This routine actually performs a hardware-dependent data send.
 		.....................................................................*/
-		virtual int Send (char *buf, int buflen, void *extrabuf, int extralen) override;
+		virtual int Send (char *buf, int buflen, void *extrabuf, int extralen, bool flag, unsigned short port) override; // RA2: two more arguments, unused here
 
 		/*
 		**	This is the winsoze port handle
