@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -170,6 +171,10 @@ class ScenarioClass {
 		*/
 		mutable TTimerClass<SystemTimerClass> ElapsedTimer;
 
+		CDTimerClass<SystemTimerClass> PauseTimer; // RA2: +0x620
+		int Unknown_62C; // RA2: +0x62C
+		bool IsGamePaused; // RA2: +0x630; the waypoints follow at +0x632
+
 	private:
 		/*
 		**	This is an array of waypoints; each waypoint corresponds to a letter of
@@ -180,6 +185,12 @@ class ScenarioClass {
 		*/
 		Cell Waypoint[WAYPT_COUNT];
 	public:
+		int StartX; // RA2: +0x7C8
+		int StartY; // RA2: +0x7CC
+		int Width; // RA2: +0x7D0
+		int Height; // RA2: +0x7D4
+		int NumberStartingPoints; // RA2: +0x7D8
+		char Unknown_7DC[16]; // RA2: 16 bytes before MissionTimer at +0x7EC
 
 		/*
 		**	This holds the system wide mission countdown timer. Time based missions
