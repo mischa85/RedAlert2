@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -38,11 +39,15 @@ void Adjust_Tile_RGB(int & intensity, int & light, int & red, int & green, int &
 	green = max(green, 0);
 	blue = max(blue, 0);
 
+	red = min(red, 2000); // RA2: limited to twice full strength
+	green = min(green, 2000); // RA2: limited to twice full strength
+	blue = min(blue, 2000); // RA2: limited to twice full strength
+
 	intensity = 65536;
 
 	if (red != NORMAL_LIGHT || green != red || blue != red) {
 		if (green <= red && red >= blue) {
-			temp = ((double)red * 65536) / NORMAL_LIGHT;
+			temp = ((double)red * 65536) * 0.001; // RA2: multiplies by a thousandth
 			intensity = temp;
 
 			if (intensity < 66) {
@@ -61,7 +66,7 @@ void Adjust_Tile_RGB(int & intensity, int & light, int & red, int & green, int &
 				light >>= 16;
 			}
 		} else if (green >= red && green >= blue) {
-			temp = ((double)green * 65536) / NORMAL_LIGHT;
+			temp = ((double)green * 65536) * 0.001; // RA2: multiplies by a thousandth
 			intensity = temp;
 
 			if (intensity < 66) {
@@ -80,7 +85,7 @@ void Adjust_Tile_RGB(int & intensity, int & light, int & red, int & green, int &
 				light >>= 16;
 			}
 		} else {
-			temp = ((double)blue * 65536) / NORMAL_LIGHT;
+			temp = ((double)blue * 65536) * 0.001; // RA2: multiplies by a thousandth
 			intensity = temp;
 
 			if (intensity < 66) {
@@ -128,36 +133,27 @@ void Clamp_Tile_RGB(int & red, int & green, int & blue)
 	switch (Options.DetailLevel) {
 
 		case 0:
-			red &= ~((1 << 6) - 1);
-			red += (red >> 4);
+			red &= ~((1 << 7) - 1); // RA2: one bit coarser, without the rounding add
 
-			green &= ~((1 << 6) - 1);
-			green += (green >> 4);
+			green &= ~((1 << 7) - 1); // RA2: one bit coarser, without the rounding add
 
-			blue &= ~((1 << 6) - 1);
-			blue += (blue >> 4);
+			blue &= ~((1 << 7) - 1); // RA2: one bit coarser, without the rounding add
 			break;
 
 		case 1:
-			red &= ~((1 << 5) - 1);
-			red += (red >> 5);
+			red &= ~((1 << 6) - 1); // RA2: one bit coarser, without the rounding add
 
-			green &= ~((1 << 5) - 1);
-			green += (green >> 5);
+			green &= ~((1 << 6) - 1); // RA2: one bit coarser, without the rounding add
 
-			blue &= ~((1 << 5) - 1);
-			blue += (blue >> 5);
+			blue &= ~((1 << 6) - 1); // RA2: one bit coarser, without the rounding add
 			break;
 
 		case 2:
-			red &= ~((1 << 4) - 1);
-			red += (red >> 6);
+			red &= ~((1 << 5) - 1); // RA2: one bit coarser, without the rounding add
 
-			green &= ~((1 << 4) - 1);
-			green += (green >> 6);
+			green &= ~((1 << 5) - 1); // RA2: one bit coarser, without the rounding add
 
-			blue &= ~((1 << 4) - 1);
-			blue += (blue >> 6);
+			blue &= ~((1 << 5) - 1); // RA2: one bit coarser, without the rounding add
 			break;
 
 		default:
