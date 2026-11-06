@@ -116,7 +116,10 @@ PacketID:		This is a unique numerical ID for this packet.  The Connection
 struct CommHeaderType {
 	unsigned short MagicNumber;
 	unsigned char Code;
+	unsigned char ForwardMask; // RA2: mask of the player a routed packet goes to ("to be forwarded to %02x")
 	unsigned int PacketID;
+	unsigned int ForwardAddress; // RA2: address a routed packet came from ("Forwarding packet from %s ; %d to forwarder")
+	unsigned short ForwardPort; // RA2: port a routed packet came from; the header is 14 bytes
 };
 #pragma pack(pop)
 
