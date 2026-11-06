@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -79,6 +80,11 @@ GadgetClass * GadgetClass::LastList = 0;
 **	This points to the gadget that is intercepting all keyboard events.
 */
 GadgetClass * GadgetClass::Focused = 0;
+
+GadgetClass * GadgetClass::MouseOver = 0; // RA2: the gadget under the mouse
+
+extern int const ScreenWidths[]; // RA2: {640, 800, 1024} at 0x007ADD68
+extern int const ScreenHeights[]; // RA2: {480, 600, 768} at 0x007ADD74
 
 
 /*
@@ -286,6 +292,12 @@ void GadgetClass::Disable(void)
 }
 
 
+bool GadgetClass::Is_Enabled(void) const // RA2: true unless disabled
+{
+	return(!IsDisabled);
+}
+
+
 /***********************************************************************************************
  * GadgetClass::Remove -- Removes the specified gadget from the list.                          *
  *                                                                                             *
@@ -392,6 +404,16 @@ void GadgetClass::Delete_List(void)
 }
 
 
+void GadgetClass::Mouse_Enter(void) // RA2: nothing for a plain gadget
+{
+}
+
+
+void GadgetClass::Mouse_Leave(void) // RA2: nothing for a plain gadget
+{
+}
+
+
 /***********************************************************************************************
  * GadgetClass::Action -- Base action for gadget.                                              *
  *                                                                                             *
@@ -479,6 +501,24 @@ void GadgetClass::Draw_All(bool forced)
 }
 
 
+GadgetClass * GadgetClass::Extract_Gadget_At(int x, int y) // RA2: the smallest enabled gadget whose rectangle holds the point
+{
+	Rect best(0, 0, ScreenWidths[2], ScreenHeights[2]);
+	GadgetClass * found = NULL;
+
+	for (GadgetClass * g = this; g != NULL; g = (GadgetClass *)g->Get_Next()) {
+		if (!g->IsDisabled) {
+			Rect rect(g->X, g->Y, g->Width, g->Height);
+			if (rect.Is_Point_Within(Point2D(x, y)) && rect.Size() <= best.Size()) {
+				best = rect;
+				found = g;
+			}
+		}
+	}
+	return(found);
+}
+
+
 /***************************************************************************
  * GADGETCLASS::PROCESSLIST -- Check list for a mouse click within a gadget*
  *                                                                         *
@@ -530,6 +570,17 @@ KeyNumType GadgetClass::Input(void)
 	   mousey = Get_Mouse_Y();
 	}
 
+	GadgetClass * over = Extract_Gadget_At(mousex, mousey); // RA2: tells gadgets when the mouse enters or leaves them
+	if (over != MouseOver) {
+		if (MouseOver != NULL) {
+			MouseOver->Mouse_Leave();
+		}
+		MouseOver = over;
+		if (over != NULL) {
+			over->Mouse_Enter();
+		}
+	}
+
 	/*
 	**	Set the mouse button state flags. These will be passed to the individual
 	**	buttons so that they can determine what action to perform (if any).
@@ -538,14 +589,11 @@ KeyNumType GadgetClass::Input(void)
 	if (key) {
 		if (key == KN_LMOUSE) {
 			flags |= LEFTPRESS;
-		}
-		if (key == KN_RMOUSE) {
+		} else if (key == KN_RMOUSE) { // RA2: one chain of tests
 			flags |= RIGHTPRESS;
-		}
-		if (key == (KN_LMOUSE | KN_RLSE_BIT)) {
+		} else if (key == (KN_LMOUSE | KN_RLSE_BIT)) { // RA2: one chain of tests
 			flags |= LEFTRELEASE;
-		}
-		if (key == (KN_RMOUSE | KN_RLSE_BIT)) {
+		} else if (key == (KN_RMOUSE | KN_RLSE_BIT)) { // RA2: one chain of tests
 			flags |= RIGHTRELEASE;
 		}
 	}

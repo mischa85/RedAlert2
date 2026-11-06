@@ -129,6 +129,8 @@ class GadgetClass : public LinkClass
 		virtual void Draw_All(bool forced=true);
 		virtual void Delete_List(void);
 		virtual ControlClass * Extract_Gadget(unsigned id);
+		bool Is_Enabled(void) const; // RA2: a function at 0x004CF160
+		GadgetClass * Extract_Gadget_At(int x, int y); // RA2: the smallest enabled gadget under the point
 		virtual void Flag_List_To_Redraw(void) {LastList = 0;};
 		virtual LinkClass * Remove(void) override;
 		virtual LinkClass * Get_Next(void) const override;
@@ -207,6 +209,7 @@ class GadgetClass : public LinkClass
 		**	events are fed to this gadget to the exclusion of all others.
 		*/
 		static GadgetClass * Focused;
+		static GadgetClass * MouseOver; // RA2: the gadget under the mouse, after Focused in memory
 
 		/*
 		**	This button should call the Draw_Me function because some graphic element needs
