@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -166,6 +167,7 @@ Random2Class::Random2Class(unsigned seed) :
 	for (int index = 0; index < TABLE_SIZE; index++) {
 		Table[index] = random;
 	}
+	IsLocked = false; // RA2: starts unlocked
 }
 
 
@@ -186,6 +188,8 @@ Random2Class::Random2Class(unsigned seed) :
  *=============================================================================================*/
 int Random2Class::operator() (void)
 {
+	if (IsLocked) return(0); // RA2: a locked generator returns 0
+
 	Table[Index1] ^= Table[Index2];
 	int val = Table[Index1];
 
