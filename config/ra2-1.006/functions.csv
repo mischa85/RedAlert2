@@ -702,6 +702,7 @@ address,size,evidence
 0x004CE710,176,"function of the Tiberian Sun reconstruction, matched"
 0x004CEDF0,48,"function of the Tiberian Sun reconstruction, matched"
 0x004CEE20,192,"function of the Tiberian Sun reconstruction, matched"
+0x004CEEE0,192,"code of src/fuse.cpp, matched"
 0x004CEFC0,32,"function of the Tiberian Sun reconstruction, matched"
 0x004CEFE0,80,"function of the Tiberian Sun reconstruction, matched"
 0x004CF030,80,"function of the Tiberian Sun reconstruction, matched"

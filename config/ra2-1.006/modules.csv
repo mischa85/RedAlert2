@@ -262,8 +262,8 @@ flasher,0x004BBF00,0x004BBF20,tibsun,"functions compiled from src/flasher.cpp, m
 unk_004BBF20,0x004BBF20,0x004BDC20,unknown,code not assigned to a module
 unk_004BDC20,0x004BDC20,0x004BDD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004BDD10,0x004BDD10,0x004CEDF0,unknown,code not assigned to a module
-unk_004CEDF0,0x004CEDF0,0x004CEEE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004CEEE0,0x004CEEE0,0x004CEFC0,unknown,code not assigned to a module
+fuse,0x004CEDF0,0x004CEFA0,tibsun,"functions compiled from src/fuse.cpp, matched, without gaps"
+unk_004CEFA0,0x004CEFA0,0x004CEFC0,unknown,code not assigned to a module
 unk_004CEFC0,0x004CEFC0,0x004CF0E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004CF0E0,0x004CF0E0,0x004CF170,unknown,code not assigned to a module
 unk_004CF170,0x004CF170,0x004CF190,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
