@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -115,6 +116,7 @@ class OptionsClass {
 		 * If selected objects are to draw a line to their target, then this flag will be true.
 		 */
 		bool ActionLines;
+		bool IsShowHidden; // RA2: +0x1B
 
 		/*
 		 * If tooltips are to pop up over the user interface, then this flag will be true.
@@ -144,7 +146,10 @@ class OptionsClass {
 		float VoiceVolume;				/// Volume for voices.
 		float ScoreVolume;				// Volume for scores.
 		bool IsScoreRepeat;				// Score should repeat?
+		bool IsInGameMusic; // RA2: +0x39
 		bool IsScoreShuffle;			// Score list should shuffle?
+		int LastUnlockedSovMovie; // RA2: +0x3C
+		int LastUnlockedAllMovie; // RA2: +0x40
 
 		/*
 		 * This is how far ahead of the movie the sound card is assumed to be running, expressed
