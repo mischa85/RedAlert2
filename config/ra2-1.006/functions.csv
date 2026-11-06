@@ -864,6 +864,8 @@ address,size,evidence
 0x00535380,352,"function of the Tiberian Sun reconstruction, matched"
 0x00535530,496,"function of the Tiberian Sun reconstruction, matched"
 0x00537830,800,"function of the Tiberian Sun reconstruction, matched"
+0x005383C0,480,"code of src/lightcalc.cpp, matched"
+0x005385A0,208,"code of src/lightcalc.cpp, matched"
 0x00538860,,"inferred: target of the call at 0x006637C3 in matched src/scheme.cpp; size not known"
 0x00538F60,64,"function of the Tiberian Sun reconstruction, matched"
 0x00538FA0,80,"function of the Tiberian Sun reconstruction, matched"
