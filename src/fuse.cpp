@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -135,10 +136,7 @@ FuseResultType FuseClass::Fuse_Checkup(Coord const & newlocation)
 		*/
 		//if (!Timer) return(true);
 
-		Point2D l1 = Point2D(HeadTo.X / 2, HeadTo.Y / 2);
-		Point2D l2 = Point2D(newlocation.X / 2, newlocation.Y / 2);
-
-		proximity = l2.Distance_To(l1);
+		proximity = newlocation.Distance_To(HeadTo) / 2; // RA2: halves the distance instead of the coordinates
 		if (proximity < 0x0010*2) return(FUSE_EXPLODE_CLOSE);
 
 		if (proximity < CELL_LEPTON_W && proximity > Proximity) {
