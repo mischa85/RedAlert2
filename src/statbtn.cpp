@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -42,7 +43,7 @@
 #include "_surface.h"
 #include "blit.h"
 #include "dialog.h"
-#include "font.h"
+#include "bitfont.h" // RA2: text is drawn with BitFont
 #include "scheme.h"
 #include "surface.h"
 #include "vector.h"
@@ -72,7 +73,7 @@
  *                                                                                             *
  * HISTORY:  01/15/1995 JLB : Created.                                                         *
  *=============================================================================================*/
-StaticButtonClass::StaticButtonClass(unsigned , char const * text, TextPrintType style, int x, int y, int w, int h) :
+StaticButtonClass::StaticButtonClass(unsigned , wchar_t const * text, TextPrintType style, int x, int y, int w, int h) : // RA2: wide text
 	BASECLASS(x, y, w, h, FlagEnum(0)),
 	String(NULL),
 	PrintFlags(style)
@@ -83,12 +84,12 @@ StaticButtonClass::StaticButtonClass(unsigned , char const * text, TextPrintType
 	Set_Text(text, false);
 
 	if (w == -1 || h == -1) {
-		FontClass *font = Font_From_TPF(PrintFlags);
+		BitFont *font = Font_From_TPF(PrintFlags); // RA2: a BitFont
 		if (w == -1) {
-			Width = font->String_Pixel_Width(String);
+			Width = font->String_Pixel_Width(String, 0); // RA2: BitFont's width
 		}
 		if (h == -1) {
-			Height = font->Get_Height();
+			Height = font->LineHeight; // RA2: BitFont's line height
 		}
 	}
 }
@@ -173,7 +174,7 @@ int StaticButtonClass::Draw_Me(int forced)
  * HISTORY:                                                                                    *
  *   01/16/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void StaticButtonClass::Set_Text(char const * text, bool resize)
+void StaticButtonClass::Set_Text(wchar_t const * text, bool resize) // RA2: wide text
 {
 	if (String != NULL) {
 		delete [] String;
@@ -181,18 +182,18 @@ void StaticButtonClass::Set_Text(char const * text, bool resize)
 	}
 
 	if (text != NULL) {
-		String = new char[strlen(text)+1];
+		String = new wchar_t[wcslen(text)+1]; // RA2: wide text
 		if (String != NULL) {
-			strcpy(String, text);
+			wcscpy(String, text); // RA2: wide text
 		}
 	}
 
 	Flag_To_Redraw();
 	if (resize && String != NULL) {
 		Draw_Background();
-		FontClass *font = Font_From_TPF(PrintFlags);
-		Width = font->String_Pixel_Width(String);
-		Height = font->Get_Height();
+		BitFont *font = Font_From_TPF(PrintFlags); // RA2: a BitFont
+		Width = font->String_Pixel_Width(String, 0); // RA2: BitFont's width
+		Height = font->LineHeight; // RA2: BitFont's line height
 		Background = Buffer();
 	}
 }
@@ -252,7 +253,7 @@ void StaticButtonClass::Draw_Background(void)
  * HISTORY:                                                                                    *
  *   01/19/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void StaticButtonClass::Draw_Text(char const * text)
+void StaticButtonClass::Draw_Text(wchar_t const * text) // RA2: wide text
 {
 	/*
 	**	Display the text.
