@@ -357,8 +357,11 @@ address,symbol,evidence
 0x0051E920,?Create_Palette_Interpolation_Table@@YIXXZ,"compiled from src/interpal.cpp, matched"
 0x0051EA50,?Increase_Palette_Luminance@@YIXAAVPaletteClass@@N@Z,"compiled from src/interpal.cpp, matched"
 0x0051EB00,?Interpolate_2X_Scale@@YIXPAVSurface@@0PBD@Z,"compiled from src/interpal.cpp, matched"
-0x0052EE40,?Set_Bit@@YIXPAXHH@Z,"inferred: referenced by matched src/vector.cpp (7 references); across all matched code never at another address, and no other symbol here"
-0x0052EE90,?Get_Bit@@YIHPBXH@Z,"inferred: referenced by matched src/vector.cpp (3 references); across all matched code never at another address, and no other symbol here"
+0x0052EE00,?Fatal@@YAXPBDZZ,"compiled from src/jshell.cpp, matched"
+0x0052EE40,?Set_Bit@@YIXPAXHH@Z,"compiled from src/jshell.cpp, matched"
+0x0052EE90,?Get_Bit@@YIHPBXH@Z,"compiled from src/jshell.cpp, matched"
+0x0052EED0,?First_True_Bit@@YIHPBX@Z,"compiled from src/jshell.cpp, matched"
+0x0052EF20,?First_False_Bit@@YIHPBX@Z,"compiled from src/jshell.cpp, matched"
 0x005348A0,?Submit@LayerClass@@UAE_NPBVObjectClass@@_N@Z,"compiled from src/layer.cpp, matched"
 0x00534920,?Sort@LayerClass@@QAEXXZ,"compiled from src/layer.cpp, matched"
 0x00534980,?Sorted_Add@LayerClass@@QAEHQBVObjectClass@@@Z,"compiled from src/layer.cpp, matched"
@@ -456,6 +459,8 @@ address,symbol,evidence
 0x0059CD00,??0ModemRegistryEntryClass@@QAE@H@Z,"compiled from src/modemreg.cpp, matched"
 0x0059D4F0,??1ModemRegistryEntryClass@@QAE@XZ,"compiled from src/modemreg.cpp, matched; code at 104 addresses, placed by the gap"
 0x0059D500,?Clear@ModemRegistryEntryClass@@QAEXXZ,"compiled from src/modemreg.cpp, matched"
+0x0059DA50,?Get_Page@MonoClass@@SIPAV1@H@Z,"inferred: referenced by matched src/jshell.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x0059E7F0,?Printf@MonoClass@@QAAXPBDZZ,"inferred: referenced by matched src/jshell.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0059EB60,??0MotionLibrary@@QAE@XZ,"compiled from src/motlib.cpp, matched"
 0x0059EB70,??0MotionLibrary@@QAE@AAVFileClass@@@Z,"compiled from src/motlib.cpp, matched"
 0x0059EBA0,??1MotionLibrary@@QAE@XZ,"compiled from src/motlib.cpp, matched; identical code at two addresses, placed by definition order"
@@ -613,6 +618,8 @@ address,symbol,evidence
 0x006753C0,?Get@SHAStraw@@UAEHPAXH@Z,"compiled from src/shastraw.cpp, matched"
 0x00675400,?Result@SHAStraw@@QBEHPAX@Z,"compiled from src/shastraw.cpp, matched"
 0x0068B800,?Scale_Rotate@@YIXAAVSurface@@AAVBitmapClass@@ABVPoint2D@@HE@Z,"compiled from src/sprite.cpp, matched"
+0x00691310,?Exit_Process@@YIXH@Z,"inferred: referenced by matched src/jshell.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x00691320,?Emergency_Exit@@YIXXZ,"inferred: referenced by matched src/jshell.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0069A1A0,??0StaticBufferClass@@QAE@H@Z,"compiled from src/stbuffer.cpp, matched"
 0x0069A1C0,??1StaticBufferClass@@QAE@XZ,"compiled from src/stbuffer.cpp, matched"
 0x0069A1D0,?Add@StaticBufferClass@@QAEPAUEntry@1@AAVSurface@@ABUSurfaceRegion@@@Z,"compiled from src/stbuffer.cpp, matched"
@@ -881,6 +888,7 @@ address,symbol,evidence
 0x007843CB,__fflush_lk,symbol of VC6 LIBCMT.LIB fflush.obj
 0x007843F9,__flush,symbol of VC6 LIBCMT.LIB fflush.obj
 0x0078445E,_flsall,symbol of VC6 LIBCMT.LIB fflush.obj
+0x00784502,_vfprintf,"inferred: referenced by matched src/jshell.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0078453D,___initstdio,symbol of VC6 LIBCMT.LIB _file.obj
 0x007846AA,_rand,symbol of VC6 LIBCMT.LIB rand.obj
 0x007846CC,_wcsncmp,symbol of VC6 LIBCMT.LIB wcsncmp.obj

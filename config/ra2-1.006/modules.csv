@@ -377,8 +377,8 @@ unk_00523D90,0x00523D90,0x00524830,unknown,code not assigned to a module
 unk_00524830,0x00524830,0x00524870,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00524870,0x00524870,0x00529550,unknown,code not assigned to a module
 unk_00529550,0x00529550,0x00529590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00529590,0x00529590,0x0052EE40,unknown,code not assigned to a module
-unk_0052EE40,0x0052EE40,0x0052EF70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00529590,0x00529590,0x0052EE00,unknown,code not assigned to a module
+jshell,0x0052EE00,0x0052EF70,tibsun,"functions compiled from src/jshell.cpp, matched, without gaps"
 unk_0052EF70,0x0052EF70,0x00532290,unknown,code not assigned to a module
 unk_00532290,0x00532290,0x005322C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005322C0,0x005322C0,0x005332B0,unknown,code not assigned to a module
