@@ -890,6 +890,8 @@ address,size,evidence
 0x0053EBE0,656,"function of the Tiberian Sun reconstruction, matched"
 0x0053EE70,240,"function of the Tiberian Sun reconstruction, matched"
 0x0053EFB0,96,"function of the Tiberian Sun reconstruction, matched"
+0x0053F010,64,"code of src/lzostraw.cpp, matched: its code occurs at 4 addresses; placed by the gap the other functions of the file leave"
+0x0053F050,464,"code of src/lzostraw.cpp, matched"
 0x005461A0,6032,"function of the Tiberian Sun reconstruction, matched"
 0x0054E370,48,"function of the Tiberian Sun reconstruction, matched"
 0x0054F7C0,304,"function of the Tiberian Sun reconstruction, matched"

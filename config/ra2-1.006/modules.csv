@@ -416,8 +416,8 @@ lzo1x_c,0x0053E420,0x0053E970,tibsun,"functions compiled from src/lzo1x_c.cpp, m
 lzo1x_d,0x0053E970,0x0053EB40,tibsun,"functions compiled from src/lzo1x_d.cpp, matched, without gaps"
 lzopipe,0x0053EB40,0x0053EF60,tibsun,"functions compiled from src/lzopipe.cpp, matched, without gaps; one placed by alphabetical order"
 unk_0053EF60,0x0053EF60,0x0053EFB0,unknown,code not assigned to a module
-unk_0053EFB0,0x0053EFB0,0x0053F010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0053F010,0x0053F010,0x005461A0,unknown,code not assigned to a module
+lzostraw,0x0053EFB0,0x0053F220,tibsun,"functions compiled from src/lzostraw.cpp, matched, without gaps"
+unk_0053F220,0x0053F220,0x005461A0,unknown,code not assigned to a module
 unk_005461A0,0x005461A0,0x00547930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00547930,0x00547930,0x0054E370,unknown,code not assigned to a module
 unk_0054E370,0x0054E370,0x0054E3A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
