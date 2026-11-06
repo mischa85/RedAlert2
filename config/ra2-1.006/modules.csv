@@ -578,9 +578,7 @@ unk_005BCE90,0x005BCE90,0x005BD070,tibsun,matched functions of one source file o
 unk_005BD070,0x005BD070,0x005C2C40,unknown,code not assigned to a module
 unk_005C2C40,0x005C2C40,0x005C2C80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005C2C80,0x005C2C80,0x005CDB40,unknown,code not assigned to a module
-unk_005CDB40,0x005CDB40,0x005CDBD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005CDBD0,0x005CDBD0,0x005CDC80,unknown,code not assigned to a module
-unk_005CDC80,0x005CDC80,0x005CDCB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+nullconn,0x005CDB40,0x005CDCB0,tibsun,"functions compiled from src/nullconn.cpp, matched, without gaps; ?Packet_Overhead_Size@NullModemConnClass@@SIHXZ not placed"
 unk_005CDCB0,0x005CDCB0,0x005CE990,unknown,code not assigned to a module
 unk_005CE990,0x005CE990,0x005CEA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005CEA60,0x005CEA60,0x005CFFC0,unknown,code not assigned to a module
