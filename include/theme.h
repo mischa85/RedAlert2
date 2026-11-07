@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -38,6 +39,7 @@
 #include "side.hh"
 #include "theme.hh"
 
+class AudioStream;
 class CCINIClass;
 
 struct ThemeControl {
@@ -45,7 +47,8 @@ struct ThemeControl {
 	bool Fill_In(CCINIClass const & ini);
 
 	char Name[256];			// Filename of score.
-	char Fullname[64];		// Text number for full score name.
+	char Sound[256];		// RA2: +0x100
+	wchar_t Fullname[64];	// Full score name. RA2: wide, +0x200
 	int Scenario;			// Scenario when it first becomes available.
 	float Duration;			// Duration of theme in seconds.
 	bool Normal;			// Allowed in normal game play?
@@ -76,6 +79,8 @@ class ThemeClass
 		 */
 		bool IsRepeat;
 
+		bool IsFading; // RA2: +0x11, the current score is fading out
+
 		/*
 		 * If the next score is to be picked at random rather than in order, then this flag
 		 * will be true. The score just played is never picked again immediately.
@@ -87,6 +92,8 @@ class ThemeClass
 		 * from the rules. A ThemeType is an index into this list.
 		 */
 		DynamicVectorClass<ThemeControl *> Themes;
+
+		AudioStream * Stream; // RA2: +0x2C, the score being played
 
 		enum {
 			THEME_DELAY=TIMER_SECOND
