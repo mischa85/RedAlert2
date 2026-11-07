@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -164,6 +165,8 @@ class LoadOptionsClass
 			STATE_OK		= IDOK,		// OK pressed (confirmed action)
 			STATE_CLOSE		= IDCANCEL	/// Closed via ESC / system event
 		} State;
+
+		int Unused_1C; // RA2: +0x1C, never accessed
 
 		/*
 		**	This is an array of pointers to FileEntryClass objects.  These objects
