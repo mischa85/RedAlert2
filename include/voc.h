@@ -18,7 +18,7 @@
 
 #include "voc.hh"
 
-class AudioController;
+struct AudioController;
 class CCINIClass;
 class VocClass;
 
