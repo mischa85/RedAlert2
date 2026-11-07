@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -39,6 +40,10 @@ class AircraftTypeClass : public TechnoTypeClass
 		 */
 		bool IsCarryall;
 
+		AnimTypeClass * Trailer; // RA2: +0xB98
+
+		int SpawnDelay; // RA2: +0xB9C
+
 		/*
 		**	Does this aircraft have a rotor blade (helicopter) type propulsion?
 		*/
@@ -53,6 +58,10 @@ class AircraftTypeClass : public TechnoTypeClass
 		**	Can this aircraft land?  If it can land it is presumed to be controllable by the player.
 		*/
 		bool IsLandable;
+
+		bool IsAirportBound; // RA2: +0xBA3
+
+		bool IsFighter; // RA2: +0xBA4
 
 		AircraftTypeClass(NoInitClass const & x);
 		AircraftTypeClass(char const * ininame = NULL);
