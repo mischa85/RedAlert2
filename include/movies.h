@@ -2,6 +2,7 @@
 // Copyright 2026 ra2-decomp contributors
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
+// Changed to RA2 1.006's layout by RedAlert2 contributors, 2026.
 #pragma once
 
 #include "rect.h"
@@ -189,8 +190,7 @@ class BinkHandle
 		int FrameDelay;
 		void * FileHandle;
 		bool Playing;
-		bool Finished;
-		unsigned int StartFrame;
+		bool Finished; // RA2: the class ends here (0x30); no StartFrame
 };
 
 class BinkMovieHandle : public MovieHandle
