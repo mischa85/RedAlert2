@@ -1,0 +1,941 @@
+/*******************************************************************************
+ *                                O P E N  T S
+ *******************************************************************************
+ * SPDX-License-Identifier: GPL-3.0-or-later
+ * Copyright 2025 Electronic Arts Inc.
+ * Copyright 2026 OpenTS contributors
+ *
+ * Contains material derived from Electronic Arts source code.
+ * Modified by OpenTS contributors, 2026.
+ * EA's GPLv3 Section 7 additional terms and supplemental warranty
+ * disclaimers apply; see LICENSE.md.
+ ******************************************************************************/
+
+/* $Header: /counterstrike/SESSION.H 4     3/10/97 6:23p Steve_tall $ */
+/***************************************************************************
+ **   C O N F I D E N T I A L --- W E S T W O O D    S T U D I O S        **
+ *                                                                         *
+ *                 Project Name : Command & Conquer                        *
+ *                                                                         *
+ *                    File Name : SESSION.H                                *
+ *                                                                         *
+ *                   Programmer : Bill R. Randolph                         *
+ *                                                                         *
+ *                   Start Date : 11/30/95                                 *
+ *                                                                         *
+ *                  Last Update : November 30, 1995 [BRR]                  *
+ *                                                                         *
+ * The purpose of this class is to contain those variables & routines      *
+ * specifically related to a multiplayer game.                             *
+ *                                                                         *
+ * - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - */
+
+#pragma once
+
+#include "ccfile.h"
+#include "connect.h"
+#include "event.h"
+#include "house.h" /// needed for HOUSE_NAME_MAX
+#include "ipxaddr.h"
+#include "msglist.h"
+#include "special.h"
+#include "sun.h" /// needed for MAX_PLAYERS
+#include "typelist.h"
+#include "version.h"
+#include "win.h"
+
+#include "dialog.hh"
+#include "diff.hh"
+#include "diskid.hh"
+
+//---------------------------------------------------------------------------
+// Forward declarations
+//---------------------------------------------------------------------------
+class AircraftClass;
+class AnimClass;
+class BuildingClass;
+class BulletClass;
+class InfantryClass;
+class UnitClass;
+class PhoneEntryClass;
+class CellClass;
+class INIClass;
+
+//---------------------------------------------------------------------------
+// Defines
+//---------------------------------------------------------------------------
+//...........................................................................
+// Various limiting values
+//...........................................................................
+#define	MPLAYER_BUILD_LEVEL_MAX		10		// max build level in multiplay
+#define	MAX_MPLAYER_COLORS			8		// max # of colors
+
+//...........................................................................
+// Max sizes of packets we want to send
+// The IPX packet's size is IPX's max size (546), rounded down to accommodate
+// the max number of events possible.
+//...........................................................................
+#define	MAX_IPX_PACKET_SIZE			(((546 - sizeof(CommHeaderType)) / \
+												sizeof(EventClass) ) * sizeof(EventClass))
+#define	MAX_SERIAL_PACKET_SIZE		256
+
+//...........................................................................
+// Max length of player names fields; attempt to use the constant for the
+// HouseClass, if it's been defined; otherwise, define it myself.
+//...........................................................................
+#ifdef HOUSE_NAME_MAX
+#define	MPLAYER_NAME_MAX			HOUSE_NAME_MAX
+#else
+#define	MPLAYER_NAME_MAX			12		// max length of a player's name
+#endif
+
+//...........................................................................
+// Values to control the multiplayer score screen
+//...........................................................................
+#define	MAX_MULTI_NAMES	8		// max # names (rows) on the score screen
+#define	MAX_MULTI_GAMES	4		// max # games (columns) on the score screen
+
+//...........................................................................
+// Min value for MaxAhead, for both net & modem; only applies for
+// COMM_PROTOCOL_MULTI_E_COMP.
+//...........................................................................
+#define MODEM_MIN_MAX_AHEAD			5
+#define NETWORK_MIN_MAX_AHEAD		2
+
+//...........................................................................
+// Send period (in frames) for COMM_PROTOCOL_MULTI_E_COMP and above
+//...........................................................................
+#define DEFAULT_FRAME_SEND_RATE		3
+
+//...........................................................................
+// Modem-specific constants
+//...........................................................................
+#define	PORTBUF_MAX					64		// dialog field sizes
+#define	IRQBUF_MAX					3
+#define	BAUDBUF_MAX					7
+#define	INITSTRBUF_MAX				41
+#define	CWAITSTRBUF_MAX				16
+#define	CREDITSBUF_MAX				5
+#define	PACKET_TIMING_TIMEOUT		40              // ticks b/w sending a timing packet
+#define	MODEM_NAME_MAX				PORTBUF_MAX - 1 // Max length of modem name in list box
+
+#define SERIAL_MAX					23
+#define ENCRYPTION_STRING_LENGTH	128
+
+//---------------------------------------------------------------------------
+// Enums
+//---------------------------------------------------------------------------
+//...........................................................................
+// Types of games; used to tell which protocol we're using
+//...........................................................................
+enum GameType {
+	GAME_NORMAL,									// not multiplayer
+	GAME_MODEM,										// modem game
+	GAME_NULL_MODEM,								// NULL-modem
+	GAME_IPX,										// IPX Network game
+	GAME_INTERNET,									// Internet H2H
+	GAME_SKIRMISH,									// 1 plr vs. AI's
+	GAME_WDT,										/// World Domination Tour game
+	GAME_SERIAL_MODEM,								/// Serial-modem
+};
+
+//...........................................................................
+// Various Modem-specific enums
+//...........................................................................
+enum DetectPortType {
+	PORT_VALID = 0,
+	PORT_INVALID,
+	PORT_IRQ_INUSE
+};
+
+enum DialStatusType {
+	DIAL_CONNECTED			= 0,
+	DIAL_NO_CARRIER,
+	DIAL_BUSY,
+	DIAL_ERROR,
+	DIAL_NO_DIAL_TONE,
+	DIAL_TIMEOUT,
+	DIAL_CANCELED
+};
+
+enum DialMethodType {
+	DIAL_TOUCH_TONE = 0,
+	DIAL_PULSE,
+	DIAL_METHODS
+};
+
+enum CallWaitStringType {
+	CALL_WAIT_TONE_1 = 0,
+	CALL_WAIT_TONE_2,
+	CALL_WAIT_PULSE,
+	CALL_WAIT_CUSTOM,
+	CALL_WAIT_STRINGS_NUM
+};
+
+enum ModemGameType {
+	MODEM_NULL_HOST = 0,
+	MODEM_NULL_JOIN,
+	MODEM_DIALER,
+	MODEM_ANSWERER
+};
+
+//...........................................................................
+// Commands sent over the serial Global Channel
+//...........................................................................
+enum SerialCommandType {
+	SERIAL_CONNECT			= 100,	// Are you there?  Hello?  McFly?
+	SERIAL_GAME_OPTIONS,			// Hey, dudes, here's some new game options
+	SERIAL_SIGN_OFF,				// Bogus, dudes, my boss is coming; I'm outta here!
+	SERIAL_GO,						// OK, dudes, jump into the game loop!
+	SERIAL_MESSAGE,					// Here's a message
+	SERIAL_TIMING,					// timimg packet
+	SERIAL_SCORE_SCREEN,			// player at score screen
+	SERIAL_LOADGAME,				// Start the game, loading a saved game first
+	SERIAL_PROGRESS_REPORT,			//
+	SERIAL_LAST_COMMAND,			// last command
+	SERIAL_REQ_SCENARIO,			// Reqest that host sends the scenario file to the other players.
+	SERIAL_FILE_INFO,				// Info about the file that is going to be transferred
+	SERIAL_FILE_CHUNK,				// A chunk of scenario
+	SERIAL_FILE_INFO_ACK,			//
+	SERIAL_READY_TO_GO,				// Sent in response to a 'GO' command
+	SERIAL_NO_SCENARIO,				// Scenario isnt available on remote machine so we cant play
+	SERIAL_ACCEPT_OPTIONS,			//
+	SERIAL_PREVIEW_MODE,			//
+	SERIAL_PREVIEW_ACK,				//
+	SERIAL_REQ_PREVIEW,				//
+};
+
+//...........................................................................
+// Commands sent over the network Global Channel
+//...........................................................................
+enum NetCommandType {
+	NET_QUERY_GAME,				// Hey, what games are out there?
+	NET_ANSWER_GAME,			// Yo, Here's my game's name!
+	NET_QUERY_PLAYER,			// Hey, what players are in this game?
+	NET_ANSWER_PLAYER,			// Yo, I'm in that game!
+	NET_CHAT_ANNOUNCE,			// I'm at the chat screen
+	NET_CHAT_REQUEST,			// Respond with a CHAT_ANNOUNCE, please.
+	NET_QUERY_JOIN,				// Hey guys, can I play too?
+	NET_CONFIRM_JOIN,			// Well, OK, if you really want to.
+	NET_REJECT_JOIN,			// No, you can't join; sorry, dude.
+	NET_GAME_OPTIONS,			// Hey, dudes, here's some new game options
+	NET_SIGN_OFF,				// Bogus, dudes, my boss is coming; I'm outta here!
+	NET_GO,						// OK, jump into the game loop!
+	NET_MESSAGE,				// Here's a message
+	NET_PING,					// I'm pinging you to take a time measurement
+	NET_LOADGAME,				// start a game by loading a saved game
+	NET_PROGRESS_REPORT,		//
+	NET_REQ_SCENARIO,			// Reqest that host sends the scenario file to the other players.
+	NET_FILE_INFO,				// Info about the file that is going to be transferred
+	NET_FILE_CHUNK,				// A chunk of scenario
+	NET_READY_TO_GO,			// Sent in response to a 'GO' command
+	NET_NO_SCENARIO,			// Scenario isnt available on remote machine so we cant play
+	NET_FILE_INFO_ACK,			//
+	NET_PUB_GAMEOPT,			//
+	NET_PRIV_GAMEOPT,			//
+	NET_PREVIEW_MODE,			//
+	NET_PREVIEW_ACK,			//
+	NET_REQ_PREVIEW,			//
+	NET_PROPOSE_KICK,			//
+};
+
+//---------------------------------------------------------------------------
+// Structures
+//---------------------------------------------------------------------------
+//...........................................................................
+// An entry on the score screen is defined by this structure
+//...........................................................................
+struct MPlayerScoreType {
+	char Name[MPLAYER_NAME_MAX];
+
+	/*
+	 * This is the color scheme this player last fought under, so that his row on the score
+	 * screen is drawn in the color he wore on the battlefield.
+	 */
+	int Scheme;
+
+	int Wins;
+
+	/*
+	 * These are the numbers of units and buildings this player lost in each round. If -1, then
+	 * he took no part in that round.
+	 */
+	int Lost[MAX_MULTI_GAMES];
+	int Kills[MAX_MULTI_GAMES];
+
+	/*
+	 * These record how much of what this player built was still standing at the end of each
+	 * round, expressed as a percentage. If -1, then he took no part in that round.
+	 */
+	int Built[MAX_MULTI_GAMES];
+
+	/*
+	 * These are the point totals this player earned in each round, with a bonus folded in for
+	 * surviving one. If -1, then he took no part in that round.
+	 */
+	int Score[MAX_MULTI_GAMES];
+};
+
+//...........................................................................
+// Settings for the serial port
+//...........................................................................
+struct SerialSettingsType {
+	int Port;
+	int IRQ;
+	int Baud;
+	DialMethodType DialMethod;
+	int InitStringIndex;
+	int CallWaitStringIndex;
+	int Compression;
+	int ErrorCorrection;
+	char CallWaitString[ CWAITSTRBUF_MAX ];
+	char ModemName [ MODEM_NAME_MAX ];
+};
+
+#pragma pack(1)
+//...........................................................................
+// This is a "node", used for the lists of available games & players.  The
+// 'Game' structure is used for games; the 'Player' structure for players.
+//...........................................................................
+struct NodeNameType {
+	char Name[MPLAYER_NAME_MAX];		// player or game name
+		IPXAddressClass Address;
+	union {
+		struct {
+			unsigned char IsOpen;		// is the game open?
+			unsigned char Addon;
+			unsigned int LastTime;		// last time we heard from this guy
+		} Game;
+		struct {
+			char Serial[SERIAL_MAX];	//
+			int House;					// "ActLike" House of this player
+			int Color;					// Color of this player
+			int ID;						// Actual House of this player
+			int ProcessTime;			// Length of time to process players main loop
+			int Status;					//
+			int SquadID;				//
+		} Player;
+		struct {
+			unsigned int LastTime;		// last time we heard from this guy
+			unsigned char LastChance;	// we're about to remove him from the list
+			int Color;					// chat player's color
+		} Chat;
+	};
+};
+
+
+//...........................................................................
+// Packet sent over the serial Global Channel
+//...........................................................................
+struct SerialPacketType {
+	SerialCommandType Command;      // One of the enum's defined above
+	char Name[MPLAYER_NAME_MAX];    // Player or Game Name
+	unsigned char ID;               // unique ID of sender of message
+	union {
+		struct {
+			HousesType House;							// player's House
+			char Color;									// player's color or SIGNOFF ID
+			unsigned int MinVersion;					// min version this game supports
+			unsigned int MaxVersion;					// max version this game supports
+			char Scenario[DESCRIP_MAX];					// Scenario name
+			unsigned int Credits;						// player's credits
+			unsigned int IsBases		: 1;			// 1 = bases are allowed
+			unsigned int IsBridgeDestruction : 1;
+			unsigned int IsGoodies	: 1;				// 1 = goodies are allowed
+			unsigned int IsGhosties	: 1;				// 1 = ghosts are allowed
+			unsigned int OfficialScenario : 1;			// Is this scenario an official Westwood one?
+			int CheatCheck;								// Unique ID of "rules.ini" file.
+			unsigned char BuildLevel;					// buildable level
+			unsigned char UnitCount;					// max # units
+			unsigned char AIPlayers;					// # of AI players allowed
+			unsigned char AIDifficulty;					//
+			unsigned int IsUnknownFlag1 : 1;
+			unsigned int IsHarvTruce : 1;				//
+			unsigned int IsMCVRedeploy : 1;				//
+			unsigned int IsFogOfWar : 1;				//
+			unsigned int IsShortGame : 1;				//
+			unsigned int IsCrapEngineers : 1;			//
+			unsigned int IsFirestorm : 1;				//
+			int Seed;									// random number seed
+			SpecialClass Special;						// command-line options
+			unsigned int ResponseTime;					// packet response time
+			unsigned int FileLength;					// Length of scenario file to expect from host.
+			unsigned char GameSpeed;					//
+			char ShortFileName[13];						// Name of scenario file to expect from host
+			unsigned char FileDigest[32];				// Digest of scenario file to expect from host
+														// ajw - This is not necessarily null-terminated.
+			int AICheatCheck;							/// Unique ID of "ai.ini" file.
+			int ArtCheatCheck;							/// Unique ID of "art.ini" file.
+			int BuildNumber;							//
+		} ScenarioInfo;
+
+		/*
+		 * This carries a line one player has typed to the others, along with the color it is
+		 * to be displayed in. It accompanies the SERIAL_MESSAGE command.
+		 */
+		struct {
+			char Message[MAX_MESSAGE_LENGTH + 10];		// inter-player message
+			int Color;									// player's color or SIGNOFF ID
+		} Message;
+		struct {
+			int Color;									// player's color or SIGNOFF ID
+		} Chat;
+
+		/*
+		 * This reports how far along the sender is in loading the scenario, expressed as a
+		 * percentage. It accompanies the SERIAL_PROGRESS_REPORT command.
+		 */
+		struct {
+			int Percent;								//
+		} Progress;
+	};
+};
+
+//...........................................................................
+// Other packet sent over the serial global channel (for file transfers)
+//...........................................................................
+#define MAX_SEND_FILE_PACKET_SIZE MAX_SERIAL_PACKET_SIZE - 64
+struct RemoteFileTransferType {
+	SerialCommandType	Command;                    // Enum defined above. Should be a file transfer enum.
+	unsigned short 	BlockNumber;                    // Index position of this file chunk in the file
+	unsigned short		BlockLength;                // Length of data in the RawData buffer
+
+	/*
+	 * This is the piece of the scenario file this packet carries. Only the first BlockLength
+	 * bytes of it are meaningful.
+	 */
+	unsigned char 		RawData	[546 - 64 - 3];
+};
+
+
+//...........................................................................
+// Packet sent over the network Global Channel
+//...........................................................................
+struct GlobalPacketType {
+	NetCommandType Command;						// One of the enum's defined above
+	char Name[MPLAYER_NAME_MAX];				// Player or Game Name
+	char Serial[SERIAL_MAX];					//
+	union {
+		struct {
+			unsigned int IsOpen		: 1;		// 1 = game is open for joining
+			unsigned int IsFirestorm : 1;		//
+		} GameInfo;
+		struct {
+			int House;							// player's House
+			int Color;							// player's color
+			unsigned int NameCRC;				// CRC of player's game's name
+			unsigned int MinVersion;			// game's min supported version
+			unsigned int MaxVersion;			// game's max supported version
+			int CheatCheck;						// Unique ID of "rules.ini" file.
+			int AICheatCheck;					/// Unique ID of "ai.ini" file.
+			int ArtCheatCheck;					/// Unique ID of "art.ini" file.
+			unsigned int BuildNumber;			///
+		} PlayerInfo;
+		struct {
+			#if 0 /// Fields that fall 13 bytes short of where TS keeps FileLength (offset 0x83), so the region is padded instead of mapped.
+			char Scenario[DESCRIP_MAX];			// Scenario Name
+			unsigned int Credits;				// player's credits
+			unsigned int IsBases		: 1;	// 1 = bases are allowed
+			unsigned int IsTiberium	: 1;		// 1 = tiberium is allowed
+			unsigned int IsGoodies	: 1;		// 1 = goodies are allowed
+			unsigned int IsGhosties	: 1;		// 1 = ghosts are allowed
+			unsigned int OfficialScenario :1;	// Is this scenario an official Westwood one?
+			unsigned char BuildLevel;			// buildable level
+			unsigned char UnitCount;			// max # units
+			unsigned char AIPlayers;			// # of AI players allowed
+			int Seed;							// random number seed
+			SpecialClass Special;				// command-line options
+			unsigned int GameSpeed;				// Game Speed
+			unsigned int Version;				// version # common to all players
+			#endif
+			char pad[0x83 - 0x2F];
+			unsigned int FileLength;			// Length of scenario file to expect from host.
+			char ShortFileName[13];				// Name of scenario file to expect from host
+			unsigned char FileDigest[32];		// Digest of scenario file to expect from host
+												// ajw - This is not necessarily null-terminated.
+		} ScenarioInfo;
+		struct {
+			char Buf[MAX_MESSAGE_LENGTH];		// inter-user message
+			int Color;							// color of sender of message
+			unsigned int NameCRC;				// CRC of sender's Game Name
+		} Message;
+		struct {
+			int OneWay;							// one-way response time
+		} ResponseTime;
+		struct {
+			int Why;							// why were we rejected from the game?
+		} Reject;
+		struct {
+			unsigned int ID;   // unique ID for this chat node
+			int Color;          // my color
+		} Chat;
+
+		/*
+		 * This reports how far along the sender is in loading the scenario, expressed as a
+		 * percentage. It accompanies the NET_PROGRESS_REPORT command.
+		 */
+		struct {
+			int Percent;
+		} Progress;
+
+		/*
+		 * This names the player proposing that somebody be thrown out of the game and the
+		 * player he wants gone. It accompanies the NET_PROPOSE_KICK command.
+		 */
+		struct {
+			unsigned int KickeeID;
+			unsigned int KickerID;
+		} Kick;
+
+		/*
+		 * This carries the game options as an encoded string, tagged with the sender's color
+		 * and a CRC of his game's name. It accompanies the NET_PUB_GAMEOPT and
+		 * NET_PRIV_GAMEOPT commands.
+		 */
+		struct {
+			char Buf[400];
+			int Color;
+			unsigned int NameCRC;
+		} Options;
+	};
+};
+#pragma pack()
+
+//...........................................................................
+// For finding sync bugs; filled in by the engine when certain conditions
+// are met; the pointers allow examination of objects in the debugger.
+//...........................................................................
+struct TrapObjectType {
+	union {
+		AircraftClass *Aircraft;
+		AnimClass *Anim;
+		BuildingClass *Building;
+		BulletClass *Bullet;
+		InfantryClass *Infantry;
+		UnitClass *Unit;
+		void *All;
+	} Ptr;
+};
+
+/*
+**	This is the identifier for a multiplayer mission. This can be used to
+**	identify the filename of the mission as well as display the mission in a
+**	mission selection list.
+*/
+class MultiMission
+{
+	public:
+		MultiMission(INIClass const & ini, char const * filename = NULL);
+		MultiMission(const char * filename = NULL, char const * description = NULL, char const *digest = NULL, bool official = true);
+
+		void Set_Description(char const * description);
+		void Set_Filename(char const * filename);
+		void Set_Digest(char const * digest);
+		void Set_Official(bool official);
+		char const * Description(void) const {return(ScenarioDescription);}
+		char const * Get_Filename(void) const {return(Filename);}
+		char const * Get_Digest(void) const {return(Digest);}
+		bool Get_Official(void) { return(IsOfficial); }
+
+		bool Is_On_CD(DiskID cd) const;
+		DiskID On_Which_CD(void) const;
+
+	private:
+		char ScenarioDescription[DESCRIP_MAX];
+		char Filename[_MAX_PATH];
+		char Digest[32];
+		bool IsOfficial;
+
+		/*
+		 * These are the player limits the mission declares in its own "Multiplay" section.
+		 * Nothing consults them, so a mission's limits are not actually enforced.
+		 */
+		int MinPlayers;
+		int MaxPlayers;
+
+		/*
+		 * This is the list of disks the mission may be played from, taken from its own "CD"
+		 * key. A mission that names none is assumed to be on the hard drive.
+		 */
+		TypeList<DiskID> Disks;
+};
+
+
+struct GameOptionsType {
+	int 		ScenarioIndex;		//Used on host machine only as index into scenario list
+	bool 		Bases;
+	int 		Credits;
+	bool		BridgeDestruction;	/// Weapons fire can bring bridges down.
+	bool 		Goodies;
+	bool		ShortGame;			/// A player is beaten once he has no buildings and no MCV.
+	int			GameSpeed;			/// Host's speed setting (0 - 6), forced on every player.
+	bool		CrapEngineers;		/// Engineers can only capture buildings at condition red.
+	bool 		Ghosts;
+	int 		UnitCount;
+	int 		AIPlayers;			// # of AI players allowed to be built
+	DiffType	AIDifficulty;		/// Difficulty applied to every AI house.
+	bool		AlliesAllowed;		/// Alliances can be formed and broken during the game.
+	bool		HarvTruce;			/// Harvesters are immune from attack.
+	bool		CTF;				/// Play as capture the flag.
+	bool		FogOfWar;			/// Ground the player can no longer see fogs back over.
+	bool		MCVRedeploy;		/// A construction yard can be sold back into an MCV.
+	char		ScenarioDescription [DESCRIP_MAX];	//Used on client machines only
+
+	bool Save(IStream * stream) const;
+	bool Load(IStream * stream);
+
+};
+
+struct MPStatsType {
+	char Name[64];				/// Player these stats are for; empty marks an unused entry.
+	int MaxRoundTrip;			/// Worst round trip time, in milliseconds.
+	int Resends;				/// Packets that had to be sent more than once.
+	int Lost;					/// Packets from this player that never arrived.
+	int PercentLost;			/// Percentage of this player's packets that never arrived.
+	int MaxAvgRoundTrip;		/// Worst the average round trip time ever got, in milliseconds.
+	int FrameSyncStalls;		/// Times the game had to wait on this player's frame count.
+	int CommandCountStalls;		/// Times the game had to wait on this player's command count.
+	IPXAddressClass Address;	/// Address these stats were gathered from.
+};
+
+//---------------------------------------------------------------------------
+// Class Definition
+//---------------------------------------------------------------------------
+class SessionClass
+{
+	//------------------------------------------------------------------------
+	// Public interface
+	//------------------------------------------------------------------------
+	public:
+		//.....................................................................
+		// Constructor/Destructor
+		//.....................................................................
+		SessionClass(void);
+		~SessionClass(void);
+
+		//.....................................................................
+		// Initialization
+		//.....................................................................
+		void One_Time(void);
+		void Init(void);
+
+		//.....................................................................
+		// Reads/writes to the INI file
+		//.....................................................................
+		void Read_MultiPlayer_Settings (void);
+		void Write_MultiPlayer_Settings (void);
+		void Read_Scenario_Descriptions (void);
+		void Free_Scenario_Descriptions(void);
+
+		//.....................................................................
+		// Utility functions
+		//.....................................................................
+		int Create_Connections(void);
+		bool Am_I_Master(void);
+		unsigned int Compute_Unique_ID(void);
+		void Update_Progress(int percent);
+		void Init_Fixed_Alliances(void);
+		int Color_Index_To_Scheme(int id);
+
+		//.....................................................................
+		// File I/O
+		//.....................................................................
+
+		//.....................................................................
+		// Debugging / Sync Bugs
+		//.....................................................................
+		void Trap_Object(void);
+		bool Log_To_File(FILE *out);
+
+		//---------------------------------------------------------------------
+		// Public Data
+		//---------------------------------------------------------------------
+		//.....................................................................
+		// The type of session being played
+		//.....................................................................
+		GameType Type;
+		bool IsWDT;
+		int WDTTerritory;
+
+		//.....................................................................
+		// The current communications protocol
+		//.....................................................................
+		CommProtocolType CommProtocol;
+
+		//.....................................................................
+		// Game options
+		//.....................................................................
+		GameOptionsType Options;
+
+		//.....................................................................
+		// Unique workstation ID, for detecting my own packets
+		//.....................................................................
+		unsigned int UniqueID;
+
+		//.....................................................................
+		// Player's local options
+		//.....................................................................
+		char Handle[MPLAYER_NAME_MAX];      // player name
+		int PrefColor;                      // preferred color index
+		int ColorIdx;                       // actual color index
+		int House;                          // GDI / NOD
+		int ObiWan;                         // 1 = player can see all
+		int Solo;                           // 1 = player can play alone
+
+		/*
+		 * This is the name of the Westwood Online server the player would rather log on to,
+		 * remembered between runs. If NULL, then the service is left to pick one for him.
+		 */
+		char *PreferredServer;
+
+		/*
+		 * This is the part of the world the player chats from, as Westwood Online numbers
+		 * them. If 0, then he has not chosen a locale yet.
+		 */
+		int Locale;
+
+		/*
+		 * This is the locale the player chatted from last time, kept so that a login which
+		 * comes back without one can fall back on it rather than ask him again.
+		 */
+		int LastLocale;
+
+		/*
+		 * If the player's Westwood Online nickname and password are to be remembered between
+		 * runs, then this flag will be true.
+		 */
+		bool StoreNickname;
+
+		/*
+		 * This is the stored nickname slot that was written last. Once all the slots are in
+		 * use a new login overwrites the one after it, so they are recycled in turn. If -1,
+		 * then no nickname has been stored yet.
+		 */
+		int LastNicknameSlot;
+
+		/*
+		 * If the local player is playing a GDI house, then this flag will be true. A starting
+		 * multiplayer scenario takes its side and its speech set from it.
+		 */
+		bool PlayerIsGDI;
+
+		//.....................................................................
+		// Max allowable # of players & actual # of (human) players
+		//.....................................................................
+		int MaxPlayers;
+		int NumPlayers;
+
+		//.....................................................................
+		// Frame-sync'ing timing variables
+		// 'MaxAhead' is the number of frames ahead of this one to execute
+		// a given packet.  It's set by the RESPONSE_TIME event.
+		// 'FrameSendRate' is the # frames between data packets
+		//.....................................................................
+		unsigned int MaxAhead;
+		unsigned int FrameSendRate;
+
+		int			DesiredFrameRate;
+
+		int			ProcessTimer;
+		int			ProcessTicks;
+		int			ProcessFrames;
+
+		/*
+		 * This is the largest MaxAhead the game has run at, since the value only ever grows.
+		 * The sync bug report carries it as a measure of how bad the connection ever got.
+		 */
+		int			MaxMaxAhead;
+
+		/*
+		 * These are the frame timings Westwood Online worked out from the players' connection
+		 * speeds. While either is non-zero the host sends them out instead of measuring the
+		 * connections itself, and clears both once it has.
+		 */
+		int			PrecalcMaxAhead;
+		int			PrecalcDesiredFrameRate;
+
+		/*
+		 * These are the network statistics gathered for each player over the course of the
+		 * game. They feed the network diagnostics display and the sync bug report.
+		 */
+		MPStatsType ConnectionStats[MAX_PLAYERS];
+
+		/*
+		 * These identify the host of an internet game, the machine that hands the network
+		 * timings down to everyone else. The name is learned from the chat channel and the
+		 * ID is filled in once that name is matched to a player, so it is -1 until then.
+		 */
+		char MasterPlayerName[MPLAYER_NAME_MAX + 1];
+		int MasterPlayerID;
+
+		/*
+		 * If the network diagnostics display is to be drawn over the game, then this flag
+		 * will be true. It is a developer aid, turned on by a command line switch.
+		 */
+		bool ShowInternetDebug;
+
+		//.....................................................................
+		// This flag is set when we've loaded a multiplayer game.
+		//.....................................................................
+		int LoadGame;
+
+		//.....................................................................
+		// This flag is set when the modem game saves the game due to a lost
+		// connection.
+		//.....................................................................
+		int EmergencySave;
+
+		/*
+		 * If Westwood Online allied the players into squads, then this flag will be true.
+		 * Such alliances are fixed for the match, so nobody can change sides part way in.
+		 */
+		bool SquadAlliances;
+
+		/*
+		 * If this machine watched the game through to its end, then this flag will be true.
+		 * A game the player walked out of is reported differently from one he saw finished.
+		 */
+		bool SawGameCompletion;
+
+		/*
+		 * If the game has fallen out of sync, then this flag will be true. It is reported
+		 * along with the results, so that a desync can be told from a clean finish.
+		 */
+		bool OutOfSync;
+
+		unsigned int PlayingAgainstVersion;		// Negotiated version number
+
+		//.....................................................................
+		// List of scenarios & their file numbers
+		//.....................................................................
+		DynamicVectorClass<MultiMission *> Scenarios;
+
+		char ScenarioFileName[_MAX_FNAME+_MAX_EXT+2];	//File name of scenario to load
+
+		char ScenarioDigest [32+2];						//Digest of scenario to load
+		unsigned int ScenarioFileLength;
+		bool ScenarioIsOfficial;
+
+		char ScenarioRequests[MAX_PLAYERS];		//Which players requested scenario files
+		int  RequestCount;
+		IPXAddressClass	HostAddress;
+
+		/*
+		 * These are the kick proposals that have arrived but not yet been counted. A proposal
+		 * can turn up at any time, while the votes are only tallied from the wait loop.
+		 */
+		DynamicVectorClass<GlobalPacketType *> KickProposals;
+
+		/*
+		 * These are the numbers of votes cast to kick each player out of the game. A player
+		 * is dropped once every other player has voted against him.
+		 */
+		int KickVoteCount[MAX_PLAYERS];
+
+		/*
+		 * These record who has voted to kick each player, so that nobody gets to vote against
+		 * the same victim twice.
+		 */
+		int KickVoteWho[MAX_PLAYERS][MAX_PLAYERS];
+
+		//.....................................................................
+		// This is the multiplayer messaging system
+		//.....................................................................
+		MessageListClass Messages;
+		IPXAddressClass MessageAddress;
+		char LastMessage[MAX_MESSAGE_LENGTH];
+		unsigned WWChat		: 1;	// 1 = go into special WW Chat mode
+
+		//.....................................................................
+		// This is the multiplayer scorekeeping system
+		//.....................................................................
+		MPlayerScoreType Score[MAX_MULTI_NAMES];
+		int GamesPlayed;		// # games played this run
+		int NumScores;			// # active entries in MPlayerScore
+		int Winner;				// index of winner of last game
+		int CurGame;			// index of current game being played
+
+		//.....................................................................
+		// Static arrays
+		//.....................................................................
+		static char Descriptions[100][40];
+		static int CountMin[2];
+		static int CountMax[2];
+		static char const * GlobalPacketNames[];
+		static char const * SerialPacketNames[];
+
+		//.....................................................................
+		// For Recording & Playing back a file
+		//.....................................................................
+		CCFileClass RecordFile;
+		unsigned Record				: 1;
+		unsigned Play				 	: 1;
+		unsigned Attract			 	: 1;
+
+		//.....................................................................
+		// IPX-specific variables
+		//.....................................................................
+		int IsBridge;                                   // 1 = we're crossing a bridge
+		IPXAddressClass BridgeNet;                      // address of bridge
+		bool NetStealth;                                // makes us invisible
+		bool NetProtect;                                // keeps others from messaging us
+		bool NetOpen;                                   // 1 = game is open for joining
+		char GameName[MPLAYER_NAME_MAX];                // game's name
+		GlobalPacketType GPacket;                       // global packet
+		int GPacketlen;                                 // global packet length
+		IPXAddressClass GAddress;                       // address of sender
+		unsigned short GProductID;                      // product ID of sender
+		char MetaPacket[MAX_IPX_PACKET_SIZE];           // packet building buffer
+		int MetaSize;                                   // size of MetaPacket
+		DynamicVectorClass <NodeNameType *> Games;      // list of games
+		DynamicVectorClass <NodeNameType *> Players;    // list of players
+		DynamicVectorClass <NodeNameType *> Chat;       // list of chat nodes
+		int Suspended;
+
+		//.....................................................................
+		// Modem-specific variables
+		//.....................................................................
+		unsigned ModemService		: 1;    // 1 = service modem in Call_Back
+		int CurPhoneIdx;                    // phone listing index
+		SerialSettingsType SerialDefaults;  // default serial settings
+		ModemGameType ModemType;            // caller or answerer?
+
+		DynamicVectorClass<PhoneEntryClass *> PhoneBook;
+		DynamicVectorClass <char *> InitStrings;
+		DynamicVectorClass <char const *> CallWaitStrings;
+		static char const * DialMethodCheck[ DIAL_METHODS ];
+
+		/*
+		 * These are the text identifiers of the stock call waiting disable prefixes, used to
+		 * fill the CallWaitStrings list when the session is constructed.
+		 */
+		static const int CallWaitStringIDs[ CALL_WAIT_STRINGS_NUM ];
+
+		/*
+		 * These are the numbers of frames each remote player is running behind this machine.
+		 * The main loop slows its network send rate when the worst of them grows too large.
+		 */
+		int PlayerLatency[MAX_PLAYERS];
+
+		/*
+		 * This scales up the measured connection response time when the frame timing is
+		 * computed (0 - 3), buying tolerance of a laggy link at the cost of responsiveness.
+		 */
+		int LatencyFudge;
+
+		//.....................................................................
+		// For finding Sync Bugs
+		//.....................................................................
+		int TrapFrame;             // frame # to start trapping 'TrapObject'
+		RTTIType TrapObjType;       // type of object to trap
+		TrapObjectType TrapObject;  // ptr to object to trap (watch)
+		Coord TrapCoord;            // coord of object, 0 = ignore
+		TargetClass TrapTarget;     // Target # of object, 0 = ignore
+		CellClass * TrapCell;       // Ptr to cell to trap (watch)
+		int TrapCheckHeap;          // true = check the heap as of TrapFrame
+		int TrapPrintCRC;          // Frame # to print CRC state file
+};
+
+extern SessionClass Session;
+
+/*************************** end of session.h ******************************/
