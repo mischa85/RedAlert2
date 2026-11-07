@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -108,6 +109,15 @@ class EventClass
 			REMOVEPLAYER,
 
 			LATENCYFUDGE,
+			MEGAFRAMEINFO,		// RA2
+			PACKET_TIMING,		// RA2
+			ABOUT_TO_EXIT,		// RA2
+			FALLBACK_HOST,		// RA2
+			ADDRESS_CHANGE,		// RA2
+			PLAN_CONNECT,		// RA2
+			PLAN_COMMIT,		// RA2
+			PLAN_NODE_DELETE,	// RA2
+			ALL_CHEER,			// RA2
 
 			LAST_EVENT,			// one past the last event
 		};
@@ -115,26 +125,27 @@ class EventClass
 		unsigned char Type;		// Type of queue command object.
 
 		/*
-		** 'Frame' is the frame that the command should execute on.
-		**	27 bits gives over 25 days of playing time without wrapping,
-		**	at 30 frames per second, so it should be plenty!
-		*/
-		int Frame;
-
-		/*
 		**	This bit tells us if we've already executed this event.
 		*/
-		bool IsExecuted;
+		bool IsExecuted : 1; // RA2: +0x01
 
 		/*
 		**	House index of the player originating this event
 		*/
-		int ID;
+		char ID; // RA2: +0x02, a byte
+
+		/*
+		** 'Frame' is the frame that the command should execute on.
+		**	27 bits gives over 25 days of playing time without wrapping,
+		**	at 30 frames per second, so it should be plenty!
+		*/
+		int Frame; // RA2: +0x03
 
 		/*
 		**	This union contains the specific data that the event requires.
 		*/
 		union {
+			char DataBuffer[104]; // RA2: the longest event (MEGAFRAMEINFO) is 104 bytes
 			struct {
 				SpecialClass	Data;		// The special option flags.
 			} Options;
@@ -154,13 +165,16 @@ class EventClass
 			} General;
 			struct {
 				xTargetClass	Whom;			// Whom to apply mission to.
-				MissionType	Mission;			// What mission to apply.
+				char			Mission;			// What mission to apply. RA2: a byte
+				unsigned char	Unused_6;			// RA2
 				xTargetClass	Target;			// Target to assign.
 				xTargetClass	Destination;	// Destination to assign.
+				xTargetClass	Follow;			// RA2
+				char			IsPlanningEvent;	// RA2
 			} MegaMission;
 			struct {
 				xTargetClass	Whom;           // Whom to apply mission to.
-				MissionType	Mission;            // What mission to apply.
+				unsigned char	Mission;            // What mission to apply. RA2: a byte
 				xTargetClass	Target;         // Target to assign.
 				xTargetClass	Destination;    // Destination to assign.
 				SpeedType	Speed;              // Formation override speed.
@@ -181,9 +195,12 @@ class EventClass
 			struct {
 				RTTIType		Type;
 				int			ID;
+				BOOL			IsNaval;		// RA2
 			} Specific;
 			struct {
 				RTTIType		Type;
+				int			ID;				// RA2
+				BOOL			IsNaval;		// RA2
 				xCell			Where;
 			} Place;
 			struct {
@@ -199,6 +216,10 @@ class EventClass
 			**	CommandCount: # of commands the sender has sent; used to detect missed packets
 			**	Delay: sender's propagation delay value for this frame
 			*/
+			struct {
+				signed char	Value;
+				unsigned int	Node;
+			} Address; // RA2: ADDRESS_CHANGE
 			struct {
 				unsigned int CRC;
 				unsigned short CommandCount;    // # commands sent so far
