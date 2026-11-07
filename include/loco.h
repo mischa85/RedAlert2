@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -89,11 +90,13 @@ class LocomotionClass : public IPersistStream, public ILocomotion
 		HRESULT STDMETHODCALLTYPE Load(IStream * stream) const;
 
 	protected:
+		FootClass *Owner; // RA2: +0x08, set to the same object as LinkedTo by Link_To
+
 		/*
 		 * Pointer to the object this locomotor carries about. It is attached as the object
 		 * is created, and every service the locomotor offers is performed through it.
 		 */
-		FootClass *LinkedTo;
+		FootClass *LinkedTo; // RA2: +0x0C
 
 		/*
 		 * If this locomotor is able to move its object under its own means, then this flag
