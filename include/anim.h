@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -137,6 +138,10 @@ class AnimClass : public ObjectClass, public StageClass
 		 */
 		ConvertClass * AlternativeDrawer;
 
+		int LightConvertIndex; // RA2: +0xC0
+
+		char PaletteName[32]; // RA2: +0xC4
+
 		/*
 		 * This is the lighting level used when the animation has an AlternativeDrawer, where
 		 * 1000 is normal brightness. A type flagged IsUseNormalLight ignores it entirely.
@@ -174,6 +179,14 @@ class AnimClass : public ObjectClass, public StageClass
 		 */
 		bool IsBuildingAnim;
 
+		bool UnderTemporal; // RA2: +0x101
+
+		bool Paused; // RA2: +0x102
+
+		bool Unpaused; // RA2: +0x103
+
+		int PausedAnimFrame; // RA2: +0x104
+
 		/*
 		 * This is the physics state of an animation that travels under its own momentum -- a
 		 * meteor or a bouncing piece of debris. It moves the animation until it has settled.
@@ -186,6 +199,12 @@ class AnimClass : public ObjectClass, public StageClass
 		 * passes its own level down to each of its animations so that they fade along with it.
 		 */
 		char TranslucencyLevel;
+
+		bool TimeToDie; // RA2: +0x159
+
+		BulletClass * AttachedBullet; // RA2: +0x15C
+
+		HouseClass * Owner; // RA2: +0x160
 
 		/*
 		**	Is this animation in a temporary suspended state?  If so, then it won't
@@ -285,6 +304,10 @@ class AnimClass : public ObjectClass, public StageClass
 		 * this is how a building holds its powered animations still while it has no power.
 		 */
 		bool IsDisabled;
+
+		AudioController StartSoundAudioController; // RA2: +0x180
+
+		AudioController StopSoundAudioController; // RA2: +0x194
 };
 
 void Shorten_Attached_Anims(ObjectClass * obj);
