@@ -23,8 +23,10 @@ class MSFont;
 class MSAnim;
 class Surface;
 class BSurface;
+class BinkHandle;
 class ShapeSet;
 class SurfaceCacheClass;
+class Wstring;
 struct VQHandle;
 
 typedef DynamicVectorClass<MSAnim *> MS_ANIM_LIST;
@@ -193,6 +195,46 @@ class MSBitPrintAnim : public MSAnim
 		bool IsFinished; // RA2: +0x30, YR: FlagA; Has_Finished returns it, Set_Flag sets it
 
 		bool IsCentered; // RA2: +0x31, YR: FlagB; centres each line (BitText flags 1)
+};
+
+
+/*
+**	RA2: an inactive anim covering the whole 640 x 480 screen. Nothing in the game
+**	constructs one.
+*/
+class MSFrameAnim : public MSAnim
+{
+	public:
+		MSFrameAnim(void) : MSAnim(0, 0, false) {}
+		virtual ~MSFrameAnim(void) override;
+
+		virtual bool Advance(Surface * surface, Rect & rect) override;
+		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
+		virtual Rect Get_Rect(void) const override;
+};
+
+
+/*
+**	RA2: plays a Bink movie into an area of the screen, redrawing the other anims of its
+**	list over the movie as it advances.
+*/
+class MSBinkAnim : public MSAnim
+{
+	public:
+		MSBinkAnim(Wstring const & name, Surface * surface, MS_ANIM_LIST * vector, Rect const & rect, bool held);
+		virtual ~MSBinkAnim(void) override;
+
+		virtual bool Advance(Surface * surface, Rect & rect) override;
+		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
+		virtual Rect Get_Rect(void) const override;
+		virtual bool Has_Finished(void) const override;
+
+	protected:
+		BinkHandle * Player; // RA2: +0x1C, made from the name and Surface; NULL for an empty name
+		Surface * Surface; // RA2: +0x20, what the movie is drawn to
+		Rect Area; // RA2: +0x24
+		MS_ANIM_LIST * Anims; // RA2: +0x34, the anims redrawn over the movie
+		bool IsHeld; // RA2: +0x38, the anim is not finished when the movie ends
 };
 
 
