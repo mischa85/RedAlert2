@@ -706,7 +706,9 @@ shapebtn,0x00675020,0x00675370,tibsun,"functions compiled from src/shapebtn.cpp,
 unk_00675370,0x00675370,0x00675380,unknown,code not assigned to a module
 shapipe,0x00675380,0x006753C0,tibsun,"functions compiled from src/shapipe.cpp, matched, without gaps"
 shastraw,0x006753C0,0x00675410,tibsun,"functions compiled from src/shastraw.cpp, matched, without gaps"
-unk_00675410,0x00675410,0x0067B6E0,unknown,code not assigned to a module
+unk_00675410,0x00675410,0x0067AE10,unknown,code not assigned to a module
+side,0x0067AE10,0x0067B1D0,tibsun,"functions compiled from src/side.cpp, matched, without gaps; two placed by the gap"
+unk_0067B1D0,0x0067B1D0,0x0067B6E0,unknown,code not assigned to a module
 unk_0067B6E0,0x0067B6E0,0x0067B700,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0067B700,0x0067B700,0x0067E720,unknown,code not assigned to a module
 unk_0067E720,0x0067E720,0x0067E740,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
