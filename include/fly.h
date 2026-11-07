@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -108,6 +109,8 @@ class FlyLocomotionClass : public LocomotionClass
 		bool Is_Locked_To_Straight_Flight(void);
 
 	private:
+		bool AirportBound; // RA2: +0x18
+
 		/*
 		 * This is the coordinate that the aircraft is flying toward. It is COORD_NONE when
 		 * the aircraft has nowhere to go, and it is set to the aircraft's own position when
