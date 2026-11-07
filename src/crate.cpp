@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -136,22 +137,23 @@ bool CrateClass::Put_Crate(Cell & cell)
 	if (Map.In_Local_Radar(cell)) {
 		CellClass * cellptr = &Map[cell];
 
-		while (cellptr->Overlay != OVERLAY_NONE && !cellptr->Is_Clear_To_Build(SPEED_FLOAT) && !cellptr->Is_Clear_To_Build(SPEED_FOOT)) {
-			cell = Map.Pick_Random_Location();
-			cell = Map.Nearby_Location(cell, SPEED_TRACK);
-			if (cell != CELL_NONE) {
-				cellptr = &Map[cell];
+		if (cellptr->Overlay == OVERLAY_NONE) { // RA2: only on a free cell; water gets a water crate
+			if (Map[cell].Land_Type() == LAND_WATER) {
+				new OverlayClass(Rule->WaterCrateImg, cell);
+			} else {
+				new OverlayClass(Rule->WoodCrateImg, cell);
 			}
+
+			Rect rect = Union(cellptr->Overlay_Render_Rect(), cellptr->Overlay_Shadow_Render_Rect());
+			Point2D pt = TacticalRect.Top_Left();
+			TacticalMap->Register_Dirty_Area(Rect(rect.X - pt.X, rect.Y - pt.Y, rect.Width, rect.Height));
+
+			ScenarioInit = old;
+			return(true);
+		} else {
+			ScenarioInit = old;
+			return(false);
 		}
-
-		new OverlayClass(Rule->WoodCrateImg, cell);
-
-		Rect rect = Union(cellptr->Overlay_Render_Rect(), cellptr->Overlay_Shadow_Render_Rect());
-		Point2D pt = TacticalRect.Top_Left();
-		TacticalMap->Register_Dirty_Area(Rect(rect.X - pt.X, rect.Y - pt.Y, rect.Width, rect.Height));
-
-		ScenarioInit = old;
-		return(true);
 	}
 
 	ScenarioInit = old;
@@ -180,7 +182,8 @@ bool CrateClass::Get_Crate(Cell const & cell)
 
 		if (cellptr->Overlay != OVERLAY_NONE) {
 			if (OverlayTypes[cellptr->Overlay] == Rule->WoodCrateImg ||
-				OverlayTypes[cellptr->Overlay] == Rule->CrateImg) {
+				OverlayTypes[cellptr->Overlay] == Rule->CrateImg ||
+			OverlayTypes[cellptr->Overlay] == Rule->WaterCrateImg) { // RA2
 
 				Rect dirty = Union(cellptr->Overlay_Render_Rect(), cellptr->Overlay_Shadow_Render_Rect());
 				dirty.Y -= TacticalRect.Y;
