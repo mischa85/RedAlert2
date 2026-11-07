@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -71,6 +72,25 @@ void SpecialClass::Init(void)
 	IsShadowGrow = false;
 	IsSpeedBuild = false;
 	IsFromInstall = false;
+
+	/*
+	**	RA2: whether movies can be escaped comes from the registry.
+	*/
+	bool escape = false;
+	DWORD type;
+	DWORD size = sizeof(DWORD);
+	HKEY hkey;
+	char key[128];
+	strcpy(key, "SOFTWARE\\Westwood\\Red Alert 2\\");
+	if (RegOpenKeyEx(HKEY_LOCAL_MACHINE, key, 0, KEY_ALL_ACCESS, &hkey) == ERROR_SUCCESS) {
+		DWORD value = 0;
+		if (RegQueryValueEx(hkey, "EscapeMovies", NULL, &type, (LPBYTE)&value, &size) == ERROR_SUCCESS && type == REG_DWORD) {
+			escape = (value & 1) != 0;
+		}
+		RegCloseKey(hkey);
+	}
+	IsEscapeMovies = escape;
+
 	IsCaptureTheFlag = false;
 	IsInert = false;
 	IsTGrowth = false;
@@ -103,6 +123,7 @@ bool SpecialClass::operator==(const SpecialClass &that) const
 		IsShadowGrow == that.IsShadowGrow &&
 		IsSpeedBuild == that.IsSpeedBuild &&
 		IsFromInstall == that.IsFromInstall &&
+		IsEscapeMovies == that.IsEscapeMovies && // RA2
 		IsCaptureTheFlag == that.IsCaptureTheFlag &&
 		IsInert == that.IsInert &&
 		IsTGrowth == that.IsTGrowth &&

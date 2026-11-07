@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -67,6 +68,7 @@ class SpecialClass
 		**	skip asking them what type of game they want to play.
 		*/
 		unsigned IsFromInstall:1;
+		unsigned IsEscapeMovies:1; // RA2: the EscapeMovies registry value
 
 		/*
 		**	If capture the flag mode is on, this flag will be true. With this
