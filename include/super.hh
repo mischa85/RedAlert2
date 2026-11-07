@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -22,12 +23,12 @@ enum SuperWeaponType {
 	SUPER_NONE=-1,
 
 	SUPER_MULTI_MISSILE,
-	SUPER_EM_PULSE,
-	SUPER_FIRESTORM,
-	SUPER_ION_CANNON,
-	SUPER_HUNTER_SEEKER,
-	SUPER_CHEM_MISSILE,
-	SUPER_DROP_PODS,
+	SUPER_IRON_CURTAIN,			// RA2: the super weapon types are RA2's (YR names)
+	SUPER_LIGHTNING_STORM,
+	SUPER_CHRONO_SPHERE,
+	SUPER_CHRONO_WARP,
+	SUPER_PARA_DROP,
+	SUPER_AMER_PARA_DROP,
 
 	SUPER_COUNT,
 	SUPER_FIRST=0,
