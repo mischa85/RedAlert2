@@ -43,14 +43,15 @@
 class UnitTrackerClass
 {
 	public:
-		UnitTrackerClass(int unit_count);
+		UnitTrackerClass(void); // RA2: no count; the totals are held inline
 		~UnitTrackerClass(void);
 
 		void Increment_Unit_Total(int unit_type);
 		void Decrement_Unit_Total(int unit_type);
 		void Clear_Unit_Total(void);
+		void Populate_Unit_Count(int count); // RA2
 
-		int Get_Unit_Total(int unit_type);
+		int Get_Unit_Total(void); // RA2: the sum of all totals
 		int * Get_All_Totals(void);
 		int Get_Unit_Count(void) { return(UnitCount); };
 
