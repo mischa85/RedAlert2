@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -35,6 +36,7 @@
 #include "foot.h"
 
 class Surface;
+class EBolt; // RA2
 
 /****************************************************************************
 **	For each instance of a unit (vehicle) in the game, there is one of
@@ -53,12 +55,6 @@ class UnitClass : public FootClass
 		 * FiringSyncFrame of its type, so the recoil artwork and the shots stay in step.
 		 */
 		int FiringSyncDelay;
-
-		/*
-		**	This is the timer that controls the reload rate. The MSAM rocket
-		**	launcher is the primary user of this.
-		*/
-		CDTimerClass<FrameTimerClass> Reload;
 
 		/*
 		**	This points to the static control data that gives 'this' unit its characteristics.
@@ -112,28 +108,23 @@ class UnitClass : public FootClass
 		FacingType VisceroidFacing;
 
 		/*
-		 * This is the accumulated charge of a mobile EM pulse cannon. It climbs by one for
-		 * every game frame that the vehicle is not immobilized, up to the MaxCharge of its
-		 * type. The cannon refuses to deploy until it is full, and firing spends all of it.
-		 */
-		unsigned Charge;
-
-		/*
 		 * This is the frame counter that runs the death animation of a vehicle whose artwork
 		 * provides one, and it holds -1 until the vehicle is destroyed. The wreck then
 		 * lingers at one point of strength until it passes the MaxDeathCounter and explodes.
 		 */
 		int DeathCounter;
 
-		/// Unused
-		int Unused1;
+		EBolt * ElectricBolt; // RA2: +0x5C4
+		bool Deployed; // RA2: +0x5C8
+		int NonPassengerCount; // RA2: +0x5CC
+		wchar_t ToolTipText[256]; // RA2: +0x5D0
 
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		UnitClass(UnitTypeClass const * type = NULL, HouseClass * house = NULL);
-		UnitClass(NoInitClass const & x) : BASECLASS(x), Reload(x) {};
+		UnitClass(NoInitClass const & x) : BASECLASS(x) {}; // RA2: no Reload timer
 		virtual ~UnitClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
