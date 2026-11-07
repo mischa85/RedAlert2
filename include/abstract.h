@@ -100,8 +100,8 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo, public INotic
 		__declspec(property(get = Fetch_RTTI)) RTTIType RTTI;
 		int ID;
 
-		// RA2: +0x14 is a bit field; the constructor clears its low three bits. Its name is not known.
-		unsigned char Unknown_14 : 3; // RA2: a byte: the constructor reads and writes it with byte instructions
+		// RA2: +0x14 holds flags; the constructor clears the low three bits. Bit 2 is set for FootClass objects (YR name).
+		unsigned char AbstractFlags : 3; // RA2: a byte: the constructor reads and writes it with byte instructions
 
 		// RA2: +0x18 is a 4-byte member the constructor sets to 0. Its name and type are not known.
 		int Unknown_18;

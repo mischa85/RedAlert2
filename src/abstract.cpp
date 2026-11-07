@@ -61,7 +61,7 @@ AbstractClass::AbstractClass(void) :
 	RefCount(0),
 	Dirty(false)
 {
-	Unknown_14 = 0; // RA2: the constructor clears Unknown_14
+	AbstractFlags = 0; // RA2: the constructor clears AbstractFlags
 }
 
 
