@@ -210,10 +210,10 @@ extern DynamicVectorClass<AbstractTypeClass *>			AbstractTypes;
 extern DynamicVectorClass<AnimClass *>					MoveFlashes;
 
 extern QueueClass<EventClass, MAX_EVENTS>				OutList;
-extern QueueClass<EventClass, (MAX_EVENTS * 64)>		DoList;
+extern QueueClass<EventClass, (MAX_EVENTS * 128)>		DoList; // RA2: 16384 events
 
 #ifdef MIRROR_QUEUE
-extern QueueClass<EventClass, (MAX_EVENTS * 64)>		MirrorList;
+extern QueueClass<EventClass, (MAX_EVENTS * 2)>		MirrorList; // RA2: 256 events
 #endif
 
 extern DynamicVectorClass<ObjectClass *>				CurrentObject;

@@ -145,7 +145,7 @@
 /****************************************************************************
 **	This is the max number of events supported on one frame.
 */
-#define	MAX_EVENTS			64
+#define	MAX_EVENTS			128 // RA2: 128
 
 
 #define MAX_LOG_LEVEL		10
