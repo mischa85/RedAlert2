@@ -61,7 +61,7 @@ AbstractClass::AbstractClass(void) :
 	RefCount(0),
 	Dirty(false)
 {
-	AbstractFlags = 0; // RA2: the constructor clears AbstractFlags
+	AbstractFlags &= 0xF8; // RA2: the constructor clears the low three flags
 }
 
 
