@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -65,4 +66,10 @@ class TextLabelClass : public GadgetClass
 		char *Text;
 		int Color;
 		int PixWidth;
+
+		unsigned int Unused_3C; // RA2: only set to 0 by the constructor
+		bool SkipDraw; // RA2: +0x40
+		bool Animate; // RA2: +0x41
+		int AnimPos; // RA2: +0x44
+		int AnimTiming; // RA2: +0x48
 };
