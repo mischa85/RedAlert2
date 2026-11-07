@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -56,24 +57,11 @@ class TerrainTypeClass : public ObjectTypeClass
 		float AnimationProbability;
 
 		/*
-		 * This is a vertical offset, expressed in pixels, added to the terrain object's draw
-		 * position (and to its depth) so that oversized artwork lines up with the cell it
-		 * occupies.
-		 */
-		int YDrawFudge;
-
-		/*
-		 * This is the type of Tiberium that a Tiberium spawning terrain object (a blossom
-		 * tree) grows. It is only consulted when IsTiberiumSpawn is true.
-		 */
-		int TiberiumToSpawn;
-
-		/*
 		 * These specify which of the cell's infantry sub-positions this terrain object
 		 * physically fills, as a three bit mask (0 - 7), one for each theater the artwork
 		 * differs in. A value other than 7 leaves the cell only partially blocked.
 		 */
-		int TemperateOccupationBits;
+		int TemperateOccupationBits; // RA2: no YDrawFudge or TiberiumToSpawn before it
 		int SnowOccupationBits;
 
 		/*
