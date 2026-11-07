@@ -11,9 +11,11 @@
 #pragma once
 
 #include "loaddlg.h"
+#include "typelist.h"
 
 #include "isotype.hh"
 
+class BuildingTypeClass;
 class CellClass;
 class MapPreviewClass;
 struct CellNode;
@@ -610,6 +612,27 @@ class MapGeneratorClass
 		 */
 		int LocalWidth;
 		int LocalHeight;
+
+		/*
+		**	RA2: random map generator settings.
+		*/
+		TypeList<int> RMGLevelLightSettings; // RA2: +0x188
+		TypeList<int> TemperateAmbientLight;
+		TypeList<int> SnowAmbientLight;
+		TypeList<int> TemperateAmbientRed;
+		TypeList<int> TemperateAmbientGreen;
+		TypeList<int> TemperateAmbientBlue;
+		TypeList<int> SnowAmbientRed;
+		TypeList<int> SnowAmbientGreen;
+		TypeList<int> SnowAmbientBlue;
+		TypeList<int> RMGVegetationMinimums;
+		TypeList<int> RMGVegetationMaximums;
+		int RMGMinimumTiberium; // RA2: +0x2BC
+		int RMGMaximumTiberium;
+		TypeList<BuildingTypeClass const *> TemperateOrePatchLamps; // RA2: +0x2C4
+		TypeList<BuildingTypeClass const *> SnowOrePatchLamps;
+		int MaxTrees; // RA2: +0x2FC
+		bool PreviewStale;
 
 		/*
 		 * This is how much water the lake and river passes have laid down so far, measured in
