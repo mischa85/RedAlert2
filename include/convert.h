@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -180,10 +181,9 @@ class ConvertClass
 		 * buffer -- the Nonzero variants blend only where the alpha value under the pixel is
 		 * set, and the Zero variants only where it is clear.
 		 */
-		// RA2: two of these four pointers remain: Destroy_Blitters deletes +0x8C and +0x90, then goes on at +0x94
-		// RA2: where Tiberian Sun deletes +0x8C to +0x98, then goes on at +0x9C. Which two remain is not known.
-		Blitter * Unknown_8C;
-		Blitter * Unknown_90;
+		// RA2: only the 50% pair remains (ra2-decomp has the same); there are no 75% alpha blitters
+		Blitter * BlitTranslucent50NonzeroAlphaPtr; // RA2: +0x8C
+		Blitter * BlitTranslucent50ZeroAlphaPtr; // RA2: +0x90
 
 		/*
 		 * These are the alpha lit blitters that test the depth buffer but leave it alone. The
