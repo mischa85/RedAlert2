@@ -65,7 +65,7 @@ class CheckListClass : public ListClass
 			ShapeSet const * up, ShapeSet const * down);
 		~CheckListClass(void);
 
-		virtual int Add_Item(int text) override {return(BASECLASS::Add_Item(text));}
+		// RA2: no Add_Item(int text); ListClass does not have it
 		virtual int Add_Item(char const * text) override;
 		virtual char const * Current_Item(void) const override;
 		virtual char const * Get_Item(int index) const override;
