@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -15,6 +16,7 @@
 #include "always.h"
 
 #include "taskforc.h"
+#include "session.h" // RA2
 
 #include "ahtoi.h"
 #include "ccini.h"
@@ -393,7 +395,7 @@ int TaskForceClass::Needed_Tech_Level(void) const
 		if (level > needed) {
 			needed = level;
 		} else {
-			if (level == -1) {
+			if (level == -1 && Session.Type != GAME_NORMAL) { // RA2: only in multiplayer
 				needed = 11;
 			}
 		}
