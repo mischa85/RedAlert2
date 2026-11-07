@@ -392,9 +392,9 @@ unk_00535280,0x00535280,0x005352D0,unknown,code not assigned to a module
 lcwstraw,0x005352D0,0x005354E0,tibsun,"functions compiled from src/lcwstraw.cpp, matched, without gaps; one placed by alphabetical order"
 unk_005354E0,0x005354E0,0x00535530,unknown,code not assigned to a module
 lcwuncmp,0x00535530,0x00535720,tibsun,"functions compiled from src/lcwuncmp.cpp, matched, without gaps"
-unk_00535720,0x00535720,0x00537830,unknown,code not assigned to a module
-unk_00537830,0x00537830,0x00537B50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00537B50,0x00537B50,0x005383C0,unknown,code not assigned to a module
+unk_00535720,0x00535720,0x00537240,unknown,code not assigned to a module
+light,0x00537240,0x00537C30,tibsun,"functions compiled from src/light.cpp, matched, without gaps; six placed by the gap"
+unk_00537C30,0x00537C30,0x005383C0,unknown,code not assigned to a module
 lightcalc,0x005383C0,0x00538670,tibsun,"functions compiled from src/lightcalc.cpp, matched, without gaps"
 unk_00538670,0x00538670,0x00538860,unknown,code not assigned to a module
 lightcon,0x00538860,0x00538AA0,tibsun,"functions compiled from src/lightcon.cpp, matched, without gaps; ?Apply_Tint@LightConvertClass@@UAEXHHH_N@Z not placed; ??1LightConvertClass@@UAE@XZ not placed"
