@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -157,7 +158,7 @@ bool OverlayClass::Mark(MarkType mark)
 
 	if (BASECLASS::Mark(mark)) {
 		if (mark == MARK_DOWN || mark == MARK_DOWN_FORCED) {
-			Cell cell = PositionCell;
+			Cell cell = Get_Cell(); // RA2
 			CellClass * cellptr = &Map[cell];
 
 			OverlayType type = Class->HeapID;
@@ -174,8 +175,8 @@ bool OverlayClass::Mark(MarkType mark)
 				}
 			}
 
-			if (type == OVERLAY_RAIL_BRIDGE1 || type == OVERLAY_RAIL_BRIDGE2) {
-				if (type == OVERLAY_RAIL_BRIDGE1) {
+			if (type == OVERLAY_BRIDGEHEAD21 || type == OVERLAY_BRIDGEHEAD22) { // RA2: the bridgeheads
+				if (type == OVERLAY_BRIDGEHEAD21) {
 					cellptr->Set_Under_Rail_Bridge(FACING_N);
 				} else {
 					cellptr->Set_Under_Rail_Bridge(FACING_W);
@@ -279,17 +280,84 @@ bool OverlayClass::Mark(MarkType mark)
 						if (check_cell_class.Overlay == end_overlay && check_cell_class.OverlayData == 1) {
 							found_end = true;
 						} else {
-							work_cell = Adjacent_Cell(work_cell, join_direction);
+							work_cell = AdjacentCell[(int)join_direction & 7] + work_cell; // RA2
 						}
 					}
 					if (found_end) {
 						FacingType fixup_direction = Facing_Add(FACING_180, join_direction);
 						work_cell = Adjacent_Cell(work_cell, fixup_direction);
 						int length = MAX(abs(work_cell.X - start_cell.X), abs(work_cell.Y - start_cell.Y));
-						for (i = 0; i < length; i++) {
+						for (i = length; i > 0; --i) { // RA2
 							for (int j = 0; j < 3; j++) {
 								CellClass *cptr = &Map[work_cell + _offset_fixup[(fixup_direction%4)/2][j]];
 								cptr->Overlay = OverlayType(_overlay_fixup[(fixup_direction%4)/2] + (Scen->RandomNumber()&0x03));
+								cptr->OverlayData = j;
+								cptr->Recalc_Attributes();
+							}
+							work_cell = Adjacent_Cell(work_cell, fixup_direction);
+						}
+					}
+				}
+			} else if (Class->HeapID >= OVERLAY_LOWBRIDGE2_FAKE_END1 && Class->HeapID <= OVERLAY_LOWBRIDGE2_FAKE_END4) { // RA2: the second low bridge set
+				int index = Class->HeapID - OVERLAY_LOWBRIDGE2_FAKE_END1;
+
+				static Cell _type_to_offset[4] = {Cell(0, -1), Cell(0, -1), Cell(-1, 0), Cell(-1, 0)};
+				static FacingType _type_to_direction[4] = {FACING_S, FACING_S, FACING_E, FACING_E};
+				static OverlayType _type_to_overlay[4] = {
+					OVERLAY_LOWBRIDGE2_19, OVERLAY_LOWBRIDGE2_21, OVERLAY_LOWBRIDGE2_23, OVERLAY_LOWBRIDGE2_25
+				};
+				static FacingType _type_to_join_direction[4] = {FACING_W, FACING_E, FACING_S, FACING_N};
+				static Cell _offset_fixup[2][3] = {
+					Cell(-1, 0), Cell(0, 0), Cell(1, 0),
+					Cell(0, -1), Cell(0, 0), Cell(0, 1)
+				};
+				static OverlayType _overlay_fixup[2] = {OVERLAY_LOWBRIDGE2_10, OVERLAY_LOWBRIDGE2_01};
+				static OverlayType _direction_to_end[4] = {
+					OVERLAY_LOWBRIDGE2_23, OVERLAY_LOWBRIDGE2_19, OVERLAY_LOWBRIDGE2_25, OVERLAY_LOWBRIDGE2_21
+				};
+
+				Cell start_cell = _type_to_offset[index] + cell;
+				Cell work_cell(start_cell);
+				FacingType direction = _type_to_direction[index];
+				bool clear = true;
+
+				for (int lane = 0; lane < 3; lane++) {
+					if (Map[work_cell].Overlay != OVERLAY_NONE) {
+						clear = false;
+					}
+					work_cell = Adjacent_Cell(work_cell, direction);
+				}
+
+				work_cell = start_cell;
+				if (clear) {
+					for (i = 0; i < 3; i++) {
+						CellClass *cptr = &Map[work_cell];
+						cptr->Overlay = _type_to_overlay[index];
+						cptr->OverlayData = i;
+						cptr->Recalc_Attributes();
+						work_cell = Adjacent_Cell(work_cell, direction);
+					}
+					FacingType join_direction = _type_to_join_direction[index];
+					work_cell = AdjacentCell[(int)join_direction & 7] + cell;
+					bool found_end = false;
+					OverlayType end_overlay = _direction_to_end[join_direction / 2];
+
+					while (Map.In_Radar(work_cell) && !found_end) {
+						CellClass &check_cell_class = Map[work_cell];
+						if (check_cell_class.Overlay == end_overlay && check_cell_class.OverlayData == 1) {
+							found_end = true;
+						} else {
+							work_cell = Adjacent_Cell(work_cell, join_direction);
+						}
+					}
+					if (found_end) {
+						FacingType fixup_direction = Facing_Add(FACING_180, join_direction);
+						work_cell = Adjacent_Cell(work_cell, fixup_direction);
+						int length = max(abs(work_cell.X - start_cell.X), abs(work_cell.Y - start_cell.Y));
+						for (i = length; i > 0; --i) {
+							for (int j = 0; j < 3; j++) {
+								CellClass *cptr = &Map[_offset_fixup[(fixup_direction % 4) / 2][j] + work_cell];
+								cptr->Overlay = OverlayType(_overlay_fixup[(fixup_direction % 4) / 2] + (Scen->RandomNumber() & 0x03));
 								cptr->OverlayData = j;
 								cptr->Recalc_Attributes();
 							}
@@ -302,11 +370,13 @@ bool OverlayClass::Mark(MarkType mark)
 			{
 				bool clear;
 				if (!ScenarioInit) {
-					if (Class == Rule->CrateImg || Class == Rule->WoodCrateImg) {
+					if (Class == Rule->WaterCrateImg) { // RA2: crates on water
+						clear = cellptr->Is_Clear_To_Move(SPEED_FLOAT, false, false);
+					} else if (Class == Rule->CrateImg || Class == Rule->WoodCrateImg) {
 						clear = cellptr->Is_Clear_To_Move(SPEED_TRACK, false, false);
 					} else {
 						if (Class->HeapID == OVERLAY_BRIDGE1 || Class->HeapID == OVERLAY_BRIDGE2 ||
-								Class->HeapID == OVERLAY_RAIL_BRIDGE1 || Class->HeapID == OVERLAY_RAIL_BRIDGE2) {
+								Class->HeapID == OVERLAY_BRIDGEHEAD21 || Class->HeapID == OVERLAY_BRIDGEHEAD22) { // RA2
 							clear = true;
 						} else {
 							if (Class->HeapID == OVERLAY_TIBERIUM01) {
@@ -324,13 +394,16 @@ bool OverlayClass::Mark(MarkType mark)
 				if ((ScenarioInit || cellptr->Overlay == OVERLAY_NONE || !OverlayTypes[cellptr->Overlay]->IsOverrides) && clear) {
 
 					cellptr->Overlay = Class->HeapID;
-					if (type != OVERLAY_BRIDGE1 && type != OVERLAY_BRIDGE2 && type != OVERLAY_RAIL_BRIDGE1 && type != OVERLAY_RAIL_BRIDGE2) {
+					if (type != OVERLAY_BRIDGE1 && type != OVERLAY_BRIDGE2 && type != OVERLAY_BRIDGEHEAD21 && type != OVERLAY_BRIDGEHEAD22) { // RA2
 						cellptr->OverlayData = 0;
 					}
 
 					if (Class->Land == LAND_TIBERIUM) {
 						cellptr->OverlayData = 1;
 						cellptr->Tiberium_Adjust();
+					}
+					if (Class->IsCrate) { // RA2
+						cellptr->OverlayData = 255;
 					}
 				}
 
@@ -426,7 +499,7 @@ void OverlayClass::Read_INI(CCINIClass const & ini)
 								new OverlayClass(OverlayTypes[classid], cell);
 
 								if ((int)classid == OVERLAY_BRIDGE1 || (int)classid == OVERLAY_BRIDGE2 ||
-									(int)classid == OVERLAY_RAIL_BRIDGE1 || (int)classid == OVERLAY_RAIL_BRIDGE2) {
+									(int)classid == OVERLAY_BRIDGEHEAD21 || (int)classid == OVERLAY_BRIDGEHEAD22) { // RA2: the bridgeheads
 									(&Map[cell])->OverlayData = old_overlay_data;
 								}
 							}

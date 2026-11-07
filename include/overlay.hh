@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -243,6 +244,24 @@ enum OverlayType {
 
 	OVERLAY_LOWBRIDGE_FIRST = OVERLAY_LOWBRIDGE_01,
 	OVERLAY_LOWBRIDGE_LAST = OVERLAY_LOWBRIDGE_28,
+
+	/*
+	**	RA2: overlays of RA2's second low bridge set, and the bridgeheads (YR names).
+	*/
+	OVERLAY_LOWBRIDGE2_01 = 0xCD,
+	OVERLAY_LOWBRIDGE2_10 = 0xD6,
+	OVERLAY_LOWBRIDGE2_19 = 0xDF,
+	OVERLAY_LOWBRIDGE2_21 = 0xE1,
+	OVERLAY_LOWBRIDGE2_23 = 0xE3,
+	OVERLAY_LOWBRIDGE2_25 = 0xE5,
+
+	OVERLAY_LOWBRIDGE2_FAKE_END1 = 0xE9,
+	OVERLAY_LOWBRIDGE2_FAKE_END2 = 0xEA,
+	OVERLAY_LOWBRIDGE2_FAKE_END3 = 0xEB,
+	OVERLAY_LOWBRIDGE2_FAKE_END4 = 0xEC,
+
+	OVERLAY_BRIDGEHEAD21 = 0xED,
+	OVERLAY_BRIDGEHEAD22 = 0xEE,
 };
 
 
