@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -99,6 +100,10 @@ class SuperClass : public AbstractClass
 
 		CDTimerClass<FrameTimerClass> Control;
 
+		wchar_t const * UIName; // RA2: +0x38
+		bool BlinkState; // RA2: +0x3C
+		__int64 BlinkTimer; // RA2: +0x40; its eight byte alignment makes the class's size 0x68
+
 	public:
 		/*
 		 * If this super weapon lasts only as long as the house owns a building that grants
@@ -106,6 +111,10 @@ class SuperClass : public AbstractClass
 		 * over permanently.
 		 */
 		bool NeedsBuilding;
+
+		Cell ChronoMapCoords; // RA2: +0x4A
+		AnimClass * Animation; // RA2: +0x50
+		bool AnimationGotInvalid; // RA2: +0x54
 	private:
 		bool IsPresent;
 		bool IsOneTime;
