@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -93,8 +94,6 @@ ConvertClass::ConvertClass(PaletteClass const & artpalette, PaletteClass const &
 	BlitTranslucentWriteAlphaPtr(NULL),
 	BlitTranslucent50NonzeroAlphaPtr(NULL),
 	BlitTranslucent50ZeroAlphaPtr(NULL),
-	BlitTranslucent75NonzeroAlphaPtr(NULL),
-	BlitTranslucent75ZeroAlphaPtr(NULL),
 	BlitPlainXlatAlphaZReadPtr(NULL),
 	BlitTransXlatAlphaZReadPtr(NULL),
 	BlitTransZRemapXlatAlphaZReadPtr(NULL),
@@ -331,8 +330,6 @@ void ConvertClass::Create_Blitters(void)
 		BlitTranslucentWriteAlphaPtr = new BlitTranslucentWriteAlpha<unsigned short>((unsigned short const *)IntensityTranslator);
 		BlitTranslucent50NonzeroAlphaPtr = new BlitTranslucent50NonzeroAlpha<unsigned short>((unsigned short const *)Translator, (unsigned short)HalfbrightMask);
 		BlitTranslucent50ZeroAlphaPtr = new BlitTranslucent50ZeroAlpha<unsigned short>((unsigned short const *)Translator, (unsigned short)HalfbrightMask);
-		BlitTranslucent75NonzeroAlphaPtr = new BlitTranslucent75NonzeroAlpha<unsigned short>((unsigned short const *)Translator, (unsigned short)QuarterbrightMask);
-		BlitTranslucent75ZeroAlphaPtr = new BlitTranslucent75ZeroAlpha<unsigned short>((unsigned short const *)Translator, (unsigned short)QuarterbrightMask);
 
 		BlitPlainXlatAlphaZReadPtr = new BlitPlainXlatAlpha<unsigned short>((unsigned short const *)IntensityTranslator, IntensityLevels);
 		BlitTransXlatAlphaZReadPtr = new BlitTransXlatAlphaZRead<unsigned short>((unsigned short const *)IntensityTranslator, IntensityLevels);
@@ -524,12 +521,6 @@ void ConvertClass::Destroy_Blitters(void)
 
 	delete BlitTranslucent50ZeroAlphaPtr;
 	BlitTranslucent50ZeroAlphaPtr = NULL;
-
-	delete BlitTranslucent75NonzeroAlphaPtr;
-	BlitTranslucent75NonzeroAlphaPtr = NULL;
-
-	delete BlitTranslucent75ZeroAlphaPtr;
-	BlitTranslucent75ZeroAlphaPtr = NULL;
 
 	delete BlitTransXlatWriteAlphaPtr;
 	BlitTransXlatWriteAlphaPtr = NULL;
@@ -860,14 +851,6 @@ Blitter const * ConvertClass::Blitter_From_Flags(ShapeFlags_Type flags) const
 
 			if (flags & SHAPE_ALPHA) {
 				return(BlitTransLucent75AlphaPtr);
-			}
-
-			if (flags & SHAPE_ZERO_ALPHA) {
-				return(BlitTranslucent75ZeroAlphaPtr);
-			}
-
-			if (flags & SHAPE_NONZERO_ALPHA) {
-				return(BlitTranslucent75NonzeroAlphaPtr);
 			}
 
 			return(Translucent1Blitter);
