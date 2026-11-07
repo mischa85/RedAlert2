@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -98,6 +99,8 @@ class LightSourceClass : public AbstractClass
 		int RedTint;
 		int GreenTint;
 		int BlueTint;
+
+		int DetailLevel; // RA2: +0x34; 2 when constructed
 
 		/*
 		 * This is the point the light shines from, fixed when the source is created.
