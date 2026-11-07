@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -54,6 +55,10 @@ class BuildingTypeClass : public TechnoTypeClass
 		**	pointed to by this element.
 		*/
 		void const * BuildupData;
+
+		bool BuildupLoaded; // RA2: +0xB9C
+
+		int BuildCat; // RA2: +0xBA0
 
 		/// Unused
 		Point3D HalfDamageSmokeLocation1;
@@ -111,6 +116,20 @@ class BuildingTypeClass : public TechnoTypeClass
 		 */
 		TStringID<15> BuildupFilename;
 
+		int BuildupSound; // RA2: +0xC04
+
+		int PackupSound; // RA2: +0xC08
+
+		int CreateUnitSound; // RA2: +0xC0C
+
+		int UnitEnterSound; // RA2: +0xC10
+
+		int UnitExitSound; // RA2: +0xC14
+
+		int WorkingSound; // RA2: +0xC18
+
+		int NotWorkingSound; // RA2: +0xC1C
+
 		/*
 		 * This is the name of the building type this one upgrades. Such a type may only be
 		 * placed onto an existing building of that name, where it becomes an upgrade.
@@ -140,6 +159,8 @@ class BuildingTypeClass : public TechnoTypeClass
 		**	factory buildings, this value will be RTTI_NONE.
 		*/
 		RTTIType ToBuild;
+
+		Point3D TargetCoordOffset; // RA2: +0xC48
 
 		/*
 		**	For building that produce ground units (infantry and vehicles), there is a default
@@ -171,6 +192,10 @@ class BuildingTypeClass : public TechnoTypeClass
 		int Power;
 		int Drain;
 
+		int ExtraPower; // RA2: +0xC70
+
+		int ExtraDrain; // RA2: +0xC74
+
 		/*
 		**	This is the size of the building. This size value is a rough indication
 		**	of the building's "footprint".
@@ -182,6 +207,8 @@ class BuildingTypeClass : public TechnoTypeClass
 		 * building's lepton dimensions and how far above it a missile is launched.
 		 */
 		int ZHeight;
+
+		int OccupyHeight; // RA2: +0xC80
 
 		/// Unused
 		int MidPoint;
@@ -220,6 +247,8 @@ class BuildingTypeClass : public TechnoTypeClass
 			 */
 			char AnimDamaged[16];
 
+			char AnimGarrisoned[16]; // RA2
+
 			/*
 			 * This is the pixel offset from the building's center at which this animation is
 			 * placed, so that a plume of smoke sits on the right chimney.
@@ -230,13 +259,13 @@ class BuildingTypeClass : public TechnoTypeClass
 			 * This is the depth bias given to this animation, which decides whether it draws
 			 * in front of or behind the building it belongs to.
 			 */
-			char ZAdjust;
+			int ZAdjust; // RA2: an int
 
 			/*
 			 * This is the bias added to this animation's sorting position, which moves it
 			 * earlier or later among the objects it shares its layer with.
 			 */
-			char YSort;
+			int YSort; // RA2: an int
 
 			/*
 			 * If this animation only runs while the building has power, then this flag will be
@@ -255,7 +284,7 @@ class BuildingTypeClass : public TechnoTypeClass
 		 * These are the attached animations this building carries, one per BAnimType slot. The
 		 * slots at the head of the array are filled in by whatever upgrades get installed.
 		 */
-		AnimDataType AnimData[BANIM_COUNT];
+		AnimDataType AnimData[18]; // RA2: eighteen, not BANIM_COUNT
 
 		/*
 		 * This is the number of upgrades that may be installed on this building. It also
@@ -269,11 +298,23 @@ class BuildingTypeClass : public TechnoTypeClass
 		 */
 		ShapeSet const * DeployingAnim;
 
+		bool DeployingAnimLoaded; // RA2: +0x11A4
+
 		/*
 		 * This is the shape data drawn over a factory's doorway while it unloads, so that
 		 * whatever is passing through appears to be moving through the door.
 		 */
 		ShapeSet const * UnderDoorAnim;
+
+		bool UnderDoorAnimLoaded; // RA2: +0x11AC
+
+		ShapeSet const * RoofDeployingAnim; // RA2: +0x11B0
+
+		bool RoofDeployingAnimLoaded; // RA2: +0x11B4
+
+		ShapeSet const * UnderRoofDoorAnim; // RA2: +0x11B8
+
+		bool UnderRoofDoorAnimLoaded; // RA2: +0x11BC
 
 		/*
 		 * This is the shape data for a factory's door, animated open and shut as the building
@@ -292,6 +333,8 @@ class BuildingTypeClass : public TechnoTypeClass
 		 * building, such as the concrete apron of a weapons factory.
 		 */
 		ShapeSet const * BibShape;
+
+		bool BibShapeLoaded; // RA2: +0x11D0
 
 		/*
 		 * This is the depth bias applied when the building is drawn against its Z shape, so
@@ -362,6 +405,18 @@ class BuildingTypeClass : public TechnoTypeClass
 		*/
 		bool IsBase;
 
+		bool EligibleForAllyBuilding; // RA2: +0x1204
+
+		bool EligibleForDelayKill; // RA2: +0x1205
+
+		bool NeedsEngineer; // RA2: +0x1206
+
+		int ProduceCashStartup; // RA2: +0x1208
+
+		int ProduceCashAmount; // RA2: +0x120C
+
+		int ProduceCashDelay; // RA2: +0x1210
+
 		/*
 		**	This flag controls whether the building is equiped with a dirt
 		**	bib or not. A building with a bib has a dirt patch automatically
@@ -391,11 +446,39 @@ class BuildingTypeClass : public TechnoTypeClass
 		*/
 		bool IsPowered;
 
+		bool Overpowerable; // RA2: +0x1218
+
+		bool Spyable; // RA2: +0x1219
+
+		bool CanC4; // RA2: +0x121A
+
+		bool WantsExtraSpace; // RA2: +0x121B
+
 		/*
 		**	If this flag is true, then the building cannot be sold even if it could have been built. This
 		**	is especially useful for mines which can be built but cannot be sold.
 		*/
 		bool IsUnsellable;
+
+		bool ClickRepairable; // RA2: +0x121D
+
+		bool CanBeOccupied; // RA2: +0x121E
+
+		int MaxNumberOccupants; // RA2: +0x1220
+
+		bool ShowOccupantPips; // RA2: +0x1224
+
+		Point2D MuzzleFlash[10]; // RA2: +0x1228
+
+		Point2D DamageFireOffset[8]; // RA2: +0x1278
+
+		Point2D QueueingCell; // RA2: +0x12B8
+
+		int NumberImpassableRows; // RA2: +0x12C0
+
+		Point2D RemoveOccupy[8]; // RA2: +0x12C4
+
+		Point2D AddOccupy[8]; // RA2: +0x1304
 
 		/*
 		 * If this building provides its owner with a radar map, then this flag will be true.
@@ -403,11 +486,15 @@ class BuildingTypeClass : public TechnoTypeClass
 		 */
 		bool IsRadar;
 
+		bool SpySat; // RA2: +0x1345
+
 		/*
 		 * If this building's weapon charges up visibly before firing, then this flag will be
 		 * true. Such a building animates the charge whether or not it has a turret to aim.
 		 */
 		bool IsHasChargeAnim;
+
+		bool IsAnimDelayedFire; // RA2: +0x1347
 
 		/*
 		 * If this building shows how full it is, then this flag will be true. Its special
@@ -426,6 +513,8 @@ class BuildingTypeClass : public TechnoTypeClass
 		 * helicopter out of ammunition must return to one before it can attack again.
 		 */
 		bool IsCanUnitReload;
+
+		bool Cloning; // RA2: +0x134B
 
 		/// Unused
 		bool IsFlat;
@@ -542,6 +631,13 @@ class BuildingTypeClass : public TechnoTypeClass
 		bool IsTurretAnimAVoxel;
 
 		/*
+		 * If this building's gun barrel is a voxel model rather than a shape animation,
+		 * then this flag will be true. The barrel is loaded as a voxel of its own, separate
+		 * from the turret, and drawn pitched and rotated over it.
+		 */
+		bool IsBarrelAnimAVoxel;
+
+		/*
 		 * If this building cloaks its owner's objects within CloakRadiusInCells, then this
 		 * flag will be true. The field collapses when it loses power or is destroyed.
 		 */
@@ -571,6 +667,8 @@ class BuildingTypeClass : public TechnoTypeClass
 		 */
 		bool IsHelipad;
 
+		bool OrePurifier; // RA2: +0x1366
+
 		/*
 		 * If this building is the GDI barracks, then this flag will be true. Infantry leaving
 		 * it prefer the cell one in and two down, shifted by the ExitCoordinate.
@@ -582,6 +680,10 @@ class BuildingTypeClass : public TechnoTypeClass
 		 * it prefer the cell two in and two down, shifted by the ExitCoordinate.
 		 */
 		bool IsNODBarracks;
+
+		float ChargedAnimTime; // RA2: +0x136C
+
+		int DelayedFireDelay; // RA2: +0x1370
 
 		/*
 		 * This is the super weapon this building grants its owner while it stands, or
@@ -606,108 +708,6 @@ class BuildingTypeClass : public TechnoTypeClass
 		 * PowersUpBuilding (1 - 3). If -1, then it adds one and needs a free slot to do so.
 		 */
 		int PowersUpToLevel;
-
-		/*
-		 * This is the name of the barrel's voxel file, needed only when it cannot be
-		 * derived from the turret's. A turret named "...TUR..." implies "...BARL...".
-		 */
-		char VoxelBarrelFile[15 + 1];
-
-		/*
-		 * This is the uniform scale the barrel voxel is drawn at, applied as the last step
-		 * of the barrel matrix. It defaults to 1.0, the size the model was built at.
-		 */
-		double VoxelBarrelScale;
-
-		/*
-		 * This is the offset from the barrel's rotation pivot out to the point it pitches
-		 * about, applied once the barrel's pitch has been rotated into its matrix.
-		 */
-		Point3D VoxelBarrelOffsetToPitchPivotPoint;
-
-		/*
-		 * This is the offset from the barrel's base out to the point it rotates about,
-		 * applied once the turret's facing has been rotated into the barrel matrix.
-		 */
-		Point3D VoxelBarrelOffsetToRotatePivotPoint;
-
-		/*
-		 * This is the offset from the building's own origin out to the base of the barrel
-		 * assembly. It is the first translation the barrel matrix applies.
-		 */
-		Point3D VoxelBarrelOffsetToBuildingPivotPoint;
-
-		/*
-		 * This is the offset out to the barrel's muzzle, and thus where a shot appears to
-		 * leave from. The Y component is mirrored for the second shot of a burst.
-		 */
-		Point3D VoxelBarrelOffsetToBarrelEnd;
-
-		/*
-		 * This is the animation rate, expressed in ticks between frames, for this
-		 * building's turret while its weapon charges up. It lets a charging weapon wind up
-		 * visibly faster or slower than the turret animates at rest.
-		 */
-		int TurretChargeAnimRate;
-
-		/*
-		 * This is the barrel pitch to give this building when it is first constructed,
-		 * expressed on the compass dial where DIR_E is level. A deployed artillery piece
-		 * returns its barrel to this pitch whenever it has nothing to shoot at.
-		 */
-		Dir256 StartPitch;
-
-		/*
-		 * If this building is the deployed form of a limpet mine, then this flag will be
-		 * true. It may always pack itself up again, refuses a manual attack order, and an
-		 * EM pulse destroys it outright rather than stunning it.
-		 */
-		bool IsLimpetMine;
-
-		/*
-		 * If this building is the deployed form of a mobile war factory, then this flag
-		 * will be true. Such a structure may always pack itself up again, becomes the
-		 * house's primary factory as it opens, and a vehicle thief may target it.
-		 */
-		bool IsMobileWar;
-
-		/*
-		 * If this building is the deployed form of a mobile stealth generator, then this
-		 * flag will be true. Its only effect is to mark the type as a mobile deployer so
-		 * that the undeploy machinery recognizes it.
-		 */
-		bool IsMobileStealth;
-
-		/*
-		 * If this building is the deployed form of a Juggernaut, then this flag will be
-		 * true. Under computer control it packs itself up once its target moves out of
-		 * range, and it returns its barrel to the StartPitch while idle.
-		 */
-		bool IsJuggernaut;
-
-		/*
-		 * If this building is the deployed form of a core defender, then this flag will be
-		 * true. An EM pulse leaves such a structure running where it would shut down any
-		 * other building.
-		 */
-		bool IsCoreDefender;
-
-		/*
-		 * If this building's gun barrel is a voxel model rather than a shape animation,
-		 * then this flag will be true. The barrel is loaded as a voxel of its own, separate
-		 * from the turret, and drawn pitched and rotated over it.
-		 */
-		bool IsBarrelAnimAVoxel;
-
-		/*
-		 * If this building's turret animation may not run alongside its active animation,
-		 * then this flag will be true. Such a turret only animates while the weapon is
-		 * charging or charged, and the active animation is stopped for the duration.
-		 */
-		bool IsTurretAnimExclusive;
-
-		/// Unused
-		bool UnusedBTypeBool1;
 
 		/*
 		 * If this building's door animation carries a second set of frames for when the
@@ -764,6 +764,53 @@ class BuildingTypeClass : public TechnoTypeClass
 		 */
 		char CloakRadiusInCells;
 
+		bool ConcentricRadialIndicator; // RA2: +0x138C
+
+		int PsychicDetectionRadius; // RA2: +0x1390
+
+		/*
+		 * This is the barrel pitch to give this building when it is first constructed,
+		 * expressed on the compass dial where DIR_E is level. A deployed artillery piece
+		 * returns its barrel to this pitch whenever it has nothing to shoot at.
+		 */
+		Dir256 StartPitch;
+
+		/*
+		 * This is the name of the barrel's voxel file, needed only when it cannot be
+		 * derived from the turret's. A turret named "...TUR..." implies "...BARL...".
+		 */
+		char VoxelBarrelFile[15 + 1];
+
+		/*
+		 * This is the uniform scale the barrel voxel is drawn at, applied as the last step
+		 * of the barrel matrix. It defaults to 1.0, the size the model was built at.
+		 */
+		double VoxelBarrelScale;
+
+		/*
+		 * This is the offset from the barrel's rotation pivot out to the point it pitches
+		 * about, applied once the barrel's pitch has been rotated into its matrix.
+		 */
+		Point3D VoxelBarrelOffsetToPitchPivotPoint;
+
+		/*
+		 * This is the offset from the barrel's base out to the point it rotates about,
+		 * applied once the turret's facing has been rotated into the barrel matrix.
+		 */
+		Point3D VoxelBarrelOffsetToRotatePivotPoint;
+
+		/*
+		 * This is the offset from the building's own origin out to the base of the barrel
+		 * assembly. It is the first translation the barrel matrix applies.
+		 */
+		Point3D VoxelBarrelOffsetToBuildingPivotPoint;
+
+		/*
+		 * This is the offset out to the barrel's muzzle, and thus where a shot appears to
+		 * leave from. The Y component is mirrored for the second shot of a burst.
+		 */
+		Point3D VoxelBarrelOffsetToBarrelEnd;
+
 		/*
 		 * If this building's shape data is to be loaded the first time it is asked for
 		 * rather than up front with the rest of the theater art, then this flag will be
@@ -792,12 +839,30 @@ class BuildingTypeClass : public TechnoTypeClass
 		 */
 		bool IsThreatRatingNode;
 
+		bool PrimaryFireDualOffset; // RA2: +0x13E4
+
+		bool ProtectWithWall; // RA2: +0x13E5
+
+		bool CanHideThings; // RA2: +0x13E6
+
+		bool CanBeHidden; // RA2: +0x13E7
+
+		bool CrateBeneath; // RA2: +0x13E8
+
+		bool LeaveRubble; // RA2: +0x13E9
+
+		bool CrateBeneathIsMoney; // RA2: +0x13EA
+
 		/*
 		 * This is the theater qualified name of the building's shape file, recorded as the
 		 * art is resolved. A type that defers loading its image uses this to find the file
 		 * the first time the shape is really needed.
 		 */
 		char TheaterImageFile[19 + 1];
+
+		int NumberOfDocks; // RA2: +0x1400
+
+		VectorClass<Point3D> DockingOffsets; // RA2: +0x1404
 
 		/*---------------------------------------------------------------------------
 		**	This is the building type explicit constructor.
