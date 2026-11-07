@@ -805,7 +805,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		ZoneType Which_Zone(ObjectClass const * object) const;
 		ZoneType Which_Zone(Cell const & cell) const;
 		Cell Find_Cell_In_Zone(TechnoClass const * techno, ZoneType zone) const;
-		ProdFailType Begin_Production(RTTIType type, int id, bool resume=false);
+		ProdFailType Begin_Production(RTTIType type, int id, bool naval, bool resume=false); // RA2: naval
 		ProdFailType Suspend_Production(RTTIType type);
 		ProdFailType Abandon_Production(RTTIType type, int id);
 		bool Place_Object(RTTIType type, Cell const & cell);

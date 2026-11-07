@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -62,12 +63,13 @@ class FactoryClass : public AbstractClass, private StageClass
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override { return(RTTI_FACTORY); };
-		virtual int Fetch_Object_Size(bool oldsave) const override { return(sizeof(*this)); };
+		virtual int Fetch_Object_Size(void) const override { return(sizeof(*this)); }; // RA2: no argument
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		bool Abandon(void);
 		bool Completed(void);
 		bool Has_Changed(void);
+		bool Is_On_Hold(void) const; // RA2
 		bool Has_Completed(void);
 		bool Is_Building(void) const {return(Fetch_Rate() != 0 && !IsSuspended);};
 		bool Is_Suspended(void) const {return(Object != NULL && IsSuspended);}
@@ -126,6 +128,11 @@ class FactoryClass : public AbstractClass, private StageClass
 		**	started, it is always available when production completes.
 		*/
 		TechnoClass * Object;
+
+		/*
+		**	RA2: set while production waits for money, cleared once a step is paid for.
+		*/
+		bool OnHold;
 
 		/*
 		**	If the AI process detected that the production process has advanced far enough

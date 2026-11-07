@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -17,6 +18,7 @@
 
 #include "voc.hh"
 
+class AudioController;
 class CCINIClass;
 class VocClass;
 
@@ -52,6 +54,7 @@ class VocClass
 		VocType Voc_Type(void);
 
 		static VocType From_Name(char const * name);
+		static void * PlayGlobal(int voc, float volume, int panning, AudioController * controller = NULL); // RA2
 		friend VocClass *VocClass_From_Name(char const * name);
 		friend char const * Voc_Name(VocType voc);
 
