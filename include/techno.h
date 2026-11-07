@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -49,6 +50,7 @@
 #include "storage.h"
 #include "techtype.h" /// This class uses TechnoTypeClass members inline, so the full definition is needed.
 #include "timer.h"
+#include "vector.h" // RA2: DynamicVectorClass
 #include "veteran.h"
 
 #include "cloak.hh"
@@ -67,6 +69,35 @@ class WaveClass;
 class WeaponTypeClass;
 class ShapeSet;
 struct WeaponDataStruct;
+class TemporalClass; // RA2
+class CaptureManagerClass; // RA2
+class SpawnManagerClass; // RA2
+class PlanningTokenClass; // RA2
+class ObjectTypeClass; // RA2
+
+
+/*
+**	RA2: the state of one recoiling part, a turret or its barrel, as it is pushed back by
+**	firing and returns to rest.
+*/
+struct RecoilData
+{
+	TurretControl Turret;
+	float TravelPerFrame;
+	float TravelSoFar;
+	int State;
+	int TravelFramesLeft;
+
+	RecoilData(void)
+	{
+		Turret.Travel = 2;
+		Turret.CompressFrames = 1;
+		Turret.RecoverFrames = 1;
+		Turret.HoldFrames = 1;
+		TravelSoFar = 0;
+		State = 0;
+	}
+};
 
 
 /****************************************************************************
@@ -82,14 +113,24 @@ class TechnoClass :	public RadioClass,
 		enum {
 			RAILGUN_STEPS = 50,
 		};
+		CargoClass Cargo; // RA2: +0xF8; ActLike moved after CurrentRanking
+
+		int CurrentTurretNumber; // RA2: +0x100; -1 when constructed
+
+		int LastTurretNumber; // RA2: +0x104; CurrentTurretNumber when last checked for a turret change
+
+		AnimClass * BehindAnim; // RA2: +0x108; cleared by Detach
+
+		int CurrentWeaponNumber; // RA2: +0x10C; set with CurrentTurretNumber
+
+		int CurrentRanking; // RA2: +0x110; -1 when constructed; compared with the veterancy rank by AI
 
 		/*
 		**	This is the house that originally owned this factory. Objects buildable
 		**	by this house type will be produced from this factory regardless of who
 		**	the current owner is.
 		*/
-		HousesType ActLike;
-		CargoClass Cargo;
+		HousesType ActLike; // RA2: +0x114
 
 		VeterancyClass Veterancy;
 
@@ -113,6 +154,26 @@ class TechnoClass :	public RadioClass,
 		 * the player can see at a glance where he is being attacked.
 		 */
 		CDTimerClass<FrameTimerClass> RadarFlashTimer;
+
+		CDTimerClass<FrameTimerClass> TargetingTimer; // RA2: +0x148; 45 when constructed
+
+		CDTimerClass<FrameTimerClass> IronCurtainTimer; // RA2: +0x154
+
+		CDTimerClass<FrameTimerClass> IronTintTimer; // RA2: +0x160
+
+		int IronTintStage; // RA2: +0x16C; steps 1 to 10 through the Iron Curtain tint
+
+		bool Disguised; // RA2: +0x170
+
+		unsigned DisguiseCreationFrame; // RA2: +0x174
+
+		CDTimerClass<FrameTimerClass> InfantryBlinkTimer; // RA2: +0x178
+
+		CDTimerClass<FrameTimerClass> DisguiseBlinkTimer; // RA2: +0x184
+
+		bool UnlimboingInfantry; // RA2: +0x190
+
+		CDTimerClass<FrameTimerClass> ReloadTimer; // RA2: +0x194
 
 		/*
 		 * This is where this object last plotted on the radar, in radar pixels. The radar's
@@ -160,24 +221,66 @@ class TechnoClass :	public RadioClass,
 		 */
 		float PredatorOffset;
 
+		bool IsSightRevealed; // RA2: +0x1E4; set when sight is revealed at LastSightCoords, cleared when it is taken back
+
+		Coord LastSightCoords; // RA2: +0x1E8
+
+		int LastSightRange; // RA2: +0x1F4
+
+		int LastSightHeight; // RA2: +0x1F8
+
+		bool GapSuperCharged; // RA2: +0x1FC
+
+		bool GeneratingGap; // RA2: +0x1FD
+
+		int GapRadius; // RA2: +0x200
+
+		bool BeingWarpedOut; // RA2: +0x204
+
+		bool WarpingOut; // RA2: +0x205
+
+		bool Unused_206; // RA2: +0x206; set by the constructor only, never read
+
+		TemporalClass * TemporalImUsing; // RA2: +0x208
+
+		TemporalClass * TemporalTargetingMe; // RA2: +0x20C
+
+		bool IsImmobilized; // RA2: +0x210
+
+		int TeleportState; // RA2: +0x214; reinforcements set 3; the teleport locomotor starts its state from it
+
+		int ChronoLockRemaining; // RA2: +0x218
+
+		Coord ChronoDestCoords; // RA2: +0x21C
+
 		/* (Targeting Computer)
 		**	This is the target value for the item that this vehicle should ATTACK. If this
 		**	is a vehicle with a turret, then it may differ from its movement destination.
 		*/
-		AbstractClass * TarCom;
+		AbstractClass * TarCom; // RA2: +0x228
 		AbstractClass * SuspendedTarCom;
+
+		CaptureManagerClass * CaptureManager; // RA2: +0x230
+
+		TechnoClass * MindControlledBy; // RA2: +0x234
+
+		SpawnManagerClass * SpawnManager; // RA2: +0x238
+
+		TechnoClass * SpawnOwner; // RA2: +0x23C
 
 		/*
 		 * This is the nose-up pitch of this aircraft, expressed in radians. A dropship pitches
 		 * up as it flares to a stop, and counts as still moving until it eases level again.
 		 */
-		float PitchAngle;
+		float PitchAngle; // RA2: +0x240
 
 		/*
 		**	This is the arming countdown. It represents the time necessary
 		**	to reload the weapon.
 		*/
 		CDTimerClass<FrameTimerClass> Arm;
+
+		int ChargeTurretDelay; // RA2: +0x250
 
 		/*
 		**	The number of shot this object can fire before running out of ammo. If this
@@ -198,7 +301,7 @@ class TechnoClass :	public RadioClass,
 		 * its damage smoke or the trail of its railgun. An occupied slot blocks another system
 		 * of that kind, and for a weapon effect it also holds off the weapon that spawned it.
 		 */
-		ParticleSystemClass * ParticleSystems[ATTACHED_PARTICLE_COUNT];
+		ParticleSystemClass * ParticleSystems[8]; // RA2: eight, not ATTACHED_PARTICLE_COUNT
 
 		/*
 		 * This is the sonic wave this object has in flight. A sonic weapon cannot fire again
@@ -234,6 +337,8 @@ class TechnoClass :	public RadioClass,
 		**	unit has harvested.
 		*/
 		StorageClass Storage;
+
+		unsigned Unused_2A4; // RA2: +0x2A4; never used
 
 		/*
 		 * This is the door, hatch, or bay of this object. It swings open and shut at the rate
@@ -290,12 +395,16 @@ class TechnoClass :	public RadioClass,
 		 */
 		short SinkingYOffset;
 
+		bool CountedAsOwned; // RA2: +0x324
+
 		/*
 		 * If this object is sinking out of sight, as a vehicle does when it breaks through the
 		 * ice, then this flag will be true. A sinking object keels forward, is clipped off at
 		 * the waterline, and is stunned so that it takes no further orders on the way down.
 		 */
 		bool IsSinking;
+
+		bool WasSinkingAlready; // RA2: +0x326
 
 		/*
 		 * If this object should call the rest of its base to its aid when attacked, then this flag
@@ -345,13 +454,9 @@ class TechnoClass :	public RadioClass,
 		*/
 		bool IsLocked;
 
-		/*
-		**	Buildings and units with turrets usually have a recoil animation when they
-		**	fire. If this flag is true, then the next rendering of the object will be
-		**	in the "recoil state". The flag will then be cleared pending the next
-		**	firing event.
-		*/
-		bool IsInRecoilState;
+		RecoilData TurretRecoil; // RA2: +0x330; replaces IsInRecoilState
+
+		RecoilData BarrelRecoil; // RA2: +0x350
 
 		/*
 		**	If this unit is "loosely attached" to another unit it is given special
@@ -361,7 +466,9 @@ class TechnoClass :	public RadioClass,
 		**	At that time it radios the transport object and the "tether" is broken -
 		**	freeing both the unit and the transport object.
 		*/
-		bool IsTethered;
+		bool IsTethered; // RA2: +0x370
+
+		bool IsAlternativeTether; // RA2: +0x371
 
 		/*
 		**	Is this object owned by the player?  If not, then it is owned by the computer
@@ -388,8 +495,7 @@ class TechnoClass :	public RadioClass,
 		*/
 		bool IsALemon;
 
-		/// Unused
-		unsigned char UnusedCooldown;
+		unsigned char Cooldown; // RA2: +0x376; counted down by one every AI frame
 
 		/// Unused
 		unsigned char Unused1;
@@ -431,47 +537,62 @@ class TechnoClass :	public RadioClass,
 		 */
 		bool IsRocking;
 
+		bool WasCrashingAlready; // RA2: +0x37E
+
 		/*
 		 * If this object is carrying out the patrol mission, then this flag will be true. It
 		 * is cleared when the player hands the object an ordinary waypoint path, which is how
 		 * a patrol is broken off in favor of a one way trip.
 		 */
-		bool IsOnPatrol;
+		bool IsOnPatrol; // RA2: +0x37F
+
+		bool IsMouseHovering; // RA2: +0x380; cleared at the start of AI
+
+		bool ShouldBeReselectOnUnlimbo; // RA2: +0x381
+
+		TeamClass * OldTeam; // RA2: +0x384
 
 		/*
 		 * If the waypoint path this object is following is a patrol loop rather than a one
 		 * shot route, then this flag will be true. It keeps the patrol cursor offered over the
 		 * map so that further legs can be added without holding the modifier keys down.
 		 */
-		bool IsOnWaypointPatrol;
+		bool IsOnWaypointPatrol; // RA2: +0x388
 
-		/*
-		 * This is the building this object still means to enter, remembered while it moves to
-		 * a spot nearby because the bay was busy when it asked. The object tries again once it
-		 * has stopped moving, and the reference is dropped once it gets in.
-		 */
-		ObjectClass * NearbyObject;
+		int RadialFireSegment; // RA2: +0x38C; the segment of the RadialFireSegments fan the next shot goes to
+
+		mutable DynamicVectorClass<int> CurrentTargetThreatValues; // RA2: +0x390
+
+		mutable DynamicVectorClass<AbstractClass *> CurrentTargets; // RA2: +0x3A8
+
+		mutable DynamicVectorClass<AbstractClass *> AttackedTargets; // RA2: +0x3C0
+
+		AudioController TurretRotateSoundController; // RA2: +0x3D8
+
+		int IsTurretRotateSoundPlaying; // RA2: +0x3EC
+
+		int TurretIsRotating; // RA2: +0x3F0
+
+		int LastTargetScanFrame; // RA2: +0x3F4; Frame when AI last looked for an opportunity target
+
+		TechnoClass * QueueUpToEnter; // RA2: +0x3F8
 
 		/*
 		 * This is the number of game frames this object remains stunned, counted down one per
 		 * frame. A stunned object cannot move, fire, or produce, which is how an EM pulse and
 		 * a plunge through the ice take their victims out of the fight.
 		 */
-		int StunDuration;
+		int StunDuration; // RA2: +0x3FC
 
-		/*
-		 * This is a list of bits of which houses have attached a "limpet" drone to this
-		 * object. A house that has limpeted an object sees whatever that object sees, so the
-		 * drone serves as a spy that travels along with its victim.
-		 */
-		unsigned LimpetType;
+		unsigned ThreatPosed; // RA2: +0x400
 
-		/*
-		 * This is the speed penalty imposed by an attached limpet drone, expressed as a
-		 * fraction of the object's normal speed. It slows the rate at which the body and
-		 * turret turn as well, so a limpeted vehicle is sluggish as well as watched.
-		 */
-		float LimpetSpeedFactor;
+		bool ShouldLoseTargetNow; // RA2: +0x404
+
+		PlanningTokenClass * PlanningToken; // RA2: +0x408
+
+		ObjectTypeClass * Disguise; // RA2: +0x40C
+
+		HouseClass * DisguisedAsHouse; // RA2: +0x410
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.

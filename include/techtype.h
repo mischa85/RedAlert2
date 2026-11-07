@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -29,6 +30,22 @@ class UnitTypeClass;
 class ParticleSystemTypeClass;
 class AnimTypeClass;
 class WeaponTypeClass;
+
+
+/*
+**	RA2: how a turret or barrel recoils when it fires: how far it travels back and how many
+**	frames it takes to get there, how long it holds and how long it takes to recover.
+*/
+struct TurretControl
+{
+	TurretControl(void) {}
+	TurretControl(int travel, int compress, int recover, int hold) : Travel(travel), CompressFrames(compress), RecoverFrames(recover), HoldFrames(hold) {}
+
+	int Travel;
+	int CompressFrames;
+	int RecoverFrames;
+	int HoldFrames;
+};
 
 /***************************************************************************
 **	This class is the common data for all objects that can be owned, produced,
