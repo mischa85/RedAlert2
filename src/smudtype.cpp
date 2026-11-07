@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -264,8 +265,8 @@ void SmudgeTypeClass::Draw_It(Point2D const & point, Rect const & cliprect, int 
 		if (size != 0) {
 			int width = size % Width;
 			int height = size / Width;
-			drawpoint.Y -= LEVEL_PIXEL_H * (height + width);
-			drawpoint.X -= ISO_TILE_PIXEL_W * (width - height) / 2;
+			drawpoint.Y -= 15 * (height + width); // RA2: constants
+			drawpoint.X += 60 * (height - width) / 2;
 		}
 		CellClass * cellptr = &Map[cell];
 		int brightness = cellptr->TileBrightness;
@@ -415,7 +416,7 @@ bool SmudgeTypeClass::Scorch_The_Ground(Coord const & coord, int width, int heig
 	for (i = 0; i < list.Count(); i++) {
 		SmudgeTypeClass const * scorch = list[i];
 		if (!large) {
-			if (scorch->Width == 1 && scorch->Height == 1 || width > CELL_PIXEL_H && height > (CELL_PIXEL_W * 5 / 3)) {
+			if (scorch->Width == 1 && scorch->Height == 1 || width > 60 && height > 50) { // RA2: sizes
 				largelist.Add(scorch);
 			}
 		} else {
@@ -466,7 +467,7 @@ bool SmudgeTypeClass::Crater_The_Ground(Coord const & coord, int width, int heig
 	for (i = 0; i < list.Count(); i++) {
 		SmudgeTypeClass const * scorch = list[i];
 		if (!large) {
-			if (scorch->Width == 1 && scorch->Height == 1 || width > CELL_PIXEL_H && height > (CELL_PIXEL_W * 5 / 3)) {
+			if (scorch->Width == 1 && scorch->Height == 1 || width > 60 && height > 50) { // RA2: sizes
 				largelist.Add(scorch);
 			}
 		} else {
