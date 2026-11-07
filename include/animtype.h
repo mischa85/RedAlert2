@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -16,6 +17,7 @@
 #include "objtype.h"
 
 #include "anim.hh"
+#include "layer.hh" // RA2: LayerType
 
 class WarheadTypeClass;
 class OverlayTypeClass;
@@ -92,12 +94,6 @@ class AnimTypeClass : public ObjectTypeClass
 		int Loops;
 
 		/*
-		**	This is the sound effect to play when this animation starts. Usually, this
-		**	applies to explosion animations.
-		*/
-		VocType Sound;
-
-		/*
 		**	If the animation is to launch into another animation, then
 		**	the secondary animation will be defined here.
 		*/
@@ -149,16 +145,7 @@ class AnimTypeClass : public ObjectTypeClass
 		/// Unused
 		VocType StartSound;
 
-		/*
-		 * This is the sound effect to play each time a bouncing animation hits the ground.
-		 */
-		VocType BounceSound;
-
-		/*
-		 * This is the sound effect to play when a bouncing animation comes to rest on land.
-		 * One that lands in water throws up a splash instead and this sound is not heard.
-		 */
-		VocType ExpireSound;
+		VocType StopSound; // RA2: +0x2BC
 
 		/*
 		 * This points to the animation created at the point of contact each time a bouncing
@@ -254,6 +241,8 @@ class AnimTypeClass : public ObjectTypeClass
 		 */
 		int YDrawOffset;
 
+		int ZAdjust; // RA2: +0x308
+
 		/*
 		 * This is the number of frames devoted to each of the eight facings of a burning
 		 * victim's run cycle. The stage to display is worked out from the direction he is
@@ -296,6 +285,8 @@ class AnimTypeClass : public ObjectTypeClass
 		 * Coming down on a bridge sows nothing.
 		 */
 		bool IsTiberium;
+
+		bool HideIfNoOre; // RA2: +0x315
 
 		/*
 		 * If this animation should be thrown into the air and left to bounce, then this flag
@@ -358,12 +349,7 @@ class AnimTypeClass : public ObjectTypeClass
 		*/
 		bool IsNormalized;
 
-		/*
-		**	If this animation should be rendered and sorted with the other ground
-		**	units, then this flag is true. Typical of this would be fire and other
-		**	low altitude animation effects.
-		*/
-		bool IsGroundLayer;
+		LayerType Layer; // RA2: +0x320
 
 		/*
 		 * If this animation lies flat upon the ground rather than standing upright, then
@@ -398,6 +384,8 @@ class AnimTypeClass : public ObjectTypeClass
 		*/
 		bool IsCraterForming;
 
+		bool ForceBigCraters; // RA2: +0x329
+
 		/*
 		**	If this animation should attach itself to any unit that is in the same
 		**	location as itself, then this flag will be true. Most vehicle impact
@@ -418,6 +406,10 @@ class AnimTypeClass : public ObjectTypeClass
 		 * when it arrives at Start.
 		 */
 		bool IsReverse;
+
+		bool Shadow; // RA2: +0x32D
+
+		bool PsiWarning; // RA2: +0x32E
 
 		/*
 		 * If this animation should be hidden while the cell it occupies is fogged, then
