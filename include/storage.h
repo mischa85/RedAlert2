@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -19,10 +20,10 @@ class StorageClass
 		~StorageClass(void) {};
 
 		int Get_Total_Value(void) const;
-		int Get_Total_Amount(void) const;
-		int Get_Amount(int slot) const;
-		int Increase_Amount(int amount, int slot);
-		int Decrease_Amount(int amount, int slot);
+		float Get_Total_Amount(void) const; // RA2: float
+		float Get_Amount(int slot) const; // RA2: float
+		float Increase_Amount(float amount, int slot); // RA2: float
+		float Decrease_Amount(float amount, int slot); // RA2: float
 		int First_Used_Slot(void) const;
 
 		StorageClass operator+(StorageClass &that) const;
@@ -35,5 +36,5 @@ class StorageClass
 		 * This is the amount held of each tiberium type, one slot per Tiberiums heap entry.
 		 * Keeping them apart is what lets a refinery pay the right value for a mixed load.
 		 */
-		int Values[4];
+		float Values[4]; // RA2: float
 };

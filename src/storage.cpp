@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -39,7 +40,7 @@ int StorageClass::Get_Total_Value(void) const
 	int value = 0;
 	for (int i = 0; i < ARRAY_SIZE(Values); i++) {
 		if (Values[i] > 0) {
-			value += Values[i] * Tiberiums[i]->CreditValue;
+			value = (int)(Values[i] * Tiberiums[i]->CreditValue + value); // RA2: float amounts
 		}
 	}
 
@@ -54,11 +55,11 @@ int StorageClass::Get_Total_Value(void) const
 /// rather than "how much is this worth?".
 /// </summary>
 /// <returns>Returns with the sum of every storage slot.</returns>
-int StorageClass::Get_Total_Amount(void) const
+float StorageClass::Get_Total_Amount(void) const // RA2: float
 {
 	int amount = 0;
 	for (int i = 0; i < ARRAY_SIZE(Values); i++) {
-		amount += Values[i];
+		amount = (int)(amount + Values[i]); // RA2: float amounts
 	}
 
 	return(amount);
@@ -69,7 +70,7 @@ int StorageClass::Get_Total_Amount(void) const
 /// Fetches the amount held in one storage slot.
 /// </summary>
 /// <returns>Returns with the quantity of that tiberium type currently stored.</returns>
-int StorageClass::Get_Amount(int slot) const
+float StorageClass::Get_Amount(int slot) const // RA2: float
 {
 	return(Values[slot]);
 }
@@ -82,7 +83,7 @@ int StorageClass::Get_Amount(int slot) const
 /// </summary>
 /// <param name="by">The amount to add to the slot.</param>
 /// <returns>Returns with the new total held in that slot.</returns>
-int StorageClass::Increase_Amount(int by, int slot)
+float StorageClass::Increase_Amount(float by, int slot) // RA2: float
 {
 	Values[slot] += by;
 	return(Values[slot]);
@@ -96,9 +97,9 @@ int StorageClass::Increase_Amount(int by, int slot)
 /// </summary>
 /// <param name="by">The amount that the caller would like to remove.</param>
 /// <returns>Returns with the amount actually removed, which may be less than asked for.</returns>
-int StorageClass::Decrease_Amount(int by, int slot)
+float StorageClass::Decrease_Amount(float by, int slot) // RA2: float
 {
-	int amount;
+	float amount; // RA2: float
 	if (Values[slot] < by) {
 		amount = Values[slot];
 	} else {
