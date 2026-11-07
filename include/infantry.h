@@ -162,7 +162,7 @@ class InfantryClass : public FootClass
 		**	User I/O.
 		*/
 		virtual bool Active_Click_With(ActionType action, ObjectClass * object, bool) override;
-		virtual bool Active_Click_With(ActionType action, Cell const & cell, bool) override;
+		virtual bool Active_Click_With(ActionType action, Cell const & cell, Cell const &, bool) override; // RA2: a second cell
 
 		/*
 		**	Combat related.

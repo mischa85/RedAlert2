@@ -248,16 +248,24 @@ class ObjectClass : public AbstractClass
 		**	combat purposes.
 		*/
 		virtual Coord Target_Coord(void) const {return(Center_Coord());}
-		virtual Coord Docking_Coord(void) const {return(Center_Coord());}
+		virtual Coord Docking_Coord(TechnoClass * docker) const {return(Center_Coord());} // RA2: the docking object
 		virtual Coord Center_Coord(void) const override;
 		virtual Coord Render_Coord(void) const {return(Center_Coord());}
 		virtual Coord Fire_Coord(int which) const {return(Center_Coord() + Coord(0, 0, 50));}
-		virtual Coord Exit_Coord(void) const {return(Center_Coord());}
+		virtual Coord Exit_Coord(int index) const {return(Center_Coord());} // RA2: an index
 		virtual int Sort_Y(void) const;
 		virtual bool On_Ground(void) const override;
 		virtual bool In_Air(void) const override;
-		virtual bool Is_Moving_Onto_Bridge(void) const;
+		virtual bool Is_Moving_Onto_Bridge(TechnoClass * docker = NULL) const; // RA2: the docking object
 		virtual bool Occupies_Cells(void) const {return(true);}
+
+		/*
+		**	RA2: disguises (spies, mirage tanks). Plain objects are never disguised.
+		*/
+		virtual bool IsDisguised(void) const {return(false);}
+		virtual bool IsDisguisedAs(HouseClass * house) const {return(false);}
+		virtual ObjectTypeClass * GetDisguise(bool against_allies) const {return(0);}
+		virtual HouseClass * GetDisguiseHouse(bool against_allies) const {return(0);}
 
 		int Distance(AbstractClass const * target) const;
 		int Distance(Coord const & coord) const {return(Center_Coord().Distance_To(coord));}
@@ -308,10 +316,11 @@ class ObjectClass : public AbstractClass
 
 		virtual Rect Get_Visual_Rect(void) const;
 		virtual Rect Get_Render_Rect(void);
-		virtual void Draw_Radial_Indicator(void) const {};
+		virtual void Draw_Radial_Indicator(DWORD) {}; // RA2: takes an argument; not const
 
 	private:
 		virtual void Mark_For_Redraw(void);
+		virtual bool CanBeSelected(void) const; // RA2
 
 	public:
 
@@ -319,10 +328,12 @@ class ObjectClass : public AbstractClass
 		**	User I/O.
 		*/
 		virtual bool Active_Click_With(ActionType , ObjectClass *, bool);
-		virtual bool Active_Click_With(ActionType , Cell const &, bool);
+		virtual bool Active_Click_With(ActionType , Cell const &, Cell const &, bool); // RA2: a second cell
 		virtual void Clicked_As_Target(int = 7);
 		virtual bool Select(void);
 		virtual void Unselect(void);
+		virtual void IronCurtain(int duration) {} // RA2: TechnoClass starts its IronCurtainTimer
+		virtual bool IsIronCurtained(void) const {return(false);} // RA2
 
 		/*
 		**	Combat related.
@@ -355,7 +366,7 @@ class ObjectClass : public AbstractClass
 		virtual MoveType Can_Enter_Cell(CellClass const * cell, FacingType dir = FACING_NONE, int cell_height = -1, CellClass const * = 0, bool = true) const {return(MOVE_OK);}
 		virtual MoveType Can_Reach(CellClass const * current_cell, FacingType facing, int & cell_height, bool & onto_bridge, CellClass const * adjacent_cell) const {return(MOVE_OK);}
 
-		virtual Coord Get_Coord(void) const {return(Position);}
+		Coord Get_Coord(void) const {return(Position);} // RA2: not virtual
 		virtual void Set_Coord(Coord const & coord);
 
 		__declspec( property( get=Get_Coord, put=Set_Coord ) ) Coord PositionCoord;
@@ -376,6 +387,15 @@ class ObjectClass : public AbstractClass
 		__declspec( property( get=Get_Height_AGL, put=Set_Height_AGL ) ) int HeightAGL;
 
 		virtual int Get_Height(void) const;
+
+		/*
+		**	RA2: chrono warping state.
+		*/
+		virtual bool IsBeingWarpedOut(void) const;
+		virtual bool IsWarpingIn(void) const;
+		virtual bool IsWarpingSomethingOut(void) const;
+		virtual bool IsNotWarping(void) const;
+		virtual void * GetRemapColour(void) const;
 		void Set_Height(int height);
 
 		__declspec( property( get=Get_Height, put=Set_Height ) ) int Height;

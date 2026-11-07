@@ -421,7 +421,7 @@ class FootClass : public TechnoClass
 		virtual bool Can_Demolish(void) const override;
 		bool Is_Recruitable(HouseClass const * house=NULL) const;
 		bool Is_On_Priority_Mission(void) const;
-		virtual bool Is_Moving_Onto_Bridge(void) const override;
+		virtual bool Is_Moving_Onto_Bridge(TechnoClass * docker = NULL) const override; // RA2: the docking object
 		virtual bool Occupies_Cells(void) const override {return(IsOccupyingCell);};
 		virtual void Delete_Me(void) override;
 		virtual bool Should_Delete_Off_Map(void);
@@ -477,7 +477,7 @@ class FootClass : public TechnoClass
 		virtual ActionType What_Action(ObjectClass const *, bool disallow_force = false) const override;
 		virtual ActionType What_Action(Cell const &, bool check_fog = false, bool disallow_force = false) const override;
 		virtual bool Active_Click_With(ActionType action, ObjectClass * object, bool) override;
-		virtual bool Active_Click_With(ActionType action, Cell const & cell, bool) override;
+		virtual bool Active_Click_With(ActionType action, Cell const & cell, Cell const &, bool) override; // RA2: a second cell
 
 		/*
 		**	Combat related.

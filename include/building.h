@@ -435,13 +435,13 @@ class BuildingClass : public TechnoClass
 		**	combat purposes.
 		*/
 		virtual Coord Target_Coord(void) const override;
-		virtual Coord Docking_Coord(void) const override;
+		virtual Coord Docking_Coord(TechnoClass * docker) const override; // RA2: the docking object
 		virtual Coord Render_Coord(void) const override;
 		virtual Coord Fire_Coord(int which) const override;
 		virtual Coord Center_Coord(void) const override;
 		virtual Coord Destination_Coord(void) const override;
 		virtual int Sort_Y(void) const override;
-		virtual Coord Exit_Coord(void) const override;
+		virtual Coord Exit_Coord(int index) const override; // RA2: an index
 
 		Coord Voxel_Fire_Coord(int which, bool just_fired) const;
 
@@ -472,7 +472,7 @@ class BuildingClass : public TechnoClass
 		virtual void Editor_Draw_It(Point2D const & point, Rect const & cliprect) const override;
 		virtual bool Mark(MarkType mark=MARK_CHANGE) override;
 		virtual Rect Get_Render_Rect(void) override;
-		virtual void Draw_Radial_Indicator(void) const override;
+		virtual void Draw_Radial_Indicator(DWORD) override; // RA2: takes an argument; not const
 		void Draw_Overlays(Point2D const & point, Rect const & cliprect) const;
 		void Begin_Mode(BStateType bstate);
 		virtual void Draw_Extras(Point2D &point, Rect &rect);
@@ -485,7 +485,7 @@ class BuildingClass : public TechnoClass
 		**	User I/O.
 		*/
 		virtual bool Active_Click_With(ActionType action, ObjectClass * object, bool) override;
-		virtual bool Active_Click_With(ActionType action, Cell const & cell, bool) override;
+		virtual bool Active_Click_With(ActionType action, Cell const & cell, Cell const &, bool) override; // RA2: a second cell
 		virtual void Clicked_As_Target(int = 7) override;
 
 		/*

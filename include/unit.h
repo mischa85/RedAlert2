@@ -195,7 +195,7 @@ class UnitClass : public FootClass
 		virtual ActionType What_Action(Cell const &, bool check_fog = false, bool disallow_force = false) const override;
 		virtual ActionType What_Action(ObjectClass const *, bool disallow_force = false) const override;
 		virtual bool Active_Click_With(ActionType action, ObjectClass * object, bool) override;
-		virtual bool Active_Click_With(ActionType , Cell const &, bool) override;
+		virtual bool Active_Click_With(ActionType , Cell const &, Cell const &, bool) override; // RA2: a second cell
 
 		/*
 		**	Combat related.
