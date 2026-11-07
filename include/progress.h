@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -10,18 +11,22 @@
 #pragma once
 
 #include "always.h"
+#include "abstract.h"
 
 #include "point.h"
 #include "sun.h"
 #include "win.h"
 
 class ShapeSet;
+class ConvertClass;
 
-class ProgressScreenClass
+class ProgressScreenClass : public INoticeSource // RA2: INoticeSource
 {
 	public:
 		ProgressScreenClass(void);
 		~ProgressScreenClass(void);
+
+		virtual void Unknown_Virtual_0(int callback) override; // RA2: sets Callback
 
 		void Initialize(double progress, int count, bool usedialog = false);
 		void End(void);
@@ -54,6 +59,8 @@ class ProgressScreenClass
 		 * far, one slot per player. A slot is measured against MainProgress rather than
 		 * against a hundred, so the bar drawn for it is the ratio of the two.
 		 */
+		INoticeSink * Callback; // RA2: +0x04
+
 		double PlayerProgress[MAX_PLAYERS];
 
 		/*
@@ -67,7 +74,7 @@ class ProgressScreenClass
 		 * Pointer to the caption printed above the progress bars, or NULL if the screen
 		 * carries no caption. The text is not copied, so it must outlive the job.
 		 */
-		const char * String;
+		wchar_t const * String; // RA2: +0x50, wide
 
 		/*
 		 * Pointer to the progress bar artwork. A bar is drawn by clipping the first frame of
@@ -75,6 +82,7 @@ class ProgressScreenClass
 		 * the width of a full bar.
 		 */
 		ShapeSet * Shape;
+		bool BufferOwned; // RA2: +0x58, Shape was allocated and must be freed
 
 		/*
 		 * Pointer to the name of the title page loaded to sit behind the bars, or NULL if
@@ -95,6 +103,7 @@ class ProgressScreenClass
 		 * bar, while a multiplayer job stacks a bar per player with the names alongside.
 		 */
 		char PlayerCount;
+		bool Unused_62; // RA2: only ever set to false
 
 		/*
 		 * Handle of the progress dialog, or NULL when the progress is presented on the full
@@ -109,12 +118,19 @@ class ProgressScreenClass
 		 */
 		Point2D Pos;
 
+		bool UseDialog; // RA2: +0x70, lay the rows out for the dialog
+		bool IsFilled; // RA2: +0x71, fill each row's rectangle before drawing it
+		ConvertClass * Drawer; // RA2: +0x74, replaces the bar's palette when not NULL
+		int RowWidth; // RA2: +0x78, overrides the computed row width unless -1
+
 		/*
 		 * This is the highest loading message threshold already announced (0 - 100), or -1
 		 * before any has been. Each message is printed and its notification sound played
 		 * only when the progress first passes its threshold, so that none of them repeat.
 		 */
 		int Percentage;
+
+		int Side; // RA2: +0x80
 };
 
 extern ProgressScreenClass Progress;
