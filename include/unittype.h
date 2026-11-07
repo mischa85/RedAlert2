@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -89,18 +90,13 @@ class UnitTypeClass : public TechnoTypeClass
 		bool IsLockTurret;
 
 		/*
-		**	If this unit cannot fire while moving, then this flag will be
-		**	true. Such a unit must stop and stabilize for a bit before it
-		**	can fire.
-		*/
-		bool IsNoFireWhileMoving;
-
-		/*
 		 * If this vehicle must deploy before it can fire, then this flag will be true. It
 		 * will not shoot from ground it cannot set down upon, and under a human player it
 		 * never picks a target of its own, since deploying is the player's decision.
 		 */
 		bool IsDeployToFire;
+
+		bool IsSimpleDeployer; // RA2: +0xBAB
 
 		/*
 		 * If this vehicle leans to match the slope of the ground it drives over, then this
@@ -120,6 +116,8 @@ class UnitTypeClass : public TechnoTypeClass
 		 * does not appear to slice through the top of the artwork.
 		 */
 		bool IsTooBigToFitUnderBridge;
+
+		bool CanBeach; // RA2: +0xBAF
 
 		/*
 		 * If this type is the small visceroid, then this flag will be true. A small
@@ -143,13 +141,6 @@ class UnitTypeClass : public TechnoTypeClass
 		bool IsCarriesCrate;
 
 		/*
-		 * This points to the shape set fetched from the AltImageFile, or NULL if this type
-		 * has no alternate artwork. A visceroid keeps the tail of its idle animation here,
-		 * past the frames its regular image data provides.
-		 */
-		const void * AltImageData;
-
-		/*
 		 * If this type is a creature built upon the unit class rather than a real vehicle,
 		 * then this flag will be true. It is the answer the Considered_Vehicle function
 		 * gives, so such a type is passed over wherever the game counts or targets
@@ -158,74 +149,25 @@ class UnitTypeClass : public TechnoTypeClass
 		bool IsNonVehicle;
 
 		/*
-		 * If this type is the jellyfish, then this flag will be true. It swims on logic of
-		 * its own instead of the usual combat and approach missions, is drawn lifted by
-		 * its depth in the water, and never counts another unit as a passing blockage.
-		 */
-		bool IsJellyfish;
-
-		/*
-		 * If this type is the limpet drone, then this flag will be true. Like the
-		 * jellyfish it is drawn from shape artwork by its animation stage, and that stage
-		 * is wrapped back to the start after ten frames so the drone pulses forever.
-		 */
-		bool IsLimpetDrone;
-
-		/*
-		 * If this vehicle carries a mobile EM pulse cannon, then this flag will be true.
-		 * Such a vehicle may be told to deploy even though it has nothing to deploy into
-		 * and no cargo to unload, and deploying spends its accumulated charge as a pulse.
-		 */
-		bool IsMobileEMP;
-
-		/*
-		 * If this vehicle is the core defender, then this flag will be true. It is treated
-		 * as a building where its selection box and health bar are concerned, it stands
-		 * taller than an ordinary vehicle, and an EM pulse cannot paralyze it.
-		 */
-		bool IsCoreDefender;
-
-		/*
 		 * This is the number of frames in the standing animation of a shape based
 		 * vehicle, counted per facing. If it is zero, then the vehicle has no idle
 		 * artwork of its own and its first walk frame is shown instead.
 		 */
-		char StandingFrames;
+		int StandingFrames; // RA2: +0xBB4; an int
 
 		/*
 		 * This is the number of frames in the death animation of a shape based vehicle,
 		 * counted per facing. If it is zero, then the vehicle simply explodes when it is
 		 * destroyed rather than lingering as a wreck while an animation plays out.
 		 */
-		char DeathFrames;
+		int DeathFrames; // RA2: +0xBB8; an int
 
 		/*
 		 * This is the number of game frames that each frame of the death animation is
 		 * held for. It is never allowed to be less than one, since the frame to show is
 		 * derived by dividing the vehicle's death counter by it.
 		 */
-		char DeathFrameRate;
-
-		/*
-		 * This is the charge that a mobile EM pulse cannon must build up before it may
-		 * fire. The vehicle's Charge climbs toward this value whenever it is able, and a
-		 * charging vehicle draws its pip bar as a fraction of it.
-		 */
-		unsigned MaxCharge;
-
-		/*
-		 * This is the charge that a mobile EM pulse cannon is built with, so that a
-		 * vehicle can be given to a house ready to fire rather than having to sit out
-		 * its first charge.
-		 */
-		int StartCharge;
-
-		/*
-		 * These are the frames of the firing animation on which the first and second
-		 * rounds of a burst are actually released, so that the shots stay in step with
-		 * the recoil artwork. If -1, then that round is not tied to the animation.
-		 */
-		int FiringSyncFrame[FIRING_SYNC_FRAME_MAX];
+		int DeathFrameRate; // RA2: +0xBBC; an int
 
 		/*
 		 * This is the frame that the standing animation begins at within the shape file.
@@ -268,6 +210,22 @@ class UnitTypeClass : public TechnoTypeClass
 		int Facings;
 
 		/*
+		 * These are the frames of the firing animation on which the first and second
+		 * rounds of a burst are actually released, so that the shots stay in step with
+		 * the recoil artwork. If -1, then that round is not tied to the animation.
+		 */
+		int FiringSyncFrame[FIRING_SYNC_FRAME_MAX];
+
+		int BurstDelay[4]; // RA2: +0xBE0
+
+		/*
+		 * This points to the shape set fetched from the AltImageFile, or NULL if this type
+		 * has no alternate artwork. A visceroid keeps the tail of its idle animation here,
+		 * past the frames its regular image data provides.
+		 */
+		const void * AltImageData;
+
+		/*
 		 * This is the number of frames in the walking animation of a shape based vehicle,
 		 * counted per facing. It doubles as the stride from one facing to the next within
 		 * the walk frames, so it must match the artwork exactly.
@@ -280,6 +238,7 @@ class UnitTypeClass : public TechnoTypeClass
 		 * its shots are never held back to line up with one.
 		 */
 		char FiringFrames;
+
 
 		/*
 		 * This is the name of an alternate shape file for this unit, without its
