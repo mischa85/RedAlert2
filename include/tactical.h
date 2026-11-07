@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -268,7 +269,9 @@ class Tactical : public AbstractClass
 		 * whenever there is no caption to show, which is how the message is taken down again.
 		 * The scenario won and scenario lost announcements are put up through it.
 		 */
-		char ScreenText[64];
+		wchar_t ScreenText[64]; // RA2: wide
+
+		int EndGameGraphicsFrame; // RA2: +0xA4, the frame given with the caption text; -1 when there is none
 
 		/*
 		 * This is the game frame the per-frame housekeeping was last done on. The AI routine
@@ -318,12 +321,6 @@ class Tactical : public AbstractClass
 		 * MAX_SELECTABLE_OBJECTS entries; anything drawn beyond that is simply not clickable.
 		 */
 		static Selectable SelectableObjects[MAX_SELECTABLE_OBJECTS];
-
-		/*
-		 * This is the number of entries in the selectable object list. It is zeroed at the
-		 * start of every render pass, since the objects build the list up again as they draw.
-		 */
-		int SelectableCount;
 
 		/*
 		 * These carry a trigger driven scroll of the view. The position is interpolated from
@@ -399,6 +396,12 @@ class Tactical : public AbstractClass
 		 */
 		int WaypointAnimCounter;
 		CDTimerClass<SystemTimerClass> WaypointAnimTimer;
+
+		/*
+		 * This is the number of entries in the selectable object list. It is zeroed at the
+		 * start of every render pass, since the objects build the list up again as they draw.
+		 */
+		int SelectableCount; // RA2: +0xDB0, after the waypoint animation
 
 		/*
 		 * This is the forward isometric projection, built at construction from a 60 degree
