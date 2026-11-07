@@ -41,6 +41,7 @@ class LightSourceClass : public AbstractClass
 		bool Is_Enabled(void) const {return(IsEnabled);};
 		void Enable(bool update = false);
 		void Disable(bool update = false);
+		void ChangeLevels(int intensity, int red, int green, int blue, bool defer); // RA2
 		void Recalculate_Affected_Cells(bool defer = false);
 
 	public:
