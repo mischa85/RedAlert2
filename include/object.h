@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -34,6 +35,7 @@
 
 #include "abstract.h"
 #include "assert.h"
+#include "audioctl.h" // RA2: AudioController
 #include "coord.h"
 #include "face.h"
 #include "globals.h"
@@ -64,6 +66,8 @@ class TagClass;
 class WarheadTypeClass;
 class ShapeSet;
 class MonoClass;
+class BombClass; // RA2
+class LineTrail; // RA2
 
 
 /**********************************************************************
@@ -102,25 +106,24 @@ class ObjectClass : public AbstractClass
 		 */
 		TagClass * Tag;
 
+		BombClass * AttachedBomb; // RA2: +0x38
+		AudioController AmbientSoundController; // RA2: +0x3C
+		AudioController CustomSoundController; // RA2: +0x50
+		int CustomSound; // RA2: +0x64; -1 when none
+		bool BombVisible; // RA2: +0x68
+
 		/*
 		**	This is the current strength of this object.
 		*/
 		int Strength;
 
+		int EstimatedHealth; // RA2: +0x70
+
 		/*
 		**	The object can be in one of two states -- placed down on the map, or not. If the
 		**	object is placed down on the map, then this flag will be true.
 		*/
-		bool IsDown;
-
-		/*
-		**	This is a support flag that is only used while building a list of objects to
-		**	be damaged by a proximity affect (explosion). When this flag is set, this object
-		**	will not be added to the list of units to damage. When damage is applied to the
-		**	object, this flag is cleared again. This process ensures that an object is never
-		**	subject to "double jeopardy".
-		*/
-		bool IsToDamage;
+		bool IsDown; // RA2: +0x74, directly followed by IsToDisplay; TS's IsToDamage is gone
 
 		/*
 		**	Is this object flagged to be displayed during the next rendering process?  This
@@ -163,6 +166,8 @@ class ObjectClass : public AbstractClass
 		*/
 		bool IsFalling;
 
+		bool IsABomb; // RA2: +0x7B; FootClass AI compares it with IsFalling
+
 		/*
 		 * If this object is to be destroyed the moment it finishes falling, then this flag
 		 * will be true. It is set when the object loses whatever was holding it up, both so
@@ -192,11 +197,15 @@ class ObjectClass : public AbstractClass
 		 */
 		bool IsSubmittedToLayer;
 
+		bool IsVisible; // RA2: +0x85; true when constructed
+
 		/*
 		**	The coordinate location of the unit. For vehicles, this is the center
 		**	point. For buildings, it is the upper left corner.
 		*/
 		Coord Position;
+
+		LineTrail * LineTrailer; // RA2: +0x94; made by Unlimbo when the type has a line trail
 
 		/*-----------------------------------------------------------------------------------
 		**	Constructor & destructors.
