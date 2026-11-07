@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -173,6 +174,8 @@ class IPXGlobalConnClass : public IPXConnClass
 		NetNumType BridgeNet;
 		NetNodeType BridgeNode;
 		int IsBridge;
+
+		bool IsRouted; // RA2: +0xC8, global packets go through the packet router while set (YR: FieldC8)
 
 	//------------------------------------------------------------------------
 	// Protected Interface
