@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -134,9 +135,6 @@ bool TiberiumClass::Read_INI(CCINIClass const & ini)
 		Color = ini.Get_Scheme_Index(IniName, "Color", Color);
 		Debris = TGet_TypeList<AnimTypeClass>(ini, IniName, "Debris", Debris);
 
-		if (!strcmpi(IniName, "Vinifera")) {
-			Power = 17;
-		}
 
 		switch (ini.Get_Int(IniName, "Image", -1)) {
 			case -1:
@@ -144,33 +142,26 @@ bool TiberiumClass::Read_INI(CCINIClass const & ini)
 
 			case 2:
 				Overlay = OverlayTypes[OVERLAY_LARGE_TIBERIUM01];
-				FrameCount = 1;
-				Variety = 12;
-				break;
+				Variety = FrameCount = 12; // RA2: 12 frames
+				return(true);
 
 			case 3:
 				Overlay = OverlayTypes[OVERLAY_TIBERIUM2_01];
-				RampVariety = 8;
-				FrameCount = 12;
-				Variety = 12;
-				break;
+				goto ramp; // RA2
 
 			case 4:
 				Overlay = OverlayTypes[OVERLAY_TIBERIUM3_01];
-				RampVariety = 8;
-				FrameCount = 12;
-				Variety = 12;
-				break;
+				goto ramp; // RA2
 
 			case 1:
 			default:
 				Overlay = OverlayTypes[OVERLAY_TIBERIUM01];
-				RampVariety = 8;
+			ramp: // RA2: the image types share their frame setup
 				FrameCount = 12;
+				RampVariety = 8;
 				Variety = 12;
 				break;
 		}
-
 		return(true);
 	}
 	return(false);
