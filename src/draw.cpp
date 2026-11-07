@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -79,6 +80,7 @@ void Draw_Shape(Surface & surface, ConvertClass & convert, ShapeSet const * shap
 {
 	assert((flags & SHAPE_PREDATOR) == 0);	// Not yet supported.
 	assert(shapefile != NULL);
+	if (shapefile == NULL) return; // RA2: no shape, nothing to draw
 	assert(shapenum != -1);
 
 	convert.Set_Remap(remap);
@@ -128,6 +130,13 @@ void Draw_Shape(Surface & surface, ConvertClass & convert, ShapeSet const * shap
 	if (z_shapefile != NULL) {
 		zpoint.X += z_rect.X;
 		zpoint.Y += z_rect.Y;
+
+		/*
+		**	RA2: clip the shape to the part covered by the z shape; nothing is drawn if they don't overlap.
+		*/
+		Rect zr(-zpoint.X, -zpoint.Y, z_rect.Width, z_rect.Height);
+		rect = Intersect(rect, zr);
+		if (rect.Width <= 0 || rect.Height <= 0) goto done;
 	}
 
 	/*
@@ -155,6 +164,7 @@ void Draw_Shape(Surface & surface, ConvertClass & convert, ShapeSet const * shap
 		}
 	}
 
+done: // RA2
 	if (z_shape != NULL) {
 		delete z_shape;
 	}
