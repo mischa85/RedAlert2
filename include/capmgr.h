@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright 2026 ra2-decomp contributors
+// Changed to RA2 1.006's layout by RedAlert2 contributors, 2026.
 #pragma once
 
 #include "abstract.h"
@@ -10,25 +11,14 @@
 class HouseClass;
 class TechnoClass;
 
-struct ControlNode
-{
-		TechnoClass * Unit;
-		HouseClass * OriginalOwner;
-		CDTimerClass<FrameTimerClass> LinkDrawTimer;
-};
-
 class CaptureManagerClass : public AbstractClass
 {
 		typedef AbstractClass BASECLASS;
 
 	public:
-		DynamicVectorClass<ControlNode *> ControlNodes;
-		int MaxControlNodes;
-		bool InfiniteMindControl;
-		bool OverloadDeathSoundPlayed;
-		int OverloadPipState;
-		TechnoClass * Owner;
-		int OverloadDamageDelay;
+		TechnoClass * Unit; // RA2: +0x24, the one unit under control (YR: ControlNode::Unit)
+		HouseClass * OriginalOwner; // RA2: +0x28, its house before capture (YR: ControlNode::OriginalOwner)
+		TechnoClass * Owner; // RA2: +0x2C
 
 		CaptureManagerClass(void);
 		CaptureManagerClass(TechnoClass * owner, int damage, bool infinite);
