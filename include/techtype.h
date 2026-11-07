@@ -963,6 +963,8 @@ class TechnoTypeClass : public ObjectTypeClass
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
+		virtual bool CanUseWaypoint(void) const; // RA2
+		virtual bool CanAttackMove(void) const; // RA2
 
 		// RA2: Get_Object_Size_Delta is not in RA2's vtables (see abstract.h).
 		virtual void Compute_CRC(CRCEngine & crc) const override;
@@ -972,6 +974,7 @@ class TechnoTypeClass : public ObjectTypeClass
 		int Max_Passengers(void) const {return(MaxPassengers);}
 		virtual int Repair_Cost(void) const;
 		virtual int Repair_Step(void) const;
+		virtual int GetRefund(HouseClass * house, bool unknown) const; // RA2 (YR name)
 		virtual int Flight_Level(void) const;
 		virtual void const * Get_Cameo_Data(void) const override;
 		virtual int Cost_Of(HouseClass * house = NULL) const override;
