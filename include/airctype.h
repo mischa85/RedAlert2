@@ -78,13 +78,15 @@ class AircraftTypeClass : public TechnoTypeClass
 
 		static AircraftTypeClass * Find_Or_Make(char const * name);
 		static AircraftType From_Name(char const * name);
-		static void Init(TheaterType ) {};
+		static void Init(TheaterType ); // RA2: defined in airctype.cpp
 		static void One_Time(void);
 
 		virtual bool Read_INI(CCINIClass const & ini) override;
 		virtual Point3D Lepton_Dimensions(void) const override;
 		virtual bool Create_And_Place(Cell const & cell, HouseClass * house = NULL) const override;
 		virtual ObjectClass * Create_One_Of(HouseClass * house) const override;
+		virtual bool CanUseWaypoint(void) const override; // RA2
+		virtual bool CanAttackMove(void) const override; // RA2
 		virtual Cell const * Occupy_List(bool placement=false) const override;
 
 		static void const * LRotorData;

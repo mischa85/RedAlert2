@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -49,6 +50,8 @@
 #include "always.h"
 
 #include "airctype.h"
+#include "animtype.h" // RA2
+#include "swizzle.h" // RA2
 
 #include "_mixfile.h"
 #include "_rules.h"
@@ -86,15 +89,23 @@ AircraftTypeClass::AircraftTypeClass(char const * ininame) :
 	IsRotorEquipped(false),
 	IsRotorCustom(false),
 	IsCarryall(false),
-	HeapID(AIRCRAFT_NONE)
+	HeapID(AIRCRAFT_NONE),
+	IsAirportBound(false), // RA2
+	IsFighter(false) // RA2
 {
 	Create_ID();
 
 	AircraftTypes.Add(this);
 	HeapID = AircraftType(AircraftTypes.ID(this));
 
+	Parasiteable = true; // RA2
+	ConsideredAircraft = true; // RA2
 	IsMoveToShroud = false;
 	Rotation = 32;
+	Trailer = NULL; // RA2
+	SpawnDelay = 3; // RA2
+	ImmuneToPsionics = false; // RA2
+	Organic = false; // RA2
 }
 
 
@@ -194,6 +205,20 @@ ObjectClass * AircraftTypeClass::Create_One_Of(HouseClass * house) const
 }
 
 
+// RA2: aircraft do not take waypoint orders.
+bool AircraftTypeClass::CanUseWaypoint(void) const
+{
+	return(false);
+}
+
+
+// RA2: aircraft do not take attack-move orders.
+bool AircraftTypeClass::CanAttackMove(void) const
+{
+	return(false);
+}
+
+
 /***********************************************************************************************
  * AircraftTypeClass::Occupy_List -- Returns with occupation list for landed aircraft.         *
  *                                                                                             *
@@ -213,6 +238,12 @@ Cell const * AircraftTypeClass::Occupy_List(bool) const
 {
 	static Cell const _list[] = {Cell(0,0), REFRESH_EOL};
 	return(_list);
+}
+
+
+// RA2: no per-theater setup for aircraft.
+void AircraftTypeClass::Init(TheaterType)
+{
 }
 
 
@@ -256,7 +287,7 @@ bool AircraftTypeClass::Create_And_Place(Cell const &, HouseClass *) const
  *=============================================================================================*/
 Point3D AircraftTypeClass::Lepton_Dimensions(void) const
 {
-	return(Point3D(CELL_LEPTON_W, CELL_LEPTON_H, 200));
+	return(Point3D(CELL_LEPTON_W, CELL_LEPTON_H, LEVEL_LEPTON_H*2)); // RA2
 }
 
 
@@ -280,9 +311,15 @@ bool AircraftTypeClass::Read_INI(CCINIClass const & ini)
 	if (BASECLASS::Read_INI(ini)) {
 
 		IsLandable = ini.Get_Bool(Name(), "Landable", IsLandable);
+		IsAirportBound = ini.Get_Bool(Name(), "AirportBound", IsAirportBound); // RA2
+		IsFighter = ini.Get_Bool(Name(), "Fighter", IsFighter); // RA2
 		IsCarryall = ini.Get_Bool(Name(), "Carryall", IsCarryall);
 		IsRotorEquipped = ArtINI.Get_Bool(Graphic_Name(), "Rotors", IsRotorEquipped);
 		IsRotorCustom = ArtINI.Get_Bool(Graphic_Name(), "CustomRotor", IsRotorCustom);
+		char buffer[128]; // RA2: the trailer animation and spawn delay
+		AnimTypeClass * trailer = Trailer;
+		Trailer = ArtINI.Get_String(Graphic_Name(), "Trailer", "", buffer, sizeof(buffer)) ? AnimTypeClass::Find_Or_Make(buffer) : trailer;
+		SpawnDelay = ArtINI.Get_Int(Graphic_Name(), "SpawnDelay", SpawnDelay);
 		return(true);
 	}
 	return(false);
@@ -303,6 +340,8 @@ void AircraftTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(IsRotorEquipped);
 	crc(IsRotorCustom);
 	crc(IsLandable);
+	crc(IsAirportBound); // RA2
+	crc(IsFighter);
 	crc(HeapID);
 }
 
@@ -319,6 +358,7 @@ HRESULT STDMETHODCALLTYPE AircraftTypeClass::Load(IStream *stream)
 	HRESULT result = BASECLASS::Load(stream);
 	if (SUCCEEDED(result)) {
 		new (this) AircraftTypeClass(NoInitClass());
+		Swizzle_Pointer(&Trailer); // RA2
 
 		Fetch_Voxel_Image();
 		Fetch_Normal_Image();
