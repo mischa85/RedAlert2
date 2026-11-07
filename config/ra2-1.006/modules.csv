@@ -788,7 +788,9 @@ unk_006EAFE0,0x006EAFE0,0x006EB120,unknown,code not assigned to a module
 toggle,0x006EB120,0x006EB180,tibsun,"functions compiled from src/toggle.cpp, matched, without gaps; ?Action@ToggleClass@@MAEHIAAW4KeyNumType@@@Z not placed"
 unk_006EB180,0x006EB180,0x006EBE90,unknown,code not assigned to a module
 unk_006EBE90,0x006EBE90,0x006EBEB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006EBEB0,0x006EBEB0,0x006EEF10,unknown,code not assigned to a module
+unk_006EBEB0,0x006EBEB0,0x006ED220,unknown,code not assigned to a module
+trigger,0x006ED220,0x006EDB80,tibsun,"functions compiled from src/trigger.cpp, matched, without gaps; ten placed by the gap"
+unk_006EDB80,0x006EDB80,0x006EEF10,unknown,code not assigned to a module
 trim,0x006EEF10,0x006EEF80,tibsun,"functions compiled from src/trim.cpp, matched, without gaps"
 unk_006EEF80,0x006EEF80,0x006EF1D0,unknown,code not assigned to a module
 tube,0x006EF1D0,0x006EF910,tibsun,"functions compiled from src/tube.cpp, matched, without gaps; two placed by the gap"
