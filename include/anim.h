@@ -81,7 +81,7 @@ class AnimClass : public ObjectClass, public StageClass
 		static void Do_Atom_Damage(HousesType ownerhouse, Cell const & cell);
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual bool Limbo(void) override;
 		virtual void Delete_Me(void) override;

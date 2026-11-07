@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -34,7 +35,7 @@ class BuildingLightClass : public ObjectClass
 		**	Member function prototypes.
 		*/
 		virtual ObjectTypeClass const * Class_Of(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_LIGHT);}

@@ -78,7 +78,7 @@ class TriggerTypeClass : public AbstractTypeClass
 		**	Utility routines
 		*/
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_TRIGGERTYPE);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual int Fetch_Heap_ID(void) const override {return(HeapID);}
 

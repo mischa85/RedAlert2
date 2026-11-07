@@ -244,7 +244,7 @@ class BulletTypeClass : public ObjectTypeClass
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 

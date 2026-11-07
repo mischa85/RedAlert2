@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -32,7 +33,7 @@ class IsometricTileClass : public ObjectClass
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool = false) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 
 		virtual ObjectTypeClass const * Class_Of(void) const override;
 		virtual bool Limbo() override;

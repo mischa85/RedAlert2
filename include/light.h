@@ -35,7 +35,7 @@ class LightSourceClass : public AbstractClass
 		static void Process_Lighting(int time_budget_ms, bool force = false);
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual void Compute_CRC(CRCEngine &) const override;
 
 		bool Is_Enabled(void) const {return(IsEnabled);};

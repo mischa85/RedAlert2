@@ -552,7 +552,7 @@ class CellClass : public AbstractClass
 		void Detach(AbstractClass const * target);
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 
 		/*
 		**	Query functions.

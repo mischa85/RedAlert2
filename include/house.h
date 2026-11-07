@@ -784,7 +784,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		virtual HRESULT STDMETHODCALLTYPE FindConnectionPoint(REFIID riid, IConnectionPoint **ppCP) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override;
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual int Fetch_Heap_ID(void) const override;
 

@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -70,7 +71,7 @@ class AITriggerTypeClass : public AbstractTypeClass
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_AITRIGGERTYPE);}
-		virtual int Fetch_Object_Size(bool) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 
 		virtual bool Read_INI(CCINIClass const & ini) override;
 		virtual bool Write_INI(CCINIClass & ini) const override;

@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -44,7 +45,7 @@ class TiberiumClass : public AbstractTypeClass
 		virtual HRESULT STDMETHODCALLTYPE GetSizeMax(ULARGE_INTEGER *pcbSize) override;
 
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
-		virtual int Fetch_Object_Size(bool oldsave) const override { return(sizeof(*this)); }
+		virtual int Fetch_Object_Size(void) const override { return(sizeof(*this)); } // RA2: no argument
 		virtual RTTIType Fetch_RTTI(void) const override { return(RTTI_TIBERIUM); }
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual int Fetch_Heap_ID(void) const override { return(HeapID); }

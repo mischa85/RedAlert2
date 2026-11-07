@@ -87,7 +87,7 @@ class BulletClass : public ObjectClass
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
 		*/
-		virtual int Fetch_Object_Size(bool oldsave) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual RTTIType Fetch_RTTI(void) const override;
 
 		void Set_Bullet_Data(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, int range, bool bright);

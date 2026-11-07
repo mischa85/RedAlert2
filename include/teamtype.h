@@ -78,7 +78,7 @@ class TeamTypeClass : public AbstractTypeClass
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_TEAMTYPE);}
-		virtual int Fetch_Object_Size(bool) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 		virtual int Fetch_Heap_ID(void) const override {return(HeapID);};
 
 		/*

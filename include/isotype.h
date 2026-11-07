@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -198,7 +199,7 @@ class IsometricTileTypeClass : public ObjectTypeClass
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_ISOTILETYPE);}
-		virtual int Fetch_Object_Size(bool = false) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 		virtual int Fetch_Heap_ID(void) const override {return(HeapID);};
 

@@ -57,7 +57,7 @@ class SuperClass : public AbstractClass
 		virtual int STDMETHODCALLTYPE What_Am_I(void) const override {return(SuperClass::Fetch_RTTI());};
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_SUPERWEAPON);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 

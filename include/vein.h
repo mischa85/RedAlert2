@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -67,7 +68,7 @@ class VeinholeMonsterClass : public ObjectClass
 		void Reduce_Veins_At(CellClass * cellptr);
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_VEINHOLEMONSTER);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 		virtual LayerType In_Which_Layer(void) const override {return(LAYER_NONE);}
 
 		virtual ObjectTypeClass const * Class_Of(void) const override;

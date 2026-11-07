@@ -108,7 +108,7 @@ class Tactical : public AbstractClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_TACTICALMAP);}
-		virtual int Fetch_Object_Size(bool oldsave) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 
 		/*
 		 * Per frame processing and teardown.
