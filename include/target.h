@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -94,14 +95,14 @@ class xTargetClass
 		 * read -- RTTI_ABSTRACT for a game object, RTTI_CELL for a map cell, or RTTI_NONE
 		 * for an empty target.
 		 */
-		int RTTI;
+		int ID; // RA2: ID first
 
 		/*
 		 * This is the value that identifies the target within its kind -- the tracker ID for
 		 * an object, or the location packed as X + 1000 * Y for a cell. An object is recorded
 		 * by ID rather than by pointer so the target survives the object being reallocated.
 		 */
-		int ID;
+		unsigned char RTTI; // RA2: a byte; the packed class is 5 bytes
 
 	public:
 
