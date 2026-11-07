@@ -2,6 +2,7 @@
 // Copyright 2026 ra2-decomp contributors
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
+// Changed to RA2 1.006's layout by RedAlert2 contributors, 2026.
 #pragma once
 
 #include "always.h"
@@ -113,8 +114,5 @@ class MultiplayerGameMode
 		Wstring MapFilter;
 		bool AIAllowed;
 		CCINIClass * INI;
-		bool AlliesAllowed;
-		bool wolTourney;
-		bool wolClanTourney;
-		bool MustAlly;
+		int wolTourney; // RA2: +0x3C, an int read from WonlineTournamentAllowed (default 1); no AlliesAllowed, wolClanTourney or MustAlly
 };
