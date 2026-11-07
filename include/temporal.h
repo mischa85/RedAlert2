@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright 2026 ra2-decomp contributors
+// Renamed for RA2 1.006 by RedAlert2 contributors, 2026.
 #pragma once
 
 #include "abstract.h"
@@ -23,7 +24,7 @@ class TemporalClass : public AbstractClass
 		TechnoClass * Owner;
 		TechnoClass * Target;
 		CDTimerClass<FrameTimerClass> LifeTimer;
-		void * unknown_pointer_38;
+		void * Unused_38; // RA2: only ever set to NULL (and swizzled on load)
 		SuperClass * SourceSW;
 		TemporalClass * NextTemporal;
 		TemporalClass * PrevTemporal;
