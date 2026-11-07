@@ -1,5 +1,6 @@
 // SPDX-License-Identifier: GPL-3.0-or-later
 // Copyright 2026 ra2-decomp contributors
+// Renamed for RA2 1.006 by RedAlert2 contributors, 2026.
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 #pragma once
@@ -56,9 +57,9 @@ class VoxelAnimClass : public ObjectClass, public BounceClass
 
 		bool IsToDie;
 
-		AudioController Audio3;
+		AudioController StartSoundAudioController; // RA2: plays the type's StartSound
 
-		AudioController Audio4;
+		AudioController StopSoundAudioController; // RA2: pairs with the type's StopSound
 
 		bool IsInvisible;
 
