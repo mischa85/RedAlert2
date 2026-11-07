@@ -766,7 +766,9 @@ unk_006AAFD0,0x006AAFD0,0x006B1AC0,unknown,code not assigned to a module
 unk_006B1AC0,0x006B1AC0,0x006B1AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006B1AE0,0x006B1AE0,0x006B3870,unknown,code not assigned to a module
 tag,0x006B3870,0x006B42C0,tibsun,"functions compiled from src/tag.cpp, matched, without gaps; 13 placed by the gap"
-unk_006B42C0,0x006B42C0,0x006B54A0,unknown,code not assigned to a module
+unk_006B42C0,0x006B42C0,0x006B4570,unknown,code not assigned to a module
+tagtype,0x006B4570,0x006B4EA0,tibsun,"functions compiled from src/tagtype.cpp, matched, without gaps; six placed by the gap"
+unk_006B4EA0,0x006B4EA0,0x006B54A0,unknown,code not assigned to a module
 target,0x006B54A0,0x006B6660,tibsun,"functions compiled from src/target.cpp, matched, without gaps; 18 placed by the gap"
 unk_006B6660,0x006B6660,0x006BAE00,unknown,code not assigned to a module
 unk_006BAE00,0x006BAE00,0x006BAE60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
