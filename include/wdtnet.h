@@ -308,11 +308,11 @@ enum {
 							+ size_of(WDTTerritory, UserModBooleans),
 };
 
-class WDTState {
+class WDTState : public ReferenceCounted { // RA2: ReferenceCounted
 	public:
 		WDTState(void);
 		WDTState(void *data);
-		~WDTState(void);
+		virtual ~WDTState(void);
 
 		bool Has_Owner_History(void);
 		bool Is_Previous_Cycle(void);
