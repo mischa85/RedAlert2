@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -54,11 +55,19 @@ class InfantryTypeClass : public TechnoTypeClass
 		int FireLaunch;
 		int ProneLaunch;
 
+		TypeList<AnimTypeClass const *> DeadBodies; // RA2: +0xBA4
+
+		TypeList<AnimTypeClass const *> DeathAnims; // RA2: +0xBC0
+
 		/*
 		 * These are the incidental voices this soldier mutters -- the first is idle chatter
 		 * for when it is left unselected, the second a remark spoken as it leaves a transport.
 		 */
 		TypeList<int> VoiceComment;
+
+		int EnterWaterSound; // RA2: +0xBF8
+
+		int LeaveWaterSound; // RA2: +0xBFC
 
 		/*
 		 * If this infantry type is a cyborg, then this flag will be true. A cyborg blows
@@ -66,6 +75,16 @@ class InfantryTypeClass : public TechnoTypeClass
 		 * and unlike flesh and blood it is susceptible to an EM pulse.
 		 */
 		bool IsCyborg;
+
+		bool NotHuman; // RA2: +0xC01
+
+		bool Ivan; // RA2: +0xC02
+
+		int DetectionDistance; // RA2: +0xC04; read from DetectionDistance
+
+		bool Occupier; // RA2: +0xC08
+
+		bool Assaulter; // RA2: +0xC09
 
 		/*
 		 * If this infantry type is immune to fear, then this flag will be true. Such a soldier
@@ -119,13 +138,6 @@ class InfantryTypeClass : public TechnoTypeClass
 		bool IsEngineer;
 
 		/*
-		 * If this infantry type masquerades as somebody else, then this flag will be true. To
-		 * every house but its owner it is drawn and named as the Disguise rule's type, and no
-		 * enemy will willingly shoot at it.
-		 */
-		bool IsDisguised;
-
-		/*
 		 * If this infantry type spies on a building instead of capturing it, then this flag
 		 * will be true. Walking into an enemy structure hands its intelligence over to the
 		 * agent's house and consumes the agent.
@@ -153,18 +165,7 @@ class InfantryTypeClass : public TechnoTypeClass
 		 */
 		bool IsDoggie;
 
-		/*
-		 * If this infantry type gets about on a jump jet, then this flag will be true. While
-		 * airborne it ignores the terrain below it entirely, but an ion storm grounds it and
-		 * puts it back to walking.
-		 */
-		bool IsJumpJet;
-
-		/*
-		 * If this infantry type shrugs off webbing weapons, then this flag will be true.
-		 * Everyone else is snared in place and struggles for as long as the warhead specifies.
-		 */
-		bool IsWebImmune;
+		bool Deployer; // RA2: +0xC16
 
 		/*
 		**	This is the explicit infantry type class constructor.
