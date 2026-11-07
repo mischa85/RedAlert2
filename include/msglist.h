@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -136,8 +137,8 @@ class MessageListClass {
 		TextLabelClass * Add_Edit(int color, TextPrintType style,
 			char *to, char cursor = 0, int width = 640);
 		void Remove_Edit (void);
-		char * Get_Edit_Buf (void);
-		char * Get_Overflow_Buf (void) {return(OverflowBuf);}
+		wchar_t * Get_Edit_Buf (void); // RA2: wide
+		wchar_t * Get_Overflow_Buf (void) {return(OverflowBuf);} // RA2: wide
 		void Clear_Overflow_Buf (void) {OverflowBuf[0] = 0;}
 		int Is_Edit(void) {return(IsEdit);}
 		void Set_Edit_Color(int color);
@@ -187,8 +188,8 @@ class MessageListClass {
 		int EditX;                                      // x-coord of edit field
 		int EditY;                                      // y-coord of edit field
 		TextLabelClass *EditLabel;                      // ptr to current edit label
-		char EditBuf[MAX_MESSAGE_LENGTH + 50];          // buffer for editable message
-		char OverflowBuf[MAX_MESSAGE_LENGTH + 50];      // overflow area
+		wchar_t EditBuf[MAX_MESSAGE_LENGTH + 50]; // RA2: wide          // buffer for editable message
+		wchar_t OverflowBuf[MAX_MESSAGE_LENGTH + 50]; // RA2: wide      // overflow area
 		int EditCurPos;                                 // current edit position
 		int EditInitPos;                                // initial edit position
 		char CursorChar;                                // character to use a cursor
@@ -201,8 +202,8 @@ class MessageListClass {
 		// both the message, and for the "To" prefix on edited messages, or
 		// the "Name:" prefix on received messages.
 		//.....................................................................
-		char MessageBuffers[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH + 50];
-		char BufferAvail[MAX_NUM_MESSAGES];
+		wchar_t MessageBuffers[MAX_NUM_MESSAGES][MAX_MESSAGE_LENGTH + 50]; // RA2: wide, at +0x2C8
+		wchar_t BufferAvail[MAX_NUM_MESSAGES]; // RA2: indexed as words, at +0x1480
 };
 
 /**************************** end of msglist.h *****************************/
