@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -73,12 +74,29 @@ class UDPInterfaceClass : public WinsockInterfaceClass {
 	private:
 
 		/*
+		**	RA2: the UDP port and the sockets bound to the ports tried.
+		*/
+		unsigned short Port; // RA2: +0x3F2FC
+		SOCKET PortSockets[8];
+		unsigned short PortNumbers[8];
+		int PortCount;
+		SOCKET SelectedSocket;
+
+		/*
 		**	Address to use when broadcasting a packet.
 		*/
 		DynamicVectorClass <unsigned char *> BroadcastAddresses;
+		unsigned short BroadcastPorts[256]; // RA2
 
 		/*
 		**	List of local addresses.
 		*/
 		DynamicVectorClass <unsigned char *> LocalAddresses;
+
+		/*
+		**	RA2: the peers' addresses and ports.
+		*/
+		int PeerCount;
+		unsigned int PeerAddresses[16];
+		unsigned short PeerPorts[16];
 };
