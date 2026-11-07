@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -88,9 +89,9 @@ class WWMouseClass : public Mouse {
 		**	Query about the mouse visiblity state and location.
 		*/
 		virtual int Get_Mouse_State(void) const override;
-		virtual int Get_Mouse_X(void) const override {return(MouseX);}
-		virtual int Get_Mouse_Y(void) const override {return(MouseY);}
-		virtual Point2D Get_Mouse_Point(void) const override {return(Point2D(MouseX, MouseY));}
+		virtual int Get_Mouse_X(void) const override {return(CursorX);} // RA2: CursorX
+		virtual int Get_Mouse_Y(void) const override {return(CursorY);} // RA2: CursorY
+		virtual Point2D Get_Mouse_Point(void) const override {return(Point2D(CursorX, CursorY));} // RA2: CursorX/CursorY
 
 		/*
 		**	The following two routines can be used to render the mouse onto an alternate
@@ -119,15 +120,6 @@ class WWMouseClass : public Mouse {
 		int ShapeNumber;
 
 		/*
-		**	Used to prevent conflict between the processing callback and
-		**	the normal mouse processing routines. The only potential conflict
-		**	would be with the maintenance callback routine. Since this callback
-		**	and the mouse class maintain a strict master/slave relationship, a
-		**	simple critial section flag is all that is needed.
-		*/
-		HANDLE MouseMutex;
-
-		/*
 		**	Mouse hide/show state. If zero or greater, the mouse is visible. Otherwise
 		**	it is invisible.
 		*/
@@ -144,8 +136,15 @@ class WWMouseClass : public Mouse {
 		/*
 		**	This is the last recorded mouse position that it was drawn to.
 		*/
-		int MouseX;
-		int MouseY;
+		int MouseX; // RA2: +0x14
+		int MouseY; // RA2: +0x18
+
+		/*
+		**	RA2: the cursor position from the O/S, converted to game coordinates. It is kept
+		**	as last read while the state at 0x522E80 is set, and the mouse queries report it.
+		*/
+		int CursorX; // RA2: +0x1C
+		int CursorY; // RA2: +0x20
 
 		/*
 		**	Points to the main display surface that the mouse will be drawn
