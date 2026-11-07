@@ -245,7 +245,8 @@ class ScenarioClass {
 		/*
 		**	Description of the scenario.
 		*/
-		char Description[DESCRIP_MAX];
+		wchar_t Description[45]; // RA2: wide, +0x940
+		char UIName[32]; // RA2
 
 		/*
 		**	The filename of the introduction movie.
@@ -288,7 +289,8 @@ class ScenarioClass {
 		**	displayed when the player commands the "restate mission
 		**	objectives" operation.
 		*/
-		char BriefingText[1024];
+		wchar_t BriefingText[1024]; // RA2: wide, +0x9D8
+		char BriefingCSF[32]; // RA2
 
 		/*
 		**	This is the theme to start playing at the beginning of the action
@@ -545,6 +547,18 @@ class ScenarioClass {
 		int IonLevelLight;
 
 		/*
+		**	RA2: the lighting a nuke flash fades to. Only the change rate is read from the
+		**	scenario; the rest keep the constructor's values.
+		*/
+		int NukeAmbient; // RA2: +0x22E0
+		int NukeRedTint;
+		int NukeGreenTint;
+		int NukeBlueTint;
+		int NukeGroundLight;
+		int NukeLevelLight;
+		int NukeAmbientChangeRate; // RA2: +0x22F8
+
+		/*
 		 * If a scenario is in the process of being read in, then this flag will be true.
 		 * The game is not running yet, so only the housekeeping the load needs is done.
 		 */
@@ -553,17 +567,7 @@ class ScenarioClass {
 		/// Unused. Round-trips through the scenario INI, but nothing acts on it.
 		int InitTime;
 
-		/*
-		 * This is the expansion pack that must be installed before this scenario can be
-		 * played. It is enabled as the scenario starts so that its rules and art apply.
-		 */
-		AddonType RequiredAddOn;
 
-		/*
-		 * This is the side whose voice set the mission is to be narrated with. If SIDE_NONE,
-		 * then the player's own side supplies the speech instead.
-		 */
-		SideType SpeechSide;
 
 		/*
 		 * This is how far the player has progressed through the campaign's branching map
@@ -578,6 +582,22 @@ class ScenarioClass {
 		 * sequence or a modal screen -- then this flag will be true.
 		 */
 		bool IsInputLocked;
+
+		int ParTimeEasy; // RA2: +0x2308
+		int ParTimeMedium;
+		int ParTimeDifficult;
+		char UnderParTitle[31];
+		char UnderParMessage[31];
+		char OverParTitle[31];
+		char OverParMessage[31];
+		char LSLoadMessage[31];
+		char LSBrief[31];
+		int LS640BriefLocX;
+		int LS640BriefLocY;
+		int LS800BriefLocX;
+		int LS800BriefLocY;
+		char LS640BkgdName[64];
+		char LS800BkgdName[64]; // RA2: the class ends here (0x2460); no LS800BkgdPal
 };
 
 
