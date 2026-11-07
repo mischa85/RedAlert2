@@ -14,6 +14,7 @@
 #include "stimer.h"
 #include "timer.h"
 #include "vector.h"
+#include "widewstring.h"
 
 #include "draw.hh"
 
@@ -167,6 +168,31 @@ class MSFadeAnim : public MSShapeAnim
 		 * see-through, so the siblings behind it must repair themselves over it every pass.
 		 */
 		MS_ANIM_LIST * Anims;
+};
+
+
+class MSBitPrintAnim : public MSAnim
+{
+	public:
+		MSBitPrintAnim(WideWstring const & text, Rect const & rect, bool flag);
+		virtual ~MSBitPrintAnim(void) override;
+
+		virtual bool Advance(Surface * surface, Rect & rect) override;
+		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
+		virtual Rect Get_Rect(void) const override;
+		virtual bool Has_Finished(void) const override;
+
+		void Set_Flag(bool flag);
+
+	protected:
+
+		WideWstring Text;
+
+		Rect Area;
+
+		bool FlagA;
+
+		bool FlagB;
 };
 
 
