@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -49,13 +50,13 @@ class EditClass : public ControlClass
 			ALPHANUMERIC=(int)ALPHA|(int)NUMERIC|(int)MISC
 		};
 
-		EditClass (int id, char * text, int max_len, TextPrintType flags, int x, int y, int w=-1, int h=-1, EditStyle style=ALPHANUMERIC);
+		EditClass (int id, wchar_t * text, int max_len, TextPrintType flags, int x, int y, int w=-1, int h=-1, EditStyle style=ALPHANUMERIC);
 		virtual ~EditClass(void) override;
 
 		virtual void Set_Focus(void) override;
 		virtual int  Draw_Me(int forced) override;
-		virtual void Set_Text(char * text, int max_len);
-		virtual char * Get_Text(void) {return(String);};
+		virtual void Set_Text(wchar_t * text, int max_len);
+		virtual wchar_t * Get_Text(void) {return(String);};
 		void Set_Color (int color) { Color = color; }
 
 		void Set_Read_Only(int rdonly) {IsReadOnly = rdonly;}
@@ -77,7 +78,7 @@ class EditClass : public ControlClass
 		**	Pointer to text staging buffer and the maximum length of the string it
 		**	can contain.
 		*/
-		char *String;
+		wchar_t *String; // RA2: wide
 		int MaxLength;
 
 		/*
@@ -93,7 +94,7 @@ class EditClass : public ControlClass
 
 		virtual int Action (unsigned flags, KeyNumType &key) override;
 		virtual void Draw_Background(void);
-		virtual void Draw_Text(char const * text);
+		virtual void Draw_Text(wchar_t const * text);
 		virtual bool Handle_Key(KeyASCIIType ascii);
 
 	private:
