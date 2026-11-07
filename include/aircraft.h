@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -55,7 +56,7 @@ class AircraftClass : public FootClass, public IFlyControl
 
 		//-----------------------------------------------------------------------------
 		AircraftClass(AircraftTypeClass const * type = NULL, HouseClass * house = NULL);
-		AircraftClass(NoInitClass const & x) : BASECLASS(x), SightTimer(x) {};
+		AircraftClass(NoInitClass const & x) : BASECLASS(x) {};
 		virtual ~AircraftClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
@@ -192,8 +193,9 @@ class AircraftClass : public FootClass, public IFlyControl
 		/// Unused
 		bool IsKamikaze;
 
-		/// Unused
-		bool field_35B;
+		BuildingClass * DockNowHeadingTo; // RA2: +0x5B4
+		bool Unused_5B8; // RA2: set by the constructor and fed to the CRC only
+		bool Unused_5B9; // RA2: set by the constructor and fed to the CRC only
 
 		/*
 		 * If this aircraft is committed to a strafing run, then this flag will be true. It
@@ -202,26 +204,12 @@ class AircraftClass : public FootClass, public IFlyControl
 		 */
 		bool IsLockedStraight;
 
+		char NumParadropsLeft; // RA2: +0x5BB; 5 when constructed
+		bool IsCarryallNotLanding; // RA2: +0x5BC
+		bool IsReturningFromAttackRun; // RA2: +0x5BD
+
 	private:
-		/*
-		**	This timer controls when the aircraft will reveal the terrain around itself.
-		**	When this timer expires and this aircraft has a sight range, then the
-		**	look around process will occur.
-		*/
-		CDTimerClass<FrameTimerClass> SightTimer;
-
-		/*
-		**	Most attack aircraft can make several attack runs. This value contains the
-		**	number of attack runs the aircraft has left. When this value reaches
-		**	zero then the aircraft is technically out of ammo.
-		*/
-		int AttacksRemaining;
-
-		/*
-		 * If the aircraft is at a good point to change orders, then this
-		 * flag will be set to true.
-		 */
-		bool IsReadyToCommence;
+		// RA2: no SightTimer (FootClass has it), AttacksRemaining or IsReadyToCommence
 
 		int Do_MISSION_MOVE_Carryall(void);
 		int Do_MISSION_MOVE_Normal(void);
