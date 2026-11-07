@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -10,6 +11,7 @@
 #pragma once
 
 #include "grphmitm.h"
+#include "wstring.h"
 
 
 class GraphicMenuImageItem : public GraphicMenuItem
@@ -57,5 +59,5 @@ class GraphicMenuImageItem : public GraphicMenuItem
 		 * This is the name of the movie to play when this item is chosen. The movie runs
 		 * after the item's action and the menu waits for it to finish.
 		 */
-		char SelectVQ[64];
+		Wstring SelectVQ; // RA2: a Wstring
 };
