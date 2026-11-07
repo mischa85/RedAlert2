@@ -770,7 +770,9 @@ unk_006B42C0,0x006B42C0,0x006B4570,unknown,code not assigned to a module
 tagtype,0x006B4570,0x006B4EA0,tibsun,"functions compiled from src/tagtype.cpp, matched, without gaps; six placed by the gap"
 unk_006B4EA0,0x006B4EA0,0x006B54A0,unknown,code not assigned to a module
 target,0x006B54A0,0x006B6660,tibsun,"functions compiled from src/target.cpp, matched, without gaps; 18 placed by the gap"
-unk_006B6660,0x006B6660,0x006BAE00,unknown,code not assigned to a module
+unk_006B6660,0x006B6660,0x006B6850,unknown,code not assigned to a module
+taskforc,0x006B6850,0x006B7190,tibsun,"functions compiled from src/taskforc.cpp, matched, without gaps; five placed by the gap"
+unk_006B7190,0x006B7190,0x006BAE00,unknown,code not assigned to a module
 unk_006BAE00,0x006BAE00,0x006BAE60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006BAE60,0x006BAE60,0x006BE950,unknown,code not assigned to a module
 unk_006BE950,0x006BE950,0x006BE9B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
