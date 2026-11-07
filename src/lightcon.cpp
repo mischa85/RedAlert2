@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -55,6 +56,14 @@ DSurfaceColorMode PrimaryColorMode = COLORMODE_INVALID;
 /// <param name="blitters_created">Have the blitters already been created?</param>
 /// <param name="tint_mask">Table flagging which palette entries the tint applies to. NULL
 /// requests the default mask, which tints every color.</param>
+
+
+/*
+**	RA2: the nuke flash. Its state is kept elsewhere.
+*/
+struct NukeFlash {
+	static bool IsFadingIn(void);
+};
 LightConvertClass::LightConvertClass(PaletteClass const & artpalette, PaletteClass const & screenpalette, Surface const & typicalsurface, int red_tint, int green_tint, int blue_tint, bool blitters_created, bool * tint_mask, int intensity_levels) :
 	BASECLASS(artpalette, screenpalette, typicalsurface, intensity_levels, true),
 	ArtPalette(artpalette),
@@ -89,6 +98,17 @@ LightConvertClass::LightConvertClass(PaletteClass const & artpalette, PaletteCla
 				NormalBlueTint = blue_tint;
 			}
 			Apply_Tint(NORMAL_LIGHT * Scen->IonRedTint / 100, NORMAL_LIGHT * Scen->IonGreenTint / 100, NORMAL_LIGHT * Scen->IonBlueTint / 100, true);
+		} else if (NukeFlash::IsFadingIn()) { // RA2: a nuke flash tints with the scenario's nuke lighting
+			if (red_tint == -1) {
+				NormalRedTint = NORMAL_LIGHT;
+				NormalGreenTint = NORMAL_LIGHT;
+				NormalBlueTint = NORMAL_LIGHT;
+			} else {
+				NormalRedTint = red_tint;
+				NormalGreenTint = green_tint;
+				NormalBlueTint = blue_tint;
+			}
+			Apply_Tint(NORMAL_LIGHT * Scen->NukeRedTint / 100, NORMAL_LIGHT * Scen->NukeGreenTint / 100, NORMAL_LIGHT * Scen->NukeBlueTint / 100, true);
 		} else {
 			Apply_Tint(red_tint, green_tint, blue_tint, false);
 		}
