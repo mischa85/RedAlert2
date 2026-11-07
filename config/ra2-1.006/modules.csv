@@ -732,8 +732,7 @@ unk_0069A160,0x0069A160,0x0069A1A0,unknown,code not assigned to a module
 stbuffer,0x0069A1A0,0x0069A430,tibsun,"functions compiled from src/stbuffer.cpp, matched, without gaps"
 stimer,0x0069A430,0x0069A450,tibsun,"functions compiled from src/stimer.cpp, matched, without gaps; two placed by definition order"
 unk_0069A450,0x0069A450,0x0069ADA0,unknown,code not assigned to a module
-unk_0069ADA0,0x0069ADA0,0x0069ADC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0069ADC0,0x0069ADC0,0x0069B010,unknown,code not assigned to a module
+storage,0x0069ADA0,0x0069B010,tibsun,"functions compiled from src/storage.cpp, matched, without gaps; one placed by the gap"
 straw,0x0069B010,0x0069B0C0,tibsun,"functions compiled from src/straw.cpp, matched, without gaps"
 unk_0069B0C0,0x0069B0C0,0x0069F950,unknown,code not assigned to a module
 swizzle,0x0069F950,0x0069FD90,tibsun,"functions compiled from src/swizzle.cpp, matched, without gaps; two placed by the gap"
