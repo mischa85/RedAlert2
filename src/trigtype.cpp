@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -479,7 +480,7 @@ bool TriggerTypeClass::Read_INI(CCINIClass const & ini)
 		token = strtok(NULL, ",");
 		LinkedTo = NULL;
 		if (stricmp(token, "<none>") != 0) {
-			LinkedTo = Find_Or_Make(token);
+			LinkedTo = TFind_Or_Make<TriggerTypeClass>(token, TriggerTypes); // RA2: the template
 		}
 		GivenName = strtok(NULL, ",");
 
@@ -493,16 +494,22 @@ bool TriggerTypeClass::Read_INI(CCINIClass const & ini)
 		token = strtok(NULL, ",");
 		if (token != NULL && atoi(token) != 0) {
 			IsEnabledOnEasy = true;
+		} else {
+			IsEnabledOnEasy = false; // RA2
 		}
 
 		token = strtok(NULL, ",");
 		if (token != NULL && atoi(token) != 0) {
 			IsEnabledOnMedium = true;
+		} else {
+			IsEnabledOnMedium = false; // RA2
 		}
 
 		token = strtok(NULL, ",");
 		if (token != NULL && atoi(token) != 0) {
 			IsEnabledOnHard = true;
+		} else {
+			IsEnabledOnHard = false; // RA2
 		}
 
 		token = strtok(NULL, ",");
@@ -510,17 +517,7 @@ bool TriggerTypeClass::Read_INI(CCINIClass const & ini)
 			Set_To_Inherit(true);
 		}
 
-		if (PlayerPtr != NULL && PlayerPtr->Difficulty == DIFF_EASY && !IsEnabledOnEasy) {
-			IsEnabled = false;
-		}
-
-		if (PlayerPtr != NULL && PlayerPtr->Difficulty == DIFF_NORMAL && !IsEnabledOnMedium) {
-			IsEnabled = false;
-		}
-
-		if (PlayerPtr != NULL && PlayerPtr->Difficulty == DIFF_HARD && !IsEnabledOnHard) {
-			IsEnabled = false;
-		}
+		// RA2: the difficulty flags are applied by TriggerClass as triggers are made.
 
 		if (ini.Get_String(INI_EVENT_NAME, IniName, "", buffer, sizeof(buffer))) {
 			int count = atoi(strtok(buffer, ","));
