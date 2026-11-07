@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -12,6 +13,7 @@
 #include "data.h"
 #include "msanim.h"
 #include "msengine.h"
+#include "refcount.h"
 
 class MSFont;
 class MSAnimEntry;
@@ -24,10 +26,10 @@ template<class T> class DynamicVectorClass;
 
 void WDT_Game_Option_Append_Comma(char *str, int len);
 
-class WDTTerritory {
+class WDTTerritory : public ReferenceCounted { // RA2: ReferenceCounted
 	public:
 		WDTTerritory(void);
-		~WDTTerritory(void);
+		virtual ~WDTTerritory(void);
 
 		bool operator==(const WDTTerritory &that) const { return(Index == that.Index); }
 		bool operator!=(const WDTTerritory &that) const { return(Index != that.Index); }
@@ -82,7 +84,7 @@ class WDTTerritory {
 		/*
 		 * This is the number of veinhole monsters seeded into the battlefield (0 - 5).
 		 */
-		unsigned char Veinholes;
+		int Veinholes; // RA2: +0x18, an int
 
 		/*
 		 * This specifies the terrain the battlefield is generated from -- tundra, desert,
@@ -95,6 +97,8 @@ class WDTTerritory {
 		 * or night.
 		 */
 		unsigned char Time;
+
+		unsigned char Unused_1E; // RA2: read from the territory data after Biome and Time, never used
 
 		/*
 		 * These are the limits the tour places on how much of the battlefield is broken up
