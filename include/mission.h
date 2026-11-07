@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -63,9 +64,11 @@ class MissionClass : public ObjectClass
 		*/
 		MissionType MissionQueue;
 
+		bool IsMissionUnloadStandby; // RA2: before Status, at +0xA4
+
 		int Status;
 
-		bool IsMissionUnloadStandby;
+		int CurrentMissionStartTime; // RA2: +0xAC; the frame the current mission was started
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
