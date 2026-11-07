@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -53,10 +54,10 @@
 #define WINSOCK_MINOR_VER		1   // Version of Winsock
 #define WINSOCK_MAJOR_VER		1   //    that we require
 
-#define WS_RECEIVE_BUFFER_LEN	1024		// Length of our temporary receive buffer.
+#define WS_RECEIVE_BUFFER_LEN	640		// Length of our temporary receive buffer. RA2: 640
 #define SOCKET_BUFFER_SIZE		1024*128	// Length of winsocks internal buffer.
 
-#define WS_INTERNET_BUFFER_LEN	768
+#define WS_INTERNET_BUFFER_LEN	640	// RA2: 640
 
 #define WS_MAX_STATIC_BUFFERS	128
 
@@ -160,11 +161,14 @@ class WinsockInterfaceClass {
 		**	It acts as a temporary control for these packets.
 		*/
 		struct WinsockBufferType {
-			unsigned char		Address [64];                   // Address. IN_ADDR, IPXAddressClass etc.
+			unsigned char		Address [16];                   // Address. IN_ADDR, IPXAddressClass etc. RA2: 16 bytes
 			int					BufferLen;                      // Length of data in buffer
 			bool				IsBroadcast;                    // Flag to broadcast this packet
 			bool				InUse;                          // Useage state of buffer
 			bool				IsAllocated;                    // false means statically allocated.
+			bool				IsAlternate;                    // RA2: +0x17, the packet uses the alternate socket; never read
+			bool				Unused_18;                      // RA2: set from WriteTo's flag, never read
+			unsigned short		SrcPort;                        // RA2: +0x1A, the peer's port
 			unsigned int		CRC;                            // CRC of packet for extra sanity.
 			unsigned char		Buffer[WS_INTERNET_BUFFER_LEN]; // Buffer to store packet in.
 		};
@@ -184,26 +188,32 @@ class WinsockInterfaceClass {
 		/*
 		**	Array of buffers to temporarily store incoming and outgoing packets.
 		*/
+		unsigned int MaxPacketSize; // RA2: +0x04
+
 		DynamicVectorClass <WinsockBufferType *> InBuffers;
 		DynamicVectorClass <WinsockBufferType *> OutBuffers;
+		DynamicVectorClass <WinsockBufferType *> AltOutBuffers; // RA2: the queue of the alternate socket
 
 		/*
 		**	Array of buffers that are always available for incoming packets.
 		*/
 		WinsockBufferType StaticInBuffers[WS_MAX_STATIC_BUFFERS];
 		WinsockBufferType StaticOutBuffers[WS_MAX_STATIC_BUFFERS];
+		WinsockBufferType StaticAltOutBuffers[WS_MAX_STATIC_BUFFERS]; // RA2
 
 		/*
 		**	Pointers to allow circular use of the buffer arrays.
 		*/
 		int InBufferArrayPos;
 		int OutBufferArrayPos;
+		int AltOutBufferArrayPos; // RA2
 
 		/*
 		**	Usage count for each array.
 		*/
 		int InBuffersUsed;
 		int OutBuffersUsed;
+		int AltOutBuffersUsed; // RA2
 
 		/*
 		**	Is Winsock present and initialised?
@@ -214,11 +224,7 @@ class WinsockInterfaceClass {
 		**	Socket that communications will take place over.
 		*/
 		SOCKET				Socket;
-
-		/*
-		**	Async object required for callbacks to our message handler.
-		*/
-		HANDLE				ASync;
+		SOCKET				AlternateSocket; // RA2: there is no ASync handle
 
 		/*
 		**	Temporary receive buffer to use when querying Winsock for incoming packets.
