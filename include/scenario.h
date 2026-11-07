@@ -38,6 +38,7 @@
 #include "ftimer.h"
 #include "random.h"
 #include "special.h"
+#include "stringid.h"
 #include "stimer.h"
 #include "timer.h"
 #include "typelist.h"
@@ -185,12 +186,6 @@ class ScenarioClass {
 		*/
 		Cell Waypoint[WAYPT_COUNT];
 	public:
-		int StartX; // RA2: +0x7C8
-		int StartY; // RA2: +0x7CC
-		int Width; // RA2: +0x7D0
-		int Height; // RA2: +0x7D4
-		int NumberStartingPoints; // RA2: +0x7D8
-		char Unknown_7DC[16]; // RA2: 16 bytes before MissionTimer at +0x7EC
 
 		/*
 		**	This holds the system wide mission countdown timer. Time based missions
@@ -198,7 +193,9 @@ class ScenarioClass {
 		**	this timer. The current value of this timer will display on the game
 		**	screen.
 		*/
-		CDTimerClass<FrameTimerClass> MissionTimer;
+		CDTimerClass<FrameTimerClass> MissionTimer; // RA2: +0x7C8
+		wchar_t const * MissionTimerTextCSF; // RA2: the timer's label, +0x7D4
+		TStringID<31> MissionTimerText; // RA2: +0x7D8
 
 		/*
 		**	The shroud regrowth (if enabled) is regulated by this timer. When the
