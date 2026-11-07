@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -211,6 +212,8 @@ class TeamTypeClass : public AbstractTypeClass
 		 */
 		bool IsDroppod;
 
+		bool IsUseTransportOrigin; // RA2: +0xB1
+
 		/*
 		 * If this team type was manufactured to deliver the player's dropship loadout rather
 		 * than read from the scenario, then this flag will be true.
@@ -258,6 +261,8 @@ class TeamTypeClass : public AbstractTypeClass
 		*/
 		WAYPOINT Origin;
 
+		WAYPOINT TransportOrigin; // RA2: +0xD0
+
 		/*
 		**	This records the number of teams of this type that are currently
 		**	active.
@@ -281,6 +286,12 @@ class TeamTypeClass : public AbstractTypeClass
 		 * rules, so that each one is written back out to the file it was read from.
 		 */
 		INIScopeType Scope;
+
+		int TaskForceMZone; // RA2: +0xE4; the movement zone of all task force members combined
+
+		bool IsReachCheckNeeded; // RA2: +0xE8; the AI checks the enemy base can be reached; off for naval and base defense teams
+
+		bool HasNavalTransport; // RA2: +0xE9; a member is a naval unit with passenger room
 
 		/*
 		 * If the members of this team should steer around danger rather than through it, then
