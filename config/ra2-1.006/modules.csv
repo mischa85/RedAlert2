@@ -182,8 +182,7 @@ counter,0x00491C00,0x00491F00,tibsun,"functions compiled from src/counter.cpp, m
 unk_00491F00,0x00491F00,0x00492140,unknown,code not assigned to a module
 cpoint,0x00492140,0x00493010,tibsun,"functions compiled from src/cpoint.cpp, matched, without gaps; one placed by the gap"
 unk_00493010,0x00493010,0x00493930,unknown,code not assigned to a module
-unk_00493930,0x00493930,0x004939A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004939A0,0x004939A0,0x00493DF0,unknown,code not assigned to a module
+crate,0x00493930,0x00493DF0,tibsun,"functions compiled from src/crate.cpp, matched, without gaps"
 crc,0x00493DF0,0x00494210,tibsun,"functions compiled from src/crc.cpp, matched, without gaps; two placed by definition order"
 crcpipe,0x00494210,0x00494290,tibsun,"functions compiled from src/crcpipe.cpp, matched, without gaps; one object inferred from alphabetical link order"
 crcstraw,0x00494290,0x00494320,tibsun,"functions compiled from src/crcstraw.cpp, matched, without gaps; one object inferred from alphabetical link order"
