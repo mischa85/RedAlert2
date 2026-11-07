@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -54,6 +55,10 @@ class UnitClass;
 class TechnoClass;
 class TerrainClass;
 class IsometricTileTypeClass;
+class BuildingTypeClass; // RA2
+class FootClass; // RA2
+class RadSiteClass; // RA2
+class PixelFXClass; // RA2
 template<class T> class DynamicVectorClass;
 
 typedef DynamicVectorClass<FoggedObjectClass *> FOGGED_OBJECT_LIST;
@@ -110,6 +115,8 @@ class CellClass : public AbstractClass
 		 * detects a unit reaching or crossing a particular place.
 		 */
 		TagClass * Tag;
+
+		BuildingTypeClass * Rubble; // RA2: +0x40
 
 		/*
 		**	The second layer of 'terrain' icons is represented by a simple
@@ -173,8 +180,11 @@ class CellClass : public AbstractClass
 		 * bits let base placement logic tell whose structures already stand here.
 		 */
 		unsigned CloakedBy;
-		unsigned SensedBy;
+		unsigned short SensorsOfHouses[24]; // RA2: +0x7C; replaces SensedBy with a count per house
+		unsigned short DisguiseSensorsOfHouses[24]; // RA2: +0xAC
 		unsigned OccupiedBy;
+
+		FootClass * Jumpjet; // RA2: +0xE0
 
 	private:
 
@@ -189,6 +199,12 @@ class CellClass : public AbstractClass
 		**	The land type of this cell.
 		*/
 		LandType Land;
+
+	public:
+		double RadLevel; // RA2: +0xF0
+		RadSiteClass * RadSite; // RA2: +0xF8
+		PixelFXClass * PixelFX; // RA2: +0xFC
+		int OccupyHeightsCoveringMe; // RA2: +0x100
 
 	public:
 
@@ -342,6 +358,8 @@ class CellClass : public AbstractClass
 		*/
 		unsigned IsCursorHere:1;
 
+		unsigned IsFoundationCopyHere:1; // RA2
+
 		/*
 		**	A mapped cell has some portion of it visible. Maybe it has a shroud piece
 		**	over it and maybe not.
@@ -353,6 +371,12 @@ class CellClass : public AbstractClass
 		**	it at all.
 		*/
 		unsigned IsVisible:1;
+		unsigned : 27; // RA2: the flags above fill one word (+0x12C); the rest follow the counters
+
+		int ShroudCounter; // RA2: +0x130; 1 when constructed
+		int GapsCoveringThisCell; // RA2: +0x134
+		bool VisibilityChanged; // RA2: +0x138
+		unsigned AlliedGapsCoveringThisCell; // RA2: +0x13C; gap generators of the player or an ally covering this cell
 
 		/*
 		 * A visible cell means that it is completely visible with no fog over
