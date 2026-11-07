@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -136,20 +137,6 @@ class WeaponTypeClass : public AbstractTypeClass
 		LEPTON Range;
 
 		/*
-		 * This is the distance the projectile is fueled for, expressed in leptons. A fueled
-		 * projectile burns this down as it flies and detonates when it runs out, so that a
-		 * missile cannot chase an evading target forever.
-		 */
-		LEPTON ProjectileRange;
-
-		/*
-		 * These are the delays, in game frames, between the successive shots of a burst. The
-		 * entry used is chosen by which shot of the burst has just been fired, and an entry
-		 * of -1 leaves that gap to a short random delay instead.
-		 */
-		int BurstDelay[4];
-
-		/*
 		 * This is the closest a target may be before this weapon refuses to fire upon it,
 		 * expressed in leptons. If zero, then the weapon has no minimum range.
 		 */
@@ -164,6 +151,8 @@ class WeaponTypeClass : public AbstractTypeClass
 		**	This is the animation to display at the firing coordinate.
 		*/
 		TypeList<AnimTypeClass const *> Anim;
+
+		AnimTypeClass * AssaultAnim; // RA2: +0xF4
 
 		/*
 		 * This points to the particle system type this weapon spawns when it fires. The
@@ -204,6 +193,10 @@ class WeaponTypeClass : public AbstractTypeClass
 		 */
 		bool UseSparkParticles;
 
+		bool OmniFire; // RA2: +0x107
+
+		bool DistributedWeaponFire; // RA2: +0x108
+
 		/*
 		 * If this weapon fires a railgun beam, then this flag will be true. The beam damages
 		 * everything standing along its line at the instant it is fired, and is drawn as a
@@ -225,23 +218,35 @@ class WeaponTypeClass : public AbstractTypeClass
 		bool IsBright;
 
 		/*
-		 * This is the number of game frames that the laser beam remains drawn for. The beam
-		 * fades toward the end of that time rather than simply vanishing.
-		 */
-		char LaserDuration;
-
-		/*
-		 * If the glow that accompanies the laser beam should be the wider of the two sizes,
-		 * then this flag will be true.
-		 */
-		bool IsBigLaser;
-
-		/*
 		 * If this weapon attacks with a sonic wave rather than a projectile, then this flag
 		 * will be true. The wave rolls out to the target damaging everything it crosses, and
 		 * the firer cannot fire again until it has arrived.
 		 */
 		bool IsSonic;
+
+		bool Spawner; // RA2: +0x10D
+
+		bool LimboLaunch; // RA2: +0x10E
+
+		bool DecloakToFire; // RA2: +0x10F
+
+		bool CellRangefinding; // RA2: +0x110
+
+		bool FireOnce; // RA2: +0x111
+
+		bool NeverUse; // RA2: +0x112
+
+		bool RevealOnFire; // RA2: +0x113
+
+		bool TerrainFire; // RA2: +0x114
+
+		bool SabotageCursor; // RA2: +0x115
+
+		bool DisguiseFireOnly; // RA2: +0x116
+
+		int DisguiseFakeBlinkTime; // RA2: +0x118
+
+		bool Suicide; // RA2: +0x11C
 
 		/*
 		**	Increase the weapon speed if the target is flying.
@@ -276,9 +281,37 @@ class WeaponTypeClass : public AbstractTypeClass
 		bool IsLaser;
 
 		/*
+		 * If the glow that accompanies the laser beam should be the wider of the two sizes,
+		 * then this flag will be true.
+		 */
+		bool IsBigLaser;
+
+		bool IsHouseColor; // RA2: +0x123
+
+		/*
+		 * This is the number of game frames that the laser beam remains drawn for. The beam
+		 * fades toward the end of that time rather than simply vanishing.
+		 */
+		char LaserDuration;
+
+		/*
 		 * If this weapon cannot be fired during an ion storm, then this flag will be true.
 		 */
 		bool IsIonSensitive;
+
+		bool AreaFire; // RA2: +0x126
+
+		bool IsElectricBolt; // RA2: +0x127
+
+		bool DrawBoltAsLaser; // RA2: +0x128
+
+		bool IsAlternateColor; // RA2: +0x129
+
+		bool IsRadBeam; // RA2: +0x12A
+
+		bool IsRadEruption; // RA2: +0x12B
+
+		int RadLevel; // RA2: +0x12C
 };
 
 ArmorType Armor_From_Name(char const * name);
