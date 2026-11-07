@@ -2,6 +2,7 @@
 // Copyright 2026 ra2-decomp contributors
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
+// Changed to RA2 1.006's layout by RedAlert2 contributors, 2026.
 #pragma once
 
 #include "ccfile.h"
@@ -473,8 +474,7 @@ struct AISlotsType {
 	int Difficulties[8];
 	int Countries[8];
 	int Colors[8];
-	int Starts[8];
-	int Allies[8];
+	// RA2: no Starts or Allies; the game options string sends difficulty, country and color per AI
 };
 
 struct GameOptionsType {
@@ -599,10 +599,6 @@ class SessionClass
 		char Handle[MPLAYER_NAME_MAX];
 		int PrefColor;
 		int ColorIdx;
-		int unknown_164;
-		int unknown_168;
-		int unknown_16C;
-		int unknown_170;
 		int House;
 		int idxSide2;
 		int Color;
