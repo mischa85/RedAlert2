@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -56,6 +57,8 @@ class ObjectTypeClass : public AbstractTypeClass
 		**	exists in a separate file, the data is filled in after this object is constructed.
 		*/
 		void const * ImageData;
+
+		bool ImageAllocated; // RA2: +0xA8
 		void const * AlphaImageData;
 
 		/*
@@ -66,6 +69,10 @@ class ObjectTypeClass : public AbstractTypeClass
 		VoxelDataStruct Voxel;
 		VoxelDataStruct AuxVoxel;
 		VoxelDataStruct AuxVoxel2;
+
+		VoxelDataStruct ChargerTurrets[15]; // RA2: +0xC8; one per weapon, fifteen as in RA2's weapon limit
+		VoxelDataStruct ChargerBarrels[15]; // RA2: +0x140
+		bool NoSpawnAlt; // RA2: +0x1B8
 
 		/*
 		 * This is the largest dimension of this object type's artwork in pixels -- the widest
@@ -80,12 +87,17 @@ class ObjectTypeClass : public AbstractTypeClass
 		 */
 		VocType CrushSound;
 
+		int AmbientSound; // RA2: +0x1C4
+
 		/*
 		**	This is the base name of the graphic data associated with this object
 		**	type. If the graphic name is a null string, then there is no graphic
 		**	associated with this object type.
 		*/
 		TStringID<24> GraphicName;
+
+		bool AlternateArcticArt; // RA2: +0x1E1
+		bool ArcticArtInUse; // RA2: +0x1E2
 		TStringID<24> AlphaGraphicName;
 
 		/*
@@ -99,6 +111,8 @@ class ObjectTypeClass : public AbstractTypeClass
 		**	can travel over this object and destroy it in the process.
 		*/
 		bool IsCrushable;
+
+		bool IsBombable; // RA2: +0x1FE
 
 		/*
 		**	Does this object type NOT show up on radar scans?  If true, then in any
@@ -174,6 +188,10 @@ class ObjectTypeClass : public AbstractTypeClass
 		 * move into it, is destroyed outright.
 		 */
 		bool IsIgnoresFirestorm;
+
+		bool UseLineTrail; // RA2: +0x20A
+		RGBClass LineTrailColor; // RA2: +0x20B
+		int LineTrailColorDecrement; // RA2: +0x210
 
 		/*
 		 * These are the caches of rendered voxel images -- one per model, plus one for the
