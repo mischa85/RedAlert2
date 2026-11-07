@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -267,6 +268,8 @@ class IPXManagerClass : public ConnManClass
 		int Glb_NumPackets;					// # Global send/receive packets
 		int Pvt_MaxPacketLen;				// Private Channel maximum packet size
 		int Pvt_NumPackets;					// # Private send/receive packets
+		int Lobby_MaxPacketLen;				// RA2: Lobby Channel maximum packet size
+		int Lobby_NumPackets;				// RA2: # Lobby send/receive packets
 
 		/*.....................................................................
 		The ProductID is used in the Global Channel's packet header, and it's
@@ -286,6 +289,8 @@ class IPXManagerClass : public ConnManClass
 		IPXConnClass * Connection[CONNECT_MAX]; // array of connection object ptrs
 		int NumConnections;                     // # connection objects in use
 		IPXGlobalConnClass *GlobalChannel;      // the Global Channel
+		IPXGlobalConnClass *LobbyChannel;       // RA2
+		IPXConnClass *MulticastChannel;         // RA2
 
 		/*.....................................................................
 		Current queue for polling for received packets
@@ -298,6 +303,9 @@ class IPXManagerClass : public ConnManClass
 		unsigned int RetryDelta;
 		unsigned int MaxRetries;
 		unsigned int Timeout;
+		unsigned int SavedRetryDelta;		// RA2
+		unsigned int SavedMaxRetries;		// RA2
+		unsigned int SavedTimeout;			// RA2
 
 		/*---------------------------------------------------------------------
 		Real-mode memory pointers and such
