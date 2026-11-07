@@ -790,7 +790,9 @@ unk_0070AB40,0x0070AB40,0x0070B690,unknown,code not assigned to a module
 unk_0070B690,0x0070B690,0x0070B7D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0070B7D0,0x0070B7D0,0x0070B7F0,unknown,code not assigned to a module
 unk_0070B7F0,0x0070B7F0,0x0070B820,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0070B820,0x0070B820,0x0070EFC0,unknown,code not assigned to a module
+unk_0070B820,0x0070B820,0x0070C440,unknown,code not assigned to a module
+utracker,0x0070C440,0x0070C610,tibsun,"functions compiled from src/utracker.cpp, matched, without gaps; two placed by the gap"
+unk_0070C610,0x0070C610,0x0070EFC0,unknown,code not assigned to a module
 vector,0x0070EFC0,0x0070F3B0,tibsun,"functions compiled from src/vector.cpp, matched, without gaps"
 unk_0070F3B0,0x0070F3B0,0x00710B50,unknown,code not assigned to a module
 unk_00710B50,0x00710B50,0x00710BB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
