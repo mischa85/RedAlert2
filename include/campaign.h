@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -58,14 +59,7 @@ class CampaignClass : public AbstractTypeClass
 		 * This is the campaign's title as it appears in the mission selection list. Until the
 		 * rules supply one, it is borrowed from the campaign's given name.
 		 */
-		char Description[128];
-
-		/*
-		 * This is the expansion that the campaign belongs to. The campaign is only offered to
-		 * the player when that expansion is enabled; ADDON_BASE_GAME means it is always
-		 * available.
-		 */
-		int RequiredAddon;
+		wchar_t Description[128]; // RA2: wide, read from Description unless DebugOnly is set
 };
 
 void Read_Battle_INI(CCINIClass const & ini);
