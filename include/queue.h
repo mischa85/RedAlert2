@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -40,6 +41,7 @@
 
 #include "mission.h"
 #include "target.h"
+#include "win.h"
 
 /*
 **	This class implements a classic FIFO queue (also known as - standing in line). Objects
@@ -110,6 +112,7 @@ class QueueClass
 		int Tail;								// Index where next new addition will go.
 
 		T Array[size];							// Raw array of objects.
+		unsigned long Timings[size];			// RA2: the time each object was added (timeGetTime)
 };
 
 
@@ -178,6 +181,7 @@ inline int QueueClass<T,size>::Add(T const &q)
 {
 	if (Count < size) {
 		Array[Tail] = q;
+		Timings[Tail] = timeGetTime(); // RA2
 		Tail = (Tail + 1) & (size-1);
 		((int &)Count) = Count + 1;
 		return(true);
