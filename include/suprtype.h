@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -124,6 +125,12 @@ class SuperWeaponTypeClass : public AbstractTypeClass
 		 * An owner short of power suspends the charging rather than losing the weapon.
 		 */
 		bool IsPowered;
+
+		bool DisableableFromShell; // RA2: +0xDF
+		bool PreClick; // RA2: +0xE0
+		bool PostClick; // RA2: +0xE1
+		int PreDependent; // RA2: +0xE4
+		bool ShowTimer; // RA2: +0xE8
 
 		/*
 		 * If this super weapon is charged by hand rather than by the passage of time, then
