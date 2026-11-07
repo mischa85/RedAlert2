@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -65,6 +66,7 @@ class CargoClass {
 		bool Is_Something_Attached(void) const {return(CargoHold != 0);};
 		FootClass * Attached_Object(void) const;
 		FootClass * Detach_Object(void);
+		int GetTotalSize(void) const; // RA2
 		void Detach(FootClass * object);
 		void Attach(FootClass * object);
 

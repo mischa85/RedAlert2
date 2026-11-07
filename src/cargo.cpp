@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -191,6 +192,27 @@ FootClass * CargoClass::Attached_Object(void) const
 }
 
 
+// RA2: the total cargo size of the attached objects
+int CargoClass::GetTotalSize(void) const
+{
+	int count = Quantity;
+	FootClass * object = CargoHold;
+	int total = 0;
+	if (object != NULL) {
+		FootClass * o = Is_Something_Attached() ? CargoHold : NULL;
+		if (o != NULL) {
+			int i = 0;
+			while (i < count && o != NULL) {
+				total = (int)((double)total + o->Techno_Type_Class()->Size);
+				o = (FootClass *)(ObjectClass *)o->Next;
+				i++;
+			}
+		}
+	}
+	return total;
+}
+
+
 /// <summary>
 /// Removes a specific object from the cargo hold.
 /// This routine will unlink the object from the passenger list wherever it happens to sit
@@ -203,7 +225,7 @@ void CargoClass::Detach(FootClass * object)
 	if (object != NULL && CargoHold != NULL) {
 		if (CargoHold == object) {
 			CargoHold = (FootClass *)CargoHold->Next;
-			object->Next = NULL;
+			// RA2: the detached object's Next is left as it is
 		} else {
 			FootClass * o = CargoHold;
 			if (o->Next != NULL) {
@@ -212,7 +234,7 @@ void CargoClass::Detach(FootClass * object)
 					if (o->Next == NULL) return;
 				}
 				o->Next = o->Next->Next;
-				object->Next = NULL;
+				// RA2: the detached object's Next is left as it is
 			}
 		}
 	}
