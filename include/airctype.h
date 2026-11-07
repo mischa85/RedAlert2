@@ -78,7 +78,7 @@ class AircraftTypeClass : public TechnoTypeClass
 
 		static AircraftTypeClass * Find_Or_Make(char const * name);
 		static AircraftType From_Name(char const * name);
-		static void Init(TheaterType ); // RA2: defined in airctype.cpp
+		static void Init(TheaterType ) {};
 		static void One_Time(void);
 
 		virtual bool Read_INI(CCINIClass const & ini) override;

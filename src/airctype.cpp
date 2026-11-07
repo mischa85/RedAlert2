@@ -241,12 +241,6 @@ Cell const * AircraftTypeClass::Occupy_List(bool) const
 }
 
 
-// RA2: no per-theater setup for aircraft.
-void AircraftTypeClass::Init(TheaterType)
-{
-}
-
-
 /***********************************************************************************************
  * AircraftTypeClass::Create_And_Place -- Creates and places aircraft using normal game system *
  *                                                                                             *
