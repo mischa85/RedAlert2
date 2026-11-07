@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -88,10 +89,9 @@ IndexClass<int, AbstractClass *> TargetTracker;
 TargetClass::TargetClass(AbstractClass const * ptr)
 {
 	if (ptr != NULL) {
-		const CellClass *cellptr = ptr->As_CellClass();
-		if (cellptr != NULL) {
+		if (ptr->Fetch_RTTI() == RTTI_CELL) { // RA2: Fetch_RTTI instead of As_CellClass
 			RTTI = RTTI_CELL;
-			Cell cell = cellptr->CellID;
+			Cell cell = ((CellClass const *)ptr)->CellID;
 			ID = (cell.X + (1000 * cell.Y));
 		} else {
 			RTTI = RTTI_ABSTRACT;
