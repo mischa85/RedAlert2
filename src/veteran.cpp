@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -159,6 +160,19 @@ bool VeterancyClass::Is_Dumbass(void) const
 bool VeterancyClass::Is_Elite(void) const
 {
 	return(Experience >= 2);
+}
+
+
+/// <summary>
+/// RA2: Fetches the number of promotions the unit has still to earn.
+/// </summary>
+/// <returns>Returns with 0 when elite, 1 when veteran, otherwise 2.</returns>
+int VeterancyClass::Remaining_Levels(void) const
+{
+	if (Experience >= 2) {
+		return(0);
+	}
+	return(Experience >= 1 ? 1 : 2);
 }
 
 

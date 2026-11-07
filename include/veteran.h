@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -58,6 +59,7 @@ class VeterancyClass
 		bool Is_Rookie(void) const;
 		bool Is_Veteran(void) const;
 		bool Is_Elite(void) const;
+		int Remaining_Levels(void) const; // RA2
 
 		/*
 		 * Modifies the value based on the current XP level (unused).
