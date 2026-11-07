@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -151,6 +152,8 @@ class BulletClass : public ObjectClass
 		 */
 		bool IsLaunching;
 
+		int CourseLockCounter; // RA2: +0xF0
+
 		/*
 		**	This is the target of the projectile. It is especially significant for those projectiles
 		**	that home in on a target.
@@ -162,12 +165,16 @@ class BulletClass : public ObjectClass
 		*/
 		int MaxSpeed;
 
+		int InheritedColor; // RA2: +0xFC
+
 		/*
 		 * Warm-up counter for the closure stall detector; counts the frames that
 		 * SmoothedClosure has plainly accumulated before it switches over to the
 		 * moving average form.
 		 */
 		int ClosureSamples;
+
+		int Unused_104; // RA2: never used
 
 		/*
 		 * Smoothed measure of how quickly a homing projectile is closing on its
@@ -193,6 +200,20 @@ class BulletClass : public ObjectClass
 		 * reaches zero it is reloaded from the animation rate of the projectile type.
 		 */
 		unsigned char AnimRate;
+
+		WeaponTypeClass * WeaponType; // RA2: +0x118
+
+		Coord SourceCoords; // RA2: +0x11C
+
+		Coord TargetCoords; // RA2: +0x128
+
+		Cell LastMapCoords; // RA2: +0x134
+
+		int DamageMultiplier; // RA2: +0x138
+
+		AnimClass * NextAnim; // RA2: +0x13C
+
+		bool SpawnNextAnim; // RA2: +0x140
 
 		/*
 		 * This is how much farther the projectile may travel, expressed in leptons. It only
