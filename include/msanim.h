@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -159,6 +160,8 @@ class MSFadeAnim : public MSShapeAnim
 		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
 
 	protected:
+		unsigned FadeStage; // RA2: +0x40, index into the fade shape flags, 4 once faded
+
 		/*
 		 * Pointer to the list of anims this one shares the screen with. The shape is drawn
 		 * see-through, so the siblings behind it must repair themselves over it every pass.
