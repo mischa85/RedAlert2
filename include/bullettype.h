@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -49,10 +50,11 @@ class BulletTypeClass : public ObjectTypeClass
 		 */
 		bool IsFloater;
 
-		/*
-		**	Does this bullet type fly over walls?
-		*/
-		bool IsHigh;
+		bool SubjectToCliffs; // RA2: +0x266
+
+		bool SubjectToElevation; // RA2: +0x267
+
+		bool SubjectToWalls; // RA2: +0x268
 
 		/*
 		 * If this homing projectile cruises at extra altitude, then this flag will be true. It
@@ -80,6 +82,8 @@ class BulletTypeClass : public ObjectTypeClass
 		**	true. Dropping projectiles do not calculate collision with terrain (such as walls).
 		*/
 		bool IsDropping;
+
+		bool Level; // RA2: +0x26D
 
 		/*
 		**	Is this projectile invisible?  Some bullets and weapon effects are not directly
@@ -115,6 +119,8 @@ class BulletTypeClass : public ObjectTypeClass
 		*/
 		bool IsInaccurate;
 
+		bool FlakScatter; // RA2: +0x273
+
 		/*
 		**	If this bullet can be fired on aircraft, then this flag will be true.
 		*/
@@ -143,18 +149,7 @@ class BulletTypeClass : public ObjectTypeClass
 		 */
 		bool IsAnimPalette;
 
-		/*
-		 * If this projectile breaks up into smaller projectiles when it detonates, then this
-		 * flag will be true. Rather than repeat its own warhead it fires Cluster bomblets of
-		 * the AirburstWeapon straight down onto targets near the point of impact.
-		 */
-		bool IsSplits;
-
-		/*
-		 * If this bullet may only be fired upon vehicles, then this flag will be true. It
-		 * overrides the IsAntiAircraft and IsAntiGround flags when threats are evaluated.
-		 */
-		bool IsAntiVehicle;
+		bool FirersPalette; // RA2: +0x279
 
 		/*
 		 * This is the number of separate detonations this projectile produces. An ordinary
@@ -168,6 +163,14 @@ class BulletTypeClass : public ObjectTypeClass
 		 * bomblet carries that weapon's projectile, damage, warhead and range, not this one's.
 		 */
 		WeaponTypeClass *AirburstWeapon;
+
+		WeaponTypeClass *ShrapnelWeapon; // RA2: +0x284
+
+		int ShrapnelCount; // RA2: +0x288
+
+		int DetonationAltitude; // RA2: +0x28C
+
+		bool Vertical; // RA2: +0x290
 
 		/*
 		 * This is the fraction of its speed that a bouncy projectile keeps when it rebounds
@@ -203,12 +206,13 @@ class BulletTypeClass : public ObjectTypeClass
 		*/
 		int ROT;
 
-		/*
-		 * This is the chance (0.0 - 1.0) that a bomblet released by a splitting projectile
-		 * keeps the carrier's own target. Otherwise it picks at random from the objects
-		 * standing near the point of impact, which spreads the cluster over the group.
-		 */
-		float RetargetAccuracy;
+		int CourseLockDuration; // RA2: +0x2B0
+
+		int SpawnDelay; // RA2: +0x2B4
+
+		int ScaledSpawnDelay; // RA2: +0x2B8
+
+		bool Scalable; // RA2: +0x2BC
 
 		/*
 		**	Some projectiles have a built in arming distance that must elapse before the
@@ -226,12 +230,7 @@ class BulletTypeClass : public ObjectTypeClass
 		unsigned char AnimHigh;
 		unsigned char AnimRate;
 
-		/*
-		**	If this bullet is of the tumbling type, then this is the modulo to factor
-		**	into the game frame when determining what shape number to use for the
-		**	imagery.
-		*/
-		int Tumble;
+		bool Flat; // RA2: +0x2C7
 
 		//---------------------------------------------------------------------
 		BulletTypeClass(NoInitClass const & x);
