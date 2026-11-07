@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -40,6 +41,7 @@
 class UnitClass;
 class BuildingClass;
 class WaypointClass;
+class ParasiteClass; // RA2
 struct PathStruct;
 
 
@@ -86,6 +88,10 @@ class FootClass : public TechnoClass
 		 */
 		int TotalFramesWalked;
 
+		bool IsMoveSoundPlaying; // RA2: +0x434
+		int MoveSoundDelay; // RA2: +0x438
+		AudioController MoveSoundAudioController; // RA2: +0x43C
+
 		/*
 		 * This is the cell this object was standing in when it last found a path, or the
 		 * cell it is currently stepping toward once a locomotor takes over. A faster object
@@ -103,6 +109,8 @@ class FootClass : public TechnoClass
 		 * new cell, at which point the old credits are withdrawn and applied to the new one.
 		 */
 		Cell LastAdjacencyCell;
+
+		Cell LastFlightMapCoords; // RA2: +0x458; the cell the aircraft tracker last filed this object under
 
 		/*
 		 * While the object is traveling through a tunnel, this is the coordinate of the
@@ -136,6 +144,8 @@ class FootClass : public TechnoClass
 		**	This is the desired destination of the unit. The unit will attempt to head
 		**	toward this target (avoiding intervening obstacles).
 		*/
+		AbstractClass * FollowTarget; // RA2: +0x490; the Follow object of a MegaMission order; cleared by Assign_Destination
+
 		AbstractClass * NavCom;
 		AbstractClass * SuspendedNavCom;
 
@@ -144,6 +154,12 @@ class FootClass : public TechnoClass
 		**	stores as an array of movement targets.
 		*/
 		DynamicVectorClass<AbstractClass *> NavQueue;
+
+		MissionType MegaMission; // RA2: +0x4B4
+		AbstractClass * MegaDestination; // RA2: +0x4B8
+		AbstractClass * MegaTarget; // RA2: +0x4BC
+		unsigned char Unused_4C0; // RA2: never used
+		bool HasAttackMoveTarget; // RA2: +0x4C1
 
 		/*
 		**	This points to the team that "owns" this object. This pointer is used to
@@ -193,6 +209,8 @@ class FootClass : public TechnoClass
 		**	for help from the same attacker.
 		*/
 		CDTimerClass<FrameTimerClass> BaseAttackTimer;
+
+		CDTimerClass<FrameTimerClass> SightTimer; // RA2: +0x54C
 
 		/*
 		 * When the object first finds another object standing in its way, this timer is
@@ -299,6 +317,15 @@ class FootClass : public TechnoClass
 		**	critical to the firing logic.
 		*/
 		bool IsFiring;
+
+		bool IsOverpowering; // RA2: +0x57E; set when an ElectricAssault weapon picks an adjacent building to overpower
+
+		FootClass * ParasiteEatingMe; // RA2: +0x580
+		int LastBeParasitedStartFrame; // RA2: +0x584
+		ParasiteClass * ParasiteImUsing; // RA2: +0x588
+		CDTimerClass<FrameTimerClass> ParalysisTimer; // RA2: +0x58C
+
+		bool IsMoveToSkipped; // RA2: +0x598; skips the next locomotor Move_To once; nothing sets it
 
 		/*
 		**	This unit could be either rotating its body or rotating its turret. During the
