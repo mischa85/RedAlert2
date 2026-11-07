@@ -793,13 +793,9 @@ unk_00713160,0x00713160,0x00713170,unknown,code not assigned to a module
 unk_00713170,0x00713170,0x007131B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_007131B0,0x007131B0,0x007131D0,unknown,code not assigned to a module
 unk_007131D0,0x007131D0,0x00713300,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00713300,0x00713300,0x00713420,unknown,code not assigned to a module
-unk_00713420,0x00713420,0x00713440,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00713440,0x00713440,0x00713470,unknown,code not assigned to a module
-unk_00713470,0x00713470,0x00713510,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00713510,0x00713510,0x00713520,unknown,code not assigned to a module
-unk_00713520,0x00713520,0x00713580,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00713580,0x00713580,0x00715090,unknown,code not assigned to a module
+unk_00713300,0x00713300,0x00713360,unknown,code not assigned to a module
+veteran,0x00713360,0x007135A0,tibsun,"functions compiled from src/veteran.cpp, matched, without gaps; three placed by the gap; ?Ability_From_Name@@YI?AW4AbilityType@@PBD@Z not placed; ??0VeterancyClass@@QAE@XZ not placed; ??1VeterancyClass@@QAE@XZ not placed"
+unk_007135A0,0x007135A0,0x00715090,unknown,code not assigned to a module
 volinfo,0x00715090,0x00715230,tibsun,"functions compiled from src/volinfo.cpp, matched, without gaps"
 unk_00715230,0x00715230,0x007166C0,unknown,code not assigned to a module
 unk_007166C0,0x007166C0,0x00716720,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
