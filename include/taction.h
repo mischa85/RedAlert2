@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -112,6 +113,8 @@ class TActionClass : public AbstractClass
 		 */
 		WAYPOINT EffectLocation;
 
+		int Value2; // RA2: +0x48
+
 		/*
 		 * This points to the tag type this action names, for the actions that work upon a tag
 		 * rather than upon an object. If NULL, then this action does not concern a tag.
@@ -119,6 +122,8 @@ class TActionClass : public AbstractClass
 		TagTypeClass * Tag;
 
 		TriggerTypeClass * Trigger;	// Trigger type pointer for this action (if needed).
+
+		TStringID<31> Text; // RA2: +0x54; the action's text argument
 
 		union {
 			ThemeType					Theme;		// Musical theme.
