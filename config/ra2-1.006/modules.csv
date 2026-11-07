@@ -167,7 +167,9 @@ unk_00482F20,0x00482F20,0x00482F60,unknown,code not assigned to a module
 unk_00482F60,0x00482F60,0x00482F80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00482F80,0x00482F80,0x00483430,unknown,code not assigned to a module
 control,0x00483430,0x00483560,tibsun,"functions compiled from src/control.cpp, matched, without gaps; one placed by the gap"
-unk_00483560,0x00483560,0x00491620,unknown,code not assigned to a module
+unk_00483560,0x00483560,0x00483650,unknown,code not assigned to a module
+convert,0x00483650,0x00486120,tibsun,"functions compiled from src/convert.cpp, matched, without gaps"
+unk_00486120,0x00486120,0x00491620,unknown,code not assigned to a module
 unk_00491620,0x00491620,0x004916D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004916D0,0x004916D0,0x00491880,unknown,code not assigned to a module
 unk_00491880,0x00491880,0x004918F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
