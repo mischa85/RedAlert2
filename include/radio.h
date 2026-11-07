@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -34,6 +35,7 @@
 
 #include "globals.h"
 #include "mission.h"
+#include "vector.h" // RA2: VectorClass
 
 class ObjectClass;
 class TechnoClass;
@@ -62,7 +64,7 @@ class RadioClass : public MissionClass
 		**	the receiving radio is also tuned to the object that contains this
 		**	radio set.
 		*/
-		RadioClass * Radio;
+		VectorClass<TechnoClass *> RadioLinks; // RA2: replaces RadioClass * Radio; +0xC8, one entry when constructed
 
 #ifdef _DEBUG
 		/*
@@ -78,7 +80,7 @@ class RadioClass : public MissionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		RadioClass(void);
-		RadioClass(NoInitClass const & x) : BASECLASS(x) {};
+		RadioClass(NoInitClass const & x) : BASECLASS(x), RadioLinks(x) {};
 		virtual ~RadioClass(void) override {/*Radio=0;*/};
 
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
@@ -86,9 +88,9 @@ class RadioClass : public MissionClass
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
 		*/
-		bool In_Radio_Contact(void) const {return(Radio != 0);};
-		void Radio_Off(void) {Radio = 0;};
-		TechnoClass * Contact_With_Whom(void) const {return((TechnoClass *)Radio);};
+		bool In_Radio_Contact(void) const {return(RadioLinks[0] != 0);};
+		void Radio_Off(void) {RadioLinks[0] = 0;};
+		TechnoClass * Contact_With_Whom(void) const {return(RadioLinks[0]);};
 
 		// Inherited from base class(es).
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
