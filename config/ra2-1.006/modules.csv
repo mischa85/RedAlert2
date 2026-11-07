@@ -792,7 +792,9 @@ unk_006EB180,0x006EB180,0x006EBE90,unknown,code not assigned to a module
 unk_006EBE90,0x006EBE90,0x006EBEB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006EBEB0,0x006EBEB0,0x006ED220,unknown,code not assigned to a module
 trigger,0x006ED220,0x006EDB80,tibsun,"functions compiled from src/trigger.cpp, matched, without gaps; ten placed by the gap"
-unk_006EDB80,0x006EDB80,0x006EEF10,unknown,code not assigned to a module
+unk_006EDB80,0x006EDB80,0x006EDEB0,unknown,code not assigned to a module
+trigtype,0x006EDEB0,0x006EEEC0,tibsun,"functions compiled from src/trigtype.cpp, matched, without gaps; four placed by the gap"
+unk_006EEEC0,0x006EEEC0,0x006EEF10,unknown,code not assigned to a module
 trim,0x006EEF10,0x006EEF80,tibsun,"functions compiled from src/trim.cpp, matched, without gaps"
 unk_006EEF80,0x006EEF80,0x006EF1D0,unknown,code not assigned to a module
 tube,0x006EF1D0,0x006EF910,tibsun,"functions compiled from src/tube.cpp, matched, without gaps; two placed by the gap"
