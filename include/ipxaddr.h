@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -100,6 +101,7 @@ class IPXAddressClass
 	private:
 		NetNumType NetworkNumber;
 		NetNodeType NodeAddress;
+		unsigned short Unused_A; // RA2: +0xA, never accessed; the class is 0xC bytes
 };
 
 
