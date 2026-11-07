@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -69,12 +70,7 @@ class OverlayTypeClass: public ObjectTypeClass
 		*/
 		bool IsWall;
 
-		/*
-		**	If this overlay is actually a wall and this wall type is tall enough that
-		**	normal ground based straight line weapons will be blocked by it, then this
-		**	flag will be true. Brick fences are typical of this type.
-		*/
-		bool IsHigh;
+		// RA2: no IsHigh
 
 		/*
 		**	If this overlay represents harvestable tiberium, then this flag
@@ -147,6 +143,8 @@ class OverlayTypeClass: public ObjectTypeClass
 		 * given a vertical gradient so that objects sort correctly against it.
 		 */
 		bool IsDrawFlat;
+
+		bool IsRubble; // RA2: +0x284
 
 		/*
 		 * If this overlay is a rock formation, then this flag will be true. Rocks skip the
