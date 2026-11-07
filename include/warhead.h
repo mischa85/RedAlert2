@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -80,7 +81,7 @@ class WarheadTypeClass : public AbstractTypeClass
 		**	The warhead damage is reduced depending on the the type of armor the
 		**	defender has. This table is what gives weapons their "character".
 		*/
-		double Modifier[ARMOR_COUNT];
+		double Modifier[11]; // RA2: eleven armor types, not ARMOR_COUNT
 
 		/*
 		 * This is the fraction of the damage that reaches an infantryman who is lying prone,
@@ -111,32 +112,14 @@ class WarheadTypeClass : public AbstractTypeClass
 		**	over distance. The larger the number, the less the damage is reduced
 		**	the further the distance from the source of the damage.
 		*/
-		int SpreadFactor;
+		float SpreadFactor; // RA2: a float, read from CellSpread
 
-		/*
-		 * This is how long, expressed in game frames, an infantryman caught by a "webby"
-		 * warhead stays paralyzed and struggling.
-		 */
-		int WebDuration;
-
-		/*
-		 * The web duration is randomly adjusted by up to this many frames in either
-		 * direction, so that a group of webbed infantry does not break free all at once.
-		 */
-		int WebDurationVariation;
-
-		/*
-		 * This is the radius, expressed in cells, of the area that a "webby" warhead covers
-		 * with web when it detonates.
-		 */
-		int WebRadius;
-
-		/*
-		 * This is the percentage of its speed that a limpet drone robs from the object it
-		 * attaches to (0 - 100), slowing its body and turret rotation by the same amount.
-		 * A value of zero means this warhead carries no limpet at all.
-		 */
-		unsigned int LimpetFactor;
+		float CellInset; // RA2: +0x128
+		float PercentAtMax; // RA2: +0x12C
+		bool CausesDelayKill; // RA2: +0x130
+		int DelayKillFrames; // RA2: +0x134
+		float DelayKillAtMax; // RA2: +0x138
+		float CombatLightSize; // RA2: +0x13C
 
 		/*
 		 * Pointer to the particle system this warhead releases where it detonates. A "webby"
@@ -149,12 +132,7 @@ class WarheadTypeClass : public AbstractTypeClass
 		*/
 		bool IsWallDestroyer;
 
-		/*
-		 * If this warhead entangles infantry in a web rather than damaging them, then this
-		 * flag will be true. Everything caught within the WebRadius is paralyzed and left
-		 * struggling for the duration, and takes no damage at all.
-		 */
-		bool IsWebby;
+		bool WallAbsoluteDestroyer; // RA2: +0x145
 
 		/*
 		**	If this warhead can destroy wooden walls, then this flag will be true.
@@ -177,6 +155,8 @@ class WarheadTypeClass : public AbstractTypeClass
 		 * drops through a damage level.
 		 */
 		bool IsSparky;
+
+		bool Sonic; // RA2: +0x14A
 
 		/*
 		 * If this warhead burns rather than blasts, then this flag will be true. Fire melts
@@ -205,12 +185,30 @@ class WarheadTypeClass : public AbstractTypeClass
 		 */
 		bool IsBright;
 
+		bool CLDisableRed; // RA2: +0x14F
+		bool CLDisableGreen; // RA2: +0x150
+		bool CLDisableBlue; // RA2: +0x151
+
 		/*
 		 * If this warhead detonates as an electromagnetic pulse rather than as a blast, then
 		 * this flag will be true. Its impact animation is also picked at random rather than
 		 * chosen according to the strength of the damage.
 		 */
 		bool IsEMEffect;
+
+		bool MindControl; // RA2: +0x153
+		bool IvanBomb; // RA2: +0x154
+		bool ElectricAssault; // RA2: +0x155
+		bool Parasite; // RA2: +0x156
+		bool Temporal; // RA2: +0x157
+		bool BombDisarm; // RA2: +0x158
+		int Paralyzes; // RA2: +0x15C
+		bool Culling; // RA2: +0x160
+		bool MakesDisguise; // RA2: +0x161
+		bool NukeMaker; // RA2: +0x162
+		bool Radiation; // RA2: +0x163
+		bool PsychicDamage; // RA2: +0x164
+		bool Bullets; // RA2: +0x165
 
 		/*
 		 * If this warhead is what the veins and the veinhole monster attack with, then this
@@ -219,8 +217,9 @@ class WarheadTypeClass : public AbstractTypeClass
 		 */
 		bool IsVeinhole;
 
-		// RA2: WarheadTypeClass is 376 bytes (Warhead_From_Name allocates 376); with RA2's 0x98 byte AbstractTypeClass,
-		// RA2: where the 96 bytes Tiberian Sun does not have lie is not known.
-		int Unknown_118[24];
+		int ShakeXlo; // RA2: +0x168
+		int ShakeXhi; // RA2: +0x16C
+		int ShakeYlo; // RA2: +0x170
+		int ShakeYhi; // RA2: +0x174
 
 };
