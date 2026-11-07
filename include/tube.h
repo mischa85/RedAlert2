@@ -33,7 +33,7 @@ class TubeClass : public AbstractClass
 
 		virtual ~TubeClass(void) override;
 
-		virtual int Fetch_Object_Size(bool) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual RTTIType Fetch_RTTI(void) const override;
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 
