@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -56,6 +57,19 @@ class JumpjetLocomotionClass : public LocomotionClass
 		int Desired_Flight_Level(void) const;
 
 	private:
+		/*
+		 * RA2: copies of the object type's Jumpjet values, taken by Link_To.
+		 */
+		int TurnRate; // RA2: +0x18, JumpjetTurnRate
+		int Speed; // RA2: +0x1C, JumpjetSpeed
+		float Climb; // RA2: +0x20, JumpjetClimb
+		float Crash; // RA2: +0x24, JumpjetCrash
+		int Height; // RA2: +0x28, JumpjetHeight, at least twice a Rules value
+		float Accel; // RA2: +0x2C, JumpjetAccel
+		float Wobbles; // RA2: +0x30, JumpjetWobbles
+		int Deviation; // RA2: +0x34, JumpjetDeviation
+		bool NoWobbles; // RA2: +0x38, JumpjetNoWobbles
+
 		/*
 		 * This is the coordinate the jumpjet is flying to, or COORD_NONE if it has been
 		 * given nowhere to go. A jumpjet pays no attention to the path list and travels
