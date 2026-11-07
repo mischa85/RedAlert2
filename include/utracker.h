@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -57,7 +58,7 @@ class UnitTrackerClass
 		void To_PC_Format(void);
 
 	private:
-		int * UnitTotals;
+		int UnitTotals[512]; // RA2: held inline rather than allocated; the constructor sets UnitCount to 512
 		int UnitCount;
 		int InNetworkFormat;
 };
