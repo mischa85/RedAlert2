@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -167,6 +168,11 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		 */
 		DynamicVectorClass<BuildingClass *> ConYards;
 
+		DynamicVectorClass<BuildingClass *> Buildings; // RA2: +0x68
+		DynamicVectorClass<BuildingClass *> UnitRepairStations; // RA2: +0x80; buildings of a type with UnitRepair=yes
+		DynamicVectorClass<BuildingClass *> CloningVats; // RA2: +0x98; buildings of a type with Cloning=yes
+		DynamicVectorClass<BuildingClass *> PsychicDetectionBuildings; // RA2: +0xB0; buildings of a type with a PsychicDetectionRadius
+
 		/*
 		**	This is the handicap (difficulty level) assigned to this house.
 		*/
@@ -232,6 +238,9 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		**	will generate appropriate units to fill those team types.
 		*/
 		bool IsAlerted;
+
+		bool IsNavalBaseAllowed; // RA2: +0x138; the AI plans naval buildings only while set; cleared when one cannot be placed
+		bool IsShipyardConYardWanted; // RA2: +0x139; an AI MCV then deploys where a shipyard fits too
 
 		/*
 		 * If this house may raise teams from its AI triggers, then this flag will be true. A
@@ -446,6 +455,18 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		*/
 		CDTimerClass<FrameTimerClass> BorrowedTime;
 
+		CDTimerClass<FrameTimerClass> PowerBlackoutTimer; // RA2: +0x1EC
+		CDTimerClass<FrameTimerClass> RadarBlackoutTimer; // RA2: +0x1F8
+		bool Side1TechInfiltrated; // RA2: +0x204; set by a spy entering a tech building of a house whose ActLike is not 0
+		bool Side0TechInfiltrated; // RA2: +0x205; the same for ActLike 0
+		bool BarracksInfiltrated; // RA2: +0x206
+		bool WarFactoryInfiltrated; // RA2: +0x207
+		unsigned InfantryAltOwner; // RA2: +0x208
+		unsigned UnitAltOwner; // RA2: +0x20C
+		unsigned AircraftAltOwner; // RA2: +0x210
+		unsigned BuildingAltOwner; // RA2: +0x214
+		int AirportDocks; // RA2: +0x218; the docks of this house's air pads
+
 		/*
 		**	Record of gains and losses for this house during the course of the
 		**	scenario.
@@ -459,6 +480,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		**	value is used to keep track of ownership limits.
 		*/
 		int CurUnits;
+		int OwnedNavy; // RA2: +0x22C; naval units without passenger room
 		int CurBuildings;
 		int CurInfantry;
 		int CurAircraft;
@@ -477,28 +499,28 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		/*
 		**	Stuff to keep track of the total number of units built by this house.
 		*/
-		UnitTrackerClass * AircraftTotals;
-		UnitTrackerClass * InfantryTotals;
-		UnitTrackerClass * UnitTotals;
-		UnitTrackerClass * BuildingTotals;
+		UnitTrackerClass AircraftTotals; // RA2: held inline, not allocated; AircraftTotals at +0x268
+		UnitTrackerClass InfantryTotals;
+		UnitTrackerClass UnitTotals;
+		UnitTrackerClass BuildingTotals;
 
 		/*
 		**	Total number of units destroyed by this house
 		*/
-		UnitTrackerClass * DestroyedAircraft;
-		UnitTrackerClass * DestroyedInfantry;
-		UnitTrackerClass * DestroyedUnits;
-		UnitTrackerClass * DestroyedBuildings;
+		UnitTrackerClass DestroyedAircraft;
+		UnitTrackerClass DestroyedInfantry;
+		UnitTrackerClass DestroyedUnits;
+		UnitTrackerClass DestroyedBuildings;
 
 		/*
 		**	Total number of enemy buildings captured by this house
 		*/
-		UnitTrackerClass * CapturedBuildings;
+		UnitTrackerClass CapturedBuildings;
 
 		/*
 		**	Total number of crates found by this house
 		*/
-		UnitTrackerClass * TotalCrates;
+		UnitTrackerClass TotalCrates;
 
 		/*
 		**	Records the number of infantry and vehicle factories active. This value is
@@ -508,6 +530,8 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		int InfantryFactories;
 		int UnitFactories;
 		int BuildingFactories;
+		int NumShipyards; // RA2: +0x52C8
+		int NumOrePurifiers; // RA2: +0x52CC
 
 		/*
 		**	This is the accumulation of the total power and drain factors. From these
@@ -524,7 +548,30 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		FactoryClass * AircraftFactory;
 		FactoryClass * InfantryFactory;
 		FactoryClass * UnitFactory;
+		FactoryClass * Primary_ForShips; // RA2: +0x52E4
 		FactoryClass * BuildingFactory;
+		FactoryClass * Primary_Unused1; // RA2: +0x52EC
+		FactoryClass * Primary_Unused2; // RA2
+		FactoryClass * Primary_Unused3; // RA2
+		FactoryClass * Primary_ForDefenses; // RA2: +0x52F8
+
+		/*
+		**	RA2: one per factory above. Set when the player orders production of that kind and
+		**	read and cleared by Begin_Production; in a network game a set flag starts the new
+		**	production ahead by the time the order took to arrive.
+		*/
+		bool AircraftProductionPending; // RA2: +0x52FC
+		bool InfantryProductionPending;
+		bool UnitProductionPending;
+		bool ShipProductionPending;
+		bool BuildingProductionPending;
+		bool Unused1ProductionPending;
+		bool Unused2ProductionPending;
+		bool Unused3ProductionPending;
+		bool DefenseProductionPending; // RA2: +0x5304
+		bool Unused_5305; // RA2: never used
+		bool Unused_5306; // RA2: never used
+		bool Unused_5307; // RA2: never used
 
 		/*
 		**	This target value specifies where the flag is located. It might be a cell
@@ -937,6 +984,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		 * scheme in the pixel format the display is currently running in.
 		 */
 		RGBClass RemapColorRGB;
+		RGBClass LaserColor; // RA2: +0x55EC; white when constructed
 		void Initialize_Radar_Color(void);
 
 		/*
@@ -951,6 +999,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		 */
 		bool RecalcPower;
 		bool RecalcRadar;
+		bool SpySatActive; // RA2: +0x566A
 
 		/*
 		 * This is the cell that this house's EM pulse cannon has been ordered to fire at. The
@@ -1066,6 +1115,10 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		**	This is the name ("handle") the player has chosen for himself.
 		*/
 		TStringID<HOUSE_NAME_MAX> IniName;
+
+		TStringID<31> UINameString; // RA2: +0x15EF5
+		unsigned char : 8; // RA2
+		wchar_t UIName[21]; // RA2: +0x15F16
 
 		/*
 		**	For multiplayer games, each house instance has a remap table; the table
