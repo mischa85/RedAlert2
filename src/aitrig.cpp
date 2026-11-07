@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -24,6 +25,12 @@
 #include "rules.h"
 #include "scenario.h"
 #include "session.h"
+#include "side.h"
+#include "super.h"
+#include "suprtype.h"
+#include "teamtype.h"
+#include "_map.h"
+#include "dbgprint.h"
 #include "sun.h"
 #include "swizzle.h"
 #include "taskforc.h"
@@ -162,8 +169,14 @@ void AITriggerTypeClass::Compute_CRC(CRCEngine & crc) const
 		case AIT_ENEMY_OWNS_X_COND_N:
 		case AIT_HOUSE_OWNS_X_COND_N:
 		case AIT_ENEMY_MONEY_COND_N:
+		case AIT_NEUTRAL_OWNS_X_COND_N: // RA2
 			crc(Params.Number);
 			crc(Params.Condition);
+			break;
+		case AIT_POWER_YELLOW: // RA2
+		case AIT_POWER_RED:
+		case AIT_IRON_CURTAIN_READY:
+		case AIT_CHRONOSPHERE_READY:
 			break;
 	}
 
@@ -263,13 +276,11 @@ bool AITriggerTypeClass::Process(HouseClass *house, HouseClass *enemy, bool skip
 		}
 	}
 
-	if (Session.Type == GAME_NORMAL) {
-		if (TrigHouse == AITRIG_HOUSE_NONE) {
-			return(false);
-		}
-		if (TrigHouse != AITRIG_HOUSE_ALL && TrigHouse == AITRIG_HOUSE_INDEX && house->Class->House != House) {
-			return(false);
-		}
+	if (TrigHouse == AITRIG_HOUSE_NONE) { // RA2: in every game type
+		return(false);
+	}
+	if (TrigHouse != AITRIG_HOUSE_ALL && TrigHouse == AITRIG_HOUSE_INDEX && house->Class->House != House) {
+		return(false);
 	}
 
 	if (MultiSide == 1) {
@@ -307,6 +318,15 @@ bool AITriggerTypeClass::Process(HouseClass *house, HouseClass *enemy, bool skip
 			case AIT_ENEMY_MONEY_COND_N:
 				res = Check_Enemy_Money(house, enemy);
 				break;
+			case AIT_IRON_CURTAIN_READY: // RA2
+				res = IronCurtainCharged(house, enemy);
+				break;
+			case AIT_CHRONOSPHERE_READY: // RA2
+				res = ChronoSphereCharged(house, enemy);
+				break;
+			case AIT_NEUTRAL_OWNS_X_COND_N: // RA2
+				res = CivilianHouseOwns(house, enemy);
+				break;
 		}
 	} else {
 		if (Type == AIT_HOUSE_OWNS_X_COND_N) {
@@ -317,6 +337,13 @@ bool AITriggerTypeClass::Process(HouseClass *house, HouseClass *enemy, bool skip
 	}
 
 	if (!res) {
+		return(false);
+	}
+
+	if (!Can_Reach_Enemy(TeamTypeOne, house, enemy)) { // RA2
+		return(false);
+	}
+	if (TeamTypeTwo != NULL && !Can_Reach_Enemy(TeamTypeTwo, house, enemy)) {
 		return(false);
 	}
 
@@ -372,6 +399,84 @@ bool AITriggerTypeClass::Check_Enemy_Owns(HouseClass *house, HouseClass *enemy)
 
 				case RTTI_AIRCRAFTTYPE:
 					hcount = enemy->AAQuantity.Value(id);
+					break;
+			}
+			count = hcount;
+		} else {
+			count = 0;
+		}
+
+		switch (Params.Condition) {
+			case COND_LT:
+				res = count < Params.Number;
+				break;
+
+			case COND_LE:
+				res = count <= Params.Number;
+				break;
+
+			case COND_EQ:
+				res = count == Params.Number;
+				break;
+
+			case COND_GE:
+				res = count >= Params.Number;
+				break;
+
+			case COND_GT:
+				res = count > Params.Number;
+				break;
+
+			case COND_NE:
+				res = count != Params.Number;
+				break;
+		}
+	}
+
+	return(res);
+}
+
+
+/**
+ *  RA2: Checks the condition against what the civilian (neutral) house owns.
+ */
+bool AITriggerTypeClass::CivilianHouseOwns(HouseClass *house, HouseClass *enemy) const
+{
+	HouseClass *civ = NULL;
+	bool res = false;
+
+	for (int i = 0; i < Houses.Count(); i++) {
+		HouseClass *hptr = Houses[i];
+		if (hptr->Class->Side == SideClass::From_Name("Civilian")) {
+			civ = hptr;
+		}
+	}
+
+	if (civ != NULL) {
+		DebugString("Neutral house is %s", (char const *)civ->Class->IniName);
+
+		int count;
+		TechnoTypeClass *obj = ConditionObject;
+
+		if (obj != NULL) {
+			int id = obj->Fetch_Heap_ID();
+			int hcount = 0;
+			RTTIType rtti = obj->RTTI;
+			switch (rtti) {
+				case RTTI_BUILDINGTYPE:
+					hcount = civ->ABQuantity.Value(id);
+					break;
+
+				case RTTI_UNITTYPE:
+					hcount = civ->AUQuantity.Value(id);
+					break;
+
+				case RTTI_INFANTRYTYPE:
+					hcount = civ->AIQuantity.Value(id);
+					break;
+
+				case RTTI_AIRCRAFTTYPE:
+					hcount = civ->AAQuantity.Value(id);
 					break;
 			}
 			count = hcount;
@@ -517,13 +622,61 @@ bool AITriggerTypeClass::Check_Enemy_Red_Power(HouseClass *house, HouseClass *en
 }
 
 
+/**
+ *  RA2: Checks if the house's Iron Curtain is charged far enough for the AI to use it.
+ */
+bool AITriggerTypeClass::IronCurtainCharged(HouseClass *house, HouseClass *enemy) const
+{
+	if (house != NULL) {
+		for (int i = 0; i < house->SuperWeapon.Count(); i++) {
+			if (house->SuperWeapon[i]->Class->Type == SUPER_IRON_CURTAIN) {
+				SuperClass *super = house->SuperWeapon[i];
+				if (super != NULL && super->Is_Present()) {
+					int remaining = super->Control;
+					double total = super->Class->RechargeTime;
+					if (remaining / total <= 1.0f - Rule->AIMinorSuperReadyPercent) {
+						return(true);
+					}
+				}
+				break;
+			}
+		}
+	}
+	return(false);
+}
+
+
+/**
+ *  RA2: Checks if the house's Chronosphere is charged far enough for the AI to use it.
+ */
+bool AITriggerTypeClass::ChronoSphereCharged(HouseClass *house, HouseClass *enemy) const
+{
+	if (house != NULL) {
+		for (int i = 0; i < house->SuperWeapon.Count(); i++) {
+			if (house->SuperWeapon[i]->Class->Type == SUPER_CHRONO_SPHERE) {
+				SuperClass *super = house->SuperWeapon[i];
+				if (super != NULL && super->Is_Present()) {
+					int remaining = super->Control;
+					double total = super->Class->RechargeTime;
+					if (remaining / total <= 1.0f - Rule->AIMinorSuperReadyPercent) {
+						return(true);
+					}
+				}
+				break;
+			}
+		}
+	}
+	return(false);
+}
+
+
 /// <summary>
 /// Checks the enemy's cash reserves against this trigger's condition.
 /// This routine serves the money style trigger condition, comparing what the enemy can
 /// actually spend against the number the trigger was given.
 /// </summary>
 /// <returns>bool; Does the enemy's available money satisfy the condition?</returns>
-bool AITriggerTypeClass::Check_Enemy_Money(HouseClass *house, HouseClass *enemy)
+bool AITriggerTypeClass::Check_Enemy_Money(HouseClass *house, HouseClass *enemy) const
 {
 	bool res = false;
 
@@ -1046,4 +1199,33 @@ void AITriggerTypeClass::Record_Failure(void)
 	}
 
 	TimesExecuted++;
+}
+
+
+/**
+ *  RA2: Checks that the team can travel from the house's base to the enemy's base.
+ */
+bool AITriggerTypeClass::Can_Reach_Enemy(TeamTypeClass *team, HouseClass *house, HouseClass *enemy) const
+{
+	if (!team->IsReachCheckNeeded || enemy == NULL) {
+		return(true);
+	}
+	Cell a = house->Center.As_Cell();
+	Cell b = enemy->Center.As_Cell();
+	MZoneType mz = (MZoneType)team->TaskForceMZone;
+	if (team->HasNavalTransport) {
+		int zb = Map.Get_Cell_Zone(b, mz, false);
+		int za = Map.Get_Cell_Zone(a, mz, false);
+		if (za != zb) {
+			zb = Map.Get_Cell_Zone(b, MZONE_AMPHIBIOUS, false);
+			za = Map.Get_Cell_Zone(a, MZONE_AMPHIBIOUS, false);
+			if (za == zb) {
+				return(true);
+			}
+		}
+		return(false);
+	}
+	int zb = Map.Get_Cell_Zone(b, mz, false);
+	int za = Map.Get_Cell_Zone(a, mz, false);
+	return((za == zb) ? true : false);
 }

@@ -23,6 +23,9 @@ enum AITriggerEnum {
 	AIT_POWER_YELLOW,
 	AIT_POWER_RED,
 	AIT_ENEMY_MONEY_COND_N,
+	AIT_IRON_CURTAIN_READY,		// RA2: the house's Iron Curtain is nearly charged.
+	AIT_CHRONOSPHERE_READY,		// RA2: the house's Chronosphere is nearly charged.
+	AIT_NEUTRAL_OWNS_X_COND_N,	// RA2: the civilian house owns N of the object.
 
 	AIT_COUNT,
 	AIT_NONE = -1,
@@ -95,10 +98,14 @@ class AITriggerTypeClass : public AbstractTypeClass
 
 	private:
 		bool Check_Enemy_Owns(HouseClass *house, HouseClass *enemy);
+		bool CivilianHouseOwns(HouseClass *house, HouseClass *enemy) const; // RA2
 		bool Check_House_Owns(HouseClass *house, HouseClass *enemy);
 		bool Check_Enemy_Yellow_Power(HouseClass *house, HouseClass *enemy);
 		bool Check_Enemy_Red_Power(HouseClass *house, HouseClass *enemy);
-		bool Check_Enemy_Money(HouseClass *house, HouseClass *enemy);
+		bool IronCurtainCharged(HouseClass *house, HouseClass *enemy) const; // RA2
+		bool ChronoSphereCharged(HouseClass *house, HouseClass *enemy) const; // RA2
+		bool Check_Enemy_Money(HouseClass *house, HouseClass *enemy) const;
+		bool Can_Reach_Enemy(TeamTypeClass *team, HouseClass *house, HouseClass *enemy) const; // RA2
 
 	private:
 		/*
