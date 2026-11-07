@@ -219,8 +219,8 @@ class WarheadTypeClass : public AbstractTypeClass
 		 */
 		bool IsVeinhole;
 
-		// RA2: WarheadTypeClass is 376 bytes (Warhead_From_Name allocates 376, Tiberian Sun 240); where the 136 bytes
-		// RA2: Tiberian Sun does not have lie is not known.
-		int Unknown_F0[34];
+		// RA2: WarheadTypeClass is 376 bytes (Warhead_From_Name allocates 376); with RA2's 0x98 byte AbstractTypeClass,
+		// RA2: where the 96 bytes Tiberian Sun does not have lie is not known.
+		int Unknown_118[24];
 
 };

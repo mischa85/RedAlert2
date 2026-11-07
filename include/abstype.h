@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -37,6 +38,9 @@ class AbstractTypeClass : public AbstractClass
 		**	identification purposes.
 		*/
 		TStringID<24> IniName;
+
+		TStringID<31> UINameLabel; // RA2: +0x3D
+		wchar_t const * UIName; // RA2: +0x60
 
 		/*
 		**	The translated (language specific) text name number of this object.
