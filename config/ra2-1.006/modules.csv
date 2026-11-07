@@ -733,7 +733,9 @@ unk_00684D50,0x00684D50,0x00684FC0,unknown,code not assigned to a module
 unk_00684FC0,0x00684FC0,0x006850B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006850B0,0x006850B0,0x006875C0,unknown,code not assigned to a module
 smudge,0x006875C0,0x00687AB0,tibsun,"functions compiled from src/smudge.cpp, matched, without gaps; six placed by the gap; ?GetClassID@SmudgeClass@@UAGJPAU_GUID@@@Z not placed"
-unk_00687AB0,0x00687AB0,0x0068B320,unknown,code not assigned to a module
+unk_00687AB0,0x00687AB0,0x00687DA0,unknown,code not assigned to a module
+smudtype,0x00687DA0,0x00688BF0,tibsun,"functions compiled from src/smudtype.cpp, matched, without gaps; six placed by the gap"
+unk_00688BF0,0x00688BF0,0x0068B320,unknown,code not assigned to a module
 special,0x0068B320,0x0068B7E0,tibsun,"functions compiled from src/special.cpp, matched, without gaps; two placed by the gap"
 unk_0068B7E0,0x0068B7E0,0x0068B800,unknown,code not assigned to a module
 sprite,0x0068B800,0x0068BC50,tibsun,"functions compiled from src/sprite.cpp, matched, without gaps"
