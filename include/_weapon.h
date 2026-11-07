@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -42,4 +43,6 @@ struct WeaponDataStruct {
 	 * lines up with the middle of the barrel artwork rather than with its base.
 	 */
 	int BarrelThickness;
+
+	bool TurretLocked; // RA2: read from Weapon<n>TurretLocked
 };

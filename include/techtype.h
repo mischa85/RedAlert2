@@ -17,6 +17,7 @@
 #include "_weapon.h"
 #include "objtype.h"
 #include "typelist.h"
+#include "vector.h" // RA2: DynamicVectorClass
 
 #include "category.hh"
 #include "mission.hh"
@@ -30,6 +31,8 @@ class UnitTypeClass;
 class ParticleSystemTypeClass;
 class AnimTypeClass;
 class WeaponTypeClass;
+class ColorScheme; // RA2
+class AircraftTypeClass; // RA2
 
 
 /*
@@ -47,6 +50,18 @@ struct TurretControl
 	int HoldFrames;
 };
 
+
+/*
+**	RA2: the recoil of a TechnoType's turret or barrel as read from its INI section.
+*/
+struct TurretAnimControl : public TurretControl
+{
+	TurretAnimControl(void) {}
+	TurretAnimControl(int travel, int compress, int recover, int hold) : TurretControl(travel, compress, recover, hold), Unused_10(false) {}
+
+	bool Unused_10; // RA2: set to false by the constructors, never used
+};
+
 /***************************************************************************
 **	This class is the common data for all objects that can be owned, produced,
 **	or delivered as reinforcements. These are objects that typically contain
@@ -62,20 +77,14 @@ class TechnoTypeClass : public ObjectTypeClass
 			WEAPON_SLOT_COUNT = 3
 		};
 
-		/*
-		 * This is the fraction of its own toughness that an object of this type does as damage
-		 * to its surroundings when destroyed, so a heavier object makes a bigger mess.
-		 */
-		float CollateralDamageCoefficient;
-
-		/// Unused
-		float Unused1;
 
 		/*
 		 * This is the number of game frames that each step of this object's walk cycle holds
 		 * for. It is what paces the TotalFramesWalked counter the animations are indexed from.
 		 */
 		int WalkRate;
+
+		int IdleRate; // RA2: +0x268
 
 		/*
 		 * These are the abilities an object of this type gains as its crew is promoted. A
@@ -158,6 +167,14 @@ class TechnoTypeClass : public ObjectTypeClass
 		/// Unused
 		double PhysicalSize;
 
+		double Size; // RA2: +0x350
+
+		double SizeLimit; // RA2: +0x358
+
+		bool HoverAttack; // RA2: +0x360
+
+		int VHPScan; // RA2: +0x364
+
 		/*
 		 * This is the mission an object of this type takes up when it arrives with no orders
 		 * of its own. Harvesting vehicles begin harvesting; everything else begins hunting.
@@ -210,6 +227,8 @@ class TechnoTypeClass : public ObjectTypeClass
 		 */
 		PipScaleType PipScale;
 
+		int PipWrap; // RA2: +0x3A8
+
 		/*
 		 * These are the building types this object docks with for service, listed in order of
 		 * preference. An aircraft rearms at one, and a harvester unloads its tiberium at one.
@@ -232,8 +251,14 @@ class TechnoTypeClass : public ObjectTypeClass
 		TypeList<int> VoiceSelect;
 		TypeList<int> VoiceMove;
 		TypeList<int> VoiceAttack;
+
+		TypeList<int> VoiceSpecialAttack; // RA2: +0x424
 		TypeList<int> VoiceDie;
 		TypeList<int> VoiceFeedback;	/// Given when the object is first badly hurt.
+
+		TypeList<int> MoveSound; // RA2: +0x478
+
+		TypeList<int> DieSound; // RA2: +0x494
 
 		/*
 		 * These are the two auxiliary sounds this object type owns. What each one means is
@@ -242,6 +267,42 @@ class TechnoTypeClass : public ObjectTypeClass
 		 */
 		VocType AuxSound1;
 		VocType AuxSound2;
+
+		int CreateSound; // RA2: +0x4B8
+
+		int DamageSound; // RA2: +0x4BC
+
+		int ImpactWaterSound; // RA2: +0x4C0
+
+		int ImpactLandSound; // RA2: +0x4C4
+
+		int CrashingSound; // RA2: +0x4C8
+
+		int SinkingSound; // RA2: +0x4CC
+
+		int VoiceFalling; // RA2: +0x4D0
+
+		int VoiceCrashing; // RA2: +0x4D4
+
+		int VoiceSinking; // RA2: +0x4D8
+
+		int VoiceEnter; // RA2: +0x4DC
+
+		int VoiceCapture; // RA2: +0x4E0
+
+		int TurretRotateSound; // RA2: +0x4E4
+
+		int EnterTransportSound; // RA2: +0x4E8
+
+		int LeaveTransportSound; // RA2: +0x4EC
+
+		int DeploySound; // RA2: +0x4F0
+
+		int UndeploySound; // RA2: +0x4F4
+
+		int ChronoInSound; // RA2: +0x4F8
+
+		int ChronoOutSound; // RA2: +0x4FC
 
 		/*
 		**	This specifies the zone that an object of this type should recognize. Zones
@@ -263,6 +324,10 @@ class TechnoTypeClass : public ObjectTypeClass
 		 */
 		int MaxDebris;
 
+		int MinDebris; // RA2: +0x50C
+
+		TypeList<AnimTypeClass const *> DebrisAnims; // RA2: +0x510
+
 		/*
 		**	If this is a transporter object (e.g., hovercraft, chinook, APC), then this
 		**	value specifies the maximum number of passengers it may carry.
@@ -277,11 +342,27 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		int SightRange;
 
+		bool RevealToAll; // RA2: +0x534
+
+		int SensorsSight; // RA2: +0x538
+
+		int DetectDisguiseRange; // RA2: +0x53C
+
+		int BombSight; // RA2: +0x540
+
+		int LeadershipRating; // RA2: +0x544
+
+		int NavalTargeting; // RA2: +0x548
+
+		int LandTargeting; // RA2: +0x54C
+
 		/*
 		**	This is the credit cost to produce this object (presuming production is
 		**	allowed).
 		*/
 		int Cost;
+
+		int Soylent; // RA2: +0x554
 
 		/*
 		 * This is the height above ground that an object of this type cruises at, expressed
@@ -299,6 +380,8 @@ class TechnoTypeClass : public ObjectTypeClass
 		**	of this type can be produced.
 		*/
 		TypeList<int> Prerequisite;
+
+		TypeList<int> PrerequisiteOverride; // RA2: +0x57C
 
 		/*
 		**	The risk and reward values are used to determine targets and paths
@@ -321,11 +404,49 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		SpeedType Speed;
 
+		int InitialAmmo; // RA2: +0x5A8
+
 		/*
 		**	This is the maximum number of ammo shots this object can hold. If
 		**	this number is -1, then this indicates unlimited ammo.
 		*/
 		int MaxAmmo;
+
+		int IFVMode; // RA2: +0x5B0
+
+		int AirRangeBonus; // RA2: +0x5B4
+
+		int Reload; // RA2: +0x5B8
+
+		int EmptyReload; // RA2: +0x5BC
+
+		int ReloadIncrement; // RA2: +0x5C0
+
+		int RadialFireSegments; // RA2: +0x5C4
+
+		int DeployFireWeapon; // RA2: +0x5C8
+
+		bool DeployFire; // RA2: +0x5CC
+
+		bool MobileFire; // RA2: +0x5CD
+
+		bool OpportunityFire; // RA2: +0x5CE
+
+		bool DistributedFire; // RA2: +0x5CF
+
+		bool DamageReducesReadiness; // RA2: +0x5D0
+
+		float ReadinessReductionMultiplier; // RA2: +0x5D4
+
+		UnitTypeClass *UnloadingClass; // RA2: +0x5D8
+
+		bool AttackFriendlies; // RA2: +0x5DC
+
+		bool AttackCursorOnFriendlies; // RA2: +0x5DD
+
+		int UndeployDelay; // RA2: +0x5E0
+
+		bool PreventAttackMove; // RA2: +0x5E4
 
 		/*
 		**	This is a bit field representing the houses that are allowed to
@@ -335,6 +456,10 @@ class TechnoTypeClass : public ObjectTypeClass
 		**	This event usually occurs as a result of capture.
 		*/
 		int Ownable;
+
+		int AIBasePlanningSide; // RA2: +0x5EC
+
+		bool StupidHunt; // RA2: +0x5F0
 
 		/*
 		 * If a multiplayer game may include this type in a player's starting force, then this
@@ -348,6 +473,14 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		TStringID<24> CameoFilename;
 		const void * CameoData;
+
+		bool CameoAllocated; // RA2: +0x610
+
+		TStringID<24> AltCameoFilename; // RA2: +0x611
+
+		const void * AltCameoData; // RA2: +0x62C
+
+		bool AltCameoAllocated; // RA2: +0x630
 
 		/*
 		**	The number of animation frames allotted to rotation is specified here.
@@ -382,6 +515,8 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		TypeList<AnimTypeClass const *> Explosion;
 
+		TypeList<AnimTypeClass const *> DestroyAnim; // RA2: +0x660
+
 		/*
 		 * This is the particle system that a building of this type runs continuously --
 		 * smokestack exhaust, refinery steam -- anchored at the given offset from its center.
@@ -396,7 +531,17 @@ class TechnoTypeClass : public ObjectTypeClass
 		 * supplies the damage smoke.
 		 */
 		TypeList<ParticleSystemTypeClass const *> DamageParticleSystems;
+
+		TypeList<ParticleSystemTypeClass const *> DestroyParticleSystems; // RA2: +0x6A8
 		TPoint3D<int> DamageSmokeOffset;
+
+		bool DamSmkOffScrnRel; // RA2: +0x6D0
+
+		TPoint3D<int> DestroySmokeOffset; // RA2: +0x6D4
+
+		TPoint3D<int> RefinerySmokeOffsetOne; // RA2: +0x6E0
+
+		TPoint3D<int> RefinerySmokeOffsetTwo; // RA2: +0x6EC
 
 		/*
 		 * This is the voxel layer that this object's shadow is cast from. A model whose
@@ -420,10 +565,26 @@ class TechnoTypeClass : public ObjectTypeClass
 		 */
 		bool TurretNotExportedOnGround;
 
+		bool Gunner; // RA2: +0x701
+
+		bool HasTurretTooltips; // RA2: +0x702
+
+		int TurretCount; // RA2: +0x704
+
+		int WeaponCount; // RA2: +0x708
+
+		bool IsChargeTurret; // RA2: +0x70C
+
+		int TurretWeapon[15]; // RA2: +0x710
+
 		/*
 		**	These are the weapons that this techno object is armed with.
 		*/
-		WeaponDataStruct Weapons[WEAPON_SLOT_COUNT];
+		WeaponDataStruct Weapons[15]; // RA2: fifteen slots
+
+		bool ClearAllWeapons; // RA2: +0x8F0
+
+		WeaponDataStruct EliteWeapons[15]; // RA2: +0x8F4
 
 		/*
 		 * If this object cannot be harmed by another object of its own type and house, then
@@ -559,6 +720,12 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		bool IsTurretEquipped;
 
+		bool TurretRecoil; // RA2: +0xAAC
+
+		TurretAnimControl TurretAnimData; // RA2: +0xAB0
+
+		TurretAnimControl BarrelAnimData; // RA2: +0xAC4
+
 		/*
 		**	Certain objects can be repaired. For buildings, they repair "in place". For units,
 		**	they must travel to a repair center to be repaired. If this flag is true, then
@@ -573,6 +740,8 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		bool IsCrew;
 
+		bool Naval; // RA2: +0xADA
+
 		/*
 		**	This tells whether this unit should EVER be remapped when it is displayed
 		**	on the tactical map. Normally, the unit is remapped, but for certain civilian
@@ -584,6 +753,14 @@ class TechnoTypeClass : public ObjectTypeClass
 		**	Is the unit capable of cloaking?  Only Stealth Tank can do so now.
 		*/
 		bool IsCloakable;
+
+		bool GapGenerator; // RA2: +0xADD
+
+		char GapRadiusInCells; // RA2: +0xADE
+
+		char SuperGapRadiusInCells; // RA2: +0xADF
+
+		bool Teleporter; // RA2: +0xAE0
 
 		/*
 		**	Can this object self heal up to half strength? Mammoth tanks from C&C had this
@@ -598,6 +775,10 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		bool IsExploding;
 
+		WeaponTypeClass *DeathWeapon; // RA2: +0xAE4
+
+		float DeathWeaponDamageModifier; // RA2: +0xAE8
+
 		/*
 		 * If this object never chooses targets for itself while a human player owns it, then
 		 * this flag will be true. The threat scan gives up immediately, so the object fires
@@ -605,19 +786,9 @@ class TechnoTypeClass : public ObjectTypeClass
 		 */
 		bool IsNoAutoFire;
 
-		/*
-		**	Some units are equipped with a rotating radar dish. These units have special
-		**	animation processing. The rotating radar dish is similar to a turret, but
-		**	always rotates and does not affect combat.
-		*/
-		bool IsRadarEquipped;
+		bool TurretSpins; // RA2: +0xAED
 
-		/*
-		**	If this building really only has cosmetic idle animation, then this flag will be
-		**	true if this animation should run at a relatively constant rate regardless of game
-		**	speed setting.
-		*/
-		bool IsRegulated;
+		bool Normalized; // RA2: +0xAEE
 
 		/*
 		 * If this object is reloaded by hand instead of on a timer, then this flag will be
@@ -671,6 +842,92 @@ class TechnoTypeClass : public ObjectTypeClass
 		*/
 		bool IsAutoCrush;
 
+		bool CanDisguise; // RA2: +0xAF7
+
+		bool PermaDisguise; // RA2: +0xAF8
+
+		bool DetectDisguise; // RA2: +0xAF9
+
+		bool DisguiseWhenStill; // RA2: +0xAFA
+
+		bool CanApproachTarget; // RA2: +0xAFB
+
+		bool CanRecalcApproachTarget; // RA2: +0xAFC
+
+		bool ImmuneToPsionics; // RA2: +0xAFD
+
+		bool ImmuneToRadiation; // RA2: +0xAFE
+
+		bool Parasiteable; // RA2: +0xAFF
+
+		bool DefaultToGuardArea; // RA2: +0xB00
+
+		bool Warpable; // RA2: +0xB01
+
+		bool ReselectIfLimboed; // RA2: +0xB02
+
+		bool RejoinTeamIfLimboed; // RA2: +0xB03
+
+		bool Spawned; // RA2: +0xB04
+
+		AircraftTypeClass *Spawns; // RA2: +0xB08
+
+		int SpawnsNumber; // RA2: +0xB0C
+
+		int SpawnRegenRate; // RA2: +0xB10
+
+		int SpawnReloadRate; // RA2: +0xB14
+
+		bool MissileSpawn; // RA2: +0xB18
+
+		bool Underwater; // RA2: +0xB19
+
+		bool BalloonHover; // RA2: +0xB1A
+
+		int SuppressionThreshold; // RA2: +0xB1C
+
+		int JumpjetTurnRate; // RA2: +0xB20
+
+		int JumpjetSpeed; // RA2: +0xB24
+
+		float JumpjetClimb; // RA2: +0xB28
+
+		float JumpjetCrash; // RA2: +0xB2C
+
+		int JumpjetHeight; // RA2: +0xB30
+
+		float JumpjetAccel; // RA2: +0xB34
+
+		float JumpjetWobbles; // RA2: +0xB38
+
+		bool JumpjetNoWobbles; // RA2: +0xB3C
+
+		int JumpjetDeviation; // RA2: +0xB40
+
+		bool JumpJet; // RA2: +0xB44
+
+		bool Crashable; // RA2: +0xB45
+
+		bool ConsideredAircraft; // RA2: +0xB46
+
+		bool Organic; // RA2: +0xB47
+
+		bool NoShadow; // RA2: +0xB48
+
+		bool CanPassiveAquire; // RA2: +0xB49
+
+		bool CanRetaliate; // RA2: +0xB4A
+
+		bool RequiresStolenSovietTech; // RA2: +0xB4B
+
+		bool RequiresStolenAlliedTech; // RA2: +0xB4C
+
+		DWORD RequiredHouses; // RA2: +0xB50
+
+		DWORD ForbiddenHouses; // RA2: +0xB54
+
+		bool IsSelectableCombatant; // RA2: +0xB58
+
 		/*
 		 * If this vehicle eases up to speed and brakes as it nears its destination, then this
 		 * flag will be true. The curves are taken from the AccelerationFactor and
@@ -678,6 +935,10 @@ class TechnoTypeClass : public ObjectTypeClass
 		 * Vehicles without this flag simply travel at their target speed throughout.
 		 */
 		bool IsAccelerates;
+
+		bool DisableVoxelCache; // RA2: +0xB5A
+
+		bool DisableShadowCache; // RA2: +0xB5B
 
 		/*
 		 * These are the amounts to bias this object's draw depth by while it is passing the
@@ -689,6 +950,10 @@ class TechnoTypeClass : public ObjectTypeClass
 		int ZFudgeColumn;
 		int ZFudgeTunnel;
 		int ZFudgeBridge;
+
+		char PaletteFile[32]; // RA2: +0xB6C
+
+		DynamicVectorClass<ColorScheme *> * Palette; // RA2: +0xB8C
 
 		//--------------------------------------------------------------------
 		TechnoTypeClass(NoInitClass const & x);
