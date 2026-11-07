@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -108,23 +109,16 @@ class InfantryClass : public FootClass
 		*/
 		bool WasSelected;
 
-		/*
-		 * This is how long this infantry remains paralyzed by a webbing warhead, in game
-		 * frames. While it counts down the infantry cannot move and struggles in place.
-		 */
-		CDTimerClass<FrameTimerClass> ProneStruggleTimer;
-
-		/*
-		 * This is the countdown between map reveals for a moving infantry. Revealing the
-		 * shroud is expensive, so a walking soldier only looks around once a second.
-		 */
-		CDTimerClass<FrameTimerClass> LookTimer;
+		int Unused_5C8; // RA2: set by the constructor only; replaces TS's ProneStruggleTimer and LookTimer
+		bool ShouldDeploy; // RA2: +0x5CC
+		int LastSurface; // RA2: +0x5D0; for the enter and leave water sounds; 2 when not known
+		int Unused_5D4; // RA2: never used
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		InfantryClass(InfantryTypeClass const * type = NULL, HouseClass * house = NULL);
-		InfantryClass(NoInitClass const & x) : BASECLASS(x), Comment(x), LookTimer(x), ProneStruggleTimer(0) {};
+		InfantryClass(NoInitClass const & x) : BASECLASS(x), Comment(x) {}; // RA2: no timers after Comment
 		virtual ~InfantryClass(void) override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
