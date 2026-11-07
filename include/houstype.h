@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -14,6 +15,7 @@
 #pragma once
 
 #include "abstype.h"
+#include "typelist.h" // RA2: TypeList
 
 #include "house.hh"
 #include "side.hh"
@@ -22,11 +24,21 @@
 **	Each house has certain unalienable characteristics. This structure
 **	elaborates these.
 */
+class InfantryTypeClass; // RA2
+class UnitTypeClass; // RA2
+class AircraftTypeClass; // RA2
+
 class HouseTypeClass : public AbstractTypeClass
 {
 		typedef AbstractTypeClass BASECLASS;
 
 	public:
+		struct CountryName // RA2
+		{
+			char Buffer[25];
+		};
+		CountryName ParentCountry; // RA2: +0x98
+
 
 		/*
 		**	This is the house number (enum). This is a unique identification
@@ -60,6 +72,29 @@ class HouseTypeClass : public AbstractTypeClass
 		double ROFBias;
 		double CostBias;
 		double BuildSpeedBias;
+
+		float ArmorInfantryMult; // RA2: +0x100
+		float ArmorUnitsMult; // RA2
+		float ArmorAircraftMult; // RA2
+		float ArmorBuildingsMult; // RA2
+		float ArmorDefensesMult; // RA2
+		float CostInfantryMult; // RA2
+		float CostUnitsMult; // RA2
+		float CostAircraftMult; // RA2
+		float CostBuildingsMult; // RA2
+		float CostDefensesMult; // RA2
+		float SpeedInfantryMult; // RA2
+		float SpeedUnitsMult; // RA2
+		float SpeedAircraftMult; // RA2
+		float BuildtimeInfantryMult; // RA2
+		float BuildtimeUnitsMult; // RA2
+		float BuildtimeAircraftMult; // RA2
+		float BuildtimeBuildingsMult; // RA2
+		float BuildtimeDefensesMult; // RA2
+		float IncomeMult; // RA2
+		TypeList<InfantryTypeClass const *> VeteranInfantry; // RA2: +0x14C
+		TypeList<UnitTypeClass const *> VeteranUnits; // RA2: +0x168
+		TypeList<AircraftTypeClass const *> VeteranAircraft; // RA2: +0x184
 
 		/*
 		**	This is the filename suffix to use when creating a house specific
