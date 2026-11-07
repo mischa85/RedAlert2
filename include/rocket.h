@@ -2,17 +2,19 @@
 // Copyright 2026 ra2-decomp contributors
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
+// Changed to RA2 1.006's layout by RedAlert2 contributors, 2026.
 #pragma once
 
 #include "face.h"
 #include "ftimer.h"
 #include "loco.h"
 #include "matrix3d.h"
-#include "rules.h"
 #include "timer.h"
 
 #include "layer.hh"
 #include "mark.hh"
+
+struct RocketStruct;
 
 class RocketLocomotionClass : public LocomotionClass
 {
@@ -55,13 +57,9 @@ class RocketLocomotionClass : public LocomotionClass
 
 		double CurrentSpeed;
 
-		bool Unknown50;
+		float CurrentPitch; // RA2: +0x50
 
-		bool IsElite;
-
-		float CurrentPitch;
-
-		int Unknown58;
+		int CruiseDistance; // RA2: +0x54, YR: Unknown58; distance to MovingDestination when the climb ends
 
 		Coord Position_At(int distance);
 		bool Reached_Target(RocketStruct const * data);
