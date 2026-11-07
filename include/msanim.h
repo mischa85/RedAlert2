@@ -190,9 +190,9 @@ class MSBitPrintAnim : public MSAnim
 
 		Rect Area;
 
-		bool FlagA;
+		bool IsFinished; // RA2: +0x30, YR: FlagA; Has_Finished returns it, Set_Flag sets it
 
-		bool FlagB;
+		bool IsCentered; // RA2: +0x31, YR: FlagB; centres each line (BitText flags 1)
 };
 
 
