@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -366,6 +367,9 @@ class MapSeedClass : public LoadOptionsClass
 		 */
 		int Biome;
 
+		int MapType; // RA2: +0x3C
+		int Resources; // RA2: +0x40
+
 		/*
 		 * This is how hilly the ground should be (0 - 100). It scales both the step the hill
 		 * height walk takes and how far that walk may wander; a low enough setting leaves the
@@ -447,38 +451,7 @@ class MapSeedClass : public LoadOptionsClass
 		 * This is the text the load and save dialogs list this seed under, and the buffer that
 		 * the inherited Description pointer is aimed at.
 		 */
-		char MapDescription[128];
-
-		/*
-		 * This is the chance that a tiberium field is given creatures to guard it (0 - 100).
-		 * The dialog offers it only as a checkbox, which sets it to 30 or to zero.
-		 */
-		int TiberiumWildlife;
-
-		/*
-		 * This is the number of veinhole monsters the map is to be given (0 - 5). A crowded
-		 * map simply ends up with fewer of them.
-		 */
-		int VeinholeMonsters;
-
-		/*
-		 * If the map is to suffer ion storms, then this flag will be true. The generator then
-		 * folds ION.INI into the rules and the lighting. Firestorm only.
-		 */
-		bool UseIonStorms;
-
-		/*
-		 * If some of the map's fields are to grow the second tiberium type rather than the
-		 * first, then this flag will be true. Firestorm only.
-		 */
-		bool UseBlueTiberium;
-
-		/*
-		 * If the map's lighting is to shift as the battle wears on, then this flag will be
-		 * true. It is the one setting left out of the multiplayer map digest, which reaches
-		 * from Biome to the end of the class and stops short of it.
-		 */
-		bool UseTransitions;
+		wchar_t MapDescription[128]; // RA2: wide; the TS options after it are not in RA2
 
 };
 
