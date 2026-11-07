@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -115,6 +116,8 @@ class BuildingClass : public TechnoClass
 		*/
 		AbstractClass * AnimToTrack;
 
+		AnimClass * PsiWarnAnim; // RA2: +0x444
+
 		/*
 		**	This is the countdown timer that regulates placement retry logic
 		**	for factory type buildings.
@@ -124,7 +127,10 @@ class BuildingClass : public TechnoClass
 		/*
 		 * These are the animations this building currently has running, one slot per BAnimType.
 		 */
-		AnimClass * Anims[BANIM_COUNT];
+		AnimClass * Anims[18]; // RA2: eighteen, not BANIM_COUNT
+
+		AnimClass * DamageFireAnims[8]; // RA2: +0x49C
+		bool RequiresDamageFires; // RA2: +0x4BC
 
 		/*
 		 * These are the building types installed in this building as upgrades, in the order
@@ -199,6 +205,17 @@ class BuildingClass : public TechnoClass
 		 */
 		bool IsOn;
 
+		bool IsOverpowered; // RA2: +0x531
+		int SupportingPrisms; // RA2: +0x534
+		bool HasExtraPowerBonus; // RA2: +0x538
+		bool HasExtraPowerDrain; // RA2: +0x539
+		DynamicVectorClass<InfantryClass *> Overpowerers; // RA2: +0x53C
+		DynamicVectorClass<InfantryClass *> Occupants; // RA2: +0x554
+		int FiringOccupantIndex; // RA2: +0x56C
+		AudioController BuildupSoundController; // RA2: +0x570; plays the BuildupSound while under construction
+		AudioController WorkingSoundController; // RA2: +0x584; plays WorkingSound or NotWorkingSound as the power changes
+		bool WasOnline; // RA2: +0x598
+
 		/*
 		 * If this building should always be identified by its real name, then this flag will be
 		 * true. An enemy structure is otherwise glossed over with generic help text.
@@ -215,6 +232,9 @@ class BuildingClass : public TechnoClass
 		**	Is the building allowed to repair itself?
 		*/
 		bool IsToRepair;
+
+		bool HasEngineer; // RA2: +0x59C
+		CDTimerClass<FrameTimerClass> CashProductionTimer; // RA2: +0x5A0
 
 		/*
 		**	If the computer owns this building, then it is allowed to sell it if
@@ -323,6 +343,8 @@ class BuildingClass : public TechnoClass
 		 */
 		char TranslucencyLevel;
 
+		int StorageFilledSlots; // RA2: +0x5C0
+
 		/*
 		 * This is the lighting level the building was last drawn at (1000 is normal light).
 		 * It is kept so that the animations attached to the building can be drawn to match.
@@ -340,6 +362,10 @@ class BuildingClass : public TechnoClass
 		 * only when this changes, rather than on every frame of the door's travel.
 		 */
 		char GateFrame;
+
+		int PrismStage; // RA2: +0x5C8
+		Coord PrismTargetCoords; // RA2: +0x5CC
+		int DelayBeforeFiring; // RA2: +0x5D8
 
 		/*---------------------------------------------------------------------
 		**	Constructors, Destructors, and overloaded operators.
