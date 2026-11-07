@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -113,25 +114,24 @@ class TriggerTypeClass : public AbstractTypeClass
 		 */
 		int HeapID;
 
-	private:
-		/*
-		 * If triggers of this type start out able to spring, then this flag will be true. A
-		 * disabled trigger stays attached to its tag but ignores its events until some
-		 * action enables it. It is reached through the IsEnabled property.
-		 */
-		bool _IsEnabled;
-
 	public:
 		/*
 		 * These specify the difficulty levels this trigger is active at. A trigger switched
 		 * off for the difficulty the player chose is disabled as the scenario is read, so it
 		 * never springs.
 		 */
-		bool IsEnabledOnEasy;
+		bool IsEnabledOnEasy; // RA2: +0x9C; the difficulty flags come first
 		bool IsEnabledOnMedium;
 		bool IsEnabledOnHard;
 
 	private:
+		/*
+		 * If triggers of this type start out able to spring, then this flag will be true. A
+		 * disabled trigger stays attached to its tag but ignores its events until some
+		 * action enables it. It is reached through the IsEnabled property.
+		 */
+		bool _IsEnabled; // RA2: +0x9F
+
 
 		/*
 		 * If a tag carrying this trigger should be handed over when its object is replaced
