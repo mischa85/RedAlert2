@@ -15,3 +15,4 @@ typedef TRect<int> Rect;
 extern Rect SidebarRect;
 extern Rect TacticalRect;
 extern Rect VisibleRect;
+extern Rect * TabBarRect; // RA2: the area of the tab bar above the tactical view
