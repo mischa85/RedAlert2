@@ -524,7 +524,8 @@ unk_00603FD0,0x00603FD0,0x0060A5C0,unknown,code not assigned to a module
 unk_0060A5C0,0x0060A5C0,0x0060A5E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0060A5E0,0x0060A5E0,0x0060EA60,unknown,code not assigned to a module
 pipe,0x0060EA60,0x0060EB20,tibsun,"functions compiled from src/pipe.cpp, matched, without gaps"
-unk_0060EB20,0x0060EB20,0x0060ED40,unknown,code not assigned to a module
+pixelfx,0x0060EB20,0x0060ED10,source,"functions compiled from src/pixelfx.cpp, matched, without gaps; ??1PixelFXClass@@UAE@XZ not placed"
+unk_0060ED10,0x0060ED10,0x0060ED40,unknown,code not assigned to a module
 pk,0x0060ED40,0x0060F7A0,tibsun,"functions compiled from src/pk.cpp, matched, without gaps"
 unk_0060F7A0,0x0060F7A0,0x0060FA90,unknown,code not assigned to a module
 pkpipe,0x0060FA90,0x0060FD70,tibsun,"functions compiled from src/pkpipe.cpp, matched, without gaps; two placed by alphabetical order"
