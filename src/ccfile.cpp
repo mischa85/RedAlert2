@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -44,6 +45,7 @@
 #include "always.h"
 
 #include "ccfile.h"
+#include "wstring.h"
 
 #include "_mixfile.h"
 #include "assert.h"
@@ -72,6 +74,16 @@ CCFileClass::CCFileClass(char const * filename) :
 	Position(0)
 {
 	CCFileClass::Set_Name(filename);
+}
+
+
+/**
+ *  RA2: Constructs a file object for the file named by the string object.
+ */
+CCFileClass::CCFileClass(Wstring const & filename) :
+	Position(0)
+{
+	CCFileClass::Set_Name(filename.get());
 }
 
 

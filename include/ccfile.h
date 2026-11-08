@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -43,12 +44,15 @@
 **	a file that is embedded within a mixfile. This is true if the mixfile is cached or resides on
 **	disk. It is functionally similar to pakfiles, except much faster and less RAM intensive.
 */
+class Wstring;
+
 class CCFileClass : public CDFileClass
 {
 		typedef CDFileClass BASECLASS;
 
 	public:
 		CCFileClass(char const * filename);
+		CCFileClass(Wstring const & filename); // RA2
 		CCFileClass(void);
 		virtual ~CCFileClass(void) override {Position = 0;};
 
