@@ -5,21 +5,18 @@
 #include "audlist.h"
 #include <stddef.h>
 
-// FUNCTION: GAMEMD 0x004072C0
 void __fastcall ListInit(ListHead * head)
 {
 	head->prev = head->next = head;
 	head->pri = (Priority)head;
 }
 
-// FUNCTION: GAMEMD 0x004072D0
 void __fastcall ListNodeInit(ListNode * node)
 {
 	node->prev = node->next = node;
 	node->pri = 0;
 }
 
-// FUNCTION: GAMEMD 0x004072E0
 int __fastcall ListAddNodeSortAscending(ListHead * head, ListNode * new_node)
 {
 	ListNode * node;
@@ -41,7 +38,6 @@ int __fastcall ListAddNodeSortAscending(ListHead * head, ListNode * new_node)
 	return index;
 }
 
-// FUNCTION: GAMEMD 0x00407330
 void __fastcall ListAddNode(ListHead * head, ListNode * new_node)
 {
 	ListNode * node;
@@ -59,7 +55,6 @@ void __fastcall ListAddNode(ListHead * head, ListNode * new_node)
 	ListNodeInsert(head, new_node);
 }
 
-// FUNCTION: GAMEMD 0x00407380
 void __fastcall ListMerge(ListHead * from, ListHead * to)
 {
 	ListNode * first;
@@ -82,7 +77,6 @@ void __fastcall ListMerge(ListHead * from, ListHead * to)
 	ListInit(from);
 }
 
-// FUNCTION: GAMEMD 0x004073B0
 int __fastcall ListCountItems(ListHead * head)
 {
 	ListNode * node;
@@ -98,13 +92,11 @@ int __fastcall ListCountItems(ListHead * head)
 	return count;
 }
 
-// FUNCTION: GAMEMD 0x004073C0
 ListNode * __fastcall ListFirstItem(ListHead * head)
 {
 	return ListNextItem((ListNode *)head);
 }
 
-// FUNCTION: GAMEMD 0x004073E0
 ListNode * __fastcall ListNextItem(ListNode * node)
 {
 	if (!node) {
@@ -113,7 +105,6 @@ ListNode * __fastcall ListNextItem(ListNode * node)
 	return (ListNodeNext(node));
 }
 
-// FUNCTION: GAMEMD 0x00407400
 ListNode * __fastcall ListGetItem(ListHead * head, int number)
 {
 	ListNode * node;
@@ -130,7 +121,6 @@ ListNode * __fastcall ListGetItem(ListHead * head, int number)
 	return NULL;
 }
 
-// FUNCTION: GAMEMD 0x00407420
 void __fastcall ListNodeInsert(ListNode * node, ListNode * new_node)
 {
 	new_node->prev = node->prev;
@@ -139,7 +129,6 @@ void __fastcall ListNodeInsert(ListNode * node, ListNode * new_node)
 	new_node->prev->next = new_node;
 }
 
-// FUNCTION: GAMEMD 0x00407440
 void __fastcall ListNodeAppend(ListNode * node, ListNode * new_node)
 {
 	new_node->prev = node;
@@ -148,7 +137,6 @@ void __fastcall ListNodeAppend(ListNode * node, ListNode * new_node)
 	new_node->next->prev = new_node;
 }
 
-// FUNCTION: GAMEMD 0x00407450
 void __fastcall ListNodeRemove(ListNode * node)
 {
 	node->prev->next = node->next;
@@ -156,7 +144,6 @@ void __fastcall ListNodeRemove(ListNode * node)
 	node->prev = node->next = node;
 }
 
-// FUNCTION: GAMEMD 0x00407470
 ListNode * __fastcall ListNodeNext(ListNode * node)
 {
 	ListNode * next;
@@ -170,7 +157,6 @@ ListNode * __fastcall ListNodeNext(ListNode * node)
 	return next;
 }
 
-// FUNCTION: GAMEMD 0x00407480
 ListNode * __fastcall ListNodePrev(ListNode * node)
 {
 	ListNode * next;
@@ -184,7 +170,6 @@ ListNode * __fastcall ListNodePrev(ListNode * node)
 	return next;
 }
 
-// FUNCTION: GAMEMD 0x00407490
 ListNode * __fastcall ListNodeLoopNext(ListNode * node)
 {
 	ListNode * next;
@@ -201,7 +186,6 @@ ListNode * __fastcall ListNodeLoopNext(ListNode * node)
 	return next;
 }
 
-// FUNCTION: GAMEMD 0x004074B0
 ListNode * __fastcall ListNodeLoopPrev(ListNode * node)
 {
 	ListNode * next;
