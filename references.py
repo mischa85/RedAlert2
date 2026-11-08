@@ -136,7 +136,10 @@ def compile_reconstruction(code_dir, out_dir):
             continue
         includes = [f"/I{d}" for d in [code_dir] + sorted(glob.glob(os.path.join(code_dir, "*", "")))]
         with tempfile.TemporaryFile() as log:
-            result = subprocess.run([cl, *compiler.FLAGS, *includes, f"/Fo{obj}", source],
+            # The reconstruction is compiled without WIN32, as its headers predate RA2 types that
+            # the WIN32-only files would otherwise pair with wrong names.
+            flags = [f for f in compiler.FLAGS if f != "/DWIN32"]
+            result = subprocess.run([cl, *flags, *includes, f"/Fo{obj}", source],
                                     stdout=log, stderr=subprocess.STDOUT, env=env)
         if result.returncode != 0:
             failed.append(os.path.basename(source))
