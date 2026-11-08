@@ -3,11 +3,12 @@
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
-#include	"vqaplayp.h"
+#include "always.h"
+#include	"vqalib/vqaplayp.h"
 #include	<stdio.h>
 #include	<stdlib.h>
 #include	<string.h>
-#include	"vqamem.h"
+#include	"vqalib/vqamem.h"
 
 extern long VQA_Set_DrawBuffer(VQAHandle *vqa, unsigned char *buffer, unsigned long width, unsigned long height, long xpos, long ypos);
 
@@ -76,7 +77,6 @@ void VQA_BufferPerpareLoop(VQAHandleP *vqap, long * needs_start_cb, long * needs
 	}
 }
 
-// FUNCTION: GAMEMD 0x007BD690
 STATIC long AllocBuffers(VQAHandleP *vqap)
 {
 	long needs_start_cb;
@@ -399,7 +399,6 @@ STATIC long AllocBuffers(VQAHandleP *vqap)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BDF80
 STATIC void FreeBuffers(VQAHandleP *vqap)
 {
 	VQACBNode    *cb_this,
@@ -585,7 +584,6 @@ STATIC void FreeBuffers(VQAHandleP *vqap)
 	}
 }
 
-// FUNCTION: GAMEMD 0x007BE4A0
 long VQA_Configure_Buffer(VQAHandleP *vqap)
 {
 	unsigned char *buf;
@@ -644,7 +642,6 @@ long VQA_Configure_Buffer(VQAHandleP *vqap)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BE5D0
 long __cdecl VQA_Memory_Handler(VQAHandle *vqa, long action, void *buffer, long nbytes)
 {
 	long error = 0;
