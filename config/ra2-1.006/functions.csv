@@ -2444,6 +2444,7 @@ address,size,evidence
 0x006EBE90,32,"function of the Tiberian Sun reconstruction, matched"
 0x006EBEB0,16,"code of src/tooltip.cpp, matched: its code occurs at 41 addresses; placed by the gap the other functions of the file leave"
 0x006EBEC0,32,"code of src/tooltip.cpp, matched"
+0x006EBEE0,16,"code of src/tooltip.cpp, matched: too short for the match rule"
 0x006EC280,,"inferred: target of the call at 0x006EB884 in matched src/tooltip.cpp; size not known"
 0x006EC2A0,128,"function of the Tiberian Sun reconstruction, matched"
 0x006EC350,80,"function of the Tiberian Sun reconstruction, matched"

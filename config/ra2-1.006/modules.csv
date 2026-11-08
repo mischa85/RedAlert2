@@ -752,8 +752,8 @@ tmission,0x006EAF60,0x006EB100,tibsun,"functions compiled from src/tmission.cpp,
 unk_006EB100,0x006EB100,0x006EB120,unknown,code not assigned to a module
 toggle,0x006EB120,0x006EB180,tibsun,"functions compiled from src/toggle.cpp, matched, without gaps; ?Action@ToggleClass@@MAEHIAAW4KeyNumType@@@Z not placed"
 unk_006EB180,0x006EB180,0x006EB2E0,unknown,code not assigned to a module
-tooltip,0x006EB2E0,0x006EBEE0,tibsun,"functions compiled from src/tooltip.cpp, matched, without gaps; two placed by the gap"
-unk_006EBEE0,0x006EBEE0,0x006ED220,unknown,code not assigned to a module
+tooltip,0x006EB2E0,0x006EBEF0,tibsun,"functions compiled from src/tooltip.cpp, matched, without gaps; two placed by the gap"
+unk_006EBEF0,0x006EBEF0,0x006ED220,unknown,code not assigned to a module
 trigger,0x006ED220,0x006EDB80,tibsun,"functions compiled from src/trigger.cpp, matched, without gaps; ten placed by the gap"
 unk_006EDB80,0x006EDB80,0x006EDEB0,unknown,code not assigned to a module
 trigtype,0x006EDEB0,0x006EEEC0,tibsun,"functions compiled from src/trigtype.cpp, matched, without gaps; four placed by the gap"
