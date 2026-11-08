@@ -662,7 +662,9 @@ unk_0062FCA0,0x0062FCA0,0x00630320,unknown,code not assigned to a module
 unk_00630320,0x00630320,0x00630340,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00630340,0x00630340,0x00631C40,unknown,code not assigned to a module
 unk_00631C40,0x00631C40,0x00631C80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00631C80,0x00631C80,0x00638310,unknown,code not assigned to a module
+unk_00631C80,0x00631C80,0x00636830,unknown,code not assigned to a module
+radio,0x00636830,0x00636F90,tibsun,"functions compiled from src/radio.cpp, matched, without gaps; two placed by the gap"
+unk_00636F90,0x00636F90,0x00638310,unknown,code not assigned to a module
 ramfile,0x00638310,0x00638610,tibsun,"functions compiled from src/ramfile.cpp, matched, without gaps; two placed by definition order; two placed by the gap"
 unk_00638610,0x00638610,0x006386F0,unknown,code not assigned to a module
 random,0x006386F0,0x00638AC0,tibsun,"functions compiled from src/random.cpp, matched, without gaps"
