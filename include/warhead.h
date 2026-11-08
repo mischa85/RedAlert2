@@ -81,7 +81,7 @@ class WarheadTypeClass : public AbstractTypeClass
 		**	The warhead damage is reduced depending on the the type of armor the
 		**	defender has. This table is what gives weapons their "character".
 		*/
-		double Modifier[11]; // RA2: eleven armor types, not ARMOR_COUNT
+		double Modifier[ARMOR_COUNT];
 
 		/*
 		 * This is the fraction of the damage that reaches an infantryman who is lying prone,
