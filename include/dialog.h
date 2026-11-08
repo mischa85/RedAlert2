@@ -37,4 +37,5 @@ Point2D Plain_Text_Print(char const * text, Surface & surface, Rect const &rect,
 
 class BitFont; // RA2: Font_From_TPF returns a BitFont
 BitFont *Font_From_TPF(TextPrintType flags); // RA2: text is drawn with BitFont
+bool __fastcall Draw_Text_Field(Surface & surface, Rect const & rect, wchar_t const * text, int caret, BitFont * font, int color, int & firstchar, int focused, int unknown, int show_caret, int shown); // RA2: wide text with scrolling, caret and IME composition
 unsigned char * Font_Palette(int color);

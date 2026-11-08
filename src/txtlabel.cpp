@@ -37,10 +37,15 @@
 #include "txtlabel.h"
 
 #include "_surface.h"
+#include "bitfont.h"
 #include "dialog.h"
 #include "dsurface.h"
+#include "_rules.h"
+#include "rules.h"
 #include "scheme.h"
 #include "vector.h"
+#include "voc.h"
+#include <mmsystem.h>
 
 #include "color.hh"
 
@@ -64,14 +69,19 @@
  * HISTORY:                                                                                    *
  *   03/24/1995 BRR : Created.                                                                 *
  *=============================================================================================*/
-TextLabelClass::TextLabelClass(char *txt, int x, int y, int color, TextPrintType style) :
+TextLabelClass::TextLabelClass(wchar_t *txt, int x, int y, int color, TextPrintType style) :
 	BASECLASS(x, y, 1, 1, 0, 0),
 	Text(txt),
 	Color(color),
 	Style(style),
 	UserData1(0),
 	UserData2(0),
-	PixWidth(-1)
+	PixWidth(-1),
+	FirstChar(0),
+	SkipDraw(false),
+	Animate(false),
+	AnimPos(0),
+	AnimTiming(0)
 {
 
 }
@@ -94,14 +104,51 @@ TextLabelClass::TextLabelClass(char *txt, int x, int y, int color, TextPrintType
  *=============================================================================================*/
 int TextLabelClass::Draw_Me(int forced)
 {
-	if (BASECLASS::Draw_Me(forced)) {
-		if (PixWidth == -1) {
-			Simple_Text_Print(Text, *LogicalSurface, LogicalSurface->Get_Rect(), Point2D(X, Y), ColorSchemes[Color], TBLACK, Style, 1);
-//			Fancy_Text_Print(Text, X, Y, Color, TBLACK, Style);
-		} else {
-			Conquer_Clip_Text_Print(Text, *LogicalSurface, LogicalSurface->Get_Rect(), Point2D(X, Y), ColorSchemes[Color], TBLACK, Style, PixWidth);
+	/*
+	**	RA2: the label is clipped to the right edge of the screen and drawn as a text field;
+	**	when animated, the text is typed out one character every 16 milliseconds with a sound.
+	*/
+	if (!SkipDraw && BASECLASS::Draw_Me(forced) && ColorSchemes.Count() != 0) {
+		int color = Color;
+		if (color <= 0 || color >= ColorSchemes.Count()) color = 0;
+		ColorScheme * scheme = ColorSchemes[color];
+		if (scheme != NULL) {
+			BitFont * font = Font_From_TPF(Style);
+			Rect rect;
+			rect.X = X;
+			rect.Y = Y;
+			rect.Width = PixWidth;
+			if (rect.Width < 0) rect.Width = LogicalSurface->Get_Width();
+			rect.Height = font->LineHeight;
+			int overhang = rect.X + rect.Width - LogicalSurface->Get_Width();
+			if (overhang > 0) {
+				rect.Width -= overhang;
+			}
+			if (overhang <= 0 || rect.Is_Valid()) {
+				RGBClass rgb = scheme->HSV;
+				int textcolor = (((rgb.Get_Blue() << 8) | rgb.Get_Green()) << 8) | rgb.Get_Red();
+				int len = wcslen(Text);
+
+				if (Animate) {
+					unsigned time = timeGetTime();
+					int oldpos = AnimPos;
+					if (oldpos == 0) {
+						AnimPos = 1;
+					} else {
+						AnimPos = (time - AnimTiming) / 16 + oldpos;
+					}
+					if (oldpos != AnimPos) {
+						AnimTiming = time;
+					}
+					if (AnimPos <= len) {
+						VocClass::PlayGlobal(Rule->MessageCharTyped, 1.0f, 0x2000);
+					}
+				}
+
+				Draw_Text_Field(*LogicalSurface, rect, Text, len, font, textcolor, FirstChar, Has_Focus(), 0, 1, AnimPos);
+				return(true);
+			}
 		}
-		return(true);
 	}
 	return(false);
 }

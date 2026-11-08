@@ -45,7 +45,7 @@ class TextLabelClass : public GadgetClass
 		/*
 		**	Constructor/Destructor
 		*/
-		TextLabelClass(char *txt, int x, int y, int color, TextPrintType style);
+		TextLabelClass(wchar_t *txt, int x, int y, int color, TextPrintType style); // RA2: wide text
 
 		/*
 		**	Overloaded draw routine
@@ -55,7 +55,7 @@ class TextLabelClass : public GadgetClass
 		/*
 		**	Sets the displayed text of the label
 		*/
-		virtual void Set_Text(char *txt) {Text = txt;};
+		virtual void Set_Text(wchar_t *txt) {Text = txt;}; // RA2: wide text
 
 		/*
 		**	General-purpose data fields
@@ -63,11 +63,11 @@ class TextLabelClass : public GadgetClass
 		unsigned int UserData1;
 		unsigned int UserData2;
 		TextPrintType Style;
-		char *Text;
+		wchar_t *Text; // RA2: wide text
 		int Color;
 		int PixWidth;
 
-		unsigned int Unused_3C; // RA2: only set to 0 by the constructor
+		int FirstChar; // RA2: index of the first character shown, kept by Draw_Text_Field when the text scrolls
 		bool SkipDraw; // RA2: +0x40
 		bool Animate; // RA2: +0x41
 		int AnimPos; // RA2: +0x44
