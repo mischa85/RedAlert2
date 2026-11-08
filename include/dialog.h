@@ -32,7 +32,8 @@ void Draw_Box(Rect const & rect, BoxStyleEnum up, bool filled);
 Point2D __cdecl Fancy_Text_Print(char const * text, Surface & surface, Rect const & rect, Point2D const &pt, ColorScheme * fore, int back, TextPrintType flag, ...);
 Point2D __cdecl Fancy_Text_Print(wchar_t const * text, Surface & surface, Rect const & rect, Point2D const &pt, ColorScheme * fore, int back, TextPrintType flag, ...); // RA2: wide text
 Point2D __cdecl Fancy_Text_Print(int text, Surface & surface, Rect const & rect, Point2D const & pt, ColorScheme * fore, int back, TextPrintType flag, ...);
-Point2D Simple_Text_Print(char const * text, Surface & surface, Rect const & rect, Point2D const & pt, ColorScheme * scheme, int back, TextPrintType flag, int fore);
+Point2D Simple_Text_Print(wchar_t const * text, // RA2: wide
+	 Surface & surface, Rect const & rect, Point2D const & pt, ColorScheme * scheme, int back, TextPrintType flag, int fore);
 Point2D Plain_Text_Print(int text, Surface & surface, Rect const &rect, Point2D const & xy, int /*fore*/, int back, TextPrintType flag, int scheme, int fore);
 Point2D Plain_Text_Print(char const * text, Surface & surface, Rect const &rect, Point2D const & pt, int /*fore*/, int back, TextPrintType flag, int scheme, int fore);
 
