@@ -2279,6 +2279,7 @@ address,size,evidence
 0x006EF8C0,16,"code of src/tube.cpp, matched: too short for the match rule"
 0x006EF8D0,64,"code of src/tube.cpp, matched: its code occurs at 77 addresses; placed by the gap the other functions of the file leave, up to the copy of ??_GTubeClass@@UAEPAXI@Z at 0x006EF910"
 0x006F1230,80,"function of the Tiberian Sun reconstruction, matched"
+0x006F15C0,96,"code of src/txtlabel.cpp, matched"
 0x006FA0C0,,"inferred: target of the call at 0x004656C9 in matched src/campaign.cpp; size not known"
 0x006FA400,,"inferred: target of the call at 0x00468DF2 in matched src/carry.cpp; size not known"
 0x0070A890,,"inferred: target of the call at 0x004B48BD in matched src/emember.cpp; size not known"
