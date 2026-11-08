@@ -82,7 +82,7 @@ class FlyLocomotionClass : public LocomotionClass
 		virtual int STDMETHODCALLTYPE Get_Status(void) override;
 		virtual void STDMETHODCALLTYPE Acquire_Hunter_Seeker_Target(void) override;
 
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.

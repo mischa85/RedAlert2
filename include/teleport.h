@@ -44,7 +44,7 @@ class TeleportLocomotionClass : public LocomotionClass, public IPiggyback // RA2
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
 
-		virtual int Fetch_Object_Size(bool oldsave = false) const override;
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 
 		virtual boolean Is_Stationary(void);
 

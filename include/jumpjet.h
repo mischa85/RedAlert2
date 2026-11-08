@@ -41,7 +41,7 @@ class JumpjetLocomotionClass : public LocomotionClass
 		virtual boolean STDMETHODCALLTYPE Is_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Mark_All_Occupation_Bits(int mark) override;
 
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.

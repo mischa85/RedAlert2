@@ -59,7 +59,7 @@ class WalkLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual boolean STDMETHODCALLTYPE Is_Really_Moving_Now(void) override;
 		virtual void STDMETHODCALLTYPE Stop_Movement_Animation(void) override {IsReallyMoving = false;};
 
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 
 		void Movement_AI(bool first_pass);
 		bool Mark_Head_To(Coord const & coord);

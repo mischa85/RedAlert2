@@ -37,6 +37,7 @@ extern ULONG COMRefCount;
 /// <remarks>Link_To_Object must be called before the locomotor can be asked to do anything
 /// useful.</remarks>
 LocomotionClass::LocomotionClass(void) :
+	Owner(NULL), // RA2
 	LinkedTo(NULL),
 	IsPowered(true),
 	Dirty(true),
@@ -64,6 +65,7 @@ LocomotionClass::~LocomotionClass(void)
 HRESULT STDMETHODCALLTYPE LocomotionClass::Link_To_Object(void *pointer)
 {
 	LinkedTo = (FootClass *)pointer;
+	Owner = (FootClass *)pointer; // RA2
 	return(S_OK);
 }
 
@@ -309,6 +311,7 @@ HRESULT STDMETHODCALLTYPE LocomotionClass::Load(IStream * stream)
 
 		RefCount = prev_refcount;
 		Swizzle_Pointer(&LinkedTo);
+		Swizzle_Pointer(&Owner); // RA2
 		return(result);
 	}
 	return(result);

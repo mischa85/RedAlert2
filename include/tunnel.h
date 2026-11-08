@@ -50,7 +50,7 @@ class TunnelLocomotionClass : public LocomotionClass
 		virtual FireErrorType STDMETHODCALLTYPE Can_Fire(void) override;
 		virtual boolean STDMETHODCALLTYPE Is_Surfacing(void) override;
 
-		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
+		virtual int Fetch_Object_Size(void) const override {return(sizeof(*this));} // RA2: no argument
 
 		void Process_Turning(void);
 		void Process_Digging_In(void);
