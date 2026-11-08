@@ -4,12 +4,10 @@
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
 #include "always.h"
-#include "geometry.h"
 #include "rect.h"
 #include <windows.h>
 #include <string.h>
 #include "movies.h"
-#include "subtitle.h"
 #include "surface.h"
 #include "dsurface.h"
 #include "_surface.h"
@@ -19,6 +17,10 @@
 #include "rawfile.h"
 #include "mixfile.h"
 #include "goptions.h"
+#include "win.h"
+#include "msgloop.h"
+#include "dbgprint.h"
+#include "_keyboar.h"
 
 extern "C" {
 __declspec(dllimport) BinkInfo * __stdcall BinkOpen(void const *, unsigned int);
@@ -36,23 +38,19 @@ __declspec(dllimport) char * __stdcall BinkGetError(void);
 __declspec(dllimport) int __stdcall BinkCopyToBuffer(BinkInfo *, void *, int, unsigned int, unsigned int, unsigned int, unsigned int);
 }
 
-namespace Game { extern bool IsFocused; extern HWND hWnd; }
 
-void __cdecl FUN_004068E0(char const *, ...);
-extern int DAT_00AA0430;
-int FUN_00407000(void);
-unsigned int FUN_0040A7A0(void);
-extern float DAT_0089C490;
+int __fastcall AudioDeviceAvailable(void); // RA2: whether the audio library has a device
+unsigned int AudioDirectSound(void); // RA2: the DirectSound object of the audio library
+/*
+**	RA2: the voice volume last handed to Bink; a change in the options is passed on as the movie plays.
+*/
+float BinkVolume;
 
-class InputManagerClass : public KeyboardClass {
-	public:
-		static InputManagerClass * Instance;
-};
 
-int __fastcall FUN_0053E770(MSG * msg, HWND window, unsigned int filter_min, unsigned int filter_max, unsigned int remove);
-int __fastcall FUN_0053E730(MSG * msg, HWND window, unsigned int filter_min, unsigned int filter_max);
 
-// FUNCTION: GAMEMD 0x00432690
+/// <summary>
+/// Opens the movie specified, to be drawn to the screen.
+/// </summary>
 BinkHandle::BinkHandle(char const * name)
 {
 	Flag = false;
@@ -62,10 +60,12 @@ BinkHandle::BinkHandle(char const * name)
 	Finished = false;
 	FileHandle = INVALID_HANDLE_VALUE;
 	Playing = true;
-	FUN_00432750(name);
+	Open(name);
 }
 
-// FUNCTION: GAMEMD 0x004326C0
+/// <summary>
+/// Opens the movie specified, to be drawn to the surface specified.
+/// </summary>
 BinkHandle::BinkHandle(char const * name, Surface * surface)
 {
 	Flag = false;
@@ -75,10 +75,12 @@ BinkHandle::BinkHandle(char const * name, Surface * surface)
 	FileHandle = INVALID_HANDLE_VALUE;
 	Playing = true;
 	Finished = false;
-	FUN_00432750(name);
+	Open(name);
 }
 
-// FUNCTION: GAMEMD 0x00432700
+/// <summary>
+/// Closes the movie and its subtitles.
+/// </summary>
 BinkHandle::~BinkHandle(void)
 {
 	if (Subtitles != NULL) {
@@ -95,13 +97,14 @@ BinkHandle::~BinkHandle(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00432750
-bool BinkHandle::FUN_00432750(char const * name)
+/// <summary>
+/// Opens a movie from a loose file or from inside a mixfile, centring it on its surface.
+/// </summary>
+bool BinkHandle::Open(char const * name)
 {
-	FUN_00432A60();
-	StartFrame = 0;
-	if (FUN_00407000()) {
-		BinkSetSoundSystem(BinkOpenDirectSound, FUN_0040A7A0());
+	Close();
+	if (AudioDeviceAvailable()) {
+		BinkSetSoundSystem(BinkOpenDirectSound, AudioDirectSound());
 	}
 	bool exists = (RawFileClass(name).Is_Available(0) == 1);
 	if (exists) {
@@ -118,11 +121,11 @@ bool BinkHandle::FUN_00432750(char const * name)
 		}
 	}
 	if (Bink == NULL) {
-		FUN_004068E0("Bink Error: %s\n", BinkGetError());
+		DebugString("Bink Error: %s\n", BinkGetError());
 		return false;
 	}
-	memcpy(&DAT_0089C490, &Options.VoiceVolume, sizeof(DAT_0089C490));
-	BinkSetVolume(Bink, (int)(DAT_0089C490 * 32768.0f));
+	memcpy(&BinkVolume, &Options.VoiceVolume, sizeof(BinkVolume));
+	BinkSetVolume(Bink, (int)(BinkVolume * 32768.0f));
 	FrameDelay = 60 / (Bink->FrameRate / Bink->FrameRateDiv);
 	Subtitles = Subtitles_Open(name);
 	Rect draw(0, 0, Bink->Width, Bink->Height);
@@ -134,7 +137,7 @@ bool BinkHandle::FUN_00432750(char const * name)
 		} else {
 			DrawSurface = VisibleSurface;
 			RECT rc;
-			GetClientRect(Game::hWnd, &rc);
+			GetClientRect(MainWindow, &rc);
 			draw.X = (rc.right - rc.left - draw.Width) / 2;
 			draw.Y = (rc.bottom - rc.top - draw.Height) / 2;
 		}
@@ -144,8 +147,10 @@ bool BinkHandle::FUN_00432750(char const * name)
 	return true;
 }
 
-// FUNCTION: GAMEMD 0x00432A60
-void BinkHandle::FUN_00432A60(void)
+/// <summary>
+/// Closes the movie, its subtitles and the file it was read from.
+/// </summary>
+void BinkHandle::Close(void)
 {
 	if (Subtitles != NULL) {
 		delete Subtitles;
@@ -161,63 +166,76 @@ void BinkHandle::FUN_00432A60(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00432AB0
-void BinkHandle::FUN_00432AB0(int x, int y)
+/// <summary>
+/// Places the movie with its top left corner at the position specified.
+/// </summary>
+void BinkHandle::Set_Position(int x, int y)
 {
 	DestRect = Intersect(DrawSurface->Get_Rect(), Rect(x, y, Bink->Width, Bink->Height));
 }
 
-// FUNCTION: GAMEMD 0x00432BD0
-void BinkHandle::FUN_00432BD0(int frame)
+/// <summary>
+/// Moves the movie to the frame specified.
+/// </summary>
+void BinkHandle::Goto_Frame(int frame)
 {
 	BinkGoto(Bink, frame, 1);
-	StartFrame = 0;
 }
 
-// FUNCTION: GAMEMD 0x00432BF0
-int BinkHandle::FUN_00432BF0(void)
+/// <summary>
+/// Fetches how long each frame of the movie is shown, in milliseconds.
+/// </summary>
+int BinkHandle::Frame_Time(void)
 {
 	return 1000 / (Bink->FrameRate / Bink->FrameRateDiv);
 }
 
-// FUNCTION: GAMEMD 0x00432C10
-void BinkHandle::FUN_00432C10(void (__fastcall * callback)(void *))
+/// <summary>
+/// Sets the routine the subtitles call as each one is shown.
+/// </summary>
+void BinkHandle::Set_Subtitle_Callback(void (__fastcall * callback)(void *))
 {
 	if (Subtitles != NULL) {
 		Subtitles->SetCallback(callback);
 	}
 }
 
-// FUNCTION: GAMEMD 0x00432C30
-void BinkHandle::FUN_00432C30(bool pause)
+/// <summary>
+/// Pauses or resumes the movie.
+/// </summary>
+void BinkHandle::Pause(bool pause)
 {
 	BinkPause(Bink, pause);
 }
 
-// FUNCTION: GAMEMD 0x00432C50
-bool BinkHandle::FUN_00432C50(void)
+/// <summary>
+/// Have all the frames of the movie been shown?
+/// </summary>
+bool BinkHandle::Is_Finished(void) const
 {
-	return (Bink->FrameNum >= Bink->Frames || Bink->FrameNum < StartFrame);
+	return(Bink->FrameNum >= Bink->Frames); // RA2: no start frame
 }
 
-// FUNCTION: GAMEMD 0x00432C70
-void BinkHandle::FUN_00432C70(void)
+/// <summary>
+/// Plays the whole movie, returning once it ends or the player presses escape.
+/// </summary>
+void BinkHandle::Play(void)
 {
 	if (Bink == NULL) {
-		FUN_004068E0("Bink Error: %s\n", BinkGetError());
+		DebugString("Bink Error: %s\n", BinkGetError());
 		return;
 	}
-	InputManagerClass::Instance->Clear();
+	Keyboard->Clear();
 	Playing = true;
 	Finished = false;
 	for (;;) {
-		if (FUN_00432C50()) {
+		if (Is_Finished()) {
 			break;
 		}
-		DAT_00AA0430++;
+		MessageLoopCount++;
 		MSG msg;
-		if (FUN_0053E770(&msg, 0, 0, 0, 0)) {
-			if (!FUN_0053E730(&msg, 0, 0, 0)) {
+		if (Peek_Windows_Message(&msg, 0, 0, 0, 0)) {
+			if (!Get_Windows_Message(&msg, 0, 0, 0)) {
 				break;
 			}
 			TranslateMessage(&msg);
@@ -229,55 +247,57 @@ void BinkHandle::FUN_00432C70(void)
 		}
 		if (DrawSurface == VisibleSurface) {
 			RECT rc;
-			GetClientRect(Game::hWnd, &rc);
-			ClientToScreen(Game::hWnd, (POINT *)&rc);
+			GetClientRect(MainWindow, &rc);
+			ClientToScreen(MainWindow, (POINT *)&rc);
 			int px = DestRect.X + rc.left;
 			int py = DestRect.Y + rc.top;
-			FUN_00432E40(DrawSurface, px, py);
-		} else if (FUN_00432E40(DrawSurface, DestRect.X, DestRect.Y)) {
+			Draw_Frame(DrawSurface, px, py);
+		} else if (Draw_Frame(DrawSurface, DestRect.X, DestRect.Y)) {
 			RECT rc;
-			GetClientRect(Game::hWnd, &rc);
-			ClientToScreen(Game::hWnd, (POINT *)&rc);
+			GetClientRect(MainWindow, &rc);
+			ClientToScreen(MainWindow, (POINT *)&rc);
 			Rect dest = DestRect;
 			dest.X += rc.left;
 			dest.Y += rc.top;
 			VisibleSurface->Blit_From(dest, *DrawSurface, DestRect, false, true);
 		}
-		if (InputManagerClass::Instance->Check() != KN_NONE && Flag == false) {
-			if (InputManagerClass::Instance->Get() == (KN_ESC | KN_RLSE_BIT)) {
+		if (Keyboard->Check() != KN_NONE && Flag == false) {
+			if (Keyboard->Get() == (KN_ESC | KN_RLSE_BIT)) {
 				break;
 			}
 		}
 	}
-	InputManagerClass::Instance->Clear();
+	Keyboard->Clear();
 }
 
-// FUNCTION: GAMEMD 0x00432E40
-bool BinkHandle::FUN_00432E40(Surface * surface, int x, int y)
+/// <summary>
+/// Draws any frames that are due to the surface specified; true if a frame was drawn.
+/// </summary>
+bool BinkHandle::Draw_Frame(Surface * surface, int x, int y)
 {
-	if (DAT_0089C490 != Options.VoiceVolume) {
-		memcpy(&DAT_0089C490, &Options.VoiceVolume, sizeof(DAT_0089C490));
-		BinkSetVolume(Bink, (int)(DAT_0089C490 * 32768));
+	if (BinkVolume != Options.VoiceVolume) {
+		memcpy(&BinkVolume, &Options.VoiceVolume, sizeof(BinkVolume));
+		BinkSetVolume(Bink, (int)(BinkVolume * 32768));
 	}
-	if (!Game::IsFocused) {
+	if (!GameInFocus) {
 		if (Playing == true) {
-			FUN_004068E0("Pause bink movie\n");
+			DebugString("Pause bink movie\n");
 			Playing = false;
 			BinkPause(Bink, 1);
 		}
 	} else if (!Playing) {
-		FUN_004068E0("Resume bink movie\n");
+		DebugString("Resume bink movie\n");
 		Playing = true;
 		BinkPause(Bink, 0);
 		if (DrawSurface == VisibleSurface) {
 			RECT rc;
-			GetClientRect(Game::hWnd, &rc);
-			ClientToScreen(Game::hWnd, (POINT *)&rc);
+			GetClientRect(MainWindow, &rc);
+			ClientToScreen(MainWindow, (POINT *)&rc);
 			int px = DestRect.X + rc.left;
 			int py = DestRect.Y + rc.top;
-			FUN_004331F0(DrawSurface, px, py, true);
+			Copy_Frame(DrawSurface, px, py, true);
 		} else {
-			FUN_004331F0(DrawSurface, DestRect.X, DestRect.Y, true);
+			Copy_Frame(DrawSurface, DestRect.X, DestRect.Y, true);
 		}
 	}
 	bool ready = Finished;
@@ -294,7 +314,7 @@ bool BinkHandle::FUN_00432E40(Surface * surface, int x, int y)
 		if (Subtitles != NULL) {
 			subtitle = Subtitles->Process(Bink->FrameNum * FrameDelay);
 			if (subtitle) {
-				FUN_00433330(surface);
+				Erase_Subtitle(surface);
 			}
 		}
 		void * buffer = surface->Lock(Point2D(0, 0));
@@ -308,46 +328,53 @@ bool BinkHandle::FUN_00432E40(Surface * surface, int x, int y)
 			BinkCopyToBuffer(Bink, buffer, pitch, height, x, y, flags);
 			surface->Unlock();
 		}
-		FUN_00433270(surface);
-		StartFrame = Bink->FrameNum;
+		Draw_Subtitle(surface);
 		BinkNextFrame(Bink);
 	} while (BinkWait(Bink) == 0);
 	return true;
 }
 
-// FUNCTION: GAMEMD 0x00433020
-void BinkHandle::FUN_00433020(void)
+/// <summary>
+/// Notes whether the next frame is due without drawing it.
+/// </summary>
+void BinkHandle::Check_Frame_Ready(void)
 {
 	if (BinkWait(Bink) == 0) {
 		Finished = true;
 	}
 }
 
-// FUNCTION: GAMEMD 0x00433040
-bool BinkHandle::FUN_00433040(void)
+/// <summary>
+/// Draws any frames that are due to the movie's own surface; true if a frame was drawn.
+/// </summary>
+bool BinkHandle::Render_Frame(void)
 {
-	return FUN_00432E40(DrawSurface, DestRect.X, DestRect.Y);
+	return Draw_Frame(DrawSurface, DestRect.X, DestRect.Y);
 }
 
-// FUNCTION: GAMEMD 0x00433060
-void BinkHandle::FUN_00433060(void)
+/// <summary>
+/// Draws the current frame again at the movie's own position.
+/// </summary>
+void BinkHandle::Redraw(void)
 {
 	if (DrawSurface == VisibleSurface) {
 		RECT rc;
-		GetClientRect(Game::hWnd, &rc);
-		ClientToScreen(Game::hWnd, (POINT *)&rc);
+		GetClientRect(MainWindow, &rc);
+		ClientToScreen(MainWindow, (POINT *)&rc);
 		int x = DestRect.X + rc.left;
 		int y = DestRect.Y + rc.top;
-		FUN_00433180(DrawSurface, x, y);
+		Redraw_Frame(DrawSurface, x, y);
 	} else {
-		FUN_00433180(DrawSurface, DestRect.X, DestRect.Y);
+		Redraw_Frame(DrawSurface, DestRect.X, DestRect.Y);
 	}
 }
 
-// FUNCTION: GAMEMD 0x00433180
-void BinkHandle::FUN_00433180(Surface * surface, int x, int y)
+/// <summary>
+/// Draws the current frame and its subtitle again at the position specified.
+/// </summary>
+void BinkHandle::Redraw_Frame(Surface * surface, int x, int y)
 {
-	FUN_00433330(surface);
+	Erase_Subtitle(surface);
 	void * buffer = surface->Lock(Point2D(0, 0));
 	if (buffer != NULL) {
 		int pitch = surface->Stride();
@@ -355,14 +382,16 @@ void BinkHandle::FUN_00433180(Surface * surface, int x, int y)
 		BinkCopyToBuffer(Bink, buffer, pitch, height, x, y, CopyFlags | 0x80000000);
 		surface->Unlock();
 	}
-	FUN_00433270(surface);
+	Draw_Subtitle(surface);
 }
 
-// FUNCTION: GAMEMD 0x004331F0
-void BinkHandle::FUN_004331F0(Surface * surface, int x, int y, bool subtitle)
+/// <summary>
+/// Copies the current frame to the surface specified, optionally with its subtitle.
+/// </summary>
+void BinkHandle::Copy_Frame(Surface * surface, int x, int y, bool subtitle)
 {
 	if (subtitle) {
-		FUN_00433330(surface);
+		Erase_Subtitle(surface);
 	}
 	void * buffer = surface->Lock(Point2D(0, 0));
 	if (buffer != NULL) {
@@ -376,11 +405,13 @@ void BinkHandle::FUN_004331F0(Surface * surface, int x, int y, bool subtitle)
 		BinkCopyToBuffer(bink, buffer, pitch, height, x, y, flags);
 		surface->Unlock();
 	}
-	FUN_00433270(surface);
+	Draw_Subtitle(surface);
 }
 
-// FUNCTION: GAMEMD 0x00433270
-void BinkHandle::FUN_00433270(Surface * surface)
+/// <summary>
+/// Draws the current subtitle below the movie.
+/// </summary>
+void BinkHandle::Draw_Subtitle(Surface * surface)
 {
 	MovieSubtitles * subtitles = Subtitles;
 	if (subtitles != NULL && subtitles->mSubTitles != NULL) {
@@ -400,8 +431,10 @@ void BinkHandle::FUN_00433270(Surface * surface)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00433330
-void BinkHandle::FUN_00433330(Surface * surface)
+/// <summary>
+/// Clears the area the previous subtitle occupied.
+/// </summary>
+void BinkHandle::Erase_Subtitle(Surface * surface)
 {
 	if (Subtitles != NULL && Subtitles->mSubTitles != NULL) {
 		Rect rect = Subtitles->PreviousRect;
@@ -418,26 +451,30 @@ void BinkHandle::FUN_00433330(Surface * surface)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004333E0
-int BinkHandle::FUN_004333E0(void)
+/// <summary>
+/// Fetches how far into the movie play has got, in milliseconds.
+/// </summary>
+int BinkHandle::Current_Time(void)
 {
 	return Bink->FrameNum * FrameDelay;
 }
 
-// FUNCTION: GAMEMD 0x004333F0
-void BinkHandle::FUN_004333F0(void)
+/// <summary>
+/// Pauses the movie while the game is not in focus, and resumes it when it is again.
+/// </summary>
+void BinkHandle::Update_Focus(void)
 {
-	if (!Game::IsFocused) {
+	if (!GameInFocus) {
 		if (Playing == true) {
-			FUN_004068E0("Pause bink movie\n");
+			DebugString("Pause bink movie\n");
 			Playing = false;
 			BinkPause(Bink, 1);
 		}
 	} else if (!Playing) {
-		FUN_004068E0("Resume bink movie\n");
+		DebugString("Resume bink movie\n");
 		Playing = true;
 		BinkPause(Bink, 0);
-		FUN_00433060();
+		Redraw();
 	}
 }
 
@@ -446,7 +483,9 @@ struct BitCursor {
 	unsigned char Bit;
 };
 
-// FUNCTION: GAMEMD 0x00433560
+/// <summary>
+/// Starts reading bits from the buffer specified, returning the first one.
+/// </summary>
 unsigned char __fastcall Bits_Open_Read(BitCursor * cursor, unsigned char * ptr)
 {
 	cursor->Ptr = ptr;
@@ -456,7 +495,9 @@ unsigned char __fastcall Bits_Open_Read(BitCursor * cursor, unsigned char * ptr)
 	return first;
 }
 
-// FUNCTION: GAMEMD 0x00433570
+/// <summary>
+/// Reads the next bit.
+/// </summary>
 bool __fastcall Bits_Read(BitCursor * cursor)
 {
 	cursor->Bit++;
@@ -471,7 +512,9 @@ bool __fastcall Bits_Read(BitCursor * cursor)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x004335A0
+/// <summary>
+/// Starts writing bits to the buffer specified, with the first byte given.
+/// </summary>
 void __fastcall Bits_Open_Write(BitCursor * cursor, unsigned char * ptr, unsigned char value)
 {
 	cursor->Ptr = ptr;
@@ -479,7 +522,9 @@ void __fastcall Bits_Open_Write(BitCursor * cursor, unsigned char * ptr, unsigne
 	*ptr = value;
 }
 
-// FUNCTION: GAMEMD 0x004335B0
+/// <summary>
+/// Writes the next bit.
+/// </summary>
 void __fastcall Bits_Write(BitCursor * cursor, unsigned char bit)
 {
 	cursor->Bit++;
@@ -491,8 +536,10 @@ void __fastcall Bits_Write(BitCursor * cursor, unsigned char bit)
 	*cursor->Ptr |= (unsigned char)(bit << cursor->Bit);
 }
 
-// FUNCTION: GAMEMD 0x004335E0
-int __fastcall FUN_004335E0(unsigned char * source, unsigned char * dest, int count)
+/// <summary>
+/// Copies the bits specified, inserting a set bit after every seven so that no byte is zero; returns the bits added.
+/// </summary>
+int __fastcall Bit_Stuff(unsigned char * source, unsigned char * dest, int count)
 {
 	BitCursor in;
 	BitCursor out;
@@ -510,8 +557,10 @@ int __fastcall FUN_004335E0(unsigned char * source, unsigned char * dest, int co
 	return stuffed;
 }
 
-// FUNCTION: GAMEMD 0x004336C0
-unsigned int __fastcall FUN_004336C0(unsigned char * source, unsigned char * dest, unsigned int count)
+/// <summary>
+/// Copies stuffed bits back, dropping every eighth; returns the bytes written.
+/// </summary>
+unsigned int __fastcall Bit_Unstuff(unsigned char * source, unsigned char * dest, unsigned int count)
 {
 	BitCursor in;
 	BitCursor out;
@@ -528,8 +577,10 @@ unsigned int __fastcall FUN_004336C0(unsigned char * source, unsigned char * des
 	return bytes;
 }
 
-// FUNCTION: GAMEMD 0x00433770
-unsigned int __fastcall FUN_00433770(unsigned char * source, wchar_t * dest, unsigned int count)
+/// <summary>
+/// Unstuffs a wide string of up to the characters specified; returns the characters written.
+/// </summary>
+unsigned int __fastcall Bit_Unstuff_String(unsigned char * source, wchar_t * dest, unsigned int count)
 {
 	BitCursor in;
 	BitCursor out;

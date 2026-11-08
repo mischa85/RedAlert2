@@ -161,25 +161,25 @@ class BinkHandle
 		BinkHandle(char const * name);
 		BinkHandle(char const * name, Surface * surface);
 		~BinkHandle(void);
-		bool FUN_00432750(char const * name);
-		void FUN_00432A60(void);
-		bool FUN_00432E40(Surface * surface, int x, int y);
-		void FUN_00433180(Surface * surface, int x, int y);
-		void FUN_004331F0(Surface * surface, int x, int y, bool subtitle);
-		void FUN_00433270(Surface * surface);
-		void FUN_00433330(Surface * surface);
-		int FUN_004333E0(void);
-		void FUN_004333F0(void);
-		void FUN_00432C30(bool pause);
-		void FUN_00432C70(void);
+		bool Open(char const * name);
+		void Close(void);
+		bool Draw_Frame(Surface * surface, int x, int y);
+		void Redraw_Frame(Surface * surface, int x, int y);
+		void Copy_Frame(Surface * surface, int x, int y, bool subtitle);
+		void Draw_Subtitle(Surface * surface);
+		void Erase_Subtitle(Surface * surface);
+		int Current_Time(void);
+		void Update_Focus(void);
+		void Pause(bool pause);
+		void Play(void);
 		bool Is_Finished(void) const; // RA2: have all the frames been shown?
 		bool Render_Frame(void); // RA2: draws the next frame to the surface if it is due
-		void FUN_00433020(void);
+		void Check_Frame_Ready(void);
 		void Set_Position(int x, int y); // RA2
-		void FUN_00432C10(void (__fastcall * callback)(void *));
-		void FUN_00432BD0(int frame);
-		int FUN_00432BF0(void);
-		void FUN_00433060(void);
+		void Set_Subtitle_Callback(void (__fastcall * callback)(void *));
+		void Goto_Frame(int frame);
+		int Frame_Time(void);
+		void Redraw(void);
 
 		bool Flag;
 		BinkInfo * Bink;
