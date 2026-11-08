@@ -330,9 +330,9 @@ unk_00529590,0x00529590,0x0052EE00,unknown,code not assigned to a module
 jshell,0x0052EE00,0x0052EF70,tibsun,"functions compiled from src/jshell.cpp, matched, without gaps"
 unk_0052EF70,0x0052EF70,0x00532290,unknown,code not assigned to a module
 unk_00532290,0x00532290,0x005322C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005322C0,0x005322C0,0x005332B0,unknown,code not assigned to a module
-unk_005332B0,0x005332B0,0x00533330,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00533330,0x00533330,0x005348A0,unknown,code not assigned to a module
+unk_005322C0,0x005322C0,0x00533110,unknown,code not assigned to a module
+laser,0x00533110,0x005334D0,tibsun,"functions compiled from src/laser.cpp, matched, without gaps; one placed by the gap; ?Draw_All@LaserDrawClass@@SIXXZ not placed; ?Draw_It@LaserDrawClass@@QAEXXZ not placed"
+unk_005334D0,0x005334D0,0x005348A0,unknown,code not assigned to a module
 layer,0x005348A0,0x00534B50,tibsun,"functions compiled from src/layer.cpp, matched, without gaps"
 lcw,0x00534B50,0x00534EE0,tibsun,"functions compiled from src/lcw.cpp, matched, without gaps"
 lcwpipe,0x00534EE0,0x00535280,tibsun,"functions compiled from src/lcwpipe.cpp, matched, without gaps; one placed by alphabetical order"
