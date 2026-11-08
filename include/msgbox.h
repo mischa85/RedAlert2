@@ -63,3 +63,5 @@ class WWMessageBox
 		int _Process(int msg, int defresponse, int b1txt, int b2txt=TXT_NONE, int b3txt=TXT_NONE, bool preserve=false);
 		int _Process(char const *msg, int defresponse, int b1txt=TXT_OK, int b2txt=TXT_NONE, int b3txt=TXT_NONE, bool preserve=false);
 };
+
+bool Prompt_Dialog(wchar_t const * text); // RA2: 0x00600C80; shows the text and returns false when the player cancels

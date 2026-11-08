@@ -27,7 +27,7 @@ class CD : public DiskSwap
 		virtual bool Request_Disk(DiskID disk) override;
 		virtual bool Swap(DiskID disk) override;
 
-		static DiskID Get_Current_Disk(void);
+		static DiskID Get_Current_Disk(int timeout); // RA2: timeout
 
 		static bool Force_Available(void) { return(CD().Force_Available(RequiredCD)); }
 
