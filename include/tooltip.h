@@ -70,6 +70,8 @@ class ToolTipManager
 
 		int Get_Timer_Delay(void);
 		void Set_Timer_Delay(int delay);
+		void Save_Timer_Delay(void); // RA2
+		void Restore_Timer_Delay(void); // RA2
 
 		int Get_Lifetime(void);
 		void Set_Lifetime(int lifetime);

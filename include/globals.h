@@ -338,3 +338,5 @@ extern TiberianSunClassFactory TibSunFactory;
 extern "C"{
 	extern int FPU_FLAG;
 }
+
+extern bool CursorCheat; // RA2: toggled by the CursorCheat debug command; tooltips then show without delay
