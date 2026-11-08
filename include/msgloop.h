@@ -47,3 +47,13 @@ void Remove_Accelerator(HACCEL accelerator);
 
 // General purpose message intercept handler.
 extern bool (*Message_Intercept_Handler)(MSG &msg);
+
+// RA2: message queue wrappers; the get waits by peeking with removal and returns zero on WM_QUIT.
+int Peek_Windows_Message(MSG * msg, HWND window, unsigned filter_min, unsigned filter_max, unsigned remove);
+int Get_Windows_Message(MSG * msg, HWND window, unsigned filter_min, unsigned filter_max);
+extern int MessageLoopCount; // RA2: counts the calls of Windows_Message_Handler
+
+// RA2: passes the launcher's messages on to the copy protection.
+namespace CopyProtection {
+	void DispatchLauncherMessage(MSG * msg);
+}

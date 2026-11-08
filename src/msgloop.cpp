@@ -99,13 +99,17 @@ void Windows_Message_Handler(void)
 
 	MSG msg;
 
+	MessageLoopCount++; // RA2
+
 	/*
 	**	Process windows messages until the message queue is exhuasted.
 	*/
-	while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-		if (!GetMessage( &msg, NULL, 0, 0 )) {
+	while (Peek_Windows_Message(&msg, NULL, 0, 0, PM_NOREMOVE)) { // RA2: through the wrappers
+		if (!Get_Windows_Message(&msg, NULL, 0, 0)) {
 			return;
 		}
+
+		CopyProtection::DispatchLauncherMessage(&msg); // RA2
 
 		if (ToolTips != NULL) {
 			ToolTips->Message_Handler(&msg);
