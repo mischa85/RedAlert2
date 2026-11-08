@@ -502,7 +502,9 @@ unk_005B5DC0,0x005B5DC0,0x005B5EE0,unknown,code not assigned to a module
 msgloop,0x005B5EE0,0x005B6210,tibsun,"functions compiled from src/msgloop.cpp, matched, without gaps; one placed by the gap"
 unk_005B6210,0x005B6210,0x005B6A00,unknown,code not assigned to a module
 mstimer,0x005B6A00,0x005B6A40,tibsun,"functions compiled from src/mstimer.cpp, matched, without gaps; two placed by definition and alphabetical order; one placed by the gap"
-unk_005B6A40,0x005B6A40,0x005BB9D0,unknown,code not assigned to a module
+unk_005B6A40,0x005B6A40,0x005B9B20,unknown,code not assigned to a module
+multiplayerteam,0x005B9B20,0x005B9C20,source,"functions compiled from src/multiplayerteam.cpp, matched, without gaps"
+unk_005B9C20,0x005B9C20,0x005BB9D0,unknown,code not assigned to a module
 unk_005BB9D0,0x005BB9D0,0x005BBA50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005BBA50,0x005BBA50,0x005BCE90,unknown,code not assigned to a module
 unk_005BCE90,0x005BCE90,0x005BD070,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
