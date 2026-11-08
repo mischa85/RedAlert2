@@ -16,7 +16,6 @@ static TimeStamp (*timerFunc)(void) = NULL;
 static TimeStamp failsafeGetTime(void);
 static TimeStamp highResGetTime(void);
 
-// FUNCTION: GAMEMD 0x00409360
 void InitAudioTimer(void)
 {
 	LARGE_INTEGER freq;
@@ -29,13 +28,11 @@ void InitAudioTimer(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004093B0
 TimeStamp AudioGetTime(void)
 {
 	return timerFunc ? timerFunc() : 0;
 }
 
-// FUNCTION: GAMEMD 0x004093C0
 static TimeStamp highResGetTime(void)
 {
 	LARGE_INTEGER count;
@@ -49,7 +46,6 @@ static TimeStamp highResGetTime(void)
 	return myTime.timeStamp;
 }
 
-// FUNCTION: GAMEMD 0x004093F0
 static TimeStamp failsafeGetTime(void)
 {
 	static volatile TimeStamp time = (TimeStamp)0x100000000;
