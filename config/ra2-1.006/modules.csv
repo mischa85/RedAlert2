@@ -319,10 +319,8 @@ intro,0x0051EEE0,0x0051EF10,tibsun,"functions compiled from src/intro.cpp, match
 unk_0051EF10,0x0051EF10,0x00522040,unknown,code not assigned to a module
 unk_00522040,0x00522040,0x005221A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005221A0,0x005221A0,0x00523410,unknown,code not assigned to a module
-unk_00523410,0x00523410,0x00523440,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00523440,0x00523440,0x00523780,unknown,code not assigned to a module
-unk_00523780,0x00523780,0x00523840,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00523840,0x00523840,0x00523C30,unknown,code not assigned to a module
+ipxaddr,0x00523410,0x00523980,tibsun,"functions compiled from src/ipxaddr.cpp, matched, without gaps; one placed by the gap"
+unk_00523980,0x00523980,0x00523C30,unknown,code not assigned to a module
 unk_00523C30,0x00523C30,0x00523D10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00523D10,0x00523D10,0x00523D30,unknown,code not assigned to a module
 unk_00523D30,0x00523D30,0x00523D90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
