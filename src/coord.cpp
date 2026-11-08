@@ -54,6 +54,16 @@
 #include "mouse.h"
 
 
+/*
+**	RA2: Coord_Scatter moves the coordinate through this wrapper; calling Move_Coord directly
+**	compiles to different code.
+*/
+static inline Coord _Move_Coord(Coord const & start, DirType const & dir, int distance)
+{
+	return(Move_Coord(start, dir, distance));
+}
+
+
 /***************************************************************************
 **	This array is used to index a facing in order to retrieve a cell
 **	offset that, when added to another cell, will achieve the adjacent cell
@@ -111,14 +121,14 @@ Coord Coord_Scatter(Coord const & coord, int distance, bool lock)
 {
 	Coord newcoord;
 
-	newcoord = Move_Coord(coord, Random_Dir(DIR_N, DIR_MAX), distance);
+	newcoord = _Move_Coord(coord, Random_Dir(DIR_N, DIR_MAX), distance); // RA2: through the wrapper
 
 	unsigned int cell_x = newcoord.X / CELL_LEPTON_W;
 	unsigned int cell_y = newcoord.Y / CELL_LEPTON_H;
 	if (cell_x >= MAP_CELL_W || cell_y >= MAP_CELL_H) newcoord = coord;
 
 	if (lock) {
-		newcoord = Coord_Snap(newcoord);
+		newcoord = newcoord - Point2D(newcoord.X & (CELL_LEPTON_W-1), newcoord.Y & (CELL_LEPTON_H-1)) + Point2D(CELL_LEPTON_W/2, CELL_LEPTON_H/2); // RA2: snapped to the cell center in place
 	}
 
 	return(newcoord);
@@ -140,3 +150,4 @@ Coord Adjacent_Coord_With_Height(Coord const & coord, FacingType dir)
 	newcoord.Z += Map.Get_Height_GL(newcoord) - Map.Get_Height_GL(coord);
 	return(newcoord);
 }
+
