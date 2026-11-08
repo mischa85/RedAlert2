@@ -826,9 +826,9 @@ unk_0070C610,0x0070C610,0x0070E1A0,unknown,code not assigned to a module
 vanimtype,0x0070E1A0,0x0070EE10,tibsun,"functions compiled from src/vanimtype.cpp, matched, without gaps; four placed by the gap"
 unk_0070EE10,0x0070EE10,0x0070EFC0,unknown,code not assigned to a module
 vector,0x0070EFC0,0x0070F3B0,tibsun,"functions compiled from src/vector.cpp, matched, without gaps"
-unk_0070F3B0,0x0070F3B0,0x00710B50,unknown,code not assigned to a module
-unk_00710B50,0x00710B50,0x00710BB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00710BB0,0x00710BB0,0x00712B20,unknown,code not assigned to a module
+unk_0070F3B0,0x0070F3B0,0x0070F820,unknown,code not assigned to a module
+vein,0x0070F820,0x00712700,tibsun,"functions compiled from src/vein.cpp, matched, without gaps; four placed by the gap"
+unk_00712700,0x00712700,0x00712B20,unknown,code not assigned to a module
 unk_00712B20,0x00712B20,0x00712B50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00712B50,0x00712B50,0x00713090,unknown,code not assigned to a module
 unk_00713090,0x00713090,0x00713160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
