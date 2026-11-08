@@ -108,7 +108,7 @@ class ThemeClass
 		bool Is_Allowed(ThemeType index) const;
 		bool Is_Regular(ThemeType theme) const {return(theme != THEME_NONE && Themes[theme]->Normal);}
 		char const * Base_Name(ThemeType index) const;
-		char const * Full_Name(ThemeType index) const;
+		wchar_t const * Full_Name(ThemeType index) const; // RA2: wide
 		int Max_Themes(void) const {return(Themes.Count());}
 		int Play_Song(ThemeType index);
 		bool Still_Playing(void) const;

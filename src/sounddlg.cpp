@@ -47,6 +47,8 @@
 #include "theme.h"
 #include "winfix.h"
 
+int __fastcall AudioDeviceAvailable(void); // RA2: whether the audio library has a device
+
 bool DialogInitialized = false;
 
 
@@ -65,9 +67,9 @@ void SoundControlsClass::Dialog(void)
 
 	HWND dialog;
 	if (!GameActive) {
-		dialog = OwnerDraw::Begin_Dialog(IDD_SOUND_OPTIONS_DIALOG_LITE, (DLGPROC)Sound_Option_Dialog_Func);
+		dialog = OwnerDraw::Begin_Dialog(IDD_SOUND_OPTIONS_DIALOG_LITE, Sound_Option_Dialog_Func, 0); // RA2
 	} else {
-		dialog = OwnerDraw::Begin_Dialog(IDD_SOUND_OPTIONS_DIALOG, (DLGPROC)Sound_Option_Dialog_Func);
+		dialog = OwnerDraw::Begin_Dialog(IDD_SOUND_OPTIONS_DIALOG, Sound_Option_Dialog_Func, 0); // RA2
 	}
 
 	if (dialog) {
@@ -81,7 +83,7 @@ void SoundControlsClass::Dialog(void)
 				rc = 2;
 			}
 			if (!GameActive) {
-				Title_Screen_Restore();
+				Title_Screen_Restore(false); // RA2
 			}
 		}
 
@@ -112,14 +114,14 @@ BOOL CALLBACK SoundControlsClass::Sound_Option_Dialog_Func(HWND window, UINT mes
 
 	if (rc == 0) {
 		switch (message) {
-			case WM_INITDIALOG: {
+			case OD_SUBCLASSED: { // RA2
 					DialogInitialized = false;
-					bool enabled = Audio_Available();
+					int enabled = AudioDeviceAvailable();
+					HWND track = GetDlgItem(window, IDC_MUSIC_VOLUME);
 
 					/*
 					**	Music volume slider.
 					*/
-					HWND track = GetDlgItem(window, IDC_MUSIC_VOLUME);
 					if (track) {
 						SendMessage(track, OD_TRACKSILENT, 0, 0);
 						Slider_SetRange(track, 0, VOLUME_LEVELS);
@@ -177,16 +179,16 @@ BOOL CALLBACK SoundControlsClass::Sound_Option_Dialog_Func(HWND window, UINT mes
 
 							ListBox_ResetContent(list);
 
-							for (ThemeType index = THEME_FIRST; index < Theme.Max_Themes(); index++) {
-								if (Theme.Is_Allowed(index)) {
-									char buffer[100];
-									int length = Theme.Track_Length(index);
-									char const * fullname = Theme.Full_Name(index);
+							for (int index = THEME_FIRST; index < Theme.Max_Themes(); index++) { // RA2
+								if (Theme.Is_Allowed((ThemeType)index)) {
+									wchar_t buffer[100];
+									int length = Theme.Track_Length((ThemeType)index);
+									wchar_t const * fullname = Theme.Full_Name((ThemeType)index);
+									swprintf(buffer, L"%02d - %s [%d:%02d]", visible_num, fullname, length / 60, length % 60); // RA2
 
-									sprintf(buffer, "%02d - %s [%d:%02d]", visible_num, fullname, length / 60, length % 60);
 									visible_num++;
 
-									int row = ListBox_AddString(list, buffer);
+									int row = SendMessage(list, OD_ADDSTRINGW, 0, (LPARAM)buffer); // RA2
 									if (row != LB_ERR) {
 										ListBox_SetItemData(list, row, index);
 										if (Theme.What_Is_Playing() == index) {
@@ -237,23 +239,29 @@ BOOL CALLBACK SoundControlsClass::Sound_Option_Dialog_Func(HWND window, UINT mes
 					*/
 					case IDC_SOUND_STOP:
 						if (HIWORD(wparam) == 0) {
+							Theme.Stop(true); // RA2
 							Theme.Queue_Song(THEME_QUIET);
+							Options.IsInGameMusic = false; // RA2
 						}
 						break;
 
-					case IDOK:
+					case 1670: // RA2: the OK button
 						if (HIWORD(wparam) == 0) {
 							HWND button = GetDlgItem(window, IDC_MUSIC_VOLUME);
 							if (button) {
-								Options.Set_Score_Volume(Slider_GetPos(button) / (double)VOLUME_LEVELS, false);
+								Options.Set_Score_Volume(Slider_GetPos(button) * 0.1, false); // RA2
+								if (Options.ScoreVolume == 0.0f) {
+									Theme.Queue_Song(Theme.What_Is_Playing());
+									Theme.Stop();
+							}
 							}
 							button = GetDlgItem(window, IDC_SOUND_VOLUME);
 							if (button) {
-								Options.Set_Sound_Volume(Slider_GetPos(button) / (double)VOLUME_LEVELS, false);
+								Options.Set_Sound_Volume(Slider_GetPos(button) * 0.1, false); // RA2
 							}
 							button = GetDlgItem(window, IDC_VOICE_VOLUME);
 							if (button) {
-								Options.Set_Voice_Volume(Slider_GetPos(button) / (double)VOLUME_LEVELS, false);
+								Options.Set_Voice_Volume(Slider_GetPos(button) * 0.1, false); // RA2
 							}
 							int * res = (int *)GetWindowLong(window, DWL_USER);
 							*res = IDOK;
@@ -270,8 +278,11 @@ BOOL CALLBACK SoundControlsClass::Sound_Option_Dialog_Func(HWND window, UINT mes
 								int row = ListBox_GetCurSel(list);
 								if (row != LB_ERR) {
 									ThemeType theme = (ThemeType)ListBox_GetItemData(list, row);
-									Theme.Stop();
+									Options.IsInGameMusic = true; // RA2
+									if (Theme.What_Is_Playing() != theme) {
+										Theme.Stop(true);
 									Theme.Queue_Song(theme);
+									}
 								}
 							}
 						}
@@ -286,11 +297,11 @@ BOOL CALLBACK SoundControlsClass::Sound_Option_Dialog_Func(HWND window, UINT mes
 				if (DialogInitialized) {
 					HWND track = (HWND)lparam;
 					if (track == GetDlgItem(window, IDC_MUSIC_VOLUME)) {
-						Options.Set_Score_Volume(Slider_GetPos(track) / (double)VOLUME_LEVELS, true);
+						Options.Set_Score_Volume(Slider_GetPos(track) * 0.1, true);
 					} else if (track == GetDlgItem(window, IDC_SOUND_VOLUME)) {
-						Options.Set_Sound_Volume(Slider_GetPos(track) / (double)VOLUME_LEVELS, true);
+						Options.Set_Sound_Volume(Slider_GetPos(track) * 0.1, true);
 					} else if (track == GetDlgItem(window, IDC_VOICE_VOLUME)) {
-						Options.Set_Voice_Volume(Slider_GetPos(track) / (double)VOLUME_LEVELS, true);
+						Options.Set_Voice_Volume(Slider_GetPos(track) * 0.1, true);
 					}
 				}
 				break;
@@ -300,3 +311,4 @@ BOOL CALLBACK SoundControlsClass::Sound_Option_Dialog_Func(HWND window, UINT mes
 
 	return(rc);
 }
+

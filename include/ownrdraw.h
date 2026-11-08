@@ -294,7 +294,7 @@ namespace OwnerDraw {
 	int Capture_Mouse(void);
 	int Release_Mouse(void);
 
-	HWND Begin_Dialog(int id, DLGPROC proc);
+	HWND Begin_Dialog(int id, DLGPROC proc, LPARAM param = 0); // RA2: param
 	void Display_Dialog(HWND window);
 	int Move_Dialog(HWND window, int x, int y);
 	void End_Dialog(HWND window);
@@ -402,6 +402,11 @@ inline unsigned short OD_Blend_Color(unsigned short pixel, unsigned short color,
  * Used by: all controls.  Input: lParam = BOOL.  Output: previous state.
  */
 #define OD_DISABLEPAINT				(WM_USER + 157)
+
+/*
+**	RA2: adds a wide string to an owner-drawn list box, returning the new row.
+*/
+#define OD_ADDSTRINGW				(WM_USER + 205)
 
 /*
  * Restore the font / bk-mode / bk-color / text-color into the HDC that were saved by OD_SAVEDC.
