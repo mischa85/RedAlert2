@@ -222,7 +222,9 @@ factory,0x004B90A0,0x004B9F20,tibsun,"functions compiled from src/factory.cpp, m
 unk_004B9F20,0x004B9F20,0x004BA410,unknown,code not assigned to a module
 fastmath,0x004BA410,0x004BAD50,tibsun,"functions compiled from src/fastmath.cpp, without gaps; matched except ?init_sqrt_tab@@YIXXZ and ?init_atan_tab@@YIXXZ; three placed by the gap"
 field,0x004BAD50,0x004BB160,tibsun,"functions compiled from src/field.cpp, matched, without gaps"
-unk_004BB160,0x004BB160,0x004BBF00,unknown,code not assigned to a module
+unk_004BB160,0x004BB160,0x004BB350,unknown,code not assigned to a module
+findpath,0x004BB350,0x004BB3F0,tibsun,"functions compiled from src/findpath.cpp, matched, without gaps; ?Safety_Point@FootClass@@QAE?AVCell@@ABV2@0HH@Z not placed"
+unk_004BB3F0,0x004BB3F0,0x004BBF00,unknown,code not assigned to a module
 flasher,0x004BBF00,0x004BBF20,tibsun,"functions compiled from src/flasher.cpp, matched, without gaps"
 unk_004BBF20,0x004BBF20,0x004BDC20,unknown,code not assigned to a module
 unk_004BDC20,0x004BDC20,0x004BDD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
