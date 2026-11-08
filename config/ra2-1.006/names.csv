@@ -174,7 +174,7 @@ address,symbol,evidence
 0x004092D0,?AudioGetTime@@YI_KXZ,"compiled from src/audtimer.cpp, matched"
 0x004092E0,?highResGetTime@@YI_KXZ,"compiled from src/audtimer.cpp, matched"
 0x00409310,?failsafeGetTime@@YI_KXZ,"compiled from src/audtimer.cpp, matched"
-0x0040A6C0,?AudioDirectSound@@YIIXZ,"inferred: referenced by matched src/bfiofile2.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x0040A6C0,?GetDirectSoundObject@@YIPAXXZ,"inferred: referenced by matched src/bfiofile2.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0040AED0,??_H@YGXPAXIHP6EX0@Z@Z,"inferred: referenced by matched src/voxdrsys.cpp (67 references); across all matched code never at another address, and no other symbol here"
 0x0040DB60,?Name_From_RTTI@@YIPBDW4RTTIType@@@Z,"compiled from src/_rtti.cpp, matched"
 0x0040DB90,?RTTI_From_Name@@YI?AW4RTTIType@@PBD@Z,"compiled from src/_rtti.cpp, matched; code at 2 addresses, placed by the gap"
