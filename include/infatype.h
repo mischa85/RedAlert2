@@ -195,5 +195,7 @@ class InfantryTypeClass : public TechnoTypeClass
 		virtual ObjectClass * Create_One_Of(HouseClass * house) const override;
 		virtual Cell const * Occupy_List(bool placement=false) const override;
 		virtual int Repair_Cost(void) const override;
+		virtual bool CanUseWaypoint(void) const override; // RA2
+		virtual bool CanAttackMove(void) const override; // RA2
 		virtual int Repair_Step(void) const override;
 };
