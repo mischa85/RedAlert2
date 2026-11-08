@@ -431,3 +431,12 @@ void ToolTipManager::Reset_Current(void)
 		Reset(&CurrentToolTipInfo);
 	}
 }
+
+
+/// <summary>
+/// RA2: checks whether a tooltip is currently shown (YR name).
+/// </summary>
+bool ToolTipManager::IsToolTipShowing(void)
+{
+	return(CurrentToolTip != NULL);
+}
