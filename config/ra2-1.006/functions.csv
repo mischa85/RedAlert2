@@ -583,6 +583,7 @@ address,size,evidence
 0x0047D4B0,48,"function of the Tiberian Sun reconstruction, matched"
 0x0047D4E0,32,"function of the Tiberian Sun reconstruction, matched"
 0x0047D500,128,"code of src/cheklist.cpp, matched"
+0x0047D580,368,"code of src/cheklist.cpp, matched"
 0x0047D740,96,"function of the Tiberian Sun reconstruction, matched"
 0x0047D7C0,144,"code of src/colrlist.cpp, matched"
 0x0047D850,96,"code of src/colrlist.cpp, matched"

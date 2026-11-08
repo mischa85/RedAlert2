@@ -103,8 +103,8 @@ unk_004763D0,0x004763D0,0x00476460,tibsun,matched functions of one source file o
 unk_00476460,0x00476460,0x0047D150,unknown,code not assigned to a module
 checkbox,0x0047D150,0x0047D2C0,tibsun,"functions compiled from src/checkbox.cpp, matched, without gaps"
 unk_0047D2C0,0x0047D2C0,0x0047D2E0,unknown,code not assigned to a module
-cheklist,0x0047D2E0,0x0047D580,tibsun,"functions compiled from src/cheklist.cpp, matched, without gaps; one placed by the gap; ?Draw_Entry@CheckListClass@@MAEXHHHHH@Z not placed"
-unk_0047D580,0x0047D580,0x0047D7C0,unknown,code not assigned to a module
+cheklist,0x0047D2E0,0x0047D6F0,tibsun,"functions compiled from src/cheklist.cpp, matched, without gaps; one placed by the gap"
+unk_0047D6F0,0x0047D6F0,0x0047D7C0,unknown,code not assigned to a module
 colrlist,0x0047D7C0,0x0047DF40,tibsun,"functions compiled from src/colrlist.cpp, matched, without gaps"
 unk_0047DF40,0x0047DF40,0x0047F8B0,unknown,code not assigned to a module
 unk_0047F8B0,0x0047F8B0,0x0047F9B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
