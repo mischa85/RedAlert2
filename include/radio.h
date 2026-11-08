@@ -80,10 +80,11 @@ class RadioClass : public MissionClass
 		**	Constructors, Destructors, and overloaded operators.
 		*/
 		RadioClass(void);
-		RadioClass(NoInitClass const & x) : BASECLASS(x), RadioLinks(x) {};
+		RadioClass(NoInitClass const & x);
 		virtual ~RadioClass(void) override {/*Radio=0;*/};
 
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
+		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override; // RA2
 
 		/*---------------------------------------------------------------------
 		**	Member function prototypes.
@@ -91,13 +92,23 @@ class RadioClass : public MissionClass
 		bool In_Radio_Contact(void) const {return(RadioLinks[0] != 0);};
 		void Radio_Off(void) {RadioLinks[0] = 0;};
 		TechnoClass * Contact_With_Whom(void) const {return(RadioLinks[0]);};
+		TechnoClass * Radio_Link(int index); // RA2
+		TechnoClass * Radio_Link(int index) const; // RA2
+		bool ContainsLink(TechnoClass const * techno) const; // RA2
+		int FindLinkIndex(TechnoClass const * techno) const; // RA2
+		bool HasFreeLink(void) const; // RA2
+		bool HasFreeLink(TechnoClass const * ignore) const; // RA2
+		bool HasAnyLink(void) const; // RA2
+		void SetLinkCount(int count); // RA2
 
 		// Inherited from base class(es).
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual RadioMessageType Receive_Message(RadioClass * from, RadioMessageType message, int & param) override;
-		virtual RadioMessageType Transmit_Message(RadioMessageType message, int & param=LParam, RadioClass * to=NULL);
+		virtual RadioMessageType Transmit_Message(RadioMessageType message, int & param, RadioClass * to=NULL); // RA2: no default param
 		virtual RadioMessageType Transmit_Message(RadioMessageType message, RadioClass * to);
+		virtual RadioMessageType Transmit_Message(RadioMessageType message); // RA2
+		virtual void SendToEachLink(RadioMessageType command); // RA2
 #ifdef _DEBUG
 		virtual void Debug_Dump(MonoClass *mono) const override;
 #endif
