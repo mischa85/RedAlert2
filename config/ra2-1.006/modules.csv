@@ -8,7 +8,8 @@ auddev,0x00402860,0x00403CE0,source,"functions compiled from src/auddev.cpp, mat
 unk_00403CE0,0x00403CE0,0x00407030,unknown,code not assigned to a module
 audlevel,0x00407030,0x004071F0,source,"functions compiled from src/audlevel.cpp, matched, without gaps"
 audlists,0x004071F0,0x00407400,source,"functions compiled from src/audlists.cpp, matched, without gaps; three placed by the gap"
-unk_00407400,0x00407400,0x0040D7D0,unknown,code not assigned to a module
+audmpool,0x00407400,0x00407480,source,"functions compiled from src/audmpool.cpp, matched, without gaps; one placed by the gap"
+unk_00407480,0x00407480,0x0040D7D0,unknown,code not assigned to a module
 unk_0040D7D0,0x0040D7D0,0x0040D810,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0040D810,0x0040D810,0x0040DB60,unknown,code not assigned to a module
 _rtti,0x0040DB60,0x0040DC70,tibsun,"functions compiled from src/_rtti.cpp, matched, without gaps; two placed by definition order; one placed by the gap"
