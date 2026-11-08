@@ -82,8 +82,6 @@ inline Cell Next_Cell(Cell const & cell, FacingType facing)
 		}
 		return(Cell(0,0));
 	}
-	/// Raw index on purpose. The tunnel case is handled above, so the facing is known good
-	/// here; routing this through an Adjacent_Cell helper would add a redundant mask.
 	return(cell + (AdjacentCell[facing]));
 }
 
@@ -98,24 +96,12 @@ inline Cell Next_Cell(Cell const & cell, FacingType facing)
 Cell Follow_Path(Cell const & cell, int count, FacingType const * path)
 {
 	Cell result = cell;
-	for (int i = 0; i < count; i++) {
+	for (int i = 0; ; i++) { // RA2
+		if (i >= count) {
+			return(result);
+		}
 		result = Next_Cell(result, path[i]);
 	}
-	return(result);
-}
-
-/// <summary>
-/// Fetches the cell arrived at after following a run of moves.
-/// </summary>
-/// <param name="count">The number of moves to follow.</param>
-/// <returns>Returns with the cell reached at the end of the walk.</returns>
-static Cell Follow_Path2(Cell const & cell, int count, FacingType const * path)
-{
-	Cell result = cell;
-	for (int i = 0; i < count; i++) {
-		result = Next_Cell(result, path[i]);
-	}
-	return(result);
 }
 
 
@@ -134,18 +120,20 @@ static Cell Follow_Path2(Cell const & cell, int count, FacingType const * path)
 double AStarClass::Get_Movement_Cost(CellClass **from, CellClass **to, bool bridge, MoveType move, FootClass * foot)
 {
 	static float _costs[MOVE_COUNT] = {
-		1.0,		// MOVE_OK
-		1000.0,		// MOVE_CLOAK
-		1.0,		// MOVE_MOVING_BLOCK
-		1.0,		/// MOVE_CLOSED_GATE
-		60.0,		/// MOVE_FRIENDLY_DESTROYABLE
-		20.0,		// MOVE_DESTROYABLE
-		8.0,		// MOVE_TEMP
-		10000.0		// MOVE_NO
+		1.0, // RA2
+		1000.0,
+		1.0,
+		1.0,
+		60.0,
+		20.0,
+		8.0,
+		10000.0
 	};
 
-	CellClass * from_cell = from[0];
-	CellClass * to_cell = to[0];
+	CellClass ** from_cells = from; // RA2
+	CellClass ** to_cells = to;
+	CellClass * from_cell = from_cells[0];
+	CellClass * to_cell = to_cells[0];
 
 	float cost = _costs[move];
 
@@ -156,11 +144,12 @@ double AStarClass::Get_Movement_Cost(CellClass **from, CellClass **to, bool brid
 	bool on_bridge = bridge;
 
 	if (move == MOVE_MOVING_BLOCK) {
-		occupier = (FootClass *)cellptr->Cell_Occupier(on_bridge);
-		bool clear = false;
+		ObjectClass * object = cellptr->Cell_Occupier(on_bridge); // RA2
+		occupier = (FootClass *)object;
 		int depth = 0;
+		bool clear = false;
 		if (Avoidance == AVOIDANCE_NONE) {
-			while (depth < 10) {
+			for (; depth < 10; depth++) { // RA2
 				if (occupier == NULL) {
 					clear = true;
 					break;
@@ -187,7 +176,6 @@ double AStarClass::Get_Movement_Cost(CellClass **from, CellClass **to, bool brid
 				on_bridge = cellptr->IsUnderBridge && (occupier->IsOnBridge || occupier->Get_Cell_Ptr()->Height - cellptr->Height > 2);
 				next_occupier = (FootClass *)cellptr->Cell_Occupier(on_bridge);
 				occupier = (FootClass *)next_occupier;
-				depth++;
 			}
 		}
 
@@ -240,7 +228,8 @@ double AStarClass::Get_Movement_Cost(CellClass **from, CellClass **to, bool brid
 			multiplier = 2.0f;
 		}
 
-		return(cost * multiplier);
+		float result = cost * multiplier; // RA2
+		return(result);
 
 	}
 	return(cost);
@@ -248,17 +237,16 @@ double AStarClass::Get_Movement_Cost(CellClass **from, CellClass **to, bool brid
 
 
 /// <summary>
-/// Finds a path between two cells at the individual cell level.
-/// This is the real A* search. Cells are expanded outward from the start until the
-/// destination is reached or the effort allowance runs out, and the resulting move list is
-/// then straightened and optimized. When the hierarchical search has already run, the
-/// expansion is confined to the corridor it marked out.
+/// Creates a search node for a cell reached from a parent node.
+/// The node carries the running movement cost plus an estimate of what remains, and those
+/// together decide its priority in the open queue. Cell height is carried over from the
+/// parent so that stepping onto and off of bridge decks is tracked.
 /// </summary>
-/// <param name="moves">Buffer that receives the facing commands making up the path.</param>
-/// <param name="max_loops">The most cells the search may expand, or a negative value to let
-/// it run until the queue is exhausted.</param>
-/// <param name="with_hs">Should the search be confined to the hierarchical corridor?</param>
-/// <returns>Returns with a pointer to the path found, or NULL if there is no route.</returns>
+/// <param name="parent">The node this cell was reached from, or NULL for the start cell.</param>
+/// <param name="cell">The map array slot of the cell the node stands for.</param>
+/// <param name="to">The destination cell, used to estimate the remaining cost.</param>
+/// <param name="movement_cost">The cost of the step from the parent into this cell.</param>
+/// <returns>Returns with a pointer to the new node, taken from the search's node pool.</returns>
 PathStruct * AStarClass::Find_Path_Regular(Cell const & from, Cell const & to, FootClass *foot, FacingType *moves, int max_loops, bool with_hs)
 {
 	FacingType face;
@@ -506,17 +494,6 @@ breakout:
 }
 
 
-/// <summary>
-/// Creates a search node for a cell reached from a parent node.
-/// The node carries the running movement cost plus an estimate of what remains, and those
-/// together decide its priority in the open queue. Cell height is carried over from the
-/// parent so that stepping onto and off of bridge decks is tracked.
-/// </summary>
-/// <param name="parent">The node this cell was reached from, or NULL for the start cell.</param>
-/// <param name="cell">The map array slot of the cell the node stands for.</param>
-/// <param name="to">The destination cell, used to estimate the remaining cost.</param>
-/// <param name="movement_cost">The cost of the step from the parent into this cell.</param>
-/// <returns>Returns with a pointer to the new node, taken from the search's node pool.</returns>
 AStarClass::RegularOpenNode * AStarClass::Create_Node(RegularOpenNode * parent, CellClass ** cell, Cell const & to, float movement_cost)
 {
 	RegularOpenNode * open_node = &RegularOpenNodes->Nodes[RegularOpenNodes->ActiveCount++];
@@ -762,7 +739,7 @@ FacingType Facing_Between(Cell const & cell1, Cell const & cell2)
 /// the last one this routine handed out.</remarks>
 PathStruct * AStarClass::Build_Final_Path(RegularOpenNode *final_node, FacingType *moves)
 {
-	static PathStruct path; // Main path control.
+	static PathStruct path; // RA2
 
 	path.Cost			= int(final_node->Score);
 	path.Length 		= final_node->PathLength;
@@ -841,6 +818,33 @@ void AStarClass::Update_Map_Dimensions(Rect const & dimensions)
 
 
 /// <summary>
+/// Fetches the cell one step of a path leads to; a tunnel step leads to the exit of the
+/// tube under the cell.
+/// </summary>
+inline Cell Blocker_Path_Cell(Cell const & cell, FacingType facing) // RA2
+{
+	if (facing == TUNNEL) {
+		TubeType tube = (TubeType)Map[cell].Tube;
+		if (tube != TUBE_NONE) {
+			return(Cell(Tubes[tube]->Exit));
+		}
+		return(Cell(0,0));
+	}
+	return(AdjacentCell[facing] + cell);
+}
+
+
+/// <summary>
+/// Fetches the cell next to a cell in the direction given.
+/// </summary>
+static inline Cell Forward_Cell(Cell const & cell, DirType const & dir) // RA2
+{
+	FacingType facing = dir.As_Dir8();
+	return Cell(cell + AdjacentCell[facing]);
+}
+
+
+/// <summary>
 /// Toggles the predicted path marks used for collision avoidance.
 /// This routine flags the cells that objects in the way are themselves about to walk
 /// through, so the search prices those cells up and steers around them. Find_Path_Regular
@@ -855,7 +859,7 @@ void AStarClass::Apply_Path_Collision_Avoidance(FootClass * foot)
 	if (IsAvoidPathCollision) {
 		Cell current_cell = foot->Get_Cell();
 		CellClass * current_cell_ptr = &Map[current_cell];
-		CellClass * next_cell_ptr = &Map[::Adjacent_Cell(current_cell, foot->PrimaryFacing.Current().As_Dir8())];
+		CellClass * next_cell_ptr = &Map[Forward_Cell(current_cell, foot->PrimaryFacing.Current())]; // RA2
 
 		FootClass * blocker;
 		bool on_bridge;
@@ -899,7 +903,7 @@ void AStarClass::Apply_Path_Collision_Avoidance(FootClass * foot)
 
 				marked_path = true;
 				while (blocker->Path[index] != FACING_NONE && index < ARRAY_SIZE(blocker->Path)) {
-					blocker_cell = Next_Cell(blocker_cell, blocker->Path[index]);
+					blocker_cell = Blocker_Path_Cell(blocker_cell, blocker->Path[index]); // RA2
 					Map[blocker_cell].IsPredictedPath = !Map[blocker_cell].IsPredictedPath;
 					index++;
 				}
@@ -992,13 +996,9 @@ void AStarClass::Cut_Corners(PathStruct * path, FootClass * foot)
 {
 	int max_len = path->Length;
 
-	/*
-	**	Account for trailing end of list command, so reduce the maximum
-	**	allowed legal commands to reflect this.
-	*/
 	max_len--;
 
-	FacingType leg2_dir = FACING_NONE; /// The direction of the second part of the corner
+	FacingType leg2_dir = FACING_NONE; // RA2
 
 	unsigned int * heights = path->Height;
 	FacingType * moves = path->Command;
@@ -1012,89 +1012,63 @@ void AStarClass::Cut_Corners(PathStruct * path, FootClass * foot)
 	int leg1_len = 0;
 	int leg2_len = 0;
 
-	Cell start_cell = source;  /// Where does the corner we're straightening start
-	Cell cursor_cell = source; /// Where we are currently
+	Cell start_cell = source; // RA2
+	Cell cursor_cell = source;
 
-	FacingType leg1_dir = FACING_NONE; /// The direction of the first part of the corner
+	FacingType leg1_dir = FACING_NONE; // RA2
 
-	/*
-	 * Scan through the finalized move list looking for a turn pattern
-	 * that can be replaced by a diagonal shortcut.
-	 */
 	while (leg1_start + leg1_len < max_len && leg2_start + leg2_len < max_len) {
 
-		/*
-		 * Normal scanning state - accumulate a straight segment until
-		 * a turn suitable for diagonal fixup is detected.
-		 */
 		if (!found_corner) {
 			FacingType move_dir = moves[leg1_start + leg1_len];
 			FacingType turn = Facing_Sub(move_dir, leg1_dir);
 
-			/*
-			 * If direction continues unchanged, extend the straight segment.
-			 */
 			if (move_dir == leg1_dir) {
 				leg1_len++;
 
-			/*
-			 * If this is a perpendicular turn, begin evaluating a diagonal shortcut.
-			 */
 			} else if ((turn == FACING_90 || turn == FACING_270) && leg1_dir != FACING_NONE && leg1_dir != TUNNEL && move_dir != TUNNEL) {
 				found_corner = true;
 				leg2_dir = move_dir;
 				leg2_len = 1;
 				leg2_start = leg1_start + leg1_len;
 
-			/*
-			 * Otherwise this turn cannot be optimized; advance the segment
-			 * start and begin tracking a new straight run.
-			 */
 			} else {
 				leg1_start += leg1_len;
 				leg1_len = 1;
 
-				/*
-				 * Consider starting a new corner to track.
-				 * We only try straightening diagonal corners.
-				 */
 				leg1_dir = (move_dir & 1) ? move_dir : FACING_NONE;
 				start_cell = cursor_cell;
 			}
 
 			cursor_cell = Next_Cell(cursor_cell, move_dir);
 
-		/*
-		 * Fixup evaluation state - continue measuring the candidate
-		 * segment while direction remains constant.
-		 */
 		} else if (moves[leg2_len + leg2_start] == leg2_dir) {
 			leg2_len++;
 
-		/*
-		 * Candidate segment ended; attempt diagonal shortcut splice.
-		 * If successful, restart scanning from the modified position.
-		 */
 		} else {
 			leg1_start += Try_Diagonal_Shortcut(foot, &moves[leg1_start], &heights[leg1_start], leg1_len, leg2_len, start_cell);
 			leg1_len = 1;
 			found_corner = false;
 
-			/*
-			 * Reinitialize traversal state after modification.
-			 */
-			cursor_cell = ::Adjacent_Cell(start_cell, moves[leg1_start]);
+			cursor_cell = start_cell + AdjacentCell[(int)moves[leg1_start] & 0x07]; // RA2
 			leg1_dir = moves[leg1_start];
 		}
 	}
 
-	/*
-	 * If loop exited while still evaluating a fixup candidate,
-	 * perform one final shortcut attempt on the trailing segment.
-	 */
 	if (found_corner) {
 		Try_Diagonal_Shortcut(foot, &moves[leg1_start], &heights[leg1_start], leg1_len, leg2_len, start_cell);
 	}
+}
+
+
+/// <summary>
+/// Fetches the cell arrived at after following a run of moves.
+/// </summary>
+/// <param name="count">The number of moves to follow.</param>
+/// <returns>Returns with the cell reached at the end of the walk.</returns>
+static Cell Follow_Path2(Cell const & cell, int count, FacingType const * path) // RA2
+{
+	return(Follow_Path(cell, count, path));
 }
 
 
@@ -1115,8 +1089,9 @@ int AStarClass::Try_Diagonal_Shortcut(FootClass * foot, FacingType * moves, unsi
 {
 	int first_leg_length = initial_first_leg_length;
 	int second_leg_length = initial_second_leg_length;
-	FacingType first_leg_direction = moves[0];
+	bool is_blocked; // RA2
 	FacingType second_leg_direction = moves[first_leg_length];
+	FacingType first_leg_direction = moves[0];
 	FacingType diagonal_direction = FacingType((first_leg_direction + second_leg_direction) >> 1);
 
 	if (diagonal_direction + FACING_45 != second_leg_direction
@@ -1125,8 +1100,9 @@ int AStarClass::Try_Diagonal_Shortcut(FootClass * foot, FacingType * moves, unsi
 	}
 
 	if (first_leg_direction == TUNNEL || second_leg_direction == TUNNEL) {
-		cell = Follow_Path2(cell, first_leg_length + second_leg_length, moves);
-		return(first_leg_length + second_leg_length);
+		int total_length = first_leg_length + second_leg_length; // RA2
+		cell = Follow_Path2(cell, total_length, moves);
+		return(total_length);
 	}
 
 	Cell diagonal_start_cell = cell;
@@ -1142,9 +1118,10 @@ int AStarClass::Try_Diagonal_Shortcut(FootClass * foot, FacingType * moves, unsi
 
 	while (second_leg_length > 0) {
 		int moves_remaining = second_leg_length * 2;
-		bool is_blocked = false;
+		is_blocked = false; // RA2
 		Cell scan_cell = Adjacent_Cell(diagonal_start_cell, diagonal_direction);
-		int scan_height = heights[first_leg_length + second_leg_length - moves_remaining];
+		int leg_total = first_leg_length + second_leg_length; // RA2
+		int scan_height = heights[leg_total - moves_remaining];
 		CellClass * scan_cell_ptr = &Map[scan_cell];
 
 		while (!is_blocked && moves_remaining > 0) {
@@ -1165,7 +1142,8 @@ int AStarClass::Try_Diagonal_Shortcut(FootClass * foot, FacingType * moves, unsi
 
 		if (!is_blocked) {
 			FacingType * diagonal_moves = &moves[first_leg_length - second_leg_length];
-			for (int move_index = 0; move_index < 2 * second_leg_length; move_index++) {
+			int diagonal_count = 2 * second_leg_length; // RA2
+			for (int move_index = 0; move_index < diagonal_count; move_index++) {
 				diagonal_moves[move_index] = diagonal_direction;
 			}
 
@@ -1200,21 +1178,16 @@ int AStarClass::Try_Diagonal_Shortcut(FootClass * foot, FacingType * moves, unsi
  *=============================================================================================*/
 void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 {
-	int max_len = path->Length;
-
-	/*
-	**	Account for trailing end of list command, so reduce the maximum
-	**	allowed legal commands to reflect this.
-	*/
-	max_len--;
-
-	Cell cursor_cell = path->Start;
+	int splice_index; // RA2
+	Cell splice_cell;
 	FacingType * moves = path->Command;
-	unsigned int * heights = path->Height;
-
-	int index;
+	int max_len = path->Length;
+	max_len--;
 	int scan_index = 0;
 	int prev_turn_index = 0;
+	Cell cursor_cell = path->Start; // RA2
+	unsigned int * heights = path->Height;
+	int index;
 	int last_turn_index = 0;
 	int max_axis;
 	int max_axis_extent = 0;
@@ -1223,28 +1196,19 @@ void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 	int max_dev_x = 0;
 	int max_dev_y = 0;
 	Cell candidate_offset(0, 0);
-
-	/*
-	 * Scan the early portion of the move list, looking for a turn pattern
-	 * that can be replaced by a straighter segment without increasing risk.
-	 */
 	while (scan_index < max_len && scan_index < 20) {
 		FacingType move = moves[scan_index];
 		FacingType step = moves[scan_index];
 
 		if (step == TUNNEL) {
-
-			/*
-			 * Tunnels break continuity; reset the straightening state.
-			 */
 			cursor_cell = Adjacent_Cell(cursor_cell, FACING_N);
-			candidate_offset = Cell(0, 0);
+			path_offset = Cell(0, 0); // RA2
 			scan_index++;
 			prev_turn_index = scan_index;
 			max_axis_extent = 0;
 			max_dev_x = 0;
 			max_dev_y = 0;
-			path_offset = Cell(0, 0);
+			candidate_offset = Cell(0, 0); // RA2
 			last_turn_index = scan_index;
 			last_turn_cell = Cell(0, 0);
 			continue;
@@ -1255,13 +1219,8 @@ void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 			continue;
 		}
 
-		Cell new_offset = Adjacent_Cell(path_offset, move);
-		Cell new_candidate_offset = Adjacent_Cell(candidate_offset, move);
-
-		/*
-		 * Track the envelope of displacement; if it stops expanding, try to
-		 * straighten the segment by splicing a new line.
-		 */
+		Cell new_offset = Cell(path_offset + AdjacentCell[(int)move & 7]); // RA2
+		Cell new_candidate_offset = AdjacentCell[(int)move & 7] + candidate_offset;
 		if (abs(new_candidate_offset.X) >= max_dev_x && abs(new_candidate_offset.Y) >= max_dev_y) {
 
 			candidate_offset = new_candidate_offset;
@@ -1275,11 +1234,11 @@ void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 			if (max_axis_extent < max_axis) {
 				max_axis_extent = max_axis;
 			} else {
-				int splice_index;
-				Cell splice_cell = cursor_cell;
+				splice_cell = cursor_cell; // RA2
 				Splice_Path(moves, scan_index, prev_turn_index, splice_index, splice_cell);
-				Cell to_vector = cursor_cell - splice_cell;
-				Plot_Straight_Line(&moves[splice_index], scan_index - splice_index + 1, splice_cell, to_vector, foot, heights[splice_index], false);
+
+				Plot_Straight_Line(&moves[splice_index], scan_index - splice_index + 1, splice_cell, // RA2
+				Cell(cursor_cell - splice_cell), foot, heights[splice_index], false);
 			}
 
 			path_offset = new_offset;
@@ -1303,36 +1262,27 @@ void AStarClass::Optimize_Moves(PathStruct * path, FootClass * foot)
 			}
 		}
 	}
-
-	/*
-	 * Final tail cleanup: if the last segment is longer than its straight-line
-	 * extent, attempt one more splice and replot.
-	 */
 	if (last_turn_cell != Cell(0, 0)) {
 		Cell diff = cursor_cell - last_turn_cell;
 		max_axis = max(abs(diff.X), abs(diff.Y));
 		if ((scan_index - last_turn_index - 1) > max_axis) {
 			scan_index--;
-			int splice_index;
-			Cell splice_cell = cursor_cell;
+			splice_cell = cursor_cell; // RA2
 			Splice_Path(moves, scan_index, last_turn_index, splice_index, splice_cell);
-			Cell to_vector = cursor_cell - splice_cell;
-			Plot_Straight_Line(&moves[splice_index], scan_index - splice_index + 1, splice_cell, to_vector, foot, heights[splice_index], true);
+
+			Plot_Straight_Line(&moves[splice_index], scan_index - splice_index + 1, splice_cell, // RA2
+				Cell(cursor_cell - splice_cell), foot, heights[splice_index], true);
 		}
 	}
-
-	/*
-	**	Pack the command list to remove any EMPTY command entries.
-	*/
 	index = 0;
 	int new_len = 0;
-	while (moves[index] != END && index < max_len) {
-		if (moves[index] != EMPTY) {
+	FacingType dir = moves[index]; // RA2
+	while (dir != END && index < max_len) {
+		if (dir != EMPTY) {
 			moves[new_len++] = moves[index];
 		}
-		index++;
+		dir = moves[++index]; // RA2
 	}
-
 	int fill = new_len;
 	while (fill < path->Length + 1) {
 		moves[fill++] = END;
@@ -1378,7 +1328,7 @@ void AStarClass::Splice_Path(FacingType * moves, int start_index, int end_index,
 			if (radius > max_radius) {
 				if (found) {
 					splice_index = cur_index + 1;
-					cell = ::Adjacent_Cell(base, Facing_Sub(back, 4)); /// reverse, then reverse again: recovers the base from before this backward step
+					cell = ::Adjacent_Cell(base, Facing_Sub(back, 4)); // RA2
 					return;
 				}
 				max_radius = radius;
@@ -1412,6 +1362,8 @@ void AStarClass::Splice_Path(FacingType * moves, int start_index, int end_index,
 /// <returns>bool; Was a clear route plotted?</returns>
 bool AStarClass::Plot_Straight_Line(FacingType * moves, int move_count, Cell const & from, Cell const & to, FootClass * foot, int cell_height, bool fearless)
 {
+	int first_dist; // RA2
+	int second_dist;
 	int tries = 0;
 
 	const int x = to.X;
@@ -1437,11 +1389,8 @@ bool AStarClass::Plot_Straight_Line(FacingType * moves, int move_count, Cell con
 	int y_dist = abs(y);
 	int x_dist = abs(x);
 
-	int min_dist = MIN(x_dist, y_dist);
-	int max_dist = MAX(x_dist, y_dist);
-
-	int first_dist = min_dist;
-	int second_dist = max_dist - min_dist;
+	first_dist = MIN(x_dist, y_dist); // RA2
+	second_dist = MAX(x_dist, y_dist) - first_dist;
 
 	double avoidance = foot->Threat_Avoidance_Value();
 	int threats = 0;
@@ -1464,7 +1413,7 @@ bool AStarClass::Plot_Straight_Line(FacingType * moves, int move_count, Cell con
 
 			while (count1 > 0 && !blocked) {
 
-				current = ::Adjacent_Cell(current, first_dir);
+				current = current + AdjacentCell[(int)first_dir & 7]; // RA2
 				CellClass * cellptr = &Map[current];
 
 				if (avoid_threats && Map.Cell_Threat(current, *house) * avoidance >= 0.01) {
@@ -1488,7 +1437,7 @@ bool AStarClass::Plot_Straight_Line(FacingType * moves, int move_count, Cell con
 
 			while (count2 > 0 && !blocked) {
 
-				current = Adjacent_Cell(current, second_dir);
+				current = Cell(current + AdjacentCell[(int)second_dir & 7]); // RA2
 				CellClass * cellptr = &Map[current];
 
 				if (avoid_threats && Map.Cell_Threat(current, *house) * avoidance >= 0.01) {
@@ -1750,20 +1699,20 @@ PathStruct * AStarClass::Find_Path(Cell const & from, Cell const & to, FootClass
 	MZoneType move_zone = mzone != MZONE_NONE ? mzone : foot->TClass->MZone;
 
 	if (foot->RTTI == RTTI_INFANTRY) {
-		if (((InfantryClass *)foot)->Class->IsJumpJet) {
+		if (((InfantryClass *)foot)->Class->JumpJet) { // RA2
 			move_zone = MZONE_INFANTRY;
+			CLSID clsid; // RA2
+			IPersistPtr persist(foot->Locomotion);
+			persist->GetClassID(&clsid);
 		}
 	}
 
 	bool with_hs;
 	if (foot->TClass->IsTrain) {
-		/// Hierarchical search doesn't work on trains
 		with_hs = false;
 	} else if (!foot->IsLocked || foot->Is_Allowed_To_Leave_Map()) {
-		/// Hierarchical search requires foot to be in the map and not allowed to leave it
 		with_hs = false;
 	} else if (!Map.In_Local_Radar(hs_from) || !Map.In_Local_Radar(hs_to)) {
-		/// Hierarchical search isn't possible if cells are not inside the playable map
 		with_hs = false;
 	} else {
 		with_hs = true;
@@ -1771,7 +1720,6 @@ PathStruct * AStarClass::Find_Path(Cell const & from, Cell const & to, FootClass
 
 	if (from_zone != to_zone) {
 		if (with_hs) {
-			/// Hierarchical search requires the from and to zones to match
 			return(NULL);
 		}
 	}
@@ -1790,7 +1738,7 @@ PathStruct * AStarClass::Find_Path(Cell const & from, Cell const & to, FootClass
 
 	while (true) {
 
-		if (!with_hs) {
+		if (!with_hs) { // RA2
 			DebugString("Warning.  A* without HS: (%d,%d) to (%d, %d)\n", hs_from.X, hs_from.Y, hs_to.X, hs_to.Y);
 		}
 
@@ -1799,7 +1747,6 @@ PathStruct * AStarClass::Find_Path(Cell const & from, Cell const & to, FootClass
 			break;
 		}
 
-		/// Regular failed, if HS isn't enabled bail
 		if (!with_hs) {
 			break;
 		}
@@ -2007,9 +1954,9 @@ int AStarClass::Test_Cell_Walk(Cell const & from, Cell const & to, FootClass con
 	}
 
 	if (Find_Path_Hierarchical(hs_from, hs_to, mzone, foot)) {
-		int radius = MAX(abs(from.X - to.X), abs(from.Y - to.Y));	/// The Chebyshev distance between the cells
-		int node_count = HierSubzonePathCount[SUBZONE_FINE];		/// Number of nodes in the finest level path graph
-		int distance = 2 * node_count - 2;							/// Number of edges between these nodes
+		int radius = MAX(abs(from.X - to.X), abs(from.Y - to.Y)); // RA2
+		int node_count = HierSubzonePathCount[SUBZONE_FINE];
+		int distance = 2 * node_count - 2;
 
 		bool add_bridge_dist = true;
 		if (to_bridge && from_bridge) {
@@ -2062,3 +2009,18 @@ int AStarClass::Test_Cell_Walk(Cell const & from, Cell const & to, FootClass con
 	}
 	return(INT_MAX);
 }
+
+
+/// <summary>
+/// Finds a path between two cells at the individual cell level.
+/// This is the real A* search. Cells are expanded outward from the start until the
+/// destination is reached or the effort allowance runs out, and the resulting move list is
+/// then straightened and optimized. When the hierarchical search has already run, the
+/// expansion is confined to the corridor it marked out.
+/// </summary>
+/// <param name="moves">Buffer that receives the facing commands making up the path.</param>
+/// <param name="max_loops">The most cells the search may expand, or a negative value to let
+/// it run until the queue is exhausted.</param>
+/// <param name="with_hs">Should the search be confined to the hierarchical corridor?</param>
+/// <returns>Returns with a pointer to the path found, or NULL if there is no route.</returns>
+
