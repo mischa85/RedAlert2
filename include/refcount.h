@@ -9,8 +9,8 @@ class ReferenceCounted
 	public:
 		ReferenceCounted(void) : Count(0) {}
 		virtual ~ReferenceCounted(void);
-		virtual bool FUN_0065D690(int);
-		virtual void FUN_0065D670(void);
+		virtual bool Unknown_Virtual_4(int); // RA2: vtable +0x4; always false here, its name is not known
+		virtual void Release(void); // RA2: drops a reference, deleting the object with the last one
 
 		int Count;
 };
