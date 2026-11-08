@@ -32,6 +32,7 @@ enum MissionType {
 	MISSION_STICKY,         // Stay still -- never recruit.
 	MISSION_ENTER,          // Move into object cooperatively.
 	MISSION_CAPTURE,        // Move into in order to capture.
+	MISSION_EATEN,          // RA2
 	MISSION_HARVEST,        // Hunt for and collect nearby Tiberium.
 	MISSION_GUARD_AREA,     // Active guard of area.
 	MISSION_RETURN,         // Head back to refinery.
@@ -48,6 +49,10 @@ enum MissionType {
 	MISSION_HARMLESS,       // Sit around and don't appear like a threat.
 	MISSION_OPEN,
 	MISSION_PATROL,
+	MISSION_PARADROP_APPROACH, // RA2
+	MISSION_PARADROP_OVERFLY, // RA2
+	MISSION_WAIT,           // RA2
+	MISSION_ATTACK_MOVE,    // RA2
 
 	MISSION_COUNT,
 	MISSION_FIRST=0
