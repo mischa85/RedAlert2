@@ -21,6 +21,17 @@
 #include "tactical.h"
 #include "vector3.h"
 
+// RA2: normalizes through an inline layer of its own
+static inline Vector3 Normalize_Axis(const Vector3 & vec)
+{
+	float len = (float)fastmath::sqrt(vec.Z*vec.Z + vec.Y*vec.Y + vec.X*vec.X);
+	if (len != 0.0) {
+		return(vec / len);
+	}
+	return(vec);
+}
+
+
 /// <summary>
 /// Sets the bouncing object into motion in a random direction.
 /// This routine is used when the caller has no particular direction in mind and just
@@ -72,7 +83,7 @@ void BounceClass::Init(Coord const & coord, double elasticity, double gravity, d
 		Random_Pick(-65535, 65535) * (1.0f / 65535.0f)
 	);
 
-	rotation_axis = Normalize(rotation_axis);
+	rotation_axis = Normalize_Axis(rotation_axis); // RA2
 	AngularVelocity = Axis_To_Quat(rotation_axis, rotation);
 	Matrix3D identity_matrix;
 	identity_matrix.Make_Identity();
