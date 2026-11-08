@@ -11,7 +11,6 @@ static int __fastcall audioChannelSampleDone(AudioChannel * chan);
 static int __fastcall audioChannelNextSample(AudioChannel * chan);
 static int __fastcall audioChannelNextFrame(AudioChannel * chan);
 
-// FUNCTION: GAMEMD 0x00402040
 AudioChannel * __fastcall audioChannelCreate(AudioDevice * dev)
 {
 	AudioChannel * chan = NULL;
@@ -45,14 +44,12 @@ error:
 	return NULL;
 }
 
-// FUNCTION: GAMEMD 0x00402170
 void __fastcall audioChannelDestroy(AudioChannel * chan)
 {
 	chan->driver->closeChannel(chan);
 	operator delete(chan);
 }
 
-// FUNCTION: GAMEMD 0x00402190
 void __fastcall audioChannelMakeStandard(AudioChannel * chan)
 {
 	chan->drvCBNextFrame = audioChannelNextFrame;
@@ -77,7 +74,6 @@ void __fastcall audioChannelMakeStandard(AudioChannel * chan)
 	chan->sample = NULL;
 }
 
-// FUNCTION: GAMEMD 0x00402220
 void __fastcall audioChannelRecalcAttribs(AudioChannel * chan)
 {
 	AudioDevice * dev;
@@ -112,7 +108,6 @@ void __fastcall audioChannelRecalcAttribs(AudioChannel * chan)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004022C0
 static int __fastcall audioChannelNextFrame(AudioChannel * chan)
 {
 	int err;
@@ -142,7 +137,6 @@ static int __fastcall audioChannelNextFrame(AudioChannel * chan)
 	return vNO_ERROR;
 }
 
-// FUNCTION: GAMEMD 0x00402330
 static int __fastcall audioChannelNextSample(AudioChannel * chan)
 {
 	if (chan->Control.LoopCount) {
@@ -165,7 +159,6 @@ static int __fastcall audioChannelNextSample(AudioChannel * chan)
 	return vNO_ERROR;
 }
 
-// FUNCTION: GAMEMD 0x004023F0
 static int __fastcall audioChannelSampleDone(AudioChannel * chan)
 {
 	chan->sample = NULL;
@@ -180,13 +173,11 @@ static int __fastcall audioChannelSampleDone(AudioChannel * chan)
 	return vNO_ERROR;
 }
 
-// FUNCTION: GAMEMD 0x00402430
 int __fastcall AudioChannelTaken(AudioChannel * chan)
 {
 	return chan->Control.Status & mAUDIO_CTRL_ALLOCATED;
 }
 
-// FUNCTION: GAMEMD 0x00402440
 void __fastcall AudioChannelReserve(AudioChannel * chan, AudioChannelType type)
 {
 	chan->Type = type;
@@ -195,7 +186,6 @@ void __fastcall AudioChannelReserve(AudioChannel * chan, AudioChannelType type)
 	chan->Control.Status |= mAUDIO_CTRL_ALLOCATED;
 }
 
-// FUNCTION: GAMEMD 0x004024A0
 void __fastcall AudioChannelRelease(AudioChannel * chan)
 {
 	if (chan->Control.Status & mAUDIO_CTRL_ALLOCATED) {
@@ -205,7 +195,6 @@ void __fastcall AudioChannelRelease(AudioChannel * chan)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00402550
 void __fastcall AudioChannelDestroy(AudioChannel * chan)
 {
 	AudioChannelStop(chan);
@@ -215,7 +204,6 @@ void __fastcall AudioChannelDestroy(AudioChannel * chan)
 	audioChannelDestroy(chan);
 }
 
-// FUNCTION: GAMEMD 0x004025B0
 void __fastcall AudioChannelStop(AudioChannel * chan)
 {
 	chan->driver->lock(chan);
@@ -231,7 +219,6 @@ void __fastcall AudioChannelStop(AudioChannel * chan)
 	chan->sample = NULL;
 }
 
-// FUNCTION: GAMEMD 0x00402600
 void __fastcall AudioChannelPause(AudioChannel * chan)
 {
 	chan->driver->lock(chan);
@@ -243,7 +230,6 @@ void __fastcall AudioChannelPause(AudioChannel * chan)
 	chan->driver->unlock(chan);
 }
 
-// FUNCTION: GAMEMD 0x00402650
 void __fastcall AudioChannelResume(AudioChannel * chan)
 {
 	chan->driver->lock(chan);
@@ -255,19 +241,16 @@ void __fastcall AudioChannelResume(AudioChannel * chan)
 	chan->driver->unlock(chan);
 }
 
-// FUNCTION: GAMEMD 0x004026A0
 void __fastcall AudioChannelLock(AudioChannel * chan)
 {
 	chan->driver->lock(chan);
 }
 
-// FUNCTION: GAMEMD 0x004026B0
 void __fastcall AudioChannelUnlock(AudioChannel * chan)
 {
 	chan->driver->unlock(chan);
 }
 
-// FUNCTION: GAMEMD 0x004026C0
 void __fastcall AudioChannelUse(AudioChannel * chan)
 {
 	chan->driver->lock(chan);
@@ -275,7 +258,6 @@ void __fastcall AudioChannelUse(AudioChannel * chan)
 	chan->driver->unlock(chan);
 }
 
-// FUNCTION: GAMEMD 0x004026F0
 void __fastcall AudioChannelNoUse(AudioChannel * chan)
 {
 	chan->driver->lock(chan);
@@ -283,7 +265,6 @@ void __fastcall AudioChannelNoUse(AudioChannel * chan)
 	chan->driver->unlock(chan);
 }
 
-// FUNCTION: GAMEMD 0x00402720
 int __fastcall AudioChannelStart(AudioChannel * chan)
 {
 	int err;
@@ -307,7 +288,6 @@ int __fastcall AudioChannelStart(AudioChannel * chan)
 	return err;
 }
 
-// FUNCTION: GAMEMD 0x00402790
 void __fastcall AudioChannelSetSample(AudioChannel * chan, AudioSample * sample)
 {
 	if ((chan->sample = sample)) {
@@ -324,7 +304,6 @@ void __fastcall AudioChannelSetSample(AudioChannel * chan, AudioSample * sample)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00402800
 int __fastcall AudioChannelSetFormat(AudioChannel * chan, AudioFormat * new_format)
 {
 	if (!memcmp(new_format, &chan->current_format, sizeof(AudioFormat))) {
@@ -337,7 +316,6 @@ int __fastcall AudioChannelSetFormat(AudioChannel * chan, AudioFormat * new_form
 	return chan->format_changed;
 }
 
-// FUNCTION: GAMEMD 0x00402850
 void __fastcall AudioControlInit(AudioControl * ctrl)
 {
 	ctrl->LoopCount = 0;
