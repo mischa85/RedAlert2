@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -199,9 +200,21 @@ inline bool PriorityQueueClass <T>::Remove_Matching(T const & item)
 						parent = PARENT(index);
 					}
 					Heap[index] = last;
+					for (int i = 1; i <= ActiveCount; i++) { // RA2: checks that the heap still points into the node pool
+						if ((unsigned)Heap[i] < MinNodePointer || (unsigned)Heap[i] > MaxNodePointer) {
+							volatile int div_zero = 0;
+							div_zero = 1 / div_zero;
+						}
+					}
 				} else {
 					Heap[index] = last;
 					Heapify(index);
+					for (int i = 1; i <= ActiveCount; i++) { // RA2: checks that the heap still points into the node pool
+						if ((unsigned)Heap[i] < MinNodePointer || (unsigned)Heap[i] > MaxNodePointer) {
+							volatile int div_zero = 0;
+							div_zero = 1 / div_zero;
+						}
+					}
 				}
 			}
 
@@ -258,14 +271,7 @@ bool PriorityQueueClass<T>::Load(IStream * stream, T * nodes)
 			return(false);
 		}
 
-		Heap[slot] = &nodes[index];
-
-		if ((unsigned &)Heap[slot] > MaxNodePointer) {
-			MaxNodePointer = (unsigned &)Heap[slot];
-		}
-		if ((unsigned &)Heap[slot] < MinNodePointer) {
-			MinNodePointer = (unsigned &)Heap[slot];
-		}
+		Heap[slot] = &nodes[index]; // RA2: the node bounds are not updated
 	}
 
 	return(true);
