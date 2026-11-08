@@ -852,27 +852,9 @@ unk_0076B8F0,0x0076B8F0,0x0076B990,unknown,code not assigned to a module
 unk_0076B990,0x0076B990,0x0076B9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0076B9E0,0x0076B9E0,0x0076C0F0,unknown,code not assigned to a module
 wspudp,0x0076C0F0,0x0076C290,tibsun,"functions compiled from src/wspudp.cpp, matched, without gaps; ??0UDPInterfaceClass@@QAE@XZ not placed; ?Set_Broadcast_Address@UDPInterfaceClass@@UAEXPAX@Z not placed; ?Open_Socket@UDPInterfaceClass@@UAE_NI@Z not placed; ?Broadcast@UDPInterfaceClass@@UAEXPAXH@Z not placed; ?Message_Handler@UDPInterfaceClass@@UAEHPAUHWND__@@IIJ@Z not placed"
-unk_0076C290,0x0076C290,0x0076D980,unknown,code not assigned to a module
-unk_0076D980,0x0076D980,0x0076D9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076D9E0,0x0076D9E0,0x0076DA70,unknown,code not assigned to a module
-unk_0076DA70,0x0076DA70,0x0076DAE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076DAE0,0x0076DAE0,0x0076DB50,unknown,code not assigned to a module
-unk_0076DB50,0x0076DB50,0x0076DBC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076DBC0,0x0076DBC0,0x0076DD00,unknown,code not assigned to a module
-unk_0076DD00,0x0076DD00,0x0076DDB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076DDB0,0x0076DDB0,0x0076DE40,unknown,code not assigned to a module
-unk_0076DE40,0x0076DE40,0x0076E4A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076E4A0,0x0076E4A0,0x0076E650,unknown,code not assigned to a module
-unk_0076E650,0x0076E650,0x0076E6F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076E6F0,0x0076E6F0,0x0076E7A0,unknown,code not assigned to a module
-unk_0076E7A0,0x0076E7A0,0x0076E7C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076E7C0,0x0076E7C0,0x0076EDA0,unknown,code not assigned to a module
-unk_0076EDA0,0x0076EDA0,0x0076EDD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076EDD0,0x0076EDD0,0x0076EE20,unknown,code not assigned to a module
-unk_0076EE20,0x0076EE20,0x0076EE70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076EE70,0x0076EE70,0x0076EF40,unknown,code not assigned to a module
-unk_0076EF40,0x0076EF40,0x0076EF90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076EF90,0x0076EF90,0x00773730,unknown,code not assigned to a module
+unk_0076C290,0x0076C290,0x0076D920,unknown,code not assigned to a module
+wstring,0x0076D920,0x0076F9B0,tibsun,"functions compiled from src/wstring.cpp, matched, without gaps; eight placed by the gap; ??0Wstring@@QAE@XZ not placed"
+unk_0076F9B0,0x0076F9B0,0x00773730,unknown,code not assigned to a module
 xpipe,0x00773730,0x00773840,tibsun,"functions compiled from src/xpipe.cpp, matched, without gaps"
 xstraw,0x00773840,0x00773930,tibsun,"functions compiled from src/xstraw.cpp, matched, without gaps"
 unk_00773930,0x00773930,0x00773950,unknown,code not assigned to a module
