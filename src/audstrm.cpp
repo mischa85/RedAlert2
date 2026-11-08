@@ -5,9 +5,9 @@
 #include "always.h"
 #include "audstrm.h"
 #include "wwfile.h"
+#include "dbgprint.h"
 #include <string.h>
 
-void __cdecl FUN_004068E0(char const * format, ...);
 
 static STM_SBUFFER * STM_next_sbuffer(STM_SBUFFER * sbuf)
 {
@@ -103,7 +103,6 @@ static void STM_stream_reset(STM_STREAM * stm)
 	STM_stream_reset_accessors(stm, first);
 }
 
-// FUNCTION: GAMEMD 0x004087F0
 STM_STREAM * __fastcall STM_StreamCreate(void)
 {
 	STM_STREAM * stm;
@@ -119,14 +118,12 @@ STM_STREAM * __fastcall STM_StreamCreate(void)
 	return stm;
 }
 
-// FUNCTION: GAMEMD 0x00408840
 void __fastcall STM_StreamDestroy(STM_STREAM * stm)
 {
 	STM_StreamDestroyBuffers(stm);
 	operator delete(stm);
 }
 
-// FUNCTION: GAMEMD 0x00408930
 void __fastcall STM_access_return_to_start(STM_ACCESS * access)
 {
 	access->access_pos = 0;
@@ -140,7 +137,6 @@ void __fastcall STM_access_return_to_start(STM_ACCESS * access)
 	access->flags &= (~mSTM_ACCESS_TOP_OF_START);
 }
 
-// FUNCTION: GAMEMD 0x00408970
 void __fastcall STM_StreamDestroyBuffers(STM_STREAM * stm)
 {
 	STM_SBUFFER * buf;
@@ -155,13 +151,11 @@ void __fastcall STM_StreamDestroyBuffers(STM_STREAM * stm)
 	STM_StreamReset(stm);
 }
 
-// FUNCTION: GAMEMD 0x00408A70
 void __fastcall STM_StreamReset(STM_STREAM * stm)
 {
 	STM_stream_reset(stm);
 }
 
-// FUNCTION: GAMEMD 0x00408B10
 void __fastcall STM_StreamAddSBuffer(STM_STREAM * stm, STM_SBUFFER * sbuf)
 {
 	ListNodeAppend((ListNode *)&stm->buffer_list, &sbuf->nd);
@@ -171,7 +165,6 @@ void __fastcall STM_StreamAddSBuffer(STM_STREAM * stm, STM_SBUFFER * sbuf)
 	stm->flags &= ~mSTM_STREAM_RESET_DONE;
 }
 
-// FUNCTION: GAMEMD 0x00408B40
 int __fastcall STM_StreamCreateSBuffers(STM_STREAM * stm, int num_buffers, int buf_size, int align)
 {
 	int bcount = 0;
@@ -188,7 +181,6 @@ int __fastcall STM_StreamCreateSBuffers(STM_STREAM * stm, int num_buffers, int b
 	return bcount;
 }
 
-// FUNCTION: GAMEMD 0x00408C30
 STM_ACCESS * __fastcall STM_StreamAcquireAccess(STM_STREAM * stm, int access_id)
 {
 	STM_ACCESS * access;
@@ -196,7 +188,7 @@ STM_ACCESS * __fastcall STM_StreamAcquireAccess(STM_STREAM * stm, int access_id)
 	access = &stm->access[access_id];
 
 	if (access->ref) {
-		FUN_004068E0("%s access to stream failed. Access already acquired.\n", access->id == vSTM_ACCESS_ID_IN ? "Write" : "Read");
+		DebugString("%s access to stream failed. Access already acquired.\n", access->id == vSTM_ACCESS_ID_IN ? "Write" : "Read");
 		return NULL;
 	}
 
@@ -209,31 +201,26 @@ STM_ACCESS * __fastcall STM_StreamAcquireAccess(STM_STREAM * stm, int access_id)
 	return access;
 }
 
-// FUNCTION: GAMEMD 0x00408D30
 unsigned __fastcall STM_StreamTotalBytesIn(STM_STREAM * stm)
 {
 	return STM_AccessTotalBytes(&stm->access[vSTM_ACCESS_ID_OUT]);
 }
 
-// FUNCTION: GAMEMD 0x00408D40
 unsigned __fastcall STM_StreamTotalBytesTillFull(STM_STREAM * stm)
 {
 	return STM_AccessTotalBytes(&stm->access[vSTM_ACCESS_ID_IN]);
 }
 
-// FUNCTION: GAMEMD 0x00408D50
 int __fastcall STM_StreamTotalBytes(STM_STREAM * stm)
 {
 	return stm->bytes;
 }
 
-// FUNCTION: GAMEMD 0x00408D60
 int __fastcall STM_StreamFull(STM_STREAM * stm)
 {
 	return STM_StreamTotalBytesTillFull(stm) == 0;
 }
 
-// FUNCTION: GAMEMD 0x00408D80
 STM_SBUFFER * __fastcall STM_SBufferCreate(int bytes, int align)
 {
 	STM_SBUFFER * buf;
@@ -256,7 +243,6 @@ STM_SBUFFER * __fastcall STM_SBufferCreate(int bytes, int align)
 	return buf;
 }
 
-// FUNCTION: GAMEMD 0x00408E00
 void __fastcall STM_SBufferDestroy(STM_SBUFFER * sbuf)
 {
 	if (sbuf->buffer_memory) {
@@ -265,7 +251,6 @@ void __fastcall STM_SBufferDestroy(STM_SBUFFER * sbuf)
 	operator delete(sbuf);
 }
 
-// FUNCTION: GAMEMD 0x00408E20
 void __fastcall STM_SBufferRemove(STM_SBUFFER * sbuf)
 {
 	STM_STREAM * stm;
@@ -278,13 +263,11 @@ void __fastcall STM_SBufferRemove(STM_SBUFFER * sbuf)
 	stm->flags &= ~mSTM_STREAM_RESET_DONE;
 }
 
-// FUNCTION: GAMEMD 0x00408E50
 STM_SBUFFER * __fastcall STM_SBufferNext(STM_SBUFFER * sbuf)
 {
 	return STM_next_sbuffer(sbuf);
 }
 
-// FUNCTION: GAMEMD 0x00408E70
 void __fastcall STM_AccessRelease(STM_ACCESS * access)
 {
 	if (--access->ref < 0) {
@@ -295,26 +278,22 @@ void __fastcall STM_AccessRelease(STM_ACCESS * access)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408EB0
 int __fastcall STM_AccessSetMode(STM_ACCESS * access, int mode)
 {
 	access->mode = mode;
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00408EC0
 int __fastcall STM_AccessMode(STM_ACCESS * access)
 {
 	return access->mode;
 }
 
-// FUNCTION: GAMEMD 0x00408ED0
 int __fastcall STM_AccessID(STM_ACCESS * access)
 {
 	return access->id;
 }
 
-// FUNCTION: GAMEMD 0x00408EE0
 int __fastcall STM_AccessTransfer(STM_ACCESS * access, void * data, int bytes)
 {
 	int transfer;
@@ -351,7 +330,6 @@ int __fastcall STM_AccessTransfer(STM_ACCESS * access, void * data, int bytes)
 	return transfered;
 }
 
-// FUNCTION: GAMEMD 0x00408F80
 int __fastcall STM_AccessFileTransfer(STM_ACCESS * access, FileClass * file, int bytes, int * transfered)
 {
 	int transfer;
@@ -404,7 +382,6 @@ int __fastcall STM_AccessFileTransfer(STM_ACCESS * access, FileClass * file, int
 	return STM_OK;
 }
 
-// FUNCTION: GAMEMD 0x00409030
 int __fastcall STM_AccessCRTFileTransfer(STM_ACCESS * access, FILE * file, int bytes, int * transfered)
 {
 	int transfer;
@@ -457,13 +434,11 @@ int __fastcall STM_AccessCRTFileTransfer(STM_ACCESS * access, FILE * file, int b
 	return STM_OK;
 }
 
-// FUNCTION: GAMEMD 0x004090F0
 int __fastcall STM_AccessGetError(STM_ACCESS * access)
 {
 	return access->last_error;
 }
 
-// FUNCTION: GAMEMD 0x00409100
 int __fastcall STM_AccessUpdate(STM_ACCESS * access)
 {
 	STM_SBUFFER * sbuf;
@@ -504,7 +479,6 @@ int __fastcall STM_AccessUpdate(STM_ACCESS * access)
 	return bytes_updated;
 }
 
-// FUNCTION: GAMEMD 0x004091C0
 int __fastcall STM_AccessAdvance(STM_ACCESS * access, int bytes_to_advance)
 {
 	int bytes_advanced = 0;
@@ -563,14 +537,12 @@ int __fastcall STM_AccessAdvance(STM_ACCESS * access, int bytes_to_advance)
 	return bytes_advanced;
 }
 
-// FUNCTION: GAMEMD 0x004092B0
 void __fastcall STM_AccessReturnToStart(STM_ACCESS * access)
 {
 	STM_access_return_to_start(access);
 	STM_AccessAdvance(access, 0);
 }
 
-// FUNCTION: GAMEMD 0x004092F0
 int __fastcall STM_AccessNextBlock(STM_ACCESS * access)
 {
 	STM_AccessGetBlock(access);
@@ -582,14 +554,12 @@ int __fastcall STM_AccessNextBlock(STM_ACCESS * access)
 	return STM_ERROR_CODE_FAIL;
 }
 
-// FUNCTION: GAMEMD 0x00409310
 int __fastcall STM_AccessGetBlock(STM_ACCESS * access)
 {
 	STM_AccessAdvance(access, 0);
 	return access->Block.Bytes;
 }
 
-// FUNCTION: GAMEMD 0x00409320
 unsigned __fastcall STM_AccessTotalBytes(STM_ACCESS * access)
 {
 	unsigned bytes_in;
@@ -603,13 +573,11 @@ unsigned __fastcall STM_AccessTotalBytes(STM_ACCESS * access)
 	return bytes_in - bytes_out;
 }
 
-// FUNCTION: GAMEMD 0x00409330
 unsigned __fastcall STM_AccessPosition(STM_ACCESS * access)
 {
 	return access->position;
 }
 
-// FUNCTION: GAMEMD 0x00409340
 STM_ACCESS * __fastcall STM_AccessUpStreamAccessor(STM_ACCESS * access)
 {
 	int id;
