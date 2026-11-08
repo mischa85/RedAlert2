@@ -223,6 +223,7 @@ class InfantryClass : public FootClass
 		/*
 		**	Movement and animation.
 		*/
+		virtual bool IsDeployed(void) const; // RA2
 		virtual bool Do_Action(DoType todo, bool force=false, bool randomize=false);
 		virtual bool Random_Animate(void) override;
 		virtual MoveType Can_Enter_Cell(CellClass const * cell, FacingType dir = FACING_NONE, int cell_height = -1, CellClass const * = 0, bool = true) const override;

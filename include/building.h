@@ -400,7 +400,7 @@ class BuildingClass : public TechnoClass
 		virtual bool Is_Ready_To_Cloak(void) const override;
 		virtual bool Should_Uncloak(void) const override;
 		virtual DirType Barrel_Pitch(AbstractClass * target) const override;
-		virtual Cell Find_Exit_Cell(TechnoClass const * techno) const override;
+		virtual Cell Find_Exit_Cell(TechnoClass const * techno); // RA2: not const, so it is a virtual of its own (+0x460)
 		virtual Coord Turret_Coord(int which=0) const override;
 		virtual InfantryTypeClass const * Crew_Type(void) const override;
 		virtual int Pip_Count(void) const override;
@@ -451,6 +451,7 @@ class BuildingClass : public TechnoClass
 		virtual void Init(void) override;
 		virtual void Detach(AbstractClass const * target, bool all) override;
 		virtual void Detach_All(bool all=true) override;
+		virtual int DistanceToDockingCoord(TechnoClass * docker) const; // RA2
 		virtual void Grand_Opening(bool captured = false);
 		virtual void Update_Buildables(void);
 		virtual MoveType Can_Enter_Cell(CellClass const * cell, FacingType dir = FACING_NONE, int cell_height = -1, CellClass const * = 0, bool = true) const override;
@@ -525,6 +526,10 @@ class BuildingClass : public TechnoClass
 		virtual void Assign_Target(AbstractClass * target) override;
 		virtual void Do_Destruction(TechnoClass * last_contact, TechnoClass * source, bool forced, Cell const * offset);
 		virtual bool Toggle_Primary(void);
+		virtual void DisguiseDetectorActivate(Cell cell = Cell()); // RA2: my name; pairs with DisguiseDetectorDeactivate
+		virtual void SensorArrayDeactivate(Cell cell = Cell()); // RA2
+		virtual void SensorArrayActivate(Cell cell = Cell()); // RA2
+		virtual void DisguiseDetectorDeactivate(Cell cell = Cell()); // RA2
 		virtual unsigned entry_380(void); /// Returns 0. A reserved vtable slot that nothing implements.
 		void Turn_On(void);
 		void Turn_Off(void);
