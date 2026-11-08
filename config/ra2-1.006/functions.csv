@@ -1753,6 +1753,7 @@ address,size,evidence
 0x005AFDF0,96,"function of the Tiberian Sun reconstruction, matched"
 0x005AFEB0,64,"function of the Tiberian Sun reconstruction, matched"
 0x005B0950,32,"function of the Tiberian Sun reconstruction, matched"
+0x005B0970,16,"code of src/mschoice.cpp, matched: too short for the match rule"
 0x005B16C0,,"inferred: target of the call at 0x004E0150 in matched src/grphmitm.cpp; size not known"
 0x005B16D0,,"inferred: target of the call at 0x004E01E7 in matched src/grphmitm.cpp; size not known"
 0x005B46B0,,"inferred: target of the call at 0x005D0C8A in matched src/nullmgr.cpp; size not known"
