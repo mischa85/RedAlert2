@@ -340,9 +340,9 @@ unk_00538670,0x00538670,0x00538860,unknown,code not assigned to a module
 lightcon,0x00538860,0x00538AA0,tibsun,"functions compiled from src/lightcon.cpp, matched, without gaps; ?Apply_Tint@LightConvertClass@@UAEXHHH_N@Z not placed; ??1LightConvertClass@@UAE@XZ not placed"
 unk_00538AA0,0x00538AA0,0x00538F60,unknown,code not assigned to a module
 link,0x00538F60,0x00539170,tibsun,"functions compiled from src/link.cpp, matched, without gaps; three placed by the gap"
-unk_00539170,0x00539170,0x0053A480,unknown,code not assigned to a module
-unk_0053A480,0x0053A480,0x0053A4A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0053A4A0,0x0053A4A0,0x0053AEB0,unknown,code not assigned to a module
+unk_00539170,0x00539170,0x00539BF0,unknown,code not assigned to a module
+list,0x00539BF0,0x0053AA20,tibsun,"functions compiled from src/list.cpp, matched, without gaps; three placed by the gap"
+unk_0053AA20,0x0053AA20,0x0053AEB0,unknown,code not assigned to a module
 load,0x0053AEB0,0x0053AEF0,tibsun,"functions compiled from src/load.cpp, matched, without gaps"
 unk_0053AEF0,0x0053AEF0,0x0053B190,unknown,code not assigned to a module
 unk_0053B190,0x0053B190,0x0053B1B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
