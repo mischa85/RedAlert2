@@ -1052,6 +1052,7 @@ address,symbol,evidence
 0x00621E60,?Create_And_Place@ParticleTypeClass@@UBE_NABVCell@@PAVHouseClass@@@Z,"compiled from src/ptype.cpp, matched; code at 18 addresses, placed by the gap"
 0x00621E70,?Create_One_Of@ParticleTypeClass@@UBEPAVObjectClass@@PAVHouseClass@@@Z,"compiled from src/ptype.cpp, matched; code at 41 addresses, placed by the gap"
 0x00621FA0,??0?$DynamicVectorClass@VRGBClass@@@@QAE@IPBVRGBClass@@@Z,"inferred: referenced by matched src/ptype.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x00622090,?Quarry_From_Name@@YI?AW4QuarryType@@PBD@Z,"compiled from src/quarry.cpp, matched; code at 2 addresses, the others matched by src/trigtype.cpp"
 0x00622AC0,?Slerp@@YI?AVQuaternion@@ABV1@0M@Z,"inferred: referenced by matched src/voxel.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x00622EB0,?Build_Matrix3D@@YI?AVMatrix3D@@ABVQuaternion@@@Z,"inferred: referenced by matched src/voxel.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x00631570,?Radar_Background@RadarClass@@QAEXABVCell@@@Z,"inferred: referenced by matched src/vein.cpp (1 reference); across all matched code never at another address, and no other symbol here"

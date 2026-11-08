@@ -1712,6 +1712,7 @@ address,size,evidence
 0x00621E60,16,"code of src/ptype.cpp, matched: its code occurs at 18 addresses; placed by the gap the other functions of the file leave, up to the copy of ??_GParticleTypeClass@@UAEPAXI@Z at 0x00621E80"
 0x00621E70,16,"code of src/ptype.cpp, matched: its code occurs at 41 addresses; placed by the gap the other functions of the file leave, up to the copy of ??_GParticleTypeClass@@UAEPAXI@Z at 0x00621E80"
 0x00621FA0,,"inferred: target of the call at 0x006214BC in matched src/ptype.cpp; size not known"
+0x00622090,64,"code of src/quarry.cpp, matched: its code occurs at 2 addresses; the others are matched code of src/trigtype.cpp"
 0x00622180,32,"function of the Tiberian Sun reconstruction, matched"
 0x006221A0,96,"function of the Tiberian Sun reconstruction, matched"
 0x00622200,48,"function of the Tiberian Sun reconstruction, matched"
