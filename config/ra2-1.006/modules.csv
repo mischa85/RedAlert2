@@ -140,8 +140,7 @@ crc,0x00493DF0,0x00494210,tibsun,"functions compiled from src/crc.cpp, matched, 
 crcpipe,0x00494210,0x00494290,tibsun,"functions compiled from src/crcpipe.cpp, matched, without gaps; one object inferred from alphabetical link order"
 crcstraw,0x00494290,0x00494320,tibsun,"functions compiled from src/crcstraw.cpp, matched, without gaps; one object inferred from alphabetical link order"
 unk_00494320,0x00494320,0x00494510,unknown,code not assigned to a module
-unk_00494510,0x00494510,0x00494530,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00494530,0x00494530,0x00494760,unknown,code not assigned to a module
+credits,0x00494510,0x00494760,tibsun,"functions compiled from src/credits.cpp, matched, without gaps"
 cstraw,0x00494760,0x00494800,tibsun,"functions compiled from src/cstraw.cpp, matched, without gaps"
 cstream,0x00494800,0x004950F0,tibsun,"functions compiled from src/cstream.cpp, without gaps; matched except ?Write@CStreamClass@@UAGJPBXKPAK@Z"
 unk_004950F0,0x004950F0,0x00495230,unknown,code not assigned to a module
