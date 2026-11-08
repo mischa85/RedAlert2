@@ -10,6 +10,7 @@
 #include "always.h"
 
 #include "msanim.h"
+#include "bitfont.h"
 
 #include "_mixfile.h"
 #include "_palette.h"
@@ -28,7 +29,15 @@
 #include "ownrdraw.h"
 #include "pcx.h"
 #include "shapeset.h"
-#include "srfcache.h"
+#include "wstring.h"
+#include "bittext.h"
+#include "misc.h"
+void Play_Named_Sound(char const * name, int volume); // RA2: plays a sound effect of the audio library by its name
+
+/*
+**	RA2: the bounds of a shape frame that does not exist.
+*/
+Rect NullFrameRect(Point2D(0, 0), 0, 0);
 
 
 ShapeFlags_Type FadeStages[4] = { ShapeFlags_Type(SHAPE_WIN_REL | SHAPE_TRANSLUCENT75),
@@ -46,16 +55,15 @@ ShapeFlags_Type FadeStages[4] = { ShapeFlags_Type(SHAPE_WIN_REL | SHAPE_TRANSLUC
 /// <param name="palette_name">The name of the palette file to load.</param>
 /// <returns>Returns with a pointer to the drawer created. If the palette cannot be
 /// loaded, then NULL is returned.</returns>
-ConvertClass * Create_Drawer(char const * palette_name)
+ConvertClass * Create_Drawer(Wstring const & palette_name) // RA2
 {
-	CCFileClass file;
-
-	if (palette_name == NULL) {
+	if (palette_name == (char const *)NULL) { // RA2
 		return(NULL);
 	}
 
-	file.Open(palette_name);
-	if (!file.Is_Available()) {
+	CCFileClass file(palette_name); // RA2
+
+	if (!file.Is_Available(0)) {
 		return(NULL);
 	}
 
@@ -64,13 +72,11 @@ ConvertClass * Create_Drawer(char const * palette_name)
 		return(NULL);
 	}
 
-	unsigned char * pal_ptr = ((unsigned char *)*palette);
-
 	for (int gindex = 0; gindex < 256; gindex++) {
-	CCPalette[gindex] = RGBClass(
-		((unsigned char *)*palette)[gindex*3]<<2,
-		((unsigned char *)*palette)[gindex*3+1]<<2,
-		((unsigned char *)*palette)[gindex*3+2]<<2);
+		CCPalette[gindex] = RGBClass( // RA2
+			((unsigned char *)*palette)[gindex*3]<<2,
+			((unsigned char *)*palette)[gindex*3+1]<<2,
+			((unsigned char *)*palette)[gindex*3+2]<<2);
 	}
 
 	delete palette;
@@ -84,7 +90,6 @@ ConvertClass * Create_Drawer(char const * palette_name)
 /// </summary>
 MSAnim::~MSAnim(void)
 {
-	//nothing
 }
 
 
@@ -99,7 +104,7 @@ MSAnim::~MSAnim(void)
 /// <param name="rate">The delay in game frames between animation frames.</param>
 /// <param name="loop">Should the animation start over when it runs off the end?</param>
 /// <param name="flags">The shape drawing flags to render with.</param>
-MSShapeAnim::MSShapeAnim(char const * name, int x, int y, ConvertClass * drawer, int rate, bool loop, ShapeFlags_Type flags) :
+MSShapeAnim::MSShapeAnim(Wstring const & name, int x, int y, ConvertClass * drawer, int rate, bool loop, ShapeFlags_Type flags) : // RA2
 	MSAnim(x, y),
 	Drawer(drawer),
 	Loop(loop),
@@ -108,14 +113,7 @@ MSShapeAnim::MSShapeAnim(char const * name, int x, int y, ConvertClass * drawer,
 	ShapeFlags(flags),
 	AllocLoaded(false)
 {
-	Shape = (ShapeSet *)MFCD::Retrieve(name);
-	if (Shape == NULL) {
-		CCFileClass file(name);
-		Shape = (ShapeSet *)Load_Alloc_Data(file);
-		AllocLoaded = true;
-		DebugString("MSShapeAnim: AllocLoaded %s\n", name);
-	}
-
+	Shape = (SHPStruct *)Load_Alloc_Data(name, &AllocLoaded); // RA2
 	StartFrame = 0;
 	StopFrame = Shape->Get_Count() - 1;
 }
@@ -128,8 +126,10 @@ MSShapeAnim::MSShapeAnim(char const * name, int x, int y, ConvertClass * drawer,
 /// </summary>
 MSShapeAnim::~MSShapeAnim(void)
 {
-	if (Shape != NULL && AllocLoaded == true) {
-		delete Shape;
+	if (Shape != NULL && AllocLoaded) { // RA2
+		delete (ShapeSet *)Shape;
+		Shape = NULL;
+		AllocLoaded = false;
 	}
 }
 
@@ -144,8 +144,10 @@ MSShapeAnim::~MSShapeAnim(void)
 void MSShapeAnim::Set_Frame(unsigned frame)
 {
 	Rect rect = Get_Rect();
-	HiddenSurface->Blit_From(rect, *AlternateSurface, rect);
 	CurFrame = frame;
+	if (rect != Get_Rect()) { // RA2
+		HiddenSurface->Blit_From(rect, *AlternateSurface, rect);
+	}
 	if (CurFrame >= (unsigned)Shape->Get_Count()) {
 		CurFrame = Shape->Get_Count() - 1;
 	}
@@ -196,7 +198,7 @@ bool MSShapeAnim::Advance(Surface * surface, Rect & rect)
 
 		Timer = Rate;
 
-		Rect draw_rect = Shape->Get_Rect(CurFrame);
+		Rect draw_rect = Shape->GetFrameBounds(CurFrame); // RA2
 		draw_rect.X += XPos;
 		draw_rect.Y += YPos;
 		if (ShapeFlags & SHAPE_CENTER) {
@@ -214,9 +216,9 @@ bool MSShapeAnim::Advance(Surface * surface, Rect & rect)
 			CurFrame = StartFrame;
 		}
 
-		Draw_Shape(*surface, *Drawer, Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | SHAPE_WIN_REL));
+		Draw_Shape(*surface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | SHAPE_WIN_REL)); // RA2
 
-		rect = Shape->Get_Rect(CurFrame);
+		rect = Shape->GetFrameBounds(CurFrame); // RA2
 		rect.X += XPos;
 		rect.Y += YPos;
 		if (ShapeFlags & SHAPE_CENTER) {
@@ -244,7 +246,7 @@ void MSShapeAnim::Redraw(Surface * surface, Rect const * rect)
 
 	if (rect != NULL) {
 
-		shape_rect = Shape->Get_Rect(CurFrame);
+		shape_rect = Shape->GetFrameBounds(CurFrame); // RA2
 		shape_rect.X += XPos;
 		shape_rect.Y += YPos;
 		if (ShapeFlags & SHAPE_CENTER) {
@@ -260,7 +262,7 @@ void MSShapeAnim::Redraw(Surface * surface, Rect const * rect)
 	}
 
 	if (Active) {
-		Draw_Shape(*surface, *Drawer, Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | SHAPE_WIN_REL));
+		Draw_Shape(*surface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | SHAPE_WIN_REL)); // RA2
 	}
 }
 
@@ -271,7 +273,7 @@ void MSShapeAnim::Redraw(Surface * surface, Rect const * rect)
 /// <returns>Returns with the bounding rectangle of the frame on display.</returns>
 Rect MSShapeAnim::Get_Rect(void) const
 {
-	Rect rect = Shape->Get_Rect(CurFrame);
+	Rect rect = Shape->GetFrameBounds(CurFrame); // RA2
 	rect.X += XPos;
 	rect.Y += YPos;
 	if (ShapeFlags & SHAPE_CENTER) {
@@ -293,11 +295,11 @@ Rect MSShapeAnim::Get_Rect(void) const
 /// <param name="rate">The delay in game frames between animation frames.</param>
 /// <param name="flags">The shape drawing flags to render with.</param>
 /// <param name="vector">The list of sibling anims to repair over this one.</param>
-MSFadeAnim::MSFadeAnim(char const * name, int x, int y, ConvertClass * drawer, int rate, ShapeFlags_Type flags, MS_ANIM_LIST * vector) :
+MSFadeAnim::MSFadeAnim(Wstring const & name, int x, int y, ConvertClass * drawer, int rate, ShapeFlags_Type flags, MS_ANIM_LIST * vector) : // RA2
 	MSShapeAnim(name, x, y, drawer, rate, false, flags),
+	FadeStage(0), // RA2
 	Anims(vector)
 {
-	//nothing
 }
 
 
@@ -316,13 +318,13 @@ bool MSFadeAnim::Advance(Surface * surface, Rect & rect)
 		Timer = Rate;
 
 		ShapeFlags_Type flags;
-		if (CurFrame < 4) {
-			flags = ShapeFlags_Type(ShapeFlags | FadeStages[CurFrame]);
+		if (FadeStage < 4) { // RA2
+			flags = ShapeFlags_Type(ShapeFlags | FadeStages[FadeStage]);
 		} else {
 			flags = ShapeFlags_Type(ShapeFlags | FadeStages[3]);
 		}
 
-		Rect draw_rect = Shape->Get_Rect(CurFrame);
+		Rect draw_rect = Shape->GetFrameBounds(CurFrame); // RA2
 		draw_rect.X += XPos;
 		draw_rect.Y += YPos;
 		if (flags & SHAPE_CENTER) {
@@ -349,15 +351,15 @@ bool MSFadeAnim::Advance(Surface * surface, Rect & rect)
 			CurFrame = StartFrame;
 		}
 
-		if (CurFrame < 4) {
-			flags = ShapeFlags_Type(ShapeFlags | FadeStages[CurFrame]);
+		if (++FadeStage < 4) { // RA2
+			flags = ShapeFlags_Type(ShapeFlags | FadeStages[FadeStage]);
 		} else {
 			flags = ShapeFlags_Type(ShapeFlags | FadeStages[3]);
 		}
 
-		Draw_Shape(*surface, *Drawer, Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), flags);
+		Draw_Shape(*surface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), flags); // RA2
 
-		rect = Shape->Get_Rect(CurFrame);
+		rect = Shape->GetFrameBounds(CurFrame); // RA2
 		rect.X += XPos;
 		rect.Y += YPos;
 		if (flags & SHAPE_CENTER) {
@@ -386,7 +388,7 @@ void MSFadeAnim::Redraw(Surface * surface, Rect const * rect)
 
 	if (rect != NULL) {
 
-		shape_rect = Shape->Get_Rect(CurFrame);
+		shape_rect = Shape->GetFrameBounds(CurFrame); // RA2
 		shape_rect.X += XPos;
 		shape_rect.Y += YPos;
 		if (ShapeFlags & SHAPE_CENTER) {
@@ -402,13 +404,13 @@ void MSFadeAnim::Redraw(Surface * surface, Rect const * rect)
 	}
 
 	ShapeFlags_Type flags;
-	if (CurFrame < 4) {
-		flags = ShapeFlags_Type(ShapeFlags | FadeStages[CurFrame]);
+	if (FadeStage < 4) { // RA2
+		flags = ShapeFlags_Type(ShapeFlags | FadeStages[FadeStage]);
 	} else {
 		flags = ShapeFlags_Type(ShapeFlags | FadeStages[3]);
 	}
 
-	Draw_Shape(*surface, *Drawer, Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), flags);
+	Draw_Shape(*surface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), flags); // RA2
 }
 
 
@@ -424,12 +426,14 @@ void MSFadeAnim::Redraw(Surface * surface, Rect const * rect)
 /// <param name="vector">The list of sibling anims to repair over this one.</param>
 /// <param name="persistent">Should the anim stay alive once the fade is done?</param>
 /// <param name="frame">The shape frame to fade into place.</param>
-MSOverlayAnim::MSOverlayAnim(char const * name, int x, int y, ConvertClass * drawer, int rate, MS_ANIM_LIST * vector, bool persistent, unsigned frame) :
+MSOverlayAnim::MSOverlayAnim(Wstring const & name, int x, int y, ConvertClass * drawer, int rate, MS_ANIM_LIST * vector, bool persistent, unsigned frame, bool fade) : // RA2
 	MSFadeAnim(name, x, y, drawer, rate, SHAPE_NORMAL, vector),
-	Persistent(persistent),
-	Frame(frame)
+	Persistent(persistent) // RA2
 {
-	//nothing
+	CurFrame = frame; // RA2
+	if (!fade) {
+		FadeStage = 4;
+	}
 }
 
 
@@ -438,7 +442,6 @@ MSOverlayAnim::MSOverlayAnim(char const * name, int x, int y, ConvertClass * dra
 /// </summary>
 MSOverlayAnim::~MSOverlayAnim(void)
 {
-
 }
 
 
@@ -456,9 +459,9 @@ bool MSOverlayAnim::Advance(Surface * surface, Rect & rect)
 
 		Timer = Rate;
 
-		if (CurFrame < 4 && Frame >= 0) {
+		if (FadeStage < 4) { // RA2
 
-			rect = Shape->Get_Rect(Frame);
+			rect = Shape->GetFrameBounds(CurFrame); // RA2
 			rect.X += XPos;
 			rect.Y += YPos;
 			if (ShapeFlags & SHAPE_CENTER) {
@@ -468,7 +471,7 @@ bool MSOverlayAnim::Advance(Surface * surface, Rect & rect)
 
 			surface->Blit_From(rect, *AlternateSurface, rect);
 
-			Draw_Shape(*surface, *Drawer, Shape, Frame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[CurFrame]));
+			Draw_Shape(*surface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[FadeStage < 3 ? FadeStage : 3])); // RA2
 
 			if (Anims != NULL) {
 				int my_id = Anims->ID(this);
@@ -479,10 +482,10 @@ bool MSOverlayAnim::Advance(Surface * surface, Rect & rect)
 				}
 			}
 
-			if (++CurFrame >= 4 && Frame >= 0) {
-				Draw_Shape(*AlternateSurface, *Drawer, Shape, Frame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | SHAPE_WIN_REL));
-				return(!Persistent);
+			if (++FadeStage >= 4) { // RA2
+				Draw_Shape(*AlternateSurface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | SHAPE_WIN_REL));
 			}
+			return(!Persistent); // RA2
 		}
 
 		return(false);
@@ -490,29 +493,6 @@ bool MSOverlayAnim::Advance(Surface * surface, Rect & rect)
 
 	rect.Set(0, 0, 0, 0);
 	return(false);
-}
-
-
-/// <summary>
-/// Restarts the overlay's fade from the beginning.
-/// </summary>
-void MSOverlayAnim::Restart(void)
-{
-	CurFrame = 0;
-}
-
-
-/// <summary>
-/// Sets the shape frame the overlay displays.
-/// The fade starts over from the beginning, so the new frame appears the same way the
-/// old one did.
-/// </summary>
-/// <param name="frame">The shape frame to fade into place, or a negative value to draw
-/// nothing at all.</param>
-void MSOverlayAnim::Set_Frame(int frame)
-{
-	CurFrame = 0;
-	Frame = frame;
 }
 
 
@@ -526,13 +506,9 @@ void MSOverlayAnim::Redraw(Surface * surface, Rect const * rect)
 {
 	Rect shape_rect(0, 0, 0, 0);
 
-	if (!Active || Frame < 0) {
-		return;
-	}
+	if (Active) { // RA2
 
-	if (rect != NULL) {
-
-		shape_rect = Shape->Get_Rect(Frame);
+		shape_rect = Shape->GetFrameBounds(CurFrame); // RA2
 		shape_rect.X += XPos;
 		shape_rect.Y += YPos;
 		if (ShapeFlags & SHAPE_CENTER) {
@@ -540,15 +516,39 @@ void MSOverlayAnim::Redraw(Surface * surface, Rect const * rect)
 			shape_rect.Y -= Shape->Get_Height() / 2;
 		}
 
-		shape_rect = Intersect(*rect, shape_rect);
-
-		if (!shape_rect.Is_Valid()) {
-			return;
+		if (rect != NULL) { // RA2
+			shape_rect = Intersect(*rect, shape_rect);
+			if (!shape_rect.Is_Valid()) {
+				return;
+			}
 		}
-	}
 
-	int fading_stage = MIN(CurFrame, 3);
-	Draw_Shape(*surface, *Drawer, Shape, Frame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[fading_stage]));
+		int fading_stage = FadeStage < 3 ? FadeStage : 3; // RA2
+		Draw_Shape(*surface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), surface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[fading_stage]));
+	}
+}
+
+
+/// <summary>
+/// Restarts the overlay's fade from the beginning.
+/// </summary>
+void MSOverlayAnim::Restart(void) // RA2
+{
+	FadeStage = 0;
+}
+
+
+/// <summary>
+/// Sets the shape frame the overlay displays.
+/// The fade starts over from the beginning, so the new frame appears the same way the
+/// old one did.
+/// </summary>
+/// <param name="frame">The shape frame to fade into place, or a negative value to draw
+/// nothing at all.</param>
+void MSOverlayAnim::Set_Frame(int frame)
+{
+	FadeStage = 0;
+	CurFrame = frame;
 }
 
 
@@ -559,10 +559,10 @@ void MSOverlayAnim::Redraw(Surface * surface, Rect const * rect)
 /// </summary>
 void MSOverlayAnim::Restore(Rect const & rect)
 {
-	int fading_stage = MIN(CurFrame, 3);
+	int fading_stage = FadeStage < 3 ? FadeStage : 3; // RA2
 
-	if (Active && Frame >= 0) {
-		Draw_Shape(*AlternateSurface, *Drawer, Shape, Frame, Point2D(XPos, YPos), AlternateSurface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[fading_stage]));
+	if (Active) { // RA2
+		Draw_Shape(*AlternateSurface, *Drawer, (ShapeSet *)Shape, CurFrame, Point2D(XPos, YPos), AlternateSurface->Get_Rect(), ShapeFlags_Type(ShapeFlags | FadeStages[fading_stage]));
 	}
 }
 
@@ -573,7 +573,116 @@ void MSOverlayAnim::Restore(Rect const & rect)
 /// <returns>bool; Is the fade over, or is there nothing to fade?</returns>
 bool MSOverlayAnim::Has_Finished(void) const
 {
-	return(!(Active && CurFrame < 4 && Frame >= 0));
+	return(!(Active && FadeStage < 4));
+}
+
+
+/// <summary>
+/// Creates a captioned button anim within the rectangle specified.
+/// The button pulls its artwork out of the image cache handed over. It starts out
+/// enabled and awaiting its first render.
+/// </summary>
+/// <param name="image_cache">The cache the button pulls its artwork from.</param>
+/// <param name="rect">The screen area the button occupies.</param>
+/// <param name="string">The caption to print on the button.</param>
+/// <param name="height">The artwork height to request from the cache.</param>
+/// <param name="left_cap_width">The width of the left hand end piece.</param>
+/// <param name="right_cap_width">The width of the right hand end piece.</param>
+MSButtonAnim::MSButtonAnim(Wstring const & text, int width, MS_ANIM_LIST * vector, Rect const & rect, bool persistent) :
+	MSAnim(rect.X, rect.Y),
+	Text(NULL),
+	Width(width),
+	Area(rect),
+	Anims(vector),
+	Persistent(persistent)
+{
+	if (text.length() > 0) {
+		Text = new MSTextLayout(text.text(), width);
+		Text->Set_Position(rect.X, rect.Y);
+	}
+}
+
+
+/// <summary>
+/// Destroys the button anim.
+/// </summary>
+MSButtonAnim::~MSButtonAnim(void)
+{
+	if (Text != NULL) {
+		delete Text;
+	}
+}
+
+
+/// <summary>
+/// Fetches the screen rectangle this button occupies.
+/// </summary>
+/// <returns>Returns with the bounding rectangle the button was created with.</returns>
+Rect MSButtonAnim::Get_Rect(void) const
+{
+	return(Area);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool MSButtonAnim::Has_Finished(void) const
+{
+	return(Text == NULL || Text->Is_Complete());
+}
+
+
+/// <summary>
+/// Draws the button whenever its appearance has changed.
+/// The artwork is only rebuilt when the pressed or enabled state has been altered
+/// since the last pass, so an idle button costs nothing.
+/// </summary>
+bool MSButtonAnim::Advance(Surface * surface, Rect & rect)
+{
+	if (surface == NULL) {
+		return(false);
+	}
+	if (Text == NULL) {
+		return(true);
+	}
+
+	if (!Text->Is_Complete() && Text->Is_Dirty()) {
+		Redraw(surface, NULL);
+		rect = Area;
+		int my_id = Anims->ID(this);
+		for (int i = 0; i < Anims->Count(); i++) {
+			if (i != my_id) {
+				(*Anims)[i]->Redraw(surface, &Area);
+			}
+		}
+	}
+
+	return(Text->Is_Complete() && !Persistent);
+}
+
+
+/// <summary>
+/// Draws the button onto the surface specified.
+/// This routine is used when another anim has drawn over the area the button sits in.
+/// </summary>
+/// <param name="rect">The damaged region to draw within, or NULL to draw unconditionally.</param>
+void MSButtonAnim::Redraw(Surface * surface, Rect const * rect)
+{
+	if (rect != NULL) {
+		Intersect(*rect, Area);
+	}
+	surface->Blit_From(Area, *AlternateSurface, Area);
+}
+
+
+/// <summary>
+/// Flags the button as needing to be drawn again.
+/// This routine is called when something has covered the button. The artwork is not
+/// put back on the spot, but at the next advance.
+/// </summary>
+void MSButtonAnim::Restore(Rect const & rect)
+{
 }
 
 
@@ -587,7 +696,7 @@ bool MSOverlayAnim::Has_Finished(void) const
 /// <param name="surface">The surface the movie is played onto.</param>
 /// <param name="vector">The list of sibling anims to repair over the movie.</param>
 /// <param name="persistent">Should the anim stay alive after the movie has ended?</param>
-MSVQAnim::MSVQAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, bool persistent) :
+MSVQAnim::MSVQAnim(Wstring const & name, Surface * surface, MS_ANIM_LIST * vector, Rect const & rect, bool persistent) : // RA2
 	MSAnim(0, 0, false),
 	Anims(vector),
 	Movie(NULL),
@@ -596,21 +705,45 @@ MSVQAnim::MSVQAnim(char const * name, Surface * surface, MS_ANIM_LIST * vector, 
 	Persistent(persistent),
 	Done(false)
 {
-	if (name != NULL && surface != NULL) {
-		Movie = Movie_Create(name, surface, Rect(0, 0, 0, 0), Rect(0, 0, 0, 0), int(Options.SoundVolume * 255.0), false);
+	if (name != (char const *)NULL && surface != NULL) {
+		Movie = Movie_Create(name.text(), surface, Rect(0, 0, 0, 0), Rect(0, 0, 0, 0), int(Options.SoundVolume * 255.0), false);
+		if (Movie != NULL) {
+			Movie->InitialRect = Rect((surface->Get_Width() - VideoModeWidth) / 2, (surface->Get_Height() - VideoModeHeight) / 2, VideoModeWidth, VideoModeHeight);
+			Movie->StretchRect = rect;
+		}
+		Wstring token;
+		name.getToken(0, ".", token);
+		CCFileClass file(token + ".PCX");
+		if (file.Is_Available(0)) {
+			Background = Read_PCX_File(file);
+		}
+	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+MSVQAnim::MSVQAnim(Wstring const & name, Surface * surface, MS_ANIM_LIST * vector, bool persistent) :
+	MSAnim(0, 0, false),
+	Anims(vector),
+	Movie(NULL),
+	TargetSurface(surface),
+	Background(NULL),
+	Persistent(persistent),
+	Done(false)
+{
+	if (name != (char const *)NULL && surface != NULL) {
+		Movie = Movie_Create(name.text(), surface, Rect(0, 0, 0, 0), Rect(0, 0, 0, 0), int(Options.SoundVolume * 255.0), false);
 		if (Movie != NULL) {
 			Movie->InitialRect = Rect((surface->Get_Width() - 640) / 2, (surface->Get_Height() - 400) / 2, 640, 400);
 			Movie->StretchRect = Rect((HiddenSurface->Get_Width() - 640) / 2, (HiddenSurface->Get_Height() - 400) / 2, 640, 400);
 		}
-		char pcx_name[64];
-		strcpy(pcx_name, name);
-		char *tok = strtok(pcx_name, ".");
-		if (tok != NULL) {
-			strcat(tok, ".PCX");
-			CCFileClass file(pcx_name);
-			if (file.Is_Available()) {
-				Background = Read_PCX_File(file);
-			}
+		Wstring token; // RA2
+		name.getToken(0, ".", token);
+		CCFileClass file(token + ".PCX");
+		if (file.Is_Available(0)) {
+			Background = Read_PCX_File(file);
 		}
 	}
 }
@@ -678,27 +811,26 @@ bool MSVQAnim::Advance(Surface * surface, Rect & rect)
 		if (is_done) {
 			Done = is_done;
 		}
-		return(Done && !Persistent);
-	}
+	} else { // RA2
+		if (!Done) {
+			if (Background != NULL) {
+				Rect backdrop_rect = Background->Get_Rect();
+				TargetSurface->Blit_From(backdrop_rect, *Background, backdrop_rect);
+				Redraw(surface);
+				rect = backdrop_rect;
 
-	if (!Done) {
-		if (Background != NULL) {
-			Rect backdrop_rect = Background->Get_Rect();
-			TargetSurface->Blit_From(backdrop_rect, *Background, backdrop_rect);
-			Redraw(surface);
-			rect = backdrop_rect;
-
-			int my_id = Anims->ID(this);
-			for (int i = 0; i < Anims->Count(); i++) {
-				if (i != my_id) {
-					(*Anims)[i]->Redraw(surface, &backdrop_rect);
+				int my_id = Anims->ID(this); // RA2
+				for (int i = 0; i < Anims->Count(); i++) {
+					if (i != my_id) {
+						(*Anims)[i]->Redraw(surface, &backdrop_rect);
+					}
 				}
 			}
 		}
+		Done = true; // RA2
 	}
-	Done = true;
 
-	return(!Persistent);
+	return(Done && !Persistent); // RA2
 }
 
 
@@ -754,6 +886,87 @@ bool MSVQAnim::Has_Finished(void) const
 
 
 /// <summary>
+/// RA2
+/// </summary>
+MSBitPrintAnim::MSBitPrintAnim(WideWstring const & text, Rect const & rect, bool flag) :
+	MSAnim(rect.X, rect.Y, true),
+	Text(text),
+	Area(rect),
+	IsFinished(false),
+	IsCentered(flag)
+{
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+MSBitPrintAnim::~MSBitPrintAnim(void)
+{
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void MSBitPrintAnim::Set_Flag(bool flag)
+{
+	IsFinished = flag;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+Rect MSBitPrintAnim::Get_Rect(void) const
+{
+	return(Area);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool MSBitPrintAnim::Has_Finished(void) const
+{
+	return(IsFinished);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool MSBitPrintAnim::Advance(Surface * surface, Rect & rect)
+{
+	if (BitText::Instance != NULL && BitFont::Instance != NULL) {
+		LTRBStruct bounds = { Area.X, Area.Y, Area.X + Area.Width - 1, Area.Y + Area.Height - 1 };
+		BitFont::Instance->Set_Bounds(&bounds);
+		int alignment = IsCentered ? 1 : 0;
+		BitText::Instance->Draw_Text(BitFont::Instance, surface, Text.get(), Area.X, Area.Y,
+			Area.Width, Area.Height, alignment, 0, 0);
+	}
+	rect = Area;
+	return !IsFinished;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void MSBitPrintAnim::Redraw(Surface * surface, Rect const * rect)
+{
+	if (BitText::Instance != NULL && BitFont::Instance != NULL) {
+		if (rect == NULL) rect = &Area;
+		LTRBStruct bounds = { rect->X, rect->Y, rect->X + rect->Width - 1, rect->Y + rect->Height - 1 };
+		BitFont::Instance->Set_Bounds(&bounds);
+		int alignment = IsCentered ? 1 : 0;
+		BitText::Instance->Draw_Text(BitFont::Instance, surface, Text.get(), Area.X, Area.Y,
+			Area.Width, Area.Height, alignment, 0, 0);
+	}
+}
+
+
+/// <summary>
 /// Creates a text printing anim from a string table entry.
 /// The text is typed out a character at a time within the area specified. Use this
 /// version when the words come from the game's string table rather than from code.
@@ -765,15 +978,15 @@ bool MSVQAnim::Has_Finished(void) const
 /// <param name="print_delay">The delay in game frames between characters.</param>
 /// <param name="fade_effect">Should the characters fade in as they are printed?</param>
 /// <param name="center">Should the text be centered within its area?</param>
-MSPrintAnim::MSPrintAnim(int text, int x, int y, MSFont * font, Rect const & rect, int start_delay, int print_delay, bool fade_effect, bool center) :
+MSPrintAnim::MSPrintAnim(WideWstring const & text, int x, int y, MSFont * font, Rect const & rect, int start_delay, int print_delay, bool fade_effect, bool center) : // RA2
 	MSAnim(x, y, true),
-	String(Fetch_String(text)),
-	PrintDelay(print_delay),
-	Font(font),
+	Text(text), // RA2
 	LineStart(0),
 	PrintedCharCount(start_delay),
 	CompletionCount(0),
+	PrintDelay(print_delay), // RA2
 	FadeEffect(fade_effect),
+	Font(font), // RA2
 	Transient(false),
 	Centered(center),
 	Offset(0)
@@ -781,48 +994,12 @@ MSPrintAnim::MSPrintAnim(int text, int x, int y, MSFont * font, Rect const & rec
 	Timer = start_delay;
 	Set_Dimensions(rect);
 	if (center) {
-		Offset = (Area.Width - Get_Line_Width(String)) / 2;
-	}
-}
-
-
-/// <summary>
-/// Creates a text printing anim from the string handed over.
-/// The text is typed out a character at a time within the area specified. Use this
-/// version for text assembled in code rather than pulled from the string table.
-/// </summary>
-/// <param name="string">The text to print.</param>
-/// <param name="font">The font to print the text with.</param>
-/// <param name="rect">The area to center and clip the text within.</param>
-/// <param name="start_delay">The delay in game frames before printing begins.</param>
-/// <param name="print_delay">The delay in game frames between characters.</param>
-/// <param name="fade_effect">Should the characters fade in as they are printed?</param>
-/// <param name="center">Should the text be centered within its area?</param>
-/// <remarks>The string is not copied. It must outlive the anim.</remarks>
-MSPrintAnim::MSPrintAnim(char const * string, int x, int y, MSFont * font, Rect const & rect, int start_delay, int print_delay, bool fade_effect, bool center) :
-	MSAnim(x, y, true),
-	String(string),
-	PrintDelay(print_delay),
-	Font(font),
-	LineStart(0),
-	PrintedCharCount(start_delay),
-	CompletionCount(0),
-	FadeEffect(fade_effect),
-	Transient(false),
-	Centered(center),
-	Offset(0)
-{
-	Timer = start_delay;
-	Set_Dimensions(rect);
-	if (center) {
+		int font_width = Font->Get_Font_Width(); // RA2
 		int width = 0;
-		char const * str = String;
-		int font_width = Font->Get_Font_Width();
-		while (*str && *str != '\n') {
-			width += Font->Get_Character_Width(*str);
-			str++;
+		for (int i = 0; Text.getChar(i) != 0 && Text.getChar(i) != '\n'; i++) { // RA2
+			width += Font->Get_Character_Width(Text.getChar(i));
 		}
-		Offset = (Area.Width - font_width - width) / 2;
+		Offset = (Area.Width - width - font_width) / 2; // RA2
 	}
 }
 
@@ -837,7 +1014,7 @@ MSPrintAnim::MSPrintAnim(char const * string, int x, int y, MSFont * font, Rect 
 void MSPrintAnim::Set_Dimensions(Rect const & rect)
 {
 	if (rect.Is_Valid()) {
-		Font->Get_String_Rect(String, Area);
+		Font->Get_String_Rect(Text.get(), Area); // RA2
 
 		XPos += (rect.Width - Area.Width) / 2;
 		YPos += (rect.Height - (rect.Height / Font->Get_Font_Height() * Font->Get_Font_Height())) / 2;
@@ -847,9 +1024,8 @@ void MSPrintAnim::Set_Dimensions(Rect const & rect)
 
 		Area = Intersect(rect, Area);
 		XPos += Font->Get_Font_Width() / 2;
-
 	} else {
-		Font->Get_String_Rect(String, Area);
+		Font->Get_String_Rect(Text.get(), Area); // RA2
 		Area.X = XPos;
 		Area.Y = YPos;
 	}
@@ -866,130 +1042,60 @@ void MSPrintAnim::Set_Dimensions(Rect const & rect)
 /// <param name="font">The font the text will be printed with.</param>
 /// <param name="line_width">The width available for a single line, in pixels.</param>
 /// <returns>Returns with the width of the widest line, in pixels.</returns>
-int MSPrintAnim::Word_Wrap(char * string, MSFont * font, int line_width)
+int MSPrintAnim::Word_Wrap(WideWstring & string, MSFont * font, int line_width) // RA2
 {
-	if (string == NULL || font == NULL || line_width <= font->Get_Font_Width()) {
+	int max_width = 0; // RA2
+
+	if (string == (wchar_t const *)NULL || font == NULL || line_width <= font->Get_Font_Width()) {
 		return(0);
 	}
 
 	line_width -= font->Get_Font_Width();
-	int max_width = 0;
-	char * char_ptr = string;
+	unsigned index = 0; // RA2
 
-	while (*char_ptr) {
+	while (string.getChar(index) != 0) { // RA2
 		int current_width = 0;
+		unsigned start = index; // RA2
 
-		/// Calculate the width of the current line
-		while (current_width < line_width && *char_ptr != '\0' && *char_ptr != '\n' && *char_ptr != '@') {
-			int char_width = font->Get_Character_Width(*char_ptr++);
-			current_width += char_width;
+		while (current_width < line_width && string.getChar(index) != 0 && string.getChar(index) != '\n' && string.getChar(index) != '@') { // RA2
+			current_width += font->Get_Character_Width(string.getChar(index++));
 		}
 
-		/// If the line exceeds the available width, backtrack to the last space
 		if (current_width >= line_width) {
-			while (*char_ptr != '\0' && *char_ptr != ' ' && *char_ptr != '\n' && char_ptr != string) {
-				char_ptr--;
-				current_width -= font->Get_Character_Width(*char_ptr);
+			while (string.getChar(index) != 0 && string.getChar(index) != ' ' && string.getChar(index) != '\n' && index != start) { // RA2
+				index--;
+				current_width -= font->Get_Character_Width(string.getChar(index));
 			}
 		}
 
-		/// Update the maximum width encountered
-		if (current_width > max_width) {
-			max_width = current_width;
-		}
-
-		/// If we reached the end of the string, break
-		if (!*char_ptr) {
-			break;
-		}
-
-		/// Replace the current character with a newline and move to the next line
-		*char_ptr = '\n';
-		char_ptr++;
-	}
-
-	return(max_width);
-}
-
-
-/// <summary>
-/// Wraps a string to the line width given, splitting long words if it must.
-/// This is the buffer aware version of the word wrap routine. A word too long to fit
-/// a line of its own is broken across two lines, which lengthens the string -- hence
-/// the buffer size that the other version does without.
-/// </summary>
-/// <param name="string">The text to wrap; line breaks are inserted in place.</param>
-/// <param name="length">The size of the buffer holding the string.</param>
-/// <param name="font">The font the text will be printed with.</param>
-/// <param name="line_width">The width available for a single line, in pixels.</param>
-/// <returns>Returns with the width of the widest line, in pixels.</returns>
-/// <remarks>Be sure the buffer has room to grow, or a long word will be truncated.</remarks>
-int MSPrintAnim::Word_Wrap(char * string, int length, MSFont * font, int line_width)
-{
-	char * char_ptr = string;
-	int max_width = 0;
-	if (string == NULL || font == NULL || line_width <= font->Get_Font_Width()) {
-		return(0);
-	}
-
-	line_width -= font->Get_Font_Width();
-	unsigned int blen = length - strlen(string) - 1;
-
-	while (*char_ptr) {
-		int current_width = 0;
-		char *start_ptr = char_ptr;
-
-		/// Calculate the width of the current line
-		while (current_width < line_width && *char_ptr != '\0' && *char_ptr != '\n' && *char_ptr != '@') {
-			int char_width = font->Get_Character_Width(*char_ptr++);
-			current_width += char_width;
-		}
-
-		/// If the line exceeds the available width, backtrack to the last space
-		if (current_width >= line_width) {
-			while (*char_ptr != '\0' && *char_ptr != ' ' && *char_ptr != '\n' && char_ptr != start_ptr) {
-				char_ptr--;
-				current_width -= font->Get_Character_Width(*char_ptr);
-			}
-		}
-
-		if (char_ptr == start_ptr) {
-			while (current_width < line_width && *char_ptr != '\0' && *char_ptr != ' ' && *char_ptr != '\n' && *char_ptr != '@' && *char_ptr != '-') {
-				int char_width = font->Get_Character_Width(*char_ptr++);
-				current_width += char_width;
+		if (index == start) { // RA2
+			while (current_width < line_width && string.getChar(index) != 0 && string.getChar(index) != ' ' && string.getChar(index) != '\n' && string.getChar(index) != '@' && string.getChar(index) != '-') {
+				current_width += font->Get_Character_Width(string.getChar(index++));
 			}
 
 			if (current_width < line_width) {
-				if (blen > 0) {
-					blen--;
-					char_ptr++;
-					memmove(char_ptr + 1, char_ptr, strlen(char_ptr) + 1);
-				}
+				WideWstring head(string);
+				head.truncate(++index);
+				WideWstring tail(string);
+				tail.remove(0, index);
+				string = head + WideWstring(L"\n") + tail;
 			} else {
-				char_ptr--;
-				current_width -= font->Get_Character_Width(*char_ptr);
-				if (blen > 0) {
-					blen--;
-					memmove(char_ptr + 1, char_ptr, strlen(char_ptr) + 1);
-				} else {
-					*(char_ptr + 1) = 0;
-				}
+				current_width -= font->Get_Character_Width(string.getChar(index));
+				WideWstring head(string);
+				head.truncate(index);
+				WideWstring tail(string);
+				tail.remove(0, index);
+				string = head + WideWstring(L"\n") + tail;
 			}
 		}
 
-		/// Update the maximum width encountered
 		if (current_width > max_width) {
 			max_width = current_width;
 		}
 
-		/// If we reached the end of the string, break
-		if (!*char_ptr) {
-			break;
+		if (string.getChar(index) != 0) { // RA2
+			string.set('\n', index++);
 		}
-
-		/// Replace the current character with a newline and move to the next line
-		*char_ptr = '\n';
-		char_ptr++;
 	}
 
 	return(max_width);
@@ -1006,35 +1112,33 @@ int MSPrintAnim::Word_Wrap(char * string, int length, MSFont * font, int line_wi
 /// <param name="page_height">The height of a single page, in pixels.</param>
 /// <returns>Returns with the number of page breaks inserted.</returns>
 /// <remarks>The string must already be wrapped; this routine only breaks at a newline.</remarks>
-int MSPrintAnim::Paginate(char * string, MSFont * font, int page_height)
+int MSPrintAnim::Paginate(WideWstring & string, MSFont * font, int page_height) // RA2
 {
-	if (string != NULL && font != NULL && page_height >= font->Get_Font_Height()) {
-		int overflow_count = 0; /// Count of height overflows
-		int current_height = 0; /// Accumulated height
-		char *str = string;
-		if (str) {
-			while (*str) {
-				for (char c = *str; *str; c = *str) {
-					if (c == '\n') {
-						break;
-					}
-					str++;
-				}
-
-				if (*str == '\n') {
-					current_height += font->Get_Font_Height();
-					if (current_height >= page_height) {
-						current_height = 0;
-						overflow_count++;
-						*str = '\f'; /// Replace newline with form feed
-					}
-					str++;
-				}
-			}
-		}
-		return(overflow_count);
+	if (string == (wchar_t const *)NULL || font == NULL || page_height < font->Get_Font_Height()) { // RA2
+		return(0);
 	}
-	return(0);
+
+	unsigned index = 0; // RA2
+	int overflow_count = 0;
+	int current_height = 0;
+
+	while (string.getChar(index) != 0) {
+		while (string.getChar(index) != 0 && string.getChar(index) != '\n') {
+			index++;
+		}
+
+		if (string.getChar(index) != '\n') {
+			current_height += font->Get_Font_Height();
+			if (current_height >= page_height) {
+				current_height = 0;
+				overflow_count++;
+				string.set('\f', index);
+			}
+			index++; // RA2
+		}
+	}
+
+	return(overflow_count); // RA2
 }
 
 
@@ -1057,8 +1161,7 @@ bool MSPrintAnim::Advance(Surface * surface, Rect & rect)
 
 	Timer = PrintDelay;
 
-	/// We've reached the end of the string and let the facing anim finish
-	if (PrintedCharCount > strlen(String) && CompletionCount > 2) {
+	if (PrintedCharCount > Text.length() && CompletionCount > 2) { // RA2
 		return(!Transient);
 	}
 
@@ -1066,36 +1169,42 @@ bool MSPrintAnim::Advance(Surface * surface, Rect & rect)
 		surface->Blit_From(Area, *AlternateSurface, Area);
 	}
 
+	int x = XPos; // RA2
 	bool should_center = Centered;
-	int x = XPos;
 	int y = YPos;
 
 	for (unsigned char_index = LineStart; char_index <= PrintedCharCount; char_index++) {
-		char ch = String[char_index];
-		if (ch == '\0') {
+		wchar_t ch = Text.get(char_index); // RA2
+		if (ch == 0) {
 			CompletionCount++;
 			break;
 		}
 
 		if (should_center) {
+			WideWstring rest(Text); // RA2
+			rest.remove(0, char_index);
 			int font_width = Font->Get_Font_Width();
-			int string_width = Get_Line_Width(String + char_index);
+			int i = 0; // RA2
+			int string_width = 0;
+			for (; rest.getChar(i) != 0 && rest.getChar(i) != '\n'; i++) {
+				string_width += Font->Get_Character_Width(rest.getChar(i));
+			}
 			Offset = (Area.Width - string_width - font_width) / 2;
 			x += Offset;
 			should_center = false;
 		}
 
 		if (ch == '\n') {
+			x = XPos; // RA2
 			should_center = Centered;
-			x = XPos;
 			y += Font->Get_Font_Height();
 
 			if (y + Font->Get_Font_Height() - YPos > Area.Height) {
-				int next_line_start = LineStart;
-				while (String[next_line_start] && String[next_line_start] != '\n') {
+				unsigned next_line_start = LineStart; // RA2
+				while (Text.getChar(next_line_start) != 0 && Text.getChar(next_line_start) != '\n') {
 					next_line_start++;
 				}
-				if (String[next_line_start] == '\n') {
+				if (Text.getChar(next_line_start) == '\n') { // RA2
 					next_line_start++;
 				}
 				LineStart = next_line_start;
@@ -1123,31 +1232,37 @@ bool MSPrintAnim::Advance(Surface * surface, Rect & rect)
 void MSPrintAnim::Redraw(Surface * surface, Rect const * rect)
 {
 	if (rect == NULL || Intersect(*rect, Area).Is_Valid()) {
+		int x = XPos; // RA2
 		bool should_center = Centered;
-		int x = XPos;
 		int y = YPos;
 
 		unsigned printed = Get_Printed_Char_Count();
-		unsigned end = MIN(printed, strlen(String));
+		unsigned end = MIN(printed, Text.length()); // RA2
 
 		for (unsigned char_index = LineStart; char_index < end; char_index++) {
-			if (String[char_index] == '\n') {
-				should_center = Centered;
+			if (Text.getChar(char_index) == '\n') { // RA2
 				x = XPos;
+				should_center = Centered;
 				y += Font->Get_Font_Height();
 				if (y + Font->Get_Font_Height() >= surface->Get_Height()) {
 					return;
 				}
 			} else {
 				if (should_center) {
+					WideWstring rest(Text); // RA2
+					rest.remove(0, char_index);
+					int i = 0;
 					int font_width = Font->Get_Font_Width();
-					int string_width = Get_Line_Width(String + char_index);
+					int string_width = 0; // RA2
+					for (; rest.getChar(i) != 0 && rest.getChar(i) != '\n'; i++) {
+						string_width += Font->Get_Character_Width(rest.getChar(i));
+					}
 					Offset = (Area.Width - string_width - font_width) / 2;
 					x += Offset;
 					should_center = false;
 				}
-				Font->Draw_Character(surface, String[char_index], x, y, 2, true);
-				x += Font->Get_Character_Width(String[char_index]);
+				Font->Draw_Character(surface, Text.getChar(char_index), x, y, 2, true); // RA2
+				x += Font->Get_Character_Width(Text.getChar(char_index));
 			}
 		}
 	}
@@ -1171,11 +1286,8 @@ bool MSWordAnim::Advance(Surface * surface, Rect & rect)
 
 	Timer = PrintDelay;
 
-	if (LineStart >= strlen(String)) {
-		void const * sample = MFCD::Retrieve("BLEEP1.AUD");
-		if (sample != NULL) {
-			Audio.Play_Sample(sample, 10, int(Options.SoundVolume * 64));
-		}
+	if (LineStart >= Text.length()) { // RA2
+		Play_Named_Sound("bleep1", int(Options.SoundVolume * 64.0f));
 		return(true);
 	}
 
@@ -1189,12 +1301,12 @@ bool MSWordAnim::Advance(Surface * surface, Rect & rect)
 		x += Offset;
 	}
 
-	char character = String[LineStart];
-	int line_end_index = LineStart + 1;
-	while (character != '\n' && character != '\0') {
+	unsigned line_end_index = LineStart; // RA2
+	wchar_t character = Text.getChar(line_end_index++);
+	while (character != '\n' && character != 0) {
 		Font->Draw_Character(surface, character, x, LineYPos, PrintedCharCount, false);
 		x += Font->Get_Character_Width(character);
-		character = String[line_end_index++];
+		character = Text.getChar(line_end_index++); // RA2
 	}
 
 	rect.Set(Area.X, LineYPos, Area.Width, Font->Get_Font_Height());
@@ -1203,10 +1315,7 @@ bool MSWordAnim::Advance(Surface * surface, Rect & rect)
 		LineRect.Set(0, 0, 0, 0);
 		LineStart = line_end_index;
 		if (character == '\n') {
-			void const * sample = MFCD::Retrieve("BLEEP1.AUD");
-			if (sample != NULL) {
-				Audio.Play_Sample(sample, 10, int(Options.SoundVolume * 64));
-			}
+			Play_Named_Sound("bleep1", int(Options.SoundVolume * 64.0f)); // RA2
 			LineYPos += Font->Get_Font_Height();
 		}
 	} else {
@@ -1256,7 +1365,7 @@ void MSPrintAnim::Set_Transient(bool transient)
 /// <returns>bool; Is the anim done with the screen?</returns>
 bool MSPrintAnim::Has_Finished(void) const
 {
-	return(Transient && PrintedCharCount > strlen(this->String) && CompletionCount > 2);
+	return(Transient && PrintedCharCount > Text.length() && CompletionCount > 2); // RA2
 }
 
 
@@ -1267,12 +1376,12 @@ bool MSPrintAnim::Has_Finished(void) const
 /// </summary>
 /// <param name="str">Pointer to the first character of the line to measure.</param>
 /// <returns>Returns with the width of the line in pixels.</returns>
-int MSPrintAnim::Get_Line_Width(char const * str) const
+int MSPrintAnim::Get_Line_Width(WideWstring const & str) const // RA2
 {
+	int i = 0; // RA2
 	int width = 0;
-	while (*str && *str != '\n') {
-		width += Font->Get_Character_Width(*str);
-		str++;
+	for (; str.getChar(i) != 0 && str.getChar(i) != '\n'; i++) { // RA2
+		width += Font->Get_Character_Width(str.getChar(i));
 	}
 	return(width);
 }
@@ -1294,194 +1403,17 @@ void MSWordAnim::Redraw(Surface * surface, Rect const * rect)
 		unsigned end = LineStart;
 
 		for (unsigned char_index = 0; char_index < end; char_index++) {
-			if (String[char_index] == '\n') {
+			if (Text.getChar(char_index) == '\n') { // RA2
 				x = XPos;
 				y += Font->Get_Font_Height();
 				if (y + Font->Get_Font_Height() >= surface->Get_Height()) {
 					return;
 				}
 			} else {
-				Font->Draw_Character(surface, String[char_index], x, y, 2, true);
-				x += Font->Get_Character_Width(String[char_index]);
+				Font->Draw_Character(surface, Text.getChar(char_index), x, y, 2, true); // RA2
+				x += Font->Get_Character_Width(Text.getChar(char_index));
 			}
 		}
-	}
-}
-
-
-/// <summary>
-/// Creates a captioned button anim within the rectangle specified.
-/// The button pulls its artwork out of the image cache handed over. It starts out
-/// enabled and awaiting its first render.
-/// </summary>
-/// <param name="image_cache">The cache the button pulls its artwork from.</param>
-/// <param name="rect">The screen area the button occupies.</param>
-/// <param name="string">The caption to print on the button.</param>
-/// <param name="height">The artwork height to request from the cache.</param>
-/// <param name="left_cap_width">The width of the left hand end piece.</param>
-/// <param name="right_cap_width">The width of the right hand end piece.</param>
-MSButtonAnim::MSButtonAnim(SurfaceCacheClass * image_cache, Rect const & rect, char const * string, int height, int left_cap_width, int right_cap_width) :
-	MSAnim(rect.X, rect.Y, true),
-	ImageCache(image_cache),
-	Pressed(true),
-	Enabled(true),
-	Area(rect),
-	Height(height),
-	LeftCapWidth(left_cap_width),
-	RightCapWidth(right_cap_width),
-	String(string),
-	NeedsRedraw(true)
-{
-
-}
-
-
-/// <summary>
-/// Destroys the button anim.
-/// </summary>
-MSButtonAnim::~MSButtonAnim(void)
-{
-
-}
-
-
-/// <summary>
-/// Sets the enabled state of the button.
-/// A disabled button draws itself with the grayed artwork and ignores its pressed
-/// state entirely.
-/// </summary>
-void MSButtonAnim::Set_Enabled(bool enabled)
-{
-	if (enabled != Enabled) {
-		Enabled = enabled;
-		NeedsRedraw = true;
-	}
-}
-
-
-/// <summary>
-/// Draws the button whenever its appearance has changed.
-/// The artwork is only rebuilt when the pressed or enabled state has been altered
-/// since the last pass, so an idle button costs nothing.
-/// </summary>
-bool MSButtonAnim::Advance(Surface * surface, Rect & rect)
-{
-	if (Active) {
-		rect.Set(0, 0, 0, 0);
-		if (NeedsRedraw) {
-			if (surface != NULL) {
-				Render(surface);
-				NeedsRedraw = false;
-			}
-		}
-	}
-	return(false);
-}
-
-
-/// <summary>
-/// Draws the button onto the surface specified.
-/// This routine is used when another anim has drawn over the area the button sits in.
-/// </summary>
-/// <param name="rect">The damaged region to draw within, or NULL to draw unconditionally.</param>
-void MSButtonAnim::Redraw(Surface * surface, Rect const * rect)
-{
-	if (Active) {
-		if (rect == NULL || Intersect(*rect, Get_Rect()).Is_Valid()) {
-			if (surface != NULL) {
-				Render(surface);
-				NeedsRedraw = false;
-			}
-		}
-	}
-}
-
-
-/// <summary>
-/// Fetches the screen rectangle this button occupies.
-/// </summary>
-/// <returns>Returns with the bounding rectangle the button was created with.</returns>
-Rect MSButtonAnim::Get_Rect(void) const
-{
-	return(Area);
-}
-
-
-/// <summary>
-/// Draws the button's caption text.
-/// The text shifts down and to the right while the button is showing its depressed
-/// artwork, so that the label appears to sink along with it.
-/// </summary>
-void MSButtonAnim::Draw_Caption(Surface * surface)
-{
-	Rect rect(Area.X, Area.Y, Area.X + Area.Width - 2, Area.Y + Area.Height - 2);
-	if (!Pressed) {
-		rect.X += 3;
-		rect.Y += 6;
-	}
-	OD_Draw_Text_Remap(*surface, String, rect, "dlgsys", ODColorText, 5, 0);
-}
-
-
-/// <summary>
-/// Draws the button artwork onto the surface specified.
-/// The button is assembled from cached artwork pieces chosen to suit its pressed and
-/// enabled states, and the caption is printed on top of the result.
-/// </summary>
-void MSButtonAnim::Render(Surface * surface)
-{
-	char buffer[256];
-
-	char char1 = (Pressed || !Enabled) ? 'u' : 'd'; /// u is for "up", d is for "down"
-	char char2 = Enabled ? 'e' : 'd'; /// e is for "enabled", d is for "disabled"
-
-	sprintf(buffer, "b%c%c_li%02d.pcx", char1, char2, Height);
-	Surface * image = ImageCache->GetSurface(buffer);
-	if (image != NULL) {
-		Rect dr(Area.X, Area.Y, LeftCapWidth, Height);
-		Rect sr(0, 0, dr.Width, dr.Height);
-		surface->Blit_From(dr, *image, sr);
-	}
-
-	sprintf(buffer, "b%c%c_mi%02d.pcx", char1, char2, Height);
-	image = ImageCache->GetSurface(buffer);
-	if (image != NULL) {
-		ImageCache->Draw(Rect(Area.X + LeftCapWidth, Area.Y, Area.Width - RightCapWidth - LeftCapWidth, Height), *surface, *image, 0, 0);
-	}
-
-	sprintf(buffer, "b%c%c_ri%02d.pcx", char1, char2, Height);
-	image = ImageCache->GetSurface(buffer);
-	if (image != NULL) {
-		Rect dr(Area.X + Area.Width - 10, Area.Y, RightCapWidth, Height);
-		Rect sr(0, 0, dr.Width, dr.Height);
-		surface->Blit_From(dr, *image, sr);
-	}
-
-	Draw_Caption(surface);
-}
-
-
-/// <summary>
-/// Flags the button as needing to be drawn again.
-/// This routine is called when something has covered the button. The artwork is not
-/// put back on the spot, but at the next advance.
-/// </summary>
-void MSButtonAnim::Restore(Rect const & rect)
-{
-	NeedsRedraw = true;
-}
-
-
-/// <summary>
-/// Sets the pressed state of the button.
-/// The button picks up the matching artwork the next time it is advanced or redrawn,
-/// not immediately.
-/// </summary>
-void MSButtonAnim::Set_Pressed(bool pressed)
-{
-	if (Pressed != pressed) {
-		Pressed = pressed;
-		NeedsRedraw = true;
 	}
 }
 
@@ -1493,7 +1425,7 @@ void MSButtonAnim::Set_Pressed(bool pressed)
 /// </summary>
 /// <param name="name">Name of the artwork file; the extension is replaced with ".PCX".</param>
 /// <param name="vector">The anim list this anim belongs to.</param>
-MSPCXAnim::MSPCXAnim(const char * name, MS_ANIM_LIST * vector, bool transient) :
+MSPCXAnim::MSPCXAnim(Wstring const & name, MS_ANIM_LIST * vector, bool transient) : // RA2
 	MSAnim(0, 0, false),
 	TargetSurface(AlternateSurface),
 	Anims(vector),
@@ -1502,24 +1434,19 @@ MSPCXAnim::MSPCXAnim(const char * name, MS_ANIM_LIST * vector, bool transient) :
 	Drawn(false),
 	Area(0, 0, 0, 0)
 {
-	char buffer[64];
-
 	Active = true;
 
-	if (name != NULL) {
-		strcpy(buffer, name);
-		char * token = strtok(buffer, ".");
-		if (token != NULL) {
-			strcat(token, ".PCX");
-			CCFileClass file(buffer);
-			if (file.Is_Available()) {
-				Image = Read_PCX_File(file);
-				if (Image != NULL) {
-					Area = Image->Get_Rect();
-					Rect surface_rect = TargetSurface->Get_Rect();
-					Area.X += (surface_rect.Width - Area.Width) / 2;
-					Area.Y += (surface_rect.Height - Area.Height) / 2;
-				}
+	if (name != (char const *)NULL) { // RA2
+		Wstring token;
+		name.getToken(0, ".", token);
+		CCFileClass file(token + ".PCX");
+		if (file.Is_Available(0)) {
+			Image = Read_PCX_File(file);
+			if (Image != NULL) {
+				Area = Image->Get_Rect();
+				Rect surface_rect = TargetSurface->Get_Rect();
+				Area.X += (surface_rect.Width - Area.Width) / 2;
+				Area.Y += (surface_rect.Height - Area.Height) / 2;
 			}
 		}
 	}
@@ -1533,7 +1460,7 @@ MSPCXAnim::MSPCXAnim(const char * name, MS_ANIM_LIST * vector, bool transient) :
 /// </summary>
 /// <param name="name">Name of the artwork file; the extension is replaced with ".PCX".</param>
 /// <param name="vector">The anim list this anim belongs to.</param>
-MSPCXAnim::MSPCXAnim(const char * name, MS_ANIM_LIST * vector, const Point2D & position, bool transient) :
+MSPCXAnim::MSPCXAnim(Wstring const & name, MS_ANIM_LIST * vector, Point2D const & position, bool transient) : // RA2
 	MSAnim(0, 0, false),
 	TargetSurface(AlternateSurface),
 	Anims(vector),
@@ -1542,24 +1469,19 @@ MSPCXAnim::MSPCXAnim(const char * name, MS_ANIM_LIST * vector, const Point2D & p
 	Drawn(false),
 	Area(0, 0, 0, 0)
 {
-	char buffer[64];
-
 	Active = true;
 
-	if (name != NULL) {
-		strcpy(buffer, name);
-		char * token = strtok(buffer, ".");
-		if (token != NULL) {
-			strcat(token, ".PCX");
-			CCFileClass file(buffer);
-			if (file.Is_Available()) {
-				Image = Read_PCX_File(file);
-				if (Image != NULL) {
-					Area = Image->Get_Rect();
-					Area.X = position.X;
-					Area.Y = position.Y;
-					TargetSurface->Get_Rect();
-				}
+	if (name != (char const *)NULL) { // RA2
+		Wstring token;
+		name.getToken(0, ".", token);
+		CCFileClass file(token + ".PCX");
+		if (file.Is_Available(0)) {
+			Image = Read_PCX_File(file);
+			if (Image != NULL) {
+				Area = Image->Get_Rect();
+				Area.X = position.X;
+				Area.Y = position.Y;
+				TargetSurface->Get_Rect();
 			}
 		}
 	}
@@ -1616,7 +1538,7 @@ bool MSPCXAnim::Advance(Surface * surface, Rect & rect)
 /// committed to its backing surface this routine leaves the screen alone.
 /// </summary>
 /// <param name="rect">The damaged region to draw within, or NULL to draw unconditionally.</param>
-void MSPCXAnim::Redraw(Surface * surface, const Rect * rect)
+void MSPCXAnim::Redraw(Surface * surface, Rect const * rect) // RA2
 {
 	if (Image != NULL && !Drawn && Active) {
 		if (rect == NULL || Intersect(*rect, Area).Is_Valid()) {
@@ -1631,7 +1553,7 @@ void MSPCXAnim::Redraw(Surface * surface, const Rect * rect)
 /// This routine is called when something else has covered the artwork and the screen
 /// needs it put back.
 /// </summary>
-void MSPCXAnim::Restore(const Rect & rect)
+void MSPCXAnim::Restore(Rect const & rect) // RA2
 {
 	if (Image != NULL && Active) {
 		TargetSurface->Blit_From(Area, *Image, Image->Get_Rect());
@@ -1657,3 +1579,61 @@ bool MSPCXAnim::Has_Finished(void) const
 {
 	return(Drawn);
 }
+
+
+/// <summary>
+/// Creates a text printing anim from the string handed over.
+/// The text is typed out a character at a time within the area specified. Use this
+/// version for text assembled in code rather than pulled from the string table.
+/// </summary>
+/// <param name="string">The text to print.</param>
+/// <param name="font">The font to print the text with.</param>
+/// <param name="rect">The area to center and clip the text within.</param>
+/// <param name="start_delay">The delay in game frames before printing begins.</param>
+/// <param name="print_delay">The delay in game frames between characters.</param>
+/// <param name="fade_effect">Should the characters fade in as they are printed?</param>
+/// <param name="center">Should the text be centered within its area?</param>
+
+
+
+/// <summary>
+/// Wraps a string to the line width given, splitting long words if it must.
+/// This is the buffer aware version of the word wrap routine. A word too long to fit
+/// a line of its own is broken across two lines, which lengthens the string -- hence
+/// the buffer size that the other version does without.
+/// </summary>
+/// <param name="string">The text to wrap; line breaks are inserted in place.</param>
+/// <param name="length">The size of the buffer holding the string.</param>
+/// <param name="font">The font the text will be printed with.</param>
+/// <param name="line_width">The width available for a single line, in pixels.</param>
+/// <returns>Returns with the width of the widest line, in pixels.</returns>
+
+
+
+/// <summary>
+/// Sets the enabled state of the button.
+/// A disabled button draws itself with the grayed artwork and ignores its pressed
+/// state entirely.
+
+
+
+/// <summary>
+/// Draws the button's caption text.
+/// The text shifts down and to the right while the button is showing its depressed
+/// artwork, so that the label appears to sink along with it.
+
+
+
+/// <summary>
+/// Draws the button artwork onto the surface specified.
+/// The button is assembled from cached artwork pieces chosen to suit its pressed and
+/// enabled states, and the caption is printed on top of the result.
+
+
+
+/// <summary>
+/// Sets the pressed state of the button.
+/// The button picks up the matching artwork the next time it is advanced or redrawn,
+/// not immediately.
+
+

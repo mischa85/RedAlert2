@@ -11,6 +11,7 @@
 #pragma once
 
 #include "rect.h"
+#include "rgb.h"
 #include "stimer.h"
 #include "timer.h"
 #include "vector.h"
@@ -25,12 +26,70 @@ class Surface;
 class BSurface;
 class BinkHandle;
 class ShapeSet;
-class SurfaceCacheClass;
 class Wstring;
+class SHPFrame;
 struct VQHandle;
 
 typedef DynamicVectorClass<MSAnim *> MS_ANIM_LIST;
 typedef VectorCursor<MSAnim *, MS_ANIM_LIST> MS_ANIM_ITER;
+
+/*
+**	RA2: the menu anims hold their shapes as the raw shape file data rather than as a ShapeSet,
+**	and fetch a frame's bounds through accessors of their own. A frame that does not exist has
+**	the bounds of NullFrameRect.
+*/
+class SHPStruct
+{
+	public:
+		int Get_Width(void) const {return(Width);}
+		int Get_Height(void) const {return(Height);}
+		int Get_Count(void) const {return(Count);}
+
+		bool Is_Frame_Valid(int frame) const {return(unsigned(frame) < unsigned(Count));}
+		inline SHPFrame const * Fetch_Frame_Pointer(int frame) const;
+		inline Rect GetFrameBounds(int frame) const;
+
+		short Flags;
+		short Width;
+		short Height;
+		short Count;
+};
+
+class SHPFrame
+{
+	public:
+		short Left;
+		short Top;
+		short Width;
+		short Height;
+		unsigned char Flags;
+		unsigned char : 8;
+		unsigned char : 8;
+		unsigned char : 8;
+		RGBStruct Color;
+		unsigned int Reserved;
+		int Offset;
+};
+
+extern Rect NullFrameRect;
+
+inline SHPFrame const * SHPStruct::Fetch_Frame_Pointer(int frame) const
+{
+	if (Is_Frame_Valid(frame)) {
+		return(&((SHPFrame const *)(this + 1))[frame]);
+	}
+	return(NULL);
+}
+
+inline Rect SHPStruct::GetFrameBounds(int frame) const
+{
+	SHPFrame const * data = Fetch_Frame_Pointer(frame);
+	if (data != NULL) {
+		return(Rect(data->Left, data->Top, data->Width, data->Height));
+	}
+	return(NullFrameRect);
+}
+
 
 class MSAnim
 {
@@ -86,7 +145,7 @@ class MSAnim
 class MSShapeAnim : public MSAnim
 {
 	public:
-		MSShapeAnim(char const * name, int x, int y, ConvertClass * drawer, int rate, bool loop=true, ShapeFlags_Type flags=SHAPE_NORMAL);
+		MSShapeAnim(Wstring const & name, int x, int y, ConvertClass * drawer, int rate, bool loop=true, ShapeFlags_Type flags=SHAPE_NORMAL); // RA2: Wstring name
 		virtual ~MSShapeAnim(void) override;
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
@@ -101,7 +160,7 @@ class MSShapeAnim : public MSAnim
 		/*
 		 * Pointer to the shape data the animation frames are drawn from.
 		 */
-		ShapeSet * Shape;
+		SHPStruct * Shape; // RA2
 
 		/*
 		 * Pointer to the drawer that supplies the palette and blitters the shape is rendered
@@ -156,7 +215,7 @@ class MSShapeAnim : public MSAnim
 class MSFadeAnim : public MSShapeAnim
 {
 	public:
-		MSFadeAnim(char const * name, int x, int y, ConvertClass * drawer, int rate, ShapeFlags_Type flags, MS_ANIM_LIST * vector);
+		MSFadeAnim(Wstring const & name, int x, int y, ConvertClass * drawer, int rate, ShapeFlags_Type flags, MS_ANIM_LIST * vector); // RA2: Wstring name
 		virtual ~MSFadeAnim(void) override {}
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
@@ -241,7 +300,7 @@ class MSBinkAnim : public MSAnim
 class MSOverlayAnim : public MSFadeAnim
 {
 	public:
-		MSOverlayAnim(char const * name, int x, int y, ConvertClass * drawer, int rate, MS_ANIM_LIST * vector, bool persistent=false, unsigned frame=0);
+		MSOverlayAnim(Wstring const & name, int x, int y, ConvertClass * drawer, int rate, MS_ANIM_LIST * vector, bool persistent=false, unsigned frame=0, bool fade=true); // RA2: Wstring name, fade flag
 		virtual ~MSOverlayAnim(void) override;
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
@@ -257,13 +316,7 @@ class MSOverlayAnim : public MSFadeAnim
 		 * If the anim is to stay on the list once its fade has completed, then this flag
 		 * will be true. Otherwise it asks to be deleted as soon as the frame is stamped down.
 		 */
-		bool Persistent;
-
-		/*
-		 * This is the single shape frame the overlay fades into place. If negative, then the
-		 * overlay draws nothing at all.
-		 */
-		int Frame;
+		bool Persistent; // RA2: the frame is the shape anim's current frame
 };
 
 
@@ -271,6 +324,7 @@ class MSVQAnim : public MSAnim
 {
 	public:
 		MSVQAnim(Wstring const & name, Surface * surface, MS_ANIM_LIST * vector, bool persistent=false); // RA2: Wstring name
+		MSVQAnim(Wstring const & name, Surface * surface, MS_ANIM_LIST * vector, Rect const & rect, bool persistent=false); // RA2
 		virtual ~MSVQAnim(void) override;
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
@@ -321,8 +375,7 @@ class MSVQAnim : public MSAnim
 class MSPrintAnim : public MSAnim
 {
 	public:
-		MSPrintAnim(int text, int x, int y, MSFont * font, Rect const & rect=RECT_NONE, int start_delay=0, int print_delay=4, bool fade_effect=true, bool center=false);
-		MSPrintAnim(char const * text, int x, int y, MSFont * font, Rect const & rect=RECT_NONE, int start_delay=0, int print_delay=4, bool fade_effect=true, bool center=false);
+		MSPrintAnim(WideWstring const & text, int x, int y, MSFont * font, Rect const & rect=RECT_NONE, int start_delay=0, int print_delay=4, bool fade_effect=true, bool center=false); // RA2: wide text
 		virtual ~MSPrintAnim(void) override {}
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
@@ -331,21 +384,19 @@ class MSPrintAnim : public MSAnim
 		virtual bool Has_Finished(void) const override;
 
 		void Set_Transient(bool transient);
-		static int Word_Wrap(char * string, MSFont * font, int line_width);
-		static int Word_Wrap(char * string, int length, MSFont * font, int line_width);
-		static int Paginate(char * string, MSFont * font, int page_height);
+		static int Word_Wrap(WideWstring & string, MSFont * font, int line_width); // RA2: wide text
+		static int Paginate(WideWstring & string, MSFont * font, int page_height); // RA2: wide text
 
 	protected:
 		void Set_Dimensions(Rect const & rect);
-		int Get_Line_Width(char const * str) const;
+		int Get_Line_Width(WideWstring const & str) const; // RA2: wide text
 		int Get_Printed_Char_Count(void) const { return(PrintedCharCount); }
 
 	protected:
 		/*
-		 * Pointer to the text being typed out. It is not copied, so whatever supplied it must
-		 * outlive the anim.
+		 * This is the text being typed out, held in a copy of its own.
 		 */
-		char const * String;
+		WideWstring Text; // RA2
 
 		/*
 		 * This is the index of the first character of the topmost line still shown. It is
@@ -412,13 +463,7 @@ class MSPrintAnim : public MSAnim
 class MSWordAnim : public MSPrintAnim
 {
 	public:
-		MSWordAnim(int text, int x, int y, MSFont * font, Rect const & rect=RECT_NONE, int start_delay=0, int print_delay=4, bool fade_effect=true, bool center=false) :
-			MSPrintAnim(text, x, y, font, rect, start_delay, print_delay, fade_effect, center), LineYPos(YPos)
-		{
-			LineRect.Set(0, 0, 0, 0);
-		}
-
-		MSWordAnim(char const * text, int x, int y, MSFont * font, Rect const & rect=RECT_NONE, int start_delay=0, int print_delay=4, bool fade_effect=true, bool center=false) :
+		MSWordAnim(WideWstring const & text, int x, int y, MSFont * font, Rect const & rect=RECT_NONE, int start_delay=0, int print_delay=4, bool fade_effect=true, bool center=false) :
 			MSPrintAnim(text, x, y, font, rect, start_delay, print_delay, fade_effect, center), LineYPos(YPos)
 		{
 			LineRect.Set(0, 0, 0, 0);
@@ -444,73 +489,62 @@ class MSWordAnim : public MSPrintAnim
 };
 
 
+/*
+**	RA2: the text a button anim prints, laid out to the button's width.
+*/
+class MSTextLayout
+{
+	public:
+		MSTextLayout(char const * text, int width);
+		~MSTextLayout(void);
+
+		void Set_Position(int x, int y);
+		bool Is_Complete(void) const;
+		bool Is_Dirty(void) const;
+
+	private:
+		char Data[0x30]; // RA2: 48 bytes
+};
+
+
 class MSButtonAnim : public MSAnim
 {
 	public:
-		MSButtonAnim(SurfaceCacheClass * image_cache, Rect const & rect, char const * string, int height, int left_cap_width, int right_cap_width);
+		MSButtonAnim(Wstring const & text, int width, MS_ANIM_LIST * vector, Rect const & rect, bool persistent); // RA2
 		virtual ~MSButtonAnim(void) override;
 
 		virtual bool Advance(Surface * surface, Rect & rect) override;
 		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
 		virtual Rect Get_Rect(void) const override;
+		virtual bool Has_Finished(void) const override; // RA2
 		virtual void Restore(Rect const & rect) override;
 
-		void Set_Enabled(bool enabled);
-		void Set_Pressed(bool pressed);
-
-	private:
-		void Draw_Caption(Surface * surface);
-		void Render(Surface * surface);
-
-	public:
+	protected:
 		/*
-		 * Pointer to the cache the button's artwork pieces are pulled out of. The pieces are
-		 * looked up by name, which encodes the button's height and its current state.
+		 * This is the caption laid out for printing. If NULL, then the button has no text.
 		 */
-		SurfaceCacheClass * ImageCache;
+		MSTextLayout * Text; // RA2
 
 		/*
-		 * If this button is to draw itself raised, then this flag will be true. The sense runs
-		 * against the name -- it is a false value that selects the depressed artwork.
+		 * This is the width, in pixels, the caption is laid out to.
 		 */
-		bool Pressed;
+		int Width; // RA2
 
 		/*
-		 * If this button is available for use, then this flag will be true. A disabled button
-		 * draws itself with the grayed artwork whatever its pressed state may be.
-		 */
-		bool Enabled;
-
-		/*
-		 * This is the screen area the button occupies. Its width is what the stretched middle
-		 * piece of the artwork is fitted to.
+		 * This is the screen area the button occupies.
 		 */
 		Rect Area;
 
 		/*
-		 * This is the height of the button's artwork, expressed in pixels. It also selects
-		 * which set of cached pieces is asked for, since it forms part of their file names.
+		 * This is the list of anims the button belongs to.
 		 */
-		int Height;
+		MS_ANIM_LIST * Anims; // RA2
 
 		/*
-		 * These are the widths of the end pieces of the button's artwork, in pixels. The
-		 * middle piece is stretched across whatever room they leave between them.
+		 * If the button is to stay on the list once its text is complete, then this flag will
+		 * be true.
 		 */
-		int LeftCapWidth;
-		int RightCapWidth;
-
-		/*
-		 * Pointer to the caption printed on the button. It is not copied, so whatever
-		 * supplied it must outlive the button.
-		 */
-		char const * String;
-
-		/*
-		 * If the button's artwork has to be laid down again, then this flag will be true. The
-		 * drawing happens at the next advance rather than the moment the state changed.
-		 */
-		bool NeedsRedraw;
+		bool Persistent; // RA2
 };
 
 
@@ -566,4 +600,4 @@ class MSPCXAnim : public MSAnim
 };
 
 
-ConvertClass * Create_Drawer(char const * palette_name);
+ConvertClass * Create_Drawer(Wstring const & palette_name); // RA2: Wstring name
