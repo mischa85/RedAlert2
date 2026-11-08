@@ -102,13 +102,9 @@ unk_00470490,0x00470490,0x004763D0,unknown,code not assigned to a module
 unk_004763D0,0x004763D0,0x00476460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00476460,0x00476460,0x0047D150,unknown,code not assigned to a module
 checkbox,0x0047D150,0x0047D2C0,tibsun,"functions compiled from src/checkbox.cpp, matched, without gaps"
-unk_0047D2C0,0x0047D2C0,0x0047D330,unknown,code not assigned to a module
-unk_0047D330,0x0047D330,0x0047D3B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0047D3B0,0x0047D3B0,0x0047D3C0,unknown,code not assigned to a module
-unk_0047D3C0,0x0047D3C0,0x0047D3E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0047D3E0,0x0047D3E0,0x0047D4B0,unknown,code not assigned to a module
-unk_0047D4B0,0x0047D4B0,0x0047D500,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0047D500,0x0047D500,0x0047D7C0,unknown,code not assigned to a module
+unk_0047D2C0,0x0047D2C0,0x0047D2E0,unknown,code not assigned to a module
+cheklist,0x0047D2E0,0x0047D580,tibsun,"functions compiled from src/cheklist.cpp, matched, without gaps; one placed by the gap; ?Draw_Entry@CheckListClass@@MAEXHHHHH@Z not placed"
+unk_0047D580,0x0047D580,0x0047D7C0,unknown,code not assigned to a module
 colrlist,0x0047D7C0,0x0047DF40,tibsun,"functions compiled from src/colrlist.cpp, matched, without gaps"
 unk_0047DF40,0x0047DF40,0x0047F8B0,unknown,code not assigned to a module
 unk_0047F8B0,0x0047F8B0,0x0047F9B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
