@@ -32,7 +32,6 @@ struct RiffChunk
 	unsigned length;
 };
 
-// FUNCTION: GAMEMD 0x00408460
 AudioSample * __fastcall AudioCreateSample(unsigned bytes)
 {
 	AudioSample * sample;
@@ -52,7 +51,6 @@ AudioSample * __fastcall AudioCreateSample(unsigned bytes)
 	return sample;
 }
 
-// FUNCTION: GAMEMD 0x004084C0
 void __fastcall AudioSampleDestroy(AudioSample * sample)
 {
 	if (sample->Data) {
@@ -61,7 +59,6 @@ void __fastcall AudioSampleDestroy(AudioSample * sample)
 	operator delete(sample);
 }
 
-// FUNCTION: GAMEMD 0x004084E0
 void __fastcall AudioSampleInit(AudioSample * sample)
 {
 	sample->Data = NULL;
@@ -71,7 +68,6 @@ void __fastcall AudioSampleInit(AudioSample * sample)
 	ListInit(&sample->Frames);
 }
 
-// FUNCTION: GAMEMD 0x00408500
 void __fastcall AudioSampleAddFrame(AudioSample * sample, AudioFrame * frame)
 {
 	ListNodeInsert(&sample->Frames, &frame->nd);
@@ -79,24 +75,20 @@ void __fastcall AudioSampleAddFrame(AudioSample * sample, AudioFrame * frame)
 	frame->sample = sample;
 }
 
-// FUNCTION: GAMEMD 0x00408520
 AudioFrame * __fastcall AudioSampleFirstFrame(AudioSample * sample)
 {
 	return (AudioFrame *)ListNodeNext(&sample->Frames);
 }
 
-// FUNCTION: GAMEMD 0x00408530
 void __fastcall AudioSampleDeinit(AudioSample * sample)
 {
 }
 
-// FUNCTION: GAMEMD 0x00408540
 int __fastcall AudioFormatBytes(AudioFormat * format, TimeStamp time)
 {
 	return format->BytesPerSecond * (int)time / SECONDS(1);
 }
 
-// FUNCTION: GAMEMD 0x00408560
 TimeStamp __fastcall AudioFormatTime(AudioFormat * format, int bytes)
 {
 	if (format->BytesPerSecond) {
@@ -106,13 +98,11 @@ TimeStamp __fastcall AudioFormatTime(AudioFormat * format, int bytes)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x004085A0
 void __fastcall AudioFormatInit(AudioFormat * format)
 {
 	memset(format, 0, sizeof(AudioFormat));
 }
 
-// FUNCTION: GAMEMD 0x004085B0
 void __fastcall AudioFormatUpdate(AudioFormat * format)
 {
 	format->BytesPerSecond = format->Channels * format->SampleWidth * format->Rate;
@@ -121,7 +111,6 @@ void __fastcall AudioFormatUpdate(AudioFormat * format)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004085E0
 void __fastcall AudioFrameInit(AudioFrame * frame, void * data, int bytes)
 {
 	frame->Bytes = bytes;
@@ -130,13 +119,11 @@ void __fastcall AudioFrameInit(AudioFrame * frame, void * data, int bytes)
 	frame->sample = NULL;
 }
 
-// FUNCTION: GAMEMD 0x00408600
 void __fastcall AudioFrameDeinit(AudioFrame * frame)
 {
 	frame->sample = NULL;
 }
 
-// FUNCTION: GAMEMD 0x00408610
 int __fastcall AudioFormatReadWaveFile(FileClass * file, AudioFormat * format, int * bytes)
 {
 	RiffHeader rh;
