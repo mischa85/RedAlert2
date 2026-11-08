@@ -14,6 +14,8 @@
 
 #pragma once
 
+#include <stddef.h> // RA2: wchar_t for the wide text routines
+
 #include "point.h"
 
 #include "color.hh"
