@@ -3075,6 +3075,8 @@ address,symbol,evidence
 0x007776B0,?VQA_Configure_Buffer@@YIJPAU_VQAHandleP@@@Z,"compiled from src/vqalib_buffer_.cpp, matched"
 0x007777E0,?VQA_Memory_Handler@@YAJPAU_VQAHandle@@JPAXJ@Z,"compiled from src/vqalib_buffer_.cpp, matched"
 0x00777850,?VQA_DefaultConfig@@YIXPAU_VQAConfig@@@Z,"compiled from src/vqalib_config.cpp, matched"
+0x00778450,?Disk_VQA_Stream_Handler@@YAJPAU_VQAHandle@@JPAXJ@Z,"compiled from src/vqalib_dstream.cpp, matched"
+0x007785B0,?Memory_VQA_Stream_Handler@@YAJPAU_VQAHandle@@JPAXJ@Z,"compiled from src/vqalib_dstream.cpp, matched"
 0x0077C480,?VQA_Set_DrawBuffer@@YIJPAU_VQAHandle@@PAEKKJJ@Z,"inferred: referenced by matched src/vqalib_buffer_.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0077F110,__ftol,"inferred: referenced by matched src/xsurface.cpp (180 references); across all matched code never at another address, and no other symbol here"
 0x0077F14D,_Detect_MMX_Availability,"inferred: referenced by matched src/getcpu.cpp (1 reference); across all matched code never at another address, and no other symbol here"
@@ -3250,6 +3252,7 @@ address,symbol,evidence
 0x0078854E,___sbh_heapmin,symbol of VC6 LIBCMT.LIB sbheap.obj
 0x0078861F,___sbh_heap_check,symbol of VC6 LIBCMT.LIB sbheap.obj
 0x00788993,__filbuf,symbol of VC6 LIBCMT.LIB _filbuf.obj
+0x00788A6F,_read,"inferred: referenced by matched src/vqalib_dstream.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x00788AD4,__read_lk,symbol of VC6 LIBCMT.LIB read.obj
 0x00788CB0,_memcpy,"inferred: called as _memcpy by matched VC6 LIBCMT.LIB objects (a_env.obj, fread.obj, fwrite.obj, realloc.obj, setlocal.obj, strftime.obj, winsig.obj); the code section of VC6 LIBCMT.LIB memcpy.obj matches here, and at 0x00783290, which matched objects call as _memmove (memmove.obj has the same code)"
 0x0078904A,__write_lk,symbol of VC6 LIBCMT.LIB write.obj
@@ -3316,6 +3319,7 @@ address,symbol,evidence
 0x0078D665,__ctrlfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
 0x0078D688,__set_statfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
 0x0078D816,_strdup,"inferred: referenced by matched src/rawfile.cpp (13 references); across all matched code never at another address, and no other symbol here"
+0x0078D841,_open,"inferred: referenced by matched src/vqalib_dstream.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0078D858,__sopen,symbol of VC6 LIBCMT.LIB open.obj
 0x0078DB27,__itoa,symbol of VC6 LIBCMT.LIB xtoa.obj
 0x0078DB54,_xtoa,symbol of VC6 LIBCMT.LIB xtoa.obj
@@ -3353,6 +3357,7 @@ address,symbol,evidence
 0x0078FC87,_LcidFromHexString,symbol of VC6 LIBCMT.LIB getqloc.obj
 0x0078FCC0,_GetPrimaryLen,symbol of VC6 LIBCMT.LIB getqloc.obj
 0x0078FCF0,_memset,symbol of VC6 LIBCMT.LIB memset.obj
+0x0078FD48,_lseek,"inferred: referenced by matched src/vqalib_dstream.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x0078FDAD,__lseek_lk,symbol of VC6 LIBCMT.LIB lseek.obj
 0x0078FE20,__getbuf,symbol of VC6 LIBCMT.LIB _getbuf.obj
 0x0078FE64,__isatty,symbol of VC6 LIBCMT.LIB isatty.obj
