@@ -75,7 +75,7 @@ CDFileClass::CDFileClass(char const *filename) :
 CDFileClass::CDFileClass(Wstring const & filename) :
 	IsDisabled(false)
 {
-	CDFileClass::Set_Name(filename.get());
+	CDFileClass::Set_Name(filename.text()); // RA2: text, not get
 }
 
 

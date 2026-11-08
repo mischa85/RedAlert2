@@ -83,7 +83,7 @@ CCFileClass::CCFileClass(char const * filename) :
 CCFileClass::CCFileClass(Wstring const & filename) :
 	Position(0)
 {
-	CCFileClass::Set_Name(filename.get());
+	CCFileClass::Set_Name(filename.text()); // RA2: text, not get
 }
 
 

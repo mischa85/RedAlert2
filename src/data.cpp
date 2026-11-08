@@ -111,7 +111,7 @@ void * Load_Alloc_Data(char const * name, bool & allocated)
 /// </summary>
 void * Load_Alloc_Data(Wstring const & name, bool * allocated)
 {
-	char const * filename = name.get();
+	char const * filename = name.text(); // RA2: text, not get
 	*allocated = false;
 	void * found = (void *)MFCD::Retrieve(filename);
 	if (found != NULL) return(found);
