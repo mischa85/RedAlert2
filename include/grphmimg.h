@@ -16,10 +16,10 @@
 
 class GraphicMenuImageItem : public GraphicMenuItem
 {
-	friend GraphicMenuItem * GM_Read_Image_Item(const char * name, INIClass const & ini, MSEngine & engine, Point2D & image_size);
+	friend GraphicMenuItem * GM_Read_Image_Item(Wstring const & name, INIClass const & ini, MSEngine & engine, Point2D & image_size); // RA2: Wstring name
 
 	public:
-		GraphicMenuImageItem(int id, MSEngine & engine, Point2D const & origin, Rect const & rect, const char * image, const char * highlight_image, const char * disabled_image, char * highlight_sound, const char * select_vq);
+		GraphicMenuImageItem(int id, MSEngine & engine, Point2D const & origin, Rect const & rect, Wstring const & image, Wstring const & highlight_image, Wstring const & disabled_image, Wstring const & highlight_sound, Wstring const & select_vq); // RA2: Wstring names
 		virtual ~GraphicMenuImageItem(void) override;
 
 		virtual bool Is_Mouse_Over(Point2D const & mouse) override;
