@@ -759,7 +759,7 @@ address,size,evidence
 0x004981C0,432,"function of the Tiberian Sun reconstruction, matched"
 0x00498370,48,"function of the Tiberian Sun reconstruction, matched"
 0x004983A0,64,"function of the Tiberian Sun reconstruction, matched"
-0x004983E0,,"inferred: target of the call at 0x0046FFB4 in matched src/cdfile.cpp; size not known"
+0x004983E0,480,"code of src/diskswap.cpp, matched"
 0x004985C0,336,"function of the Tiberian Sun reconstruction, matched"
 0x00498710,64,"function of the Tiberian Sun reconstruction, matched"
 0x00498950,80,"function of the Tiberian Sun reconstruction, matched"

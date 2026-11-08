@@ -201,8 +201,7 @@ unk_00496D10,0x00496D10,0x00496D30,unknown,code not assigned to a module
 dial8,0x00496D30,0x00497320,tibsun,"functions compiled from src/dial8.cpp, matched, without gaps; one placed by the gap"
 unk_00497320,0x00497320,0x004981C0,unknown,code not assigned to a module
 dib,0x004981C0,0x004983E0,tibsun,"functions compiled from src/dib.cpp, matched, without gaps"
-unk_004983E0,0x004983E0,0x004985C0,unknown,code not assigned to a module
-unk_004985C0,0x004985C0,0x00498750,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+diskswap,0x004983E0,0x00498750,tibsun,"functions compiled from src/diskswap.cpp, matched, without gaps; ?Request_Disk@DiskSwap@@UAE_NW4DiskID@@@Z not placed"
 unk_00498750,0x00498750,0x00498950,unknown,code not assigned to a module
 unk_00498950,0x00498950,0x00498A00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00498A00,0x00498A00,0x00499810,unknown,code not assigned to a module
