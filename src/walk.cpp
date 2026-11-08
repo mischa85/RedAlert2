@@ -137,16 +137,20 @@ boolean STDMETHODCALLTYPE WalkLocomotionClass::Process(void)
 /// <param name="to">The coordinate to travel to, or COORD_NONE to clear the destination.</param>
 void STDMETHODCALLTYPE WalkLocomotionClass::Move_To(CoordStruct to)
 {
-	if (LinkedTo->StunDuration <= 0) {
+	if (!LinkedTo->IsUnderEMP() && !LinkedTo->IsBeingWarpedOut() && !LinkedTo->IsWarpingIn()) { // RA2
 		DestinationCoord = to;
 		if ((Coord &)to != COORD_NONE) {
 			if (Map[to].IsUnderBridge) {
-				DestinationCoord.Z += TacticalMap->Pixel_To_Z_Lepton(4 * ISO_TILE_PIXEL_H / 2);
+				DestinationCoord.Z += TacticalMap->Pixel_To_Z_Lepton(60); // RA2: a fixed 60 pixels
 			}
 			IsMoving = true;
 		} else {
 			if (HeadToCoord == COORD_NONE) {
+				bool was_moving = IsMoving; // RA2
 				IsMoving = false;
+				if (was_moving) {
+					LinkedTo->Unknown_Virtual_4D0(); // RA2
+				}
 			}
 		}
 	}
@@ -163,6 +167,8 @@ void STDMETHODCALLTYPE WalkLocomotionClass::Stop_Moving(void)
 	DestinationCoord = COORD_NONE;
 	if (HeadToCoord == COORD_NONE) {
 		IsMoving = false;
+		IsReallyMoving = false; // RA2
+		LinkedTo->Unknown_Virtual_4D0(); // RA2
 	}
 }
 
@@ -186,9 +192,13 @@ void STDMETHODCALLTYPE WalkLocomotionClass::Do_Turn(DirStruct dir)
 /// <param name="coord">The coordinate to step to, or COORD_NONE to abandon the step.</param>
 void STDMETHODCALLTYPE WalkLocomotionClass::Force_Immediate_Destination(CoordStruct coord)
 {
+	bool was_moving = IsMoving; // RA2
 	HeadToCoord = coord;
 	if (HeadToCoord == COORD_NONE && DestinationCoord == COORD_NONE) {
 		IsMoving = false;
+		if (was_moving) {
+			LinkedTo->Unknown_Virtual_4D0(); // RA2
+		}
 	}
 }
 
