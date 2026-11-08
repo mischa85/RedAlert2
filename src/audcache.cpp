@@ -6,7 +6,6 @@
 #include "audcache.h"
 #include <string.h>
 
-// FUNCTION: GAMEMD 0x004019E0
 AudioCache * __fastcall AudioCacheCreate(AudioIDXData * bag, int cacheSize, int maxItems, int frameSize)
 {
 	AudioCache * cache;
@@ -31,7 +30,6 @@ AudioCache * __fastcall AudioCacheCreate(AudioIDXData * bag, int cacheSize, int 
 	return cache;
 }
 
-// FUNCTION: GAMEMD 0x00401B00
 void __fastcall AudioCacheDestroy(AudioCache * cache)
 {
 	AudioCacheItem * item;
@@ -48,7 +46,6 @@ void __fastcall AudioCacheDestroy(AudioCache * cache)
 	delete cache;
 }
 
-// FUNCTION: GAMEMD 0x00401BB0
 AudioCacheItem * __fastcall AudioCacheGetItem(AudioCache * cache, int id)
 {
 	AudioCacheItem * item;
@@ -63,7 +60,6 @@ AudioCacheItem * __fastcall AudioCacheGetItem(AudioCache * cache, int id)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00401BE0
 void __fastcall AudioCacheInvalidate(AudioCache * cache)
 {
 	AudioCacheItem * item;
@@ -75,7 +71,6 @@ void __fastcall AudioCacheInvalidate(AudioCache * cache)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00401C00
 AudioCacheItem * __fastcall AudioCacheLoadItem(AudioCache * cache, int id)
 {
 	AudioCacheItem * item;
@@ -155,7 +150,6 @@ AudioCacheItem * __fastcall AudioCacheLoadItem(AudioCache * cache, int id)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00401EF0
 int __fastcall AudioCacheFreeOldestItem(AudioCache * cache)
 {
 	AudioCacheItem * item;
@@ -171,25 +165,21 @@ int __fastcall AudioCacheFreeOldestItem(AudioCache * cache)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00401F80
 void __fastcall AudioCacheItemLock(AudioCacheItem * item)
 {
 	LockAcquire(&item->lock);
 }
 
-// FUNCTION: GAMEMD 0x00401F90
 void __fastcall AudioCacheItemUnlock(AudioCacheItem * item)
 {
 	LockRelease(&item->lock);
 }
 
-// FUNCTION: GAMEMD 0x00401FB0
 int __fastcall AudioCacheItemInUse(AudioCacheItem * item)
 {
 	return item->lock.count;
 }
 
-// FUNCTION: GAMEMD 0x00401FC0
 void __fastcall AudioCacheItemFree(AudioCacheItem * item)
 {
 	if (ListNodeInList(&item->nd)) {
@@ -210,13 +200,11 @@ void __fastcall AudioCacheItemFree(AudioCacheItem * item)
 	MemoryPoolReturnItem(item->cache->itemPool, item);
 }
 
-// FUNCTION: GAMEMD 0x00402020
 int __fastcall AudioCacheItemId(AudioCacheItem * item)
 {
 	return item->id;
 }
 
-// FUNCTION: GAMEMD 0x00402030
 AudioSample * __fastcall AudioCacheItemSample(AudioCacheItem * item)
 {
 	return &item->sample;
