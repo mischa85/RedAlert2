@@ -4,7 +4,6 @@
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
 #include "always.h"
-#include "geometry.h"
 #include "rect.h"
 #include "grphmenu2.h"
 #include "ccfile.h"
@@ -12,10 +11,9 @@
 #include "convert.h"
 #include "msanim.h"
 
-// SYNTHETIC: GAMEMD 0x004F2C50 SYMBOL
-// _$E41
-
-// FUNCTION: GAMEMD 0x004F2C70
+/// <summary>
+/// Creates an animated menu item from its INI description.
+/// </summary>
 GraphicMenuItem * __fastcall GM_Read_Anim_Item(Wstring const & name, INIClass const & ini, MSEngine & engine, Point2D & image_size)
 {
 	int id = ini.Get_Int(name, "ID", -1);
@@ -49,7 +47,10 @@ GraphicMenuItem * __fastcall GM_Read_Anim_Item(Wstring const & name, INIClass co
 	return(new GraphicMenuAnimItem(id, engine, origin, active_rect, image, palette, rate, loop));
 }
 
-// FUNCTION: GAMEMD 0x004F2F10
+/// <summary>
+/// Creates an animated menu item, adding its shape anim to the engine when both the shapes
+/// and the palette are available.
+/// </summary>
 GraphicMenuAnimItem::GraphicMenuAnimItem(int id, MSEngine & engine, Point2D const & origin, Rect const & rect, Wstring const & image, Wstring const & palette, int rate, bool loop) :
 	GraphicMenuItem(id),
 	ActiveRect(rect),
@@ -68,17 +69,18 @@ GraphicMenuAnimItem::GraphicMenuAnimItem(int id, MSEngine & engine, Point2D cons
 	}
 }
 
-// FUNCTION: GAMEMD 0x004F3070
+/// <summary>
+/// Destroys the item and its drawer.
+/// </summary>
 GraphicMenuAnimItem::~GraphicMenuAnimItem(void)
 {
 	delete(Drawer);
 }
 
-// FUNCTION: GAMEMD 0x004F3090
+/// <summary>
+/// Is the mouse over the item's active area while the item is enabled?
+/// </summary>
 bool GraphicMenuAnimItem::Is_Mouse_Over(Point2D const & mouse)
 {
 	return(Enabled && ActiveRect.Is_Point_Within(mouse));
 }
-
-// SYNTHETIC: GAMEMD 0x004F30E0
-// ??_GGraphicMenuAnimItem@@UAEPAXI@Z
