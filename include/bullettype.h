@@ -242,6 +242,7 @@ class BulletTypeClass : public ObjectTypeClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
+		void SetScaledSpawnDelay(int delay); // RA2 (YR name)
 
 		virtual RTTIType Fetch_RTTI(void) const override;
 		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
