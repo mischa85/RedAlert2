@@ -439,7 +439,7 @@ class BuildingClass : public TechnoClass
 		virtual Coord Render_Coord(void) const override;
 		virtual Coord Fire_Coord(int which) const override;
 		virtual Coord Center_Coord(void) const override;
-		virtual Coord Destination_Coord(int) const override; // RA2: the AbstractClass virtual takes an argument
+		virtual Coord Destination_Coord(TechnoClass * docker = NULL) const override; // RA2: the AbstractClass virtual takes the docking object
 		virtual int Sort_Y(void) const override;
 		virtual Coord Exit_Coord(int index) const override; // RA2: an index
 

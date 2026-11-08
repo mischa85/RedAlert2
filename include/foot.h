@@ -416,7 +416,7 @@ class FootClass : public TechnoClass
 		bool Basic_Path(Cell cell, int path_offset = 0, int avoidance = 0);
 
 		virtual void Compute_CRC(CRCEngine &) const override;
-		virtual Coord Destination_Coord(int) const override; // RA2: the AbstractClass virtual takes an argument
+		virtual Coord Destination_Coord(TechnoClass * docker = NULL) const override; // RA2: the AbstractClass virtual takes the docking object
 		virtual RadioMessageType Receive_Message(RadioClass * from, RadioMessageType message, int & param) override;
 		virtual bool Can_Demolish(void) const override;
 		bool Is_Recruitable(HouseClass const * house=NULL) const;

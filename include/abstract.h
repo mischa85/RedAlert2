@@ -175,7 +175,7 @@ class AbstractClass : public IPersistStream, public IRTTITypeInfo, public INotic
 		**	Coordinate query support functions.
 		*/
 		virtual Coord Center_Coord(void) const;
-		virtual Coord Destination_Coord(int) const; // RA2: takes 4 bytes of arguments (ret 8 with the returned Coord); their name and type are not known
+		virtual Coord Destination_Coord(TechnoClass * docker = NULL) const; // RA2: the object about to dock (YR name)
 
 		virtual bool On_Ground(void) const;
 		virtual bool In_Air(void) const;
