@@ -51,7 +51,7 @@ class IPXInterfaceClass : public WinsockInterfaceClass {
 
 		IPXInterfaceClass (void);
 		//virtual ~IPXInterfaceClass(void){Close();};
-		bool Get_Network_Card_Address (int card_number, SOCKADDR_IPX *addr);
+		int Get_Network_Card_Address (int card_number, SOCKADDR_IPX *addr); // RA2: int
 		virtual int Message_Handler(HWND window, UINT message, UINT wParam, LONG lParam) override;
 		virtual bool Open_Socket ( SOCKET socketnum ) override;
 
@@ -63,7 +63,7 @@ class IPXInterfaceClass : public WinsockInterfaceClass {
 			return(WM_IPXASYNCEVENT);
 		};
 
-		bool Get_Network_Card_Address_As_String(int card_number, char *buffer, int length);
+		int Get_Network_Card_Address_As_String(int card_number, char *buffer, int length); // RA2: int
 
 	private:
 		/*
@@ -91,3 +91,5 @@ class IPXInterfaceClass : public WinsockInterfaceClass {
 		SOCKET			IPXSocketNumber;
 
 };
+
+extern bool IsMalformedIPXPacketReported; // RA2: a malformed IPX packet was reported

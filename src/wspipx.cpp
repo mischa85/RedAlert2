@@ -38,6 +38,8 @@
 
 #include "wspipx.h"
 
+#include "_rand.h"
+#include "random.h"
 #include "_winfix.h"
 #include "assert.h"
 #include "dbgprint.h"
@@ -87,33 +89,25 @@ IPXInterfaceClass::IPXInterfaceClass (void) : BASECLASS()
  * HISTORY:                                                                                    *
  *    8/1/97 3:04PM ST : Created                                                               *
  *=============================================================================================*/
-bool IPXInterfaceClass::Get_Network_Card_Address (int card_number, SOCKADDR_IPX *addr)
+int IPXInterfaceClass::Get_Network_Card_Address (int card_number, SOCKADDR_IPX *addr) // RA2
 {
 	int            	cbOpt;
-	int					cbAddr = sizeof( SOCKADDR_IPX );
+	int					cbAddr = 14; // RA2
 	SOCKET         	s;
 	SOCKADDR_IPX   	Addr;
 	IPX_ADDRESS_DATA  IpxData;
 
-	/*
-	**	Create a temporary IPX socket.
-	*/
 	s = socket( AF_IPX, SOCK_DGRAM, NSPROTO_IPX );
 	if ( s == SOCKET_ERROR ) {
-		assert ( s != SOCKET_ERROR );
-		return(false);
+		return(0); // RA2
 	}
 
-	/*
-	**	Socket must be bound prior to calling IPX_MAX_ADAPTER_NUM
-	*/
 	memset( &Addr, 0, sizeof( Addr ));
 	Addr.sa_family = AF_IPX;
 	int err = bind( s, (SOCKADDR*) &Addr, cbAddr);
 	if ( err == SOCKET_ERROR ) {
-		assert ( err != SOCKET_ERROR );
 		closesocket (s);
-		return(false);
+		return(0); // RA2
 	}
 
 	int adapter_count = 1;
@@ -122,7 +116,7 @@ bool IPXInterfaceClass::Get_Network_Card_Address (int card_number, SOCKADDR_IPX 
 	if (!WinVersion.Is_Win95()) {
 		if (getsockopt(s, NSPROTO_IPX, IPX_MAX_ADAPTER_NUM, (char*) &adapter_count, &adapter_count_len) == 0) {
 			if ( card_number >= adapter_count) {
-				return(false);
+				return(0); // RA2
 			}
 		} else {
 			DebugString("getsockopt with IPX_MAX_ADAPTER_NUM failed with error code %d\n", LAST_ERROR);
@@ -132,37 +126,22 @@ bool IPXInterfaceClass::Get_Network_Card_Address (int card_number, SOCKADDR_IPX 
 	}
 
 	memset( &IpxData, 0, sizeof(IpxData));
-
-	/*
-	**	Specify which adapter to check.
-	*/
 	IpxData.adapternum = card_number;
 	cbOpt = sizeof( IpxData );
 
-	/*
-	**	Get information for the current adapter.
-	*/
 	err = getsockopt( s, NSPROTO_IPX, IPX_ADDRESS, (char*) &IpxData, &cbOpt );
 	if ( err == SOCKET_ERROR ) {
-		assert ( err != SOCKET_ERROR );
+		DebugString("Failed to get address of net card %d - error code %d.\n", card_number, LAST_ERROR); // RA2
 		closesocket (s);
-		return(false);
+		return(0); // RA2
 	}
 
-	/*
-	**	IpxData contains the address for the current adapter.
-	**	The network number will be needed later for broadcasts as the net number ff,ff,ff,ff
-	**	doesn't work under NT.
-	**
-	**	Note: Due to a bug in Win95s implementation of Winsock, only the netnum & nodenum
-	**	values are correctly returned. NT returns all expected values. ST - 7/31/97 0:57AM
-	*/
 	memcpy (addr->sa_netnum, IpxData.netnum, sizeof (addr->sa_netnum));
 	memcpy (BroadcastNet, IpxData.netnum, sizeof (addr->sa_netnum));
 	memcpy (addr->sa_nodenum, IpxData.nodenum, sizeof (addr->sa_nodenum));
 
 	closesocket (s);
-	return(true);
+	return(1); // RA2
 }
 
 
@@ -176,35 +155,51 @@ bool IPXInterfaceClass::Get_Network_Card_Address (int card_number, SOCKADDR_IPX 
 /// <param name="buffer">Buffer to fill in with the printable address.</param>
 /// <param name="length">The size of the destination buffer.</param>
 /// <returns>bool; Was the address fetched and placed into the buffer?</returns>
-bool IPXInterfaceClass::Get_Network_Card_Address_As_String(int card_number, char *buffer, int length)
+int IPXInterfaceClass::Get_Network_Card_Address_As_String(int card_number, char *buffer, int length) // RA2
 {
 	SOCKADDR_IPX address;
 	char buf[256];
 
-	if (WinsockInitialised) {
-		if (Get_Network_Card_Address(card_number, &address)) {
-			sprintf(
-				buf,
-				"%02x %02x %02x %02x : %02x %02x %02x %02x %02x %02x",
-				address.sa_netnum[0] & 0xff,
-				address.sa_netnum[1] & 0xff,
-				address.sa_netnum[2] & 0xff,
-				address.sa_netnum[3] & 0xff,
-				address.sa_nodenum[0] & 0xff,
-				address.sa_nodenum[1] & 0xff,
-				address.sa_nodenum[2] & 0xff,
-				address.sa_nodenum[3] & 0xff,
-				address.sa_nodenum[4] & 0xff,
-				address.sa_nodenum[5] & 0xff
-				);
-			if ((int)strlen(buf) < length) {
-				strcpy(buffer, buf);
-				return(true);
-			}
-		}
+	if (!WinsockInitialised) { // RA2
+		return(0);
 	}
-
-	return(false);
+	{
+		int result = Get_Network_Card_Address(card_number, &address);
+		if (result) {
+			if (result == 2) {
+				sprintf(
+					buf,
+					"?? ?? ?? ?? : %02x %02x %02x %02x %02x %02x",
+					address.sa_nodenum[0] & 0xff,
+					address.sa_nodenum[1] & 0xff,
+					address.sa_nodenum[2] & 0xff,
+					address.sa_nodenum[3] & 0xff,
+					address.sa_nodenum[4] & 0xff,
+					address.sa_nodenum[5] & 0xff
+					);
+			} else {
+				sprintf(
+					buf,
+					"%02x %02x %02x %02x : %02x %02x %02x %02x %02x %02x",
+					address.sa_netnum[0] & 0xff,
+					address.sa_netnum[1] & 0xff,
+					address.sa_netnum[2] & 0xff,
+					address.sa_netnum[3] & 0xff,
+					address.sa_nodenum[0] & 0xff,
+					address.sa_nodenum[1] & 0xff,
+					address.sa_nodenum[2] & 0xff,
+					address.sa_nodenum[3] & 0xff,
+					address.sa_nodenum[4] & 0xff,
+					address.sa_nodenum[5] & 0xff
+					);
+			}
+			if ((int)strlen(buf) >= length) { // RA2
+				return(0);
+			}
+			strcpy(buffer, buf);
+		}
+		return(result); // RA2
+	}
 }
 
 
@@ -225,7 +220,6 @@ bool IPXInterfaceClass::Get_Network_Card_Address_As_String(int card_number, char
 bool IPXInterfaceClass::Open_Socket( SOCKET socketnum )
 {
 	SOCKADDR_IPX 	addr;
-	bool				delay = true;
 	int				err;
 
 	/*
@@ -233,6 +227,8 @@ bool IPXInterfaceClass::Open_Socket( SOCKET socketnum )
 	*/
 	if ( !WinsockInitialised ) {
 		if ( !Init()) return( false );
+	} else if (Socket != INVALID_SOCKET) { // RA2
+		return( false );
 	}
 
 	IPXSocketNumber = socketnum;
@@ -254,7 +250,6 @@ bool IPXInterfaceClass::Open_Socket( SOCKET socketnum )
 	Socket = socket (AF_NS, SOCK_DGRAM, NSPROTO_IPX);
 	if (Socket == INVALID_SOCKET) {
 		DebugString("Failed to create IPX socket - error code %d.\n", LAST_ERROR );
-		assert ( Socket != INVALID_SOCKET );
 		closesocket(Socket);
 		return( false );
 	}
@@ -292,7 +287,6 @@ bool IPXInterfaceClass::Open_Socket( SOCKET socketnum )
 	DebugString("About to bind IPX Socket\n");
 	if (bind ( Socket, (const struct sockaddr *) &addr, 16) == SOCKET_ERROR ){
 		DebugString ("IPX socket bind failed with error code %d.\n", LAST_ERROR );
-		assert ( false );
 		closesocket(Socket);
 		return( false );
 	}
@@ -313,7 +307,6 @@ bool IPXInterfaceClass::Open_Socket( SOCKET socketnum )
 	DebugString("About to set IPX socket option SO_BROADCAST\n");
 	if ( setsockopt ( Socket, SOL_SOCKET, SO_BROADCAST, (char*)&optval,	sizeof(optval) ) == SOCKET_ERROR ) {
 		DebugString ("Failed to set IPX socket option SO_BROADCAST - error code %d.\n", LAST_ERROR );
-		assert ( false );
 	} else {
 		DebugString("IPX socket option SO_BROADCAST set OK\n");
 	}
@@ -325,7 +318,6 @@ bool IPXInterfaceClass::Open_Socket( SOCKET socketnum )
 	err = setsockopt ( Socket, NSPROTO_IPX, IPX_PTYPE, (char*)&packet_type,	sizeof(packet_type));
 	if ( err == INVALID_SOCKET ) {
 		DebugString ("Failed to set IPX protocol option IPX_PTYPE - error code %d.\n", LAST_ERROR );
-		assert ( err != INVALID_SOCKET );
 	} else {
 		DebugString("IPX socket option IPX_PTYPE set OK\n");
 	}
@@ -337,7 +329,6 @@ bool IPXInterfaceClass::Open_Socket( SOCKET socketnum )
 	err = setsockopt ( Socket, NSPROTO_IPX, IPX_FILTERPTYPE, (char*)&packet_type,	sizeof(packet_type));
 	if ( err == INVALID_SOCKET ) {
 		DebugString ("Failed to set IPX protocol option IPX_FILTERTYPE - error code %d.\n", LAST_ERROR );
-		assert ( err != INVALID_SOCKET );
 	} else {
 		DebugString("IPX socket option IPX_FILTERTYPE set OK\n");
 	}
@@ -434,6 +425,12 @@ int IPXInterfaceClass::Message_Handler(HWND , UINT message, UINT , LONG lParam)
 				/*
 				**	Create a new buffer and store this packet in it.
 				*/
+				int loss = Get_Packet_Loss_Percent(); // RA2
+				if (loss > 0) {
+					if (NonCriticalRandomNumber(0, 99) <= loss) {
+						return(0);
+					}
+				}
 				packet = (WinsockBufferType *)Get_New_In_Buffer();
 				packet->BufferLen = rc - sizeof(packet->CRC);
 
@@ -452,6 +449,9 @@ int IPXInterfaceClass::Message_Handler(HWND , UINT message, UINT , LONG lParam)
 					**	Bad CRC, throw away the packet.
 					*/
 					DebugString("Throwing away malformed packet\n");
+					if (!IsMalformedIPXPacketReported) { // RA2
+						IsMalformedIPXPacketReported = true;
+					}
 					if (packet->IsAllocated) {
 						delete packet;
 					} else {
@@ -468,7 +468,7 @@ int IPXInterfaceClass::Message_Handler(HWND , UINT message, UINT , LONG lParam)
 					**	Copy the address data into the holding buffer address area.
 					*/
 					IPXAddressClass *paddress = (IPXAddressClass*) (&packet->Address[0]);
-					paddress->Set_Address ( netnum, nodenum );
+					paddress->Set_Address ( netnum, nodenum, 0 ); // RA2
 
 					/*
 					**	Add the holding buffer to the packet list.
@@ -555,3 +555,4 @@ int IPXInterfaceClass::Message_Handler(HWND , UINT message, UINT , LONG lParam)
 
 	return(0);
 }
+
