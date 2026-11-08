@@ -121,7 +121,6 @@ static void audioMapDeviceUnit(int unit, AudioSystem ** pSystem, int * pUnit)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00402860
 void __fastcall audioAddChannel(AudioDevice * dev, AudioChannel * chan)
 {
 	chan->Device = dev;
@@ -131,7 +130,6 @@ void __fastcall audioAddChannel(AudioDevice * dev, AudioChannel * chan)
 	LockRelease(&dev->channelAccess)
 }
 
-// FUNCTION: GAMEMD 0x004028B0
 void __fastcall audioRemoveChannel(AudioChannel * chan)
 {
 	AudioDevice * dev = chan->Device;
@@ -143,7 +141,6 @@ void __fastcall audioRemoveChannel(AudioChannel * chan)
 	LockRelease(&dev->channelAccess)
 }
 
-// FUNCTION: GAMEMD 0x00402900
 void AudioServiceAllDevices(void)
 {
 	AudioDevice * dev;
@@ -162,7 +159,6 @@ void AudioServiceAllDevices(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00402940
 int AudioSetUp(void)
 {
 	ListInit(&audioData->systemList);
@@ -174,7 +170,6 @@ int AudioSetUp(void)
 	return vNO_ERROR;
 }
 
-// FUNCTION: GAMEMD 0x00402990
 void AudioCloseDown(void)
 {
 	if (!audioInitialized) {
@@ -208,7 +203,6 @@ error:
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00402AF0
 AudioSystem * __fastcall AudioLoadSystem(AudioSystemMaster * master)
 {
 	AudioSystem * system;
@@ -231,7 +225,6 @@ error:
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00402B80
 void __fastcall AudioUnloadSystem(AudioSystem * system)
 {
 	ListNodeRemove(&system->nd);
@@ -239,7 +232,6 @@ void __fastcall AudioUnloadSystem(AudioSystem * system)
 	audioExclusiveSystemLoaded = 0;
 }
 
-// FUNCTION: GAMEMD 0x00402BB0
 void AudioUnloadAllSystems(void)
 {
 	AudioSystem * sys;
@@ -254,14 +246,12 @@ void AudioUnloadAllSystems(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00402C00
 AudioSystem * __fastcall AudioFirstSystem(AudioSearch * sh)
 {
 	sh->item = ListFirstItem(&audioData->systemList);
 	return (AudioSystem *)sh->item;
 }
 
-// FUNCTION: GAMEMD 0x00402C20
 AudioSystem * __fastcall AudioNextSystem(AudioSearch * sh)
 {
 	if (sh->item) {
@@ -270,7 +260,6 @@ AudioSystem * __fastcall AudioNextSystem(AudioSearch * sh)
 	return (AudioSystem *)sh->item;
 }
 
-// FUNCTION: GAMEMD 0x00402C40
 int AudioNumberOfDevices(void)
 {
 	int devices = 0;
@@ -285,7 +274,6 @@ int AudioNumberOfDevices(void)
 	return devices;
 }
 
-// FUNCTION: GAMEMD 0x00402C70
 AudioDevice * __fastcall AudioOpenDevice(int unit, AudioFormat * format)
 {
 	AudioDevice * dev = 0;
@@ -318,7 +306,6 @@ error:
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00402EF0
 void __fastcall audioDestroyDevice(AudioDevice * dev)
 {
 	AudioDeviceDestroyAllChannels(dev, AUDIO_CHANNEL_TYPE_ALL);
@@ -328,7 +315,6 @@ void __fastcall audioDestroyDevice(AudioDevice * dev)
 	AudioMemFree(dev);
 }
 
-// FUNCTION: GAMEMD 0x00402F60
 int __fastcall audioDeviceHandler(AudioDevice * dev)
 {
 	AudioChannel * chan;
@@ -378,20 +364,17 @@ int __fastcall audioDeviceHandler(AudioDevice * dev)
 	return vNO_ERROR;
 }
 
-// FUNCTION: GAMEMD 0x004031B0
 void __fastcall AudioDeviceSetDefaultFormat(AudioDevice * dev, AudioFormat * format)
 {
 	memcpy(&dev->DefaultFormat, format, sizeof(AudioFormat));
 }
 
-// FUNCTION: GAMEMD 0x004031D0
 AudioDevice * __fastcall AudioFirstDevice(AudioSearch * sh)
 {
 	sh->item = ListFirstItem(&audioData->devList);
 	return (AudioDevice *)sh->item;
 }
 
-// FUNCTION: GAMEMD 0x004031F0
 AudioDevice * __fastcall AudioNextDevice(AudioSearch * sh)
 {
 	if (sh->item) {
@@ -400,7 +383,6 @@ AudioDevice * __fastcall AudioNextDevice(AudioSearch * sh)
 	return (AudioDevice *)sh->item;
 }
 
-// FUNCTION: GAMEMD 0x00403210
 void AudioDestroyAllDevices(void)
 {
 	AudioDevice * dev;
@@ -417,7 +399,6 @@ void AudioDestroyAllDevices(void)
 	LockRelease(&audioData->devListAccess);
 }
 
-// FUNCTION: GAMEMD 0x00403310
 void __fastcall AudioDeviceClose(AudioDevice * dev)
 {
 	LockRelease(&dev->lock);
@@ -426,44 +407,37 @@ void __fastcall AudioDeviceClose(AudioDevice * dev)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004033C0
 void __fastcall AudioDeviceDestroy(AudioDevice * dev)
 {
 	audioRemoveDevice(dev);
 	audioDestroyDevice(dev);
 }
 
-// FUNCTION: GAMEMD 0x00403460
 int __fastcall AudioDeviceSetFormat(AudioDevice * dev, AudioFormat * format)
 {
 	return ERROR_CODE_FAIL;
 }
 
-// FUNCTION: GAMEMD 0x00403470
 void __fastcall AudioDeviceSetVolume(AudioDevice * dev, int newVolume)
 {
 	AudioLevelSet(&dev->Attribs.VolumeLevel, newVolume);
 }
 
-// FUNCTION: GAMEMD 0x00403480
 void __fastcall AudioDeviceAdjustVolume(AudioDevice * dev, int newVolume)
 {
 	AudioLevelAdjust(&dev->Attribs.VolumeLevel, newVolume);
 }
 
-// FUNCTION: GAMEMD 0x00403490
 int __fastcall AudioDeviceMaxChannels(AudioDevice * dev)
 {
 	return dev->maxChannels;
 }
 
-// FUNCTION: GAMEMD 0x004034A0
 int __fastcall AudioDeviceChannels(AudioDevice * dev)
 {
 	return dev->channels;
 }
 
-// FUNCTION: GAMEMD 0x004034B0
 AudioChannel * __fastcall AudioDeviceCreateChannel(AudioDevice * dev)
 {
 	AudioChannel * channel = 0;
@@ -486,7 +460,6 @@ error:
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00403530
 int __fastcall AudioDeviceCreateChannels(AudioDevice * dev, int num)
 {
 	int count = 0;
@@ -500,14 +473,12 @@ int __fastcall AudioDeviceCreateChannels(AudioDevice * dev, int num)
 	return count;
 }
 
-// FUNCTION: GAMEMD 0x004035B0
 AudioChannel * __fastcall AudioDeviceFirstChannel(AudioDevice * dev, AudioSearch * sh)
 {
 	sh->item = ListFirstItem(&dev->channelList);
 	return (AudioChannel *)sh->item;
 }
 
-// FUNCTION: GAMEMD 0x004035D0
 AudioChannel * __fastcall AudioDeviceNextChannel(AudioSearch * sh)
 {
 	if (sh->item) {
@@ -516,7 +487,6 @@ AudioChannel * __fastcall AudioDeviceNextChannel(AudioSearch * sh)
 	return (AudioChannel *)sh->item;
 }
 
-// FUNCTION: GAMEMD 0x004035F0
 AudioChannel * __fastcall AudioDeviceGetChannel(AudioDevice * dev, int type)
 {
 	AudioChannel * channel;
@@ -574,7 +544,6 @@ AudioChannel * __fastcall AudioDeviceGetChannel(AudioDevice * dev, int type)
 	return channel;
 }
 
-// FUNCTION: GAMEMD 0x004036C0
 AudioChannel * __fastcall AudioDeviceReserveChannel(AudioDevice * dev, int newType)
 {
 	AudioChannel * chan;
@@ -600,20 +569,17 @@ static inline void audioForEachChannel(AudioDevice * dev, int type, void (__fast
 	}
 }
 
-// FUNCTION: GAMEMD 0x004036F0
 int __fastcall AudioDeviceDestroyAllChannels(AudioDevice * dev, int type)
 {
 	audioForEachChannel(dev, type, AudioChannelDestroy);
 	return vNO_ERROR;
 }
 
-// FUNCTION: GAMEMD 0x00403730
 void __fastcall AudioDeviceStopAllChannels(AudioDevice * dev, int type)
 {
 	audioForEachChannel(dev, type, AudioChannelStop);
 }
 
-// FUNCTION: GAMEMD 0x00403770
 void __fastcall AudioDevicePauseAllChannels(AudioDevice * dev, int type)
 {
 	AudioChannel * channel;
@@ -630,7 +596,6 @@ void __fastcall AudioDevicePauseAllChannels(AudioDevice * dev, int type)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004037C0
 void __fastcall AudioDeviceResumeAllChannels(AudioDevice * dev, int type)
 {
 	AudioChannel * channel;
@@ -647,13 +612,11 @@ void __fastcall AudioDeviceResumeAllChannels(AudioDevice * dev, int type)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00403810
 int __fastcall AudioDeviceService(AudioDevice * dev)
 {
 	return dev->deviceHandler(dev);
 }
 
-// FUNCTION: GAMEMD 0x00403820
 void __fastcall AudioServiceInfoInit(AudioServiceInfo * info)
 {
 	info->Interval = 0;
@@ -670,7 +633,6 @@ void __fastcall AudioServiceInfoInit(AudioServiceInfo * info)
 	info->Missed = 0;
 }
 
-// FUNCTION: GAMEMD 0x00403870
 void __fastcall AudioServiceSetInterval(AudioServiceInfo * info, TimeStamp interval)
 {
 	info->Interval = interval;
@@ -678,19 +640,16 @@ void __fastcall AudioServiceSetInterval(AudioServiceInfo * info, TimeStamp inter
 	info->ResetInterval = info->Interval * 10;
 }
 
-// FUNCTION: GAMEMD 0x004038A0
 void __fastcall AudioServiceSetMustServiceInterval(AudioServiceInfo * info, TimeStamp interval)
 {
 	info->MustServiceInterval = interval;
 }
 
-// FUNCTION: GAMEMD 0x004038C0
 void __fastcall AudioServiceSetResetInterval(AudioServiceInfo * info, TimeStamp interval)
 {
 	info->ResetInterval = interval;
 }
 
-// FUNCTION: GAMEMD 0x004038E0
 int __fastcall AudioServiceNeeded(AudioServiceInfo * info, TimeStamp now)
 {
 	if ((now - info->LastTime) < info->Interval) {
@@ -699,7 +658,6 @@ int __fastcall AudioServiceNeeded(AudioServiceInfo * info, TimeStamp now)
 	return 1;
 }
 
-// FUNCTION: GAMEMD 0x00403920
 void __fastcall AudioServicePerform(AudioServiceInfo * info, TimeStamp now)
 {
 	TimeStamp delay = now - info->LastTime;
@@ -721,7 +679,6 @@ void __fastcall AudioServicePerform(AudioServiceInfo * info, TimeStamp now)
 	info->LastTime = now;
 }
 
-// FUNCTION: GAMEMD 0x004039C0
 void __fastcall AudioServiceInfoDump(AudioServiceInfo * info, char * buf)
 {
 	TimeStamp now = AudioGetTime();
@@ -740,7 +697,6 @@ void __fastcall AudioServiceInfoDump(AudioServiceInfo * info, char * buf)
 	sprintf(buf, "%05dms (%04d,%04d,%04d,~%2d) %c \n", (int)info->Interval, (int)info->Delay, (int)info->PeakDelay, (int)info->MaxDelay, info->Missed, anim[info->Anim]);
 }
 
-// FUNCTION: GAMEMD 0x00403A80
 void __fastcall AudioDeviceDump(AudioDevice * dev, void(__fastcall * print)(const char * line), int verbose)
 {
 	char line[200];
