@@ -3,13 +3,11 @@
 
 #include <stdlib.h>
 #include "always.h"
-#include "geometry.h"
 #include "pixelfx.h"
 
-// FUNCTION: GAMEMD 0x00631D40
 void PixelFXClass::Init(int type)
 {
-	PixelFXTypeStruct * t = &DAT_008367C8[type];
+	PixelFXTypeStruct * t = &PixelFXTypes[type];
 	unsigned r = rand();
 	OffsetX = (r & 0x3F) - 0x1F;
 	OffsetY = ((r >> 5) & 0x1F) - 0xF;
@@ -34,19 +32,16 @@ void PixelFXClass::Init(int type)
 	Life = rand() & t->LifeMask;
 }
 
-// FUNCTION: GAMEMD 0x00631E10
 PixelFXClass::PixelFXClass(void)
 {
 	Init(0);
 }
 
-// FUNCTION: GAMEMD 0x00631E30
 PixelFXClass::PixelFXClass(int type)
 {
 	Init(type);
 }
 
-// FUNCTION: GAMEMD 0x00631E50
 void PixelFXClass::Update(int frames)
 {
 	Phase += Rate * frames;
@@ -62,7 +57,6 @@ void PixelFXClass::Update(int frames)
 	Current[2] = (ColorB[2] * (0x1000 - t) + ColorA[2] * t) >> 12;
 }
 
-// FUNCTION: GAMEMD 0x00631EE0
 bool PixelFXClass::Expire(int frames)
 {
 	Life -= frames;
@@ -73,17 +67,12 @@ bool PixelFXClass::Expire(int frames)
 	return false;
 }
 
-// FUNCTION: GAMEMD 0x00631F10
 void PixelFXClass::Set_Offset(int x, int y)
 {
 	OffsetX = x;
 	OffsetY = y;
 }
 
-// FUNCTION: GAMEMD 0x00631F30
 PixelFXClass::~PixelFXClass(void)
 {
 }
-
-// SYNTHETIC: GAMEMD 0x00631F40
-// ??_GPixelFXClass@@UAEPAXI@Z

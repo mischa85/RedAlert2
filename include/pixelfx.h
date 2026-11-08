@@ -12,7 +12,7 @@ struct PixelFXTypeStruct
 	int RateMin;
 };
 
-extern PixelFXTypeStruct DAT_008367C8[];
+extern PixelFXTypeStruct PixelFXTypes[]; // RA2: the colours, dimming and timing of each kind of pixel effect
 
 class PixelFXClass
 {
