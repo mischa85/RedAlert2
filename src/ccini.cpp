@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -88,6 +89,7 @@
 #include "conquer.h"
 #include "coord.h"
 #include "globals.h"
+#include "house.h"
 #include "houstype.h"
 #include "incdec.h"
 #include "infatype.h"
@@ -944,15 +946,13 @@ SuperWeaponType CCINIClass::Get_SuperWeaponType(char const * section, char const
 /// if the name is not recognized.</returns>
 VoxType CCINIClass::Get_VoxType(char const * section, char const * entry, VoxType defvalue) const
 {
-	char buffer[32];
+	char buffer[100];
 
-	Get_String(section, entry, defvalue != VOX_NONE ? Speech[defvalue] : NULL, buffer, sizeof(buffer));
-	for (int index = 0; index < ARRAY_SIZE(Speech); index++) {
-		if (!strcmpi(buffer, Speech[index])) {
-			return(VoxType)(index);
-		}
+	Get_String(section, entry, "", buffer, sizeof(buffer));
+	if (strlen(buffer) != 0) {
+		return(Vox_From_Name(buffer));
 	}
-	return(VOX_NONE);
+	return(defvalue);
 }
 
 
@@ -978,6 +978,27 @@ RTTIType CCINIClass::Get_RTTIType(char const * section, char const * entry, RTTI
 bool CCINIClass::Put_RTTIType(char const * section, char const * entry, RTTIType value)
 {
 	return(Put_String(section, entry, Name_From_RTTI(value)));
+}
+
+
+/// <summary>
+/// RA2: fetches a build category from the INI database.
+/// </summary>
+int CCINIClass::Get_BuildCat(char const * section, char const * entry, int defvalue) const
+{
+	char buffer[32];
+
+	Get_String(section, entry, Name_From_BuildCat(defvalue), buffer, sizeof(buffer));
+	return(BuildCat_From_Name(buffer));
+}
+
+
+/// <summary>
+/// RA2: stores a build category to the INI database.
+/// </summary>
+bool CCINIClass::Put_BuildCat(char const * section, char const * entry, int value)
+{
+	return(Put_String(section, entry, Name_From_BuildCat(value)));
 }
 
 
@@ -1060,6 +1081,57 @@ bool CCINIClass::Put_Owners(char const * section, char const * entry, int value)
 				strcat(buffer, ",");
 			}
 			strcat(buffer, type->Name());
+		}
+	}
+
+	if (buffer[0] != '\0') {
+		return(Put_String(section, entry, buffer));
+	}
+	return(true);
+}
+
+
+/// <summary>
+/// RA2: fetches a set of houses, by their INI names, as a bit field of house indexes.
+/// </summary>
+int CCINIClass::Get_Houses(char const * section, char const * entry, int defvalue) const
+{
+	char buffer[128];
+	int ownable = defvalue;
+
+	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+		ownable = 0;
+		char * name = strtok(buffer, ",");
+
+		while (name) {
+			ownable |= (1 << House_Index_From_Name(name));
+			name = strtok(NULL, ",");
+		}
+	}
+	return(ownable);
+}
+
+
+/// <summary>
+/// RA2: stores a bit field of house indexes as their INI names.
+/// </summary>
+bool CCINIClass::Put_Houses(char const * section, char const * entry, int value)
+{
+	char buffer[128];
+
+	buffer[0] = '\0';
+
+	if (value == 0) {
+		return(true);
+	}
+
+	for (int house = 0; house < Houses.Count(); house++) {
+		HouseClass * ptr = Houses[house];
+		if ((value & (1 << ptr->HeapID)) != 0) {
+			if (buffer[0] != '\0') {
+				strcat(buffer, ",");
+			}
+			strcat(buffer, ptr->IniName);
 		}
 	}
 
@@ -1233,7 +1305,16 @@ HousesType CCINIClass::Get_HousesType(char const * section, char const * entry, 
 bool CCINIClass::Put_HousesType(char const * section, char const * entry, HousesType value)
 {
 	char const * name = "<none>";
-	if (value != HOUSE_NONE) {
+
+	/*
+	**	RA2: the two random house values are written as "<random>", and a value outside
+	**	the house types is written as "<none>".
+	*/
+	if (value == -2) {
+		name = "<random>";
+	} else if (value == -3) {
+		name = "<random>";
+	} else if (value != HOUSE_NONE && value >= 0 && value < HouseTypes.Count()) {
 		name = HouseTypes[value]->Name();
 	}
 
@@ -1253,7 +1334,7 @@ SideType CCINIClass::Get_Side(char const * section, char const * entry, SideType
 {
 	char buffer[128];
 
-	if (Get_String(section, entry, "", buffer, sizeof(buffer)) && strcmpi(buffer, "<none>")) {
+	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
 		SideType side = SideClass::From_Name(buffer);
 		if (side == SIDE_NONE) {
 			SideClass * type = new SideClass(buffer);
@@ -1729,6 +1810,7 @@ bool CCINIClass::Put_IntList(char const * section, char const * entry, TypeList<
 TypeList<int> CCINIClass::Get_Target_List(const char * section, const char * entry, TypeList<int> defvalue) const
 {
 	char buffer[MAX_LINE_LENGTH];
+
 	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
 		TypeList<int> list;
 		char * token = strtok(buffer, ",");
@@ -1744,7 +1826,7 @@ TypeList<int> CCINIClass::Get_Target_List(const char * section, const char * ent
 				}
 			}
 			if (trgt.Is_Valid()) {
-				list.Add(trgt.Encode());
+				list.Add((trgt.RTTI << 24) | (trgt.ID & 0x00FFFFFF));
 			}
 			token = strtok(NULL, ",");
 		}
@@ -2055,20 +2137,19 @@ void CCINIClass::Invalidate_Message_Digest(void)
 
 
 /// <summary>
-/// Fetches a target from the INI database.
+/// RA2: fetches a techno type from the INI database (this takes the place of Get_Target).
 /// This routine will search the infantry, unit, aircraft, and building type lists for an
 /// object type bearing the name recorded in the database.
 /// </summary>
-/// <returns>Returns with a target for the object type found. If no type matches the name,
-/// then the default value is returned.</returns>
-TargetClass CCINIClass::Get_Target(char const * section, char const * entry, TargetClass const & defvalue) const
+/// <returns>Returns with the object type found, or NULL if no type matches the name.</returns>
+TechnoTypeClass * CCINIClass::Get_TechnoType(char const * section, char const * entry) const
 {
 	char buffer[128];
 
-	Get_String(section, entry, defvalue.As_TechnoType() == NULL ? "<none>" : defvalue.As_TechnoType()->Name(), buffer, sizeof(buffer));
-
 	int type = -1;
-	AbstractClass * target = NULL;
+	TechnoTypeClass * target = NULL;
+
+	Get_String(section, entry, "<none>", buffer, sizeof(buffer));
 
 	if (type == -1) {
 		type = (int)InfantryTypeClass::From_Name(buffer);
@@ -2076,33 +2157,25 @@ TargetClass CCINIClass::Get_Target(char const * section, char const * entry, Tar
 			target = InfantryTypes[type];
 		}
 	}
-
 	if (type == -1) {
 		type = (int)UnitTypeClass::From_Name(buffer);
 		if (type != -1) {
 			target = UnitTypes[type];
 		}
 	}
-
 	if (type == -1) {
 		type = (int)AircraftTypeClass::From_Name(buffer);
 		if (type != -1) {
 			target = AircraftTypes[type];
 		}
 	}
-
 	if (type == -1) {
 		type = (int)BuildingTypeClass::From_Name(buffer);
 		if (type != -1) {
 			target = BuildingTypes[type];
 		}
 	}
-
-	if (target == NULL) {
-		return(defvalue);
-	}
-
-	return(TargetClass(target));
+	return(target);
 }
 
 
@@ -2149,6 +2222,29 @@ bool CCINIClass::Put_SpeedType(char const * section, char const * entry, SpeedTy
 
 
 /// <summary>
+/// RA2: fetches a layer from the INI database.
+/// </summary>
+LayerType CCINIClass::Get_LayerType(char const * section, char const * entry, LayerType defvalue) const
+{
+	char buffer[128];
+
+	if (Get_String(section, entry, Name_From_Layer(defvalue), buffer, sizeof(buffer))) {
+		return(Layer_From_Name(buffer));
+	}
+	return(defvalue);
+}
+
+
+/// <summary>
+/// RA2: stores a layer to the INI database.
+/// </summary>
+bool CCINIClass::Put_LayerType(char const * section, char const * entry, LayerType value)
+{
+	return(Put_String(section, entry, Name_From_Layer(value)));
+}
+
+
+/// <summary>
 /// Fetches a building type list from the INI database.
 /// This routine will read a comma separated list of building names. The special group
 /// names, such as "POWER" and "BARRACKS", are recognized and stored as the matching group
@@ -2187,12 +2283,8 @@ TypeList<int> CCINIClass::Get_BuildingType_List(CCINIClass const & ini, char con
 				list.Add(STRUCT_G_TECH);
 				isgroup = true;
 			}
-			if (!strcmpi(token, "GDIFACTORY")) {
+			if (!strcmpi(token, "PROC")) {
 				list.Add(STRUCT_G_GDIFACTORY);
-				isgroup = true;
-			}
-			if (!strcmpi(token, "NODFACTORY")) {
-				list.Add(STRUCT_G_NODFACTORY);
 				isgroup = true;
 			}
 			if (!isgroup) {
@@ -2207,6 +2299,61 @@ TypeList<int> CCINIClass::Get_BuildingType_List(CCINIClass const & ini, char con
 		return(list);
 	}
 
+	return(defvalue);
+}
+
+
+/// <summary>
+/// RA2: fetches three comma separated integers; missing ones leave their value alone.
+/// </summary>
+void CCINIClass::Get_Int3(char const * section, char const * entry, int * first, int * second, int * third) const
+{
+	char buffer[512] = "";
+
+	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
+		char * token = strtok(buffer, ",");
+		if (token) *first = atoi(token);
+		token = strtok(NULL, ",");
+		if (token) *second = atoi(token);
+		token = strtok(NULL, ",");
+		if (token) *third = atoi(token);
+	}
+}
+
+
+/// <summary>
+/// RA2: stores three comma separated integers.
+/// </summary>
+bool CCINIClass::Put_Int3(char const * section, char const * entry, int first, int second, int third)
+{
+	char buffer[512] = "";
+
+	sprintf(buffer, "%d,%d,%d", first, second, third);
+	return(Put_String(section, entry, buffer));
+}
+
+
+static char const * _vhpscan[3] = {"None", "Normal", "Strong"};
+
+
+/// <summary>
+/// RA2: fetches a vehicle hit point scan setting (None, Normal or Strong).
+/// </summary>
+int CCINIClass::Get_VHPScan(char const * section, char const * entry, int defvalue) const
+{
+	char buffer[128];
+
+	Get_String(section, entry, _vhpscan[defvalue], buffer, sizeof(buffer));
+	char * token = strtok(buffer, ",");
+	if (!strcmpi(token, "None")) {
+		return(0);
+	}
+	if (!strcmpi(token, "Normal")) {
+		return(1);
+	}
+	if (!strcmpi(token, "Strong")) {
+		return(2);
+	}
 	return(defvalue);
 }
 

@@ -52,6 +52,7 @@
 #include "house.hh"
 #include "infantry.hh"
 #include "land.hh"
+#include "layer.hh"
 #include "mph.hh"
 #include "mzone.hh"
 #include "overlay.hh"
@@ -117,6 +118,7 @@ class CCINIClass : public INIClass
 		VQType Get_VQType(char const * section, char const * entry, VQType defvalue) const;
 		VocType Get_VocType(char const * section, char const * entry, VocType defvalue) const;
 		int Get_Owners(char const * section, char const * entry, int defvalue) const;
+		int Get_Houses(char const * section, char const * entry, int defvalue) const; // RA2
 		CrateType Get_CrateType(char const * section, char const * entry, CrateType defvalue) const;
 
 		SideType Get_Side(char const * section, char const * entry, SideType defvalue) const;
@@ -135,6 +137,7 @@ class CCINIClass : public INIClass
 		SuperWeaponType Get_SuperWeaponType(char const * section, char const * entry, SuperWeaponType defvalue) const;
 		VoxType Get_VoxType(char const * section, char const * entry, VoxType defvalue) const;
 		RTTIType Get_RTTIType(char const * section, char const * entry, RTTIType defvalue) const;
+		int Get_BuildCat(char const * section, char const * entry, int defvalue) const; // RA2
 		LandType Get_LandType(char const * section, char const * entry, LandType defvalue) const;
 		TypeList<int> Get_IntList(const char * section, const char * entry, TypeList<int> defvalue) const;
 		TypeList<int> Get_Target_List(const char * section, const char * entry, TypeList<int> defvalue) const; /// The values are TargetClass encoded.
@@ -142,11 +145,14 @@ class CCINIClass : public INIClass
 		TPoint3D<int> Get_Offset(char const * section, char const * entry, TPoint3D<int> const & defvalue) const;
 		TypeList<TechnoTypeClass *> Get_TechnoType_List(const char * section, const char * entry, TypeList<TechnoTypeClass *> defvalue) const;
 		TypeList<int> Get_House_List(const char * section, const char * entry, TypeList<int> defvalue) const;
-		TargetClass Get_Target(char const * section, char const * entry, TargetClass const & defvalue) const;
+		TechnoTypeClass * Get_TechnoType(char const * section, char const * entry) const; // RA2: replaces Get_Target
 		SpeedType Get_SpeedType(char const * section, char const * entry, SpeedType defvalue) const;
+		LayerType Get_LayerType(char const * section, char const * entry, LayerType defvalue) const; // RA2
 		static TypeList<int> Get_VocType_List(CCINIClass const & ini, const char * section, const char * entry, TypeList<int> defvalue);
 
 		static TypeList<int> Get_BuildingType_List(CCINIClass const & ini, char const * section, char const * entry, TypeList<int> defvalue);
+		void Get_Int3(char const * section, char const * entry, int * first, int * second, int * third) const; // RA2
+		int Get_VHPScan(char const * section, char const * entry, int defvalue) const; // RA2
 		AbilityFlagsType Get_Abilities(char const * section, char const * entry, AbilityFlagsType const & defvalue) const;
 		TypeList<RGBClass> Get_RGBClass_List(const char * section, const char * entry, TypeList<RGBClass> defvalue) const;
 
@@ -157,6 +163,7 @@ class CCINIClass : public INIClass
 		bool Put_MPHType(char const * section, char const * entry, MPHType value);
 		bool Put_VQType(char const * section, char const * entry, VQType value);
 		bool Put_Owners(char const * section, char const * entry, int value);
+		bool Put_Houses(char const * section, char const * entry, int value); // RA2
 		bool Put_SourceType(char const * section, char const * entry, SourceType value);
 		bool Put_TheaterType(char const * section, char const * entry, TheaterType value);
 		bool Put_ThemeType(char const * section, char const * entry, ThemeType value);
@@ -179,6 +186,7 @@ class CCINIClass : public INIClass
 		bool Put_SuperWeaponType(char const * section, char const * entry, SuperWeaponType value);
 		bool Put_VoxType(char const * section, char const * entry, VoxType value);
 		bool Put_RTTIType(char const * section, char const * entry, RTTIType value);
+		bool Put_BuildCat(char const * section, char const * entry, int value); // RA2
 		bool Put_LandType(char const * section, char const * entry, LandType value);
 		bool Put_IntList(char const * section, char const * entry, TypeList<int> const & value);
 		bool Put_Target_List(const char * section, const char * entry, TypeList<int> const & value);
@@ -188,6 +196,8 @@ class CCINIClass : public INIClass
 		bool Put_House_List(char const * section, char const * entry, TypeList<HousesType> value);
 		bool Put_Target(char const * section, char const * entry, TargetClass const & value);
 		bool Put_SpeedType(char const * section, char const * entry, SpeedType value);
+		bool Put_LayerType(char const * section, char const * entry, LayerType value); // RA2
+		bool Put_Int3(char const * section, char const * entry, int first, int second, int third); // RA2
 		bool Put_VocType_List(char const * section, char const * entry, TypeList<int> value);
 
 		int Get_Unique_ID(void) const;

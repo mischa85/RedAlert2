@@ -1181,3 +1181,4 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 };
 
 HouseClass * House_From_HousesType(HousesType house);
+int House_Index_From_Name(char const * name); // RA2: index of the house whose IniName this is

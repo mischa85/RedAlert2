@@ -15,6 +15,7 @@
 
 #include "crate.hh"
 #include "land.hh"
+#include "layer.hh"
 #include "rtti.hh"
 #include "source.hh"
 #include "speed.hh"
@@ -37,6 +38,10 @@ VQType VQ_From_Name(char const * name);
 char const * Name_From_Land(LandType land);
 SpeedType Speed_From_Name(char const * name);
 char const * Name_From_Speed(SpeedType Speed);
+LayerType Layer_From_Name(char const * name); // RA2
+char const * Name_From_Layer(LayerType layer); // RA2
+char const * Name_From_BuildCat(int value); // RA2
+int BuildCat_From_Name(char const * name); // RA2
 
 void Call_Back(void);
 bool MapGen_Call_Back(void);

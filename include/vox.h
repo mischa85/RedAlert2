@@ -25,5 +25,6 @@ void Set_Speech_State(bool state);
 bool Get_Speech_State(void);
 
 char const * Speech_Name(VoxType speech);
+VoxType Vox_From_Name(char const * name); // RA2
 
 extern char const * Speech[VOX_COUNT];
