@@ -716,9 +716,9 @@ unk_006EEEC0,0x006EEEC0,0x006EEF10,unknown,code not assigned to a module
 trim,0x006EEF10,0x006EEF80,tibsun,"functions compiled from src/trim.cpp, matched, without gaps"
 unk_006EEF80,0x006EEF80,0x006EF1D0,unknown,code not assigned to a module
 tube,0x006EF1D0,0x006EF910,tibsun,"functions compiled from src/tube.cpp, matched, without gaps; two placed by the gap"
-unk_006EF910,0x006EF910,0x006F1230,unknown,code not assigned to a module
-unk_006F1230,0x006F1230,0x006F1280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006F1280,0x006F1280,0x006F15C0,unknown,code not assigned to a module
+unk_006EF910,0x006EF910,0x006EFBE0,unknown,code not assigned to a module
+tunnel,0x006EFBE0,0x006F13A0,tibsun,"functions compiled from src/tunnel.cpp, without gaps; matched except ?Process_Tunneling@TunnelLocomotionClass@@QAEXXZ; three placed by the gap"
+unk_006F13A0,0x006F13A0,0x006F15C0,unknown,code not assigned to a module
 txtlabel,0x006F15C0,0x006F1620,tibsun,"functions compiled from src/txtlabel.cpp, matched, without gaps; ?Draw_Me@TextLabelClass@@UAEHH@Z not placed"
 unk_006F1620,0x006F1620,0x0070AB20,unknown,code not assigned to a module
 unk_0070AB20,0x0070AB20,0x0070AB40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
