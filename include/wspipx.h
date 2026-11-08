@@ -59,7 +59,7 @@ class IPXInterfaceClass : public WinsockInterfaceClass {
 			return(PROTOCOL_IPX);
 		};
 
-		virtual int Protocol_Event_Message (void) override {
+		virtual int Protocol_Event_Message (SOCKET) override { // RA2: socket
 			return(WM_IPXASYNCEVENT);
 		};
 

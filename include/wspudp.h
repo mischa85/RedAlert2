@@ -49,27 +49,31 @@ class UDPInterfaceClass : public WinsockInterfaceClass {
 		UDPInterfaceClass (void);
 		virtual ~UDPInterfaceClass(void) override;
 
-		virtual int Message_Handler(HWND window, UINT message, UINT wParam, LONG lParam) override;
-		virtual bool Open_Socket ( SOCKET socketnum ) override;
-		virtual void Set_Broadcast_Address ( void *address ) override;
+		virtual void WriteTo (void *buffer, int buffer_len, void *address, int address_len, bool alternate, bool flag, unsigned short port) override; // RA2
+		virtual void Broadcast (void *buffer, int buffer_len, bool alternate) override;
+		virtual bool Start_Listening (void) override; // RA2
+		virtual void Stop_Listening (void) override; // RA2
+		virtual void Set_Broadcast_Address ( char const * address, unsigned short port ) override;
 		virtual void Clear_Broadcast_Addresses(void) override;
-		virtual void Broadcast (void *buffer, int buffer_len) override;
 
-		virtual ProtocolEnum Get_Protocol (void) override {
-			return(PROTOCOL_UDP);
-		};
+		virtual ProtocolEnum Get_Protocol (void) override;
+		virtual int Protocol_Event_Message (SOCKET socketnum) override;
+		virtual bool Open_Socket ( SOCKET socketnum ) override;
+		virtual int Message_Handler(HWND window, UINT message, UINT wParam, LONG lParam) override;
+		virtual int Get_Num_Local_Addresses(void) override;
+		virtual unsigned char *Get_Local_Address(int index) override;
 
-		virtual int Protocol_Event_Message (void) override {
-			return(WM_UDPASYNCEVENT);
-		};
+		virtual bool OpenSocket (unsigned short port = 0); // RA2
+		virtual unsigned short Get_Port (void); // RA2
+		virtual bool Init_Ports (void); // RA2
+		virtual bool Open_Port_Socket (unsigned short port); // RA2
+		virtual void Close_Port_Socket (unsigned short port); // RA2
+		virtual void Close_All_Port_Sockets (void); // RA2
+		virtual void Select_Port_Socket (unsigned short port); // RA2
+		virtual void Add_Peer (unsigned char *address, unsigned short port); // RA2
+		bool Is_Reachable (unsigned char *address, unsigned short port); // RA2
 
-		virtual int Get_Num_Local_Addresses(void) override {
-			return(LocalAddresses.Count());
-		};
-
-		virtual unsigned char *Get_Local_Address(int index) override {
-			return(LocalAddresses[index]);
-		};
+		static int UDPListenPort; // RA2: the port broadcasts go to when none is given
 
 	private:
 
@@ -100,3 +104,12 @@ class UDPInterfaceClass : public WinsockInterfaceClass {
 		unsigned int PeerAddresses[16];
 		unsigned short PeerPorts[16];
 };
+
+/*
+**	RA2: the ports of the alternate socket and the loopback port of the host in an
+**	internet game, and whether a malformed packet was reported yet.
+*/
+extern int AlternateSendPort;
+extern int AlternateListenPort;
+extern int LoopbackPort;
+extern bool IsMalformedPacketReported;

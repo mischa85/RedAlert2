@@ -50,6 +50,9 @@
 #include "vector.h"
 
 #include <cstdio>
+#include "session.h"
+#include "_rand.h"
+#include "random.h"
 
 
 extern int WestwoodOnline_PortNumber;
@@ -69,8 +72,12 @@ extern int WestwoodOnline_PortNumber;
  *    8/5/97 12:11PM ST : Created                                                              *
  *=============================================================================================*/
 UDPInterfaceClass::UDPInterfaceClass (void) : BASECLASS()
-{}
-
+{
+	Port = 0;
+	PortCount = 0;
+	SelectedSocket = INVALID_SOCKET;
+	PeerCount = 0;
+}
 
 
 /***********************************************************************************************
@@ -128,20 +135,174 @@ void UDPInterfaceClass::Clear_Broadcast_Addresses(void)
  * HISTORY:                                                                                    *
  *    8/5/97 12:12PM ST : Created                                                              *
  *=============================================================================================*/
-void UDPInterfaceClass::Set_Broadcast_Address (void *address)
+void UDPInterfaceClass::Set_Broadcast_Address (char const *address, unsigned short port)
 {
-	char * ip_addr = (char *) address;
-	assert ( strlen (ip_addr) <= strlen ( "xxx.xxx.xxx.xxx" ) );
-
 	int addr[4];
 	unsigned char *baddr = new unsigned char[4];
 
-	sscanf ( ip_addr, "%d.%d.%d.%d", (unsigned char *)&addr[0], (unsigned char *)&addr[1], (unsigned char *)&addr[2], (unsigned char *)&addr[3] );
+	sscanf ( address, "%d.%d.%d.%d", (unsigned char *)&addr[0], (unsigned char *)&addr[1], (unsigned char *)&addr[2], (unsigned char *)&addr[3] );
 	baddr[0] = addr[0];
 	baddr[1] = addr[1];
 	baddr[2] = addr[2];
 	baddr[3] = addr[3];
+	if (port == 0) port = UDPListenPort;
+	BroadcastPorts[BroadcastAddresses.Count()] = port;
 	BroadcastAddresses.Add (baddr);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool UDPInterfaceClass::OpenSocket (unsigned short port)
+{
+	LINGER ling;
+	struct sockaddr_in addr;
+
+	if (Socket != INVALID_SOCKET) {
+		closesocket(Socket);
+		Socket = INVALID_SOCKET;
+	}
+
+	DebugString("About to open primary UDP socket\n");
+
+	Socket = socket(AF_INET, SOCK_DGRAM, 0);
+	if (Socket == INVALID_SOCKET) {
+		return(false);
+	}
+
+	addr.sin_family = AF_INET;
+	if (port) {
+		Port = port;
+		addr.sin_port = htons(port);
+	} else {
+		Port = 0;
+		addr.sin_port = htons((unsigned short) UDPListenPort);
+	}
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	DebugString("About to bind the UDP socket to port %d\n", port);
+
+	if (bind(Socket, (LPSOCKADDR)&addr, sizeof(addr)) == SOCKET_ERROR) {
+		DebugString("Bind failed with error code %d\n", LAST_ERROR);
+		Close_Socket();
+		return(false);
+	}
+
+	ling.l_onoff = 0;
+	ling.l_linger = 0;
+	setsockopt(Socket, SOL_SOCKET, SO_LINGER, (LPSTR)&ling, sizeof(ling));
+
+	BASECLASS::Set_Socket_Options();
+
+	DebugString("Primary UDP Socket init complete\n");
+
+	return(true);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool UDPInterfaceClass::Open_Port_Socket (unsigned short port)
+{
+	struct sockaddr_in addr;
+
+	if (port == 0) {
+		return(false);
+	}
+
+	for (int i = 0; i < PortCount; i++) {
+		if (PortNumbers[i] == port) {
+			return(false);
+		}
+	}
+
+	DebugString("About to open spare UDP socket\n");
+
+	SOCKET spare = socket(AF_INET, SOCK_DGRAM, 0);
+	if (spare == INVALID_SOCKET) {
+		return(false);
+	}
+
+	DebugString("Got spare socket %d\n", spare);
+
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons(port);
+	addr.sin_addr.s_addr = htonl(INADDR_ANY);
+
+	DebugString("About to bind the UDP socket to port %d\n", port);
+
+	if (bind(spare, (LPSOCKADDR)&addr, sizeof(addr)) == SOCKET_ERROR) {
+		closesocket(spare);
+		DebugString("Failed to bind spare socket to port %d\n", port);
+		return(false);
+	}
+
+	PortNumbers[PortCount] = port;
+	PortSockets[PortCount] = spare;
+	PortCount++;
+
+	BASECLASS::Set_Socket_Options(spare);
+
+	DebugString("Spare UDP Socket init complete\n");
+
+	return(true);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void UDPInterfaceClass::Close_Port_Socket (unsigned short port)
+{
+	if (port) {
+		for (int i = 0; i < PortCount; i++) {
+			if (PortNumbers[i] == port) {
+				DebugString("Closing spare socket %d\n", PortSockets[i]);
+				closesocket(PortSockets[i]);
+				if (PortSockets[i] == SelectedSocket) {
+					SelectedSocket = INVALID_SOCKET;
+				}
+				for (int j = i; j < PortCount - 1; j++) {
+					PortSockets[j] = PortSockets[j + 1];
+					PortNumbers[j] = PortNumbers[j + 1];
+				}
+				PortCount--;
+				return;
+			}
+		}
+	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void UDPInterfaceClass::Select_Port_Socket (unsigned short port)
+{
+	if (port && port != UDPListenPort) {
+		for (int i = 0; i < PortCount; i++) {
+			if (PortNumbers[i] == port) {
+				SelectedSocket = PortSockets[i];
+				return;
+			}
+		}
+	}
+	SelectedSocket = INVALID_SOCKET;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool UDPInterfaceClass::Init_Ports (void)
+{
+	if (Init()) {
+		PortCount = 0;
+		return(true);
+	}
+	return(false);
 }
 
 
@@ -162,49 +323,18 @@ void UDPInterfaceClass::Set_Broadcast_Address (void *address)
 bool UDPInterfaceClass::Open_Socket ( SOCKET )
 {
 	LINGER ling;
-	struct 	sockaddr_in addr;
+	struct sockaddr_in addr;
 
-	/*
-	**	If Winsock is not initialised then do it now.
-	*/
 	if ( !WinsockInitialised ) {
-		if ( !Init()) return( false );;
+		if ( !Init_Ports()) return( false );
 	}
 
-	DebugString("About to open a UDP socket\n");
-
-	/*
-	**	Create our UDP socket
-	*/
-	Socket = socket(AF_INET, SOCK_DGRAM, 0);
-	if (Socket == INVALID_SOCKET) {
-		return(false);
-	}
-
-	/*
-	**	Bind our UDP socket to our UDP port number
-	*/
-	addr.sin_family = AF_INET;
-	addr.sin_port = (unsigned short) htons ( (unsigned short) WestwoodOnline_PortNumber);
-	addr.sin_addr.s_addr = htonl (INADDR_ANY);
-
-	DebugString("About to bind the UDP socket\n");
-
-	if ( bind (Socket, (LPSOCKADDR)&addr, sizeof(addr) ) == SOCKET_ERROR) {
-		Close_Socket ();
-		return(false);
-	}
+	OpenSocket((unsigned short) UDPListenPort);
 
 	DebugString("About to query the host name\n");
 
-	/*
-	**	Use gethostbyname to find the name of the local host. We will need this to look up
-	**	the local ip address.
-	*/
 	char hostname[128];
 
-	/// The test is inverted -- the name is only printed when gethostname FAILED, so the
-	/// buffer logged here is always uninitialized.
 	if (gethostname(hostname, 128) != 0) {
 		DebugString("Host name is '%s'\n", hostname);
 	}
@@ -217,26 +347,17 @@ bool UDPInterfaceClass::Open_Socket ( SOCKET )
 		DebugString("gethostbyname failed! Error code %d\n", LAST_ERROR);
 	}
 
-	/*
-	**	Clear out any old local addresses from the local address list.
-	*/
 	while ( LocalAddresses.Count() ) {
 		delete LocalAddresses[0];
 		LocalAddresses.Delete_Index(0);
 	}
 
-
-	/*
-	**	Add all local IP addresses to the list. This list will be used to discard any packets that
-	**	we send to ourselves.
-	*/
 	unsigned int **addresses = (unsigned int**) (host_info->h_addr_list);
 
 	for ( ;; ) {
 		if ( !*addresses ) break;
 
 		unsigned int address = **addresses++;
-		//address = ntohl (address);
 
 		DebugString("Found local address: %d.%d.%d.%d\n", address & 0xff, (address & 0xff00) >> 8, (address & 0xff0000) >> 16, (address & 0xff000000) >> 24);
 
@@ -245,20 +366,46 @@ bool UDPInterfaceClass::Open_Socket ( SOCKET )
 		LocalAddresses.Add (a);
 	}
 
-	/*
-	**	Set options for the UDP socket
-	*/
-	ling.l_onoff = 0;   // linger off
-	ling.l_linger = 0;  // timeout in seconds (ie close now)
-	setsockopt (Socket, SOL_SOCKET, SO_LINGER, (LPSTR)&ling, sizeof(ling));
+	DebugString("About to open alternate UDP socket\n");
 
-	BASECLASS::Set_Socket_Options();
+	AlternateSocket = socket(AF_INET, SOCK_DGRAM, 0);
+	if (AlternateSocket == INVALID_SOCKET) {
+		return(false);
+	}
 
-	DebugString("UDP Socket init complete\n");
+	addr.sin_family = AF_INET;
+	addr.sin_port = htons ( (unsigned short) AlternateListenPort);
+	addr.sin_addr.s_addr = htonl (INADDR_ANY);
+
+	DebugString("About to bind the UDP socket\n");
+
+	if ( bind (AlternateSocket, (LPSOCKADDR)&addr, sizeof(addr) ) == SOCKET_ERROR) {
+		Close_Socket ();
+		return(false);
+	}
+
+	ling.l_onoff = 0;
+	ling.l_linger = 0;
+	setsockopt (AlternateSocket, SOL_SOCKET, SO_LINGER, (LPSTR)&ling, sizeof(ling));
+
+	BASECLASS::Set_Socket_Options(AlternateSocket);
+
+	DebugString("Alternate UDP Socket init complete\n");
 
 	return(true);
+}
 
 
+/// <summary>
+/// RA2
+/// </summary>
+void UDPInterfaceClass::WriteTo (void *buffer, int buffer_len, void *address, int address_len, bool alternate, bool flag, unsigned short port)
+{
+	if ( address && ((IPXAddressClass *)address)->Is_Broadcast() ) {
+		Broadcast ( buffer, buffer_len, alternate );
+		return;
+	}
+	BASECLASS::WriteTo ( buffer, buffer_len, address, address_len, alternate, flag, port );
 }
 
 
@@ -277,49 +424,110 @@ bool UDPInterfaceClass::Open_Socket ( SOCKET )
  * HISTORY:                                                                                    *
  *    3/20/96 3:00PM ST : Created                                                              *
  *=============================================================================================*/
-void UDPInterfaceClass::Broadcast (void *buffer, int buffer_len)
+void UDPInterfaceClass::Broadcast (void *buffer, int buffer_len, bool alternate)
 {
 	for ( int i=0 ; i<BroadcastAddresses.Count() ; i++ ) {
+		WinsockBufferType *packet = (WinsockBufferType *)Get_New_Out_Buffer(alternate);
 
-		/*
-		**	Create a temporary holding area for the packet.
-		*/
-		WinsockBufferType *packet = (WinsockBufferType *)Get_New_Out_Buffer();
-
-		/*
-		**	Copy the packet into the holding buffer.
-		*/
 		memcpy ( packet->Buffer, buffer, buffer_len );
 		packet->BufferLen = buffer_len;
-
-		/*
-		**	Indicate that this packet should be broadcast.
-		*/
 		packet->IsBroadcast = true;
 
-		/*
-		**	Set up the send address for this packet.
-		*/
 		memset (packet->Address, 0, sizeof (packet->Address));
 		memcpy (packet->Address+4, BroadcastAddresses[i], 4);
+		packet->SrcPort = BroadcastPorts[i];
 
 		Build_Packet_CRC(packet);
 
-		/*
-		**	Add it to our out list.
-		*/
-		OutBuffers.Add ( packet );
+		SOCKET send_socket;
+		if ( alternate ) {
+			AltOutBuffers.Add ( packet );
+			send_socket = AlternateSocket;
+		} else {
+			OutBuffers.Add ( packet );
+			send_socket = Socket;
+		}
 
-		/*
-		**	Send a message to ourselves so that we can initiate a write if Winsock is idle.
-		*/
-		SendMessage ( MainWindow, Protocol_Event_Message(), 0, (LONG)FD_WRITE );
+		SendMessage ( MainWindow, Protocol_Event_Message(send_socket), 0, (LONG)FD_WRITE );
 
-		/*
-		**	Make sure the message loop gets called.
-		*/
 		Windows_Message_Handler();
 	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool UDPInterfaceClass::Start_Listening (void)
+{
+	if (BASECLASS::Start_Listening()) {
+		for (int i = 0; i < PortCount; i++) {
+			if (WSAAsyncSelect(PortSockets[i], MainWindow, Protocol_Event_Message(INVALID_SOCKET), FD_READ | FD_WRITE) == SOCKET_ERROR) {
+				DebugString("Async select failed on spare socket.\n");
+				return(false);
+			}
+		}
+	}
+	Windows_Message_Handler();
+	return(true);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void UDPInterfaceClass::Stop_Listening (void)
+{
+	BASECLASS::Stop_Listening();
+	Close_All_Port_Sockets();
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void UDPInterfaceClass::Add_Peer (unsigned char *address, unsigned short port)
+{
+	if (PeerCount < 16) {
+		for (int i = 0; i < PeerCount; i++) {
+			if (port == PeerPorts[i] && *(unsigned int *)address == PeerAddresses[i]) {
+				return;
+			}
+		}
+		DebugString("Marking address %d.%d.%d.%d ; %d as unreachable\n", address[0], address[1], address[2], address[3], port);
+		PeerAddresses[PeerCount] = *(unsigned int *)address;
+		PeerPorts[PeerCount] = port;
+		PeerCount++;
+	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool UDPInterfaceClass::Is_Reachable (unsigned char *address, unsigned short port)
+{
+	for (int i = 0; i < PeerCount; i++) {
+		if (port == PeerPorts[i] && !memcmp(address, &PeerAddresses[i], 4)) {
+			return(false);
+		}
+	}
+	return(true);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void UDPInterfaceClass::Close_All_Port_Sockets (void)
+{
+	for (int i = 0; i < PortCount; i++) {
+		DebugString("Closing spare socket %d\n", PortSockets[i]);
+		WSAAsyncSelect(PortSockets[i], MainWindow, 0, 0);
+		closesocket(PortSockets[i]);
+	}
+	PortCount = 0;
+	SelectedSocket = INVALID_SOCKET;
 }
 
 
@@ -337,165 +545,239 @@ void UDPInterfaceClass::Broadcast (void *buffer, int buffer_len)
  * HISTORY:                                                                                    *
  *    3/20/96 3:05PM ST : Created                                                              *
  *=============================================================================================*/
-int UDPInterfaceClass::Message_Handler(HWND, UINT message, UINT, LONG lParam)
+int UDPInterfaceClass::Message_Handler(HWND, UINT message, UINT wParam, LONG lParam)
 {
-	struct 	sockaddr_in addr;
-	int	 	rc;
-	int		addr_len;
+	struct sockaddr_in addr;
+	int rc;
+	int addr_len;
 	WinsockBufferType *packet;
+	bool alternate = false;
+	SOCKET socket;
 
-	/*
-	**	We only handle UDP events.
-	*/
-	if ( message != WM_UDPASYNCEVENT ) return(1);
+	if (message == WM_UDPASYNCEVENT) {
+		socket = Socket;
+		if (wParam != socket) {
+			for (int i = 0; i < PortCount; i++) {
+				if (PortSockets[i] == wParam) {
+					socket = PortSockets[i];
+					break;
+				}
+			}
+		}
+	} else if (message == WM_UDPASYNCEVENT + 1) {
+		socket = AlternateSocket;
+		alternate = true;
+	} else {
+		return(1);
+	}
 
-	/*
-	**	Handle UDP packet events
-	*/
-	switch ( WSAGETSELECTEVENT(lParam) ) {
+	switch (WSAGETSELECTEVENT(lParam)) {
 
-		/*
-		**	Read event. Winsock has data it would like to give us.
-		*/
 		case FD_READ:
-			/*
-			**	Clear any outstanding errors on the socket.
-			*/
 			rc = WSAGETSELECTERROR(lParam);
 			if (rc != 0) {
-				Clear_Socket_Error (Socket);
-				return(0);;
+				DebugString("FD_READ - Got error code %d\n", rc);
+				Clear_Socket_Error(socket);
+				return(0);
 			}
 
-			/*
-			**	Call the Winsock recvfrom function to get the outstanding packet.
-			*/
 			addr_len = sizeof(addr);
-			rc = recvfrom ( Socket, (char*)ReceiveBuffer, sizeof (ReceiveBuffer), 0, (LPSOCKADDR)&addr, &addr_len);
+			rc = recvfrom(socket, (char *)ReceiveBuffer, sizeof(ReceiveBuffer), 0, (LPSOCKADDR)&addr, &addr_len);
 			if (rc == SOCKET_ERROR) {
-				Clear_Socket_Error (Socket);
-				return(0);;
+				Clear_Socket_Error(socket);
+				return(0);
 			}
 
-			/*
-			**	rc is the number of bytes received from Winsock
-			*/
-			if ( rc ) {
-
-				/*
-				**	Make sure this packet didn't come from us. If it did then throw it away.
-				*/
-				for ( int i=0 ; i<LocalAddresses.Count() ; i++ ) {
-					if ( ! memcmp (LocalAddresses[i], &addr.sin_addr.s_addr, 4) ) return(0);
+			if (rc) {
+				in_addr from = addr.sin_addr; // RA2
+				DebugString("recvfrom %d.%d.%d.%d ; %d\n", from.S_un.S_un_b.s_b1, from.S_un.S_un_b.s_b2, from.S_un.S_un_b.s_b3, from.S_un.S_un_b.s_b4, ntohs(addr.sin_port)); // RA2
+				if (!alternate && !Session.ViaPacketRouter) {
+					for (int i = 0; i < LocalAddresses.Count(); i++) {
+						if (!memcmp(LocalAddresses[i], &addr.sin_addr.s_addr, 4)) return(0);
+					}
 				}
 
-				/*
-				**	Create a new buffer and store this packet in it.
-				*/
+				int loss = Get_Packet_Loss_Percent();
+				if (loss > 0) {
+					if (NonCriticalRandomNumber(0, 99) <= loss) {
+						return(0);
+					}
+				}
+
 				packet = (WinsockBufferType *)Get_New_In_Buffer();
 				packet->BufferLen = rc - sizeof(packet->CRC);
+				packet->CRC = *((unsigned int *)(&ReceiveBuffer[0]));
+				packet->IsAlternate = alternate;
+				packet->Unused_18 = false;
+				memcpy(packet->Buffer, ReceiveBuffer + sizeof(packet->CRC), packet->BufferLen);
 
-				/// The packet is copied into the holding buffer before Passes_CRC_Check bounds
-				/// its length, so a datagram longer than WS_INTERNET_BUFFER_LEN overruns Buffer
-				/// by up to WS_RECEIVE_BUFFER_LEN - WS_INTERNET_BUFFER_LEN bytes.
-				packet->CRC = *((unsigned int*) (&ReceiveBuffer[0]));
-				memcpy ( packet->Buffer, ReceiveBuffer + sizeof(packet->CRC), packet->BufferLen);
-
-				/*
-				**	Make sure the CRC looks right.
-				*/
 				if (!Passes_CRC_Check(packet)) {
-
-					/*
-					**	Bad CRC, throw away the packet.
-					*/
-					DebugString("Throwing away malformed packet\n");
+					memcpy(packet->Address + 4, &addr.sin_addr.s_addr, 4);
+					unsigned int address = addr.sin_addr.s_addr;
+					DebugString("Throwing away malformed packet from %d . %d . %d . %d ; %d\n", address & 0xff, (address >> 8) & 0xff, (address >> 16) & 0xff, address >> 24, ntohs(addr.sin_port));
+					if (!IsMalformedPacketReported) {
+						IsMalformedPacketReported = true;
+					}
 					if (packet->IsAllocated) {
 						delete packet;
 					} else {
 						packet->InUse = false;
-
-						/// This releases an INCOMING buffer but decrements the OUTGOING count.
-						/// Shipped that way -- the same line survives verbatim in Renegade's
-						/// natsock.cpp and servercontrolsocket.cpp, both cloned from this code.
 						OutBuffersUsed--;
 					}
+					return(0);
 				} else {
-
-					/*
-					**	Copy the address data into the holding buffer address area.
-					*/
-					memset ( packet->Address, 0, sizeof (packet->Address) );
-					memcpy ( packet->Address+4, &addr.sin_addr.s_addr, 4 );
-
-					/*
-					**	Add the holding buffer to the packet list.
-					*/
-					InBuffers.Add (packet);
+					memset(packet->Address, 0, sizeof(packet->Address));
+					if (addr.sin_addr.s_addr == htonl(INADDR_LOOPBACK)) {
+						packet->SrcPort = 0;
+						*(IPXAddressClass *)packet->Address = Session.unknown_2978;
+					} else {
+						packet->SrcPort = ntohs(addr.sin_port);
+						memcpy(packet->Address + 4, &addr.sin_addr.s_addr, 4);
+					}
+					InBuffers.Add(packet);
 				}
 			}
 			return(0);
 
-
-		/*
-		**	Write event. We send ourselves this event when we have more data to send. This
-		**	event will also occur automatically when a packet has finished being sent.
-		*/
 		case FD_WRITE:
-			/*
-			**	Clear any outstanding erros on the socket.
-			*/
-			rc = WSAGETSELECTERROR(lParam);
-			if (rc != 0) {
-				Clear_Socket_Error (Socket);
-				return(0);;
-			}
-
-			/*
-			**	If there are no packets waiting to be sent then bail.
-			*/
-			if ( OutBuffers.Count() == 0 ) return(0);
-			int packetnum = 0;
-
-			/*
-			**	Get a pointer to the packet.
-			*/
-			packet = OutBuffers [ packetnum ];
-
-			/*
-			**	Set up the address structure of the outgoing packet
-			*/
-			addr.sin_family = AF_INET;
-			addr.sin_port = (unsigned short) htons ((unsigned short)WestwoodOnline_PortNumber);
-			memcpy (&addr.sin_addr.s_addr, packet->Address+4, 4);
-
-			/*
-			**	Send it.
-			**	If we get a WSAWOULDBLOCK error it means that Winsock is unable to accept the packet
-			**	at this time. In this case, we clear the socket error and just exit. Winsock will
-			**	send us another WRITE message when it is ready to receive more data.
-			*/
-			rc = sendto ( Socket, ((char const *)packet->Buffer) - sizeof(packet->CRC), packet->BufferLen + sizeof(packet->CRC), 0, (LPSOCKADDR)&addr, sizeof (addr) );
-
-			if (rc == SOCKET_ERROR){
-				if (LAST_ERROR != WSAEWOULDBLOCK) {
-					Clear_Socket_Error (Socket);
-					return(0);
+			if (SelectedSocket != INVALID_SOCKET) {
+				for (int i = 0; i < PortCount; i++) {
+					if (PortSockets[i] == SelectedSocket) {
+						socket = SelectedSocket;
+						DebugString("FD_WRITE - Using socket %d\n", socket);
+					}
 				}
 			}
 
-			/*
-			**	Delete the sent packet.
-			*/
-			OutBuffers.Delete_Index(0);
-			if (packet->IsAllocated) {
-				delete packet;
+			rc = WSAGETSELECTERROR(lParam);
+			if (rc != 0) {
+				DebugString("FD_WRITE - Got error code %d\n", rc);
+				Clear_Socket_Error(socket);
+				return(0);
+			}
+
+			if (alternate) {
+				if (AltOutBuffers.Count() == 0) {
+					DebugString("FD_WRITE - No AltOutBuffers left - nothing to do\n");
+					return(0);
+				}
+				packet = AltOutBuffers[0];
 			} else {
-				packet->InUse = false;
-				OutBuffersUsed--;
+				if (OutBuffers.Count() == 0) {
+					DebugString("FD_WRITE - No OutBuffers left - nothing to do\n");
+					return(0);
+				}
+				packet = OutBuffers[0];
+			}
+
+			memcpy(&addr.sin_addr.s_addr, packet->Address + 4, 4);
+			addr.sin_port = htons(packet->SrcPort);
+			addr.sin_family = AF_INET;
+
+			if (alternate) {
+				if (addr.sin_addr.s_addr != htonl(INADDR_LOOPBACK)) {
+					addr.sin_port = htons((unsigned short)AlternateSendPort);
+					addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+				}
+			} else {
+				if (packet->SrcPort) {
+					addr.sin_port = htons(packet->SrcPort);
+				} else {
+					addr.sin_port = htons((unsigned short)UDPListenPort);
+				}
+				if (!memcmp(packet->Address + 4, (unsigned char *)&Session.unknown_2978 + 4, 4)
+					&& (Session.Players.Count() == 0 || Session.unknown_2978 == Session.Players[0]->Address)) {
+					addr.sin_addr.s_addr = htonl(INADDR_LOOPBACK);
+					addr.sin_port = htons((unsigned short)LoopbackPort);
+				}
+			}
+
+			{
+				unsigned char ip[4];
+				memcpy(ip, &addr.sin_addr.s_addr, 4);
+				if (Is_Reachable(ip, ntohs(addr.sin_port))) {
+					DebugString("sendto %d.%d.%d.%d ; %d\n", ip[0], ip[1], ip[2], ip[3], ntohs(addr.sin_port));
+					rc = sendto(socket, ((char const *)packet->Buffer) - sizeof(packet->CRC), packet->BufferLen + sizeof(packet->CRC), 0, (LPSOCKADDR)&addr, sizeof(addr));
+					if (rc == SOCKET_ERROR) {
+						if (LAST_ERROR != WSAEWOULDBLOCK) {
+							DebugString("sendto returned error %d\n", LAST_ERROR);
+							Clear_Socket_Error(socket);
+							return(0);
+						}
+					}
+				} else {
+					DebugString("FD_WRITE - %d.%d.%d.%d ; %d is unreachable\n", ip[0], ip[1], ip[2], ip[3], ntohs(addr.sin_port));
+				}
+			}
+
+			if (alternate) {
+				AltOutBuffers.Delete_Index(0);
+				if (packet->IsAllocated) {
+					delete packet;
+				} else {
+					packet->InUse = false;
+					AltOutBuffersUsed--;
+				}
+			} else {
+				OutBuffers.Delete_Index(0);
+				if (packet->IsAllocated) {
+					delete packet;
+				} else {
+					packet->InUse = false;
+					OutBuffersUsed--;
+				}
 			}
 			return(0);
 	}
 
 	return(0);
 }
+
+
+/// <summary>
+/// RA2
+/// </summary>
+ProtocolEnum UDPInterfaceClass::Get_Protocol (void)
+{
+	return(PROTOCOL_UDP);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int UDPInterfaceClass::Protocol_Event_Message (SOCKET socketnum)
+{
+	if (socketnum == Socket || socketnum == INVALID_SOCKET) {
+		return(WM_UDPASYNCEVENT);
+	}
+	return(socketnum == AlternateSocket ? WM_UDPASYNCEVENT + 1 : 0);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int UDPInterfaceClass::Get_Num_Local_Addresses (void)
+{
+	return(LocalAddresses.Count());
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+unsigned char *UDPInterfaceClass::Get_Local_Address (int index)
+{
+	return(LocalAddresses[index]);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+unsigned short UDPInterfaceClass::Get_Port (void)
+{
+	return(Port);
+}
+

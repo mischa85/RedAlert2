@@ -99,9 +99,9 @@ class WinsockInterfaceClass {
 
 		virtual void Close_Socket(void);
 
-		virtual int  Read(void *buffer, int &buffer_len, void *address, int &address_len);
-		virtual void WriteTo (void *buffer, int buffer_len, void *address, int address_len);
-		virtual void Broadcast (void *buffer, int buffer_len);
+		virtual int  Read(void *buffer, int &buffer_len, void *address, int &address_len, unsigned short &port); // RA2: port
+		virtual void WriteTo (void *buffer, int buffer_len, void *address, int address_len, bool alternate, bool flag, unsigned short port); // RA2: alternate socket, flag and port
+		virtual void Broadcast (void *buffer, int buffer_len, bool alternate); // RA2: alternate socket
 
 		virtual void Discard_In_Buffers (void);
 		virtual void Discard_Out_Buffers (void);
@@ -111,16 +111,16 @@ class WinsockInterfaceClass {
 
 		virtual void Clear_Socket_Error(SOCKET socket);
 
-		virtual bool Set_Socket_Options ( void );
+		virtual bool Set_Socket_Options ( SOCKET socket = INVALID_SOCKET ); // RA2: socket
 
-		virtual void Set_Broadcast_Address ( void * ) {};
+		virtual void Set_Broadcast_Address ( char const * address, unsigned short port ) {}; // RA2: address and port
 		virtual void Clear_Broadcast_Addresses(void) {};
 
 		virtual ProtocolEnum Get_Protocol (void) {
 			return(PROTOCOL_NONE);
 		};
 
-		virtual int Protocol_Event_Message (void) {
+		virtual int Protocol_Event_Message (SOCKET) { // RA2: socket
 			return(0);
 		};
 
@@ -176,7 +176,7 @@ class WinsockInterfaceClass {
 		/*
 		**	Packet buffer allocation.
 		*/
-		void *Get_New_Out_Buffer(void);
+		void *Get_New_Out_Buffer(bool alternate); // RA2: alternate
 		void *Get_New_In_Buffer(void);
 
 		/*
@@ -242,3 +242,5 @@ class WinsockInterfaceClass {
 		 */
 		int NetCard;
 };
+
+int __cdecl Get_Packet_Loss_Percent(void); // RA2: the percentage of received packets to drop on purpose
