@@ -9,13 +9,11 @@
 #include <string.h>
 #include <stdlib.h>
 
-// FUNCTION: GAMEMD 0x004011B0
 AudioIDXEntry * __fastcall AudioIDXData::GetEntry(int index)
 {
 	return &Samples[index];
 }
 
-// FUNCTION: GAMEMD 0x004011C0
 AudioIDXData * __fastcall AudioIDXData::Create(char const * filename, char const * path)
 {
 	AudioIDXData * idx;
@@ -118,7 +116,6 @@ fail:
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00401580
 void AudioIDXData::Destroy(void)
 {
 	if (BagFile) {
@@ -133,7 +130,6 @@ void AudioIDXData::Destroy(void)
 	delete this;
 }
 
-// FUNCTION: GAMEMD 0x004015C0
 int __fastcall AudioIDXData::FindSampleIndex(char const * name)
 {
 	AudioIDXEntry * found = (AudioIDXEntry *)bsearch(name, Samples, SampleCount, sizeof(AudioIDXEntry), (int (__cdecl *)(void const *, void const *))stricmp);
@@ -144,7 +140,6 @@ int __fastcall AudioIDXData::FindSampleIndex(char const * name)
 	return -1;
 }
 
-// FUNCTION: GAMEMD 0x00401600
 char const * __fastcall AudioIDXData::GetSampleName(int index)
 {
 	if (index < 0 || index >= SampleCount) {
@@ -153,7 +148,6 @@ char const * __fastcall AudioIDXData::GetSampleName(int index)
 	return Samples[index].Name;
 }
 
-// FUNCTION: GAMEMD 0x00401620
 int __fastcall AudioIDXData::GetSampleSize(int index)
 {
 	if (index < 0 || index >= SampleCount) {
@@ -162,7 +156,6 @@ int __fastcall AudioIDXData::GetSampleSize(int index)
 	return Samples[index].Size;
 }
 
-// FUNCTION: GAMEMD 0x00401640
 AudioFormat * __fastcall AudioIDXData::GetSampleInformation(int index, AudioFormat * format)
 {
 	AudioIDXEntry * entry = &Samples[index];
@@ -182,7 +175,6 @@ AudioFormat * __fastcall AudioIDXData::GetSampleInformation(int index, AudioForm
 	return format;
 }
 
-// FUNCTION: GAMEMD 0x004016B0
 void __fastcall AudioIDXData::SetSampleInformation(int index, AudioFormat * format)
 {
 	AudioIDXEntry * entry = &Samples[index];
@@ -198,7 +190,6 @@ void __fastcall AudioIDXData::SetSampleInformation(int index, AudioFormat * form
 	}
 }
 
-// FUNCTION: GAMEMD 0x004016F0
 int __fastcall AudioIDXData::OpenSample(int index)
 {
 	AudioIDXEntry * entry = &Samples[index];
@@ -253,7 +244,6 @@ int __fastcall AudioIDXData::OpenSample(int index)
 	return ok;
 }
 
-// FUNCTION: GAMEMD 0x004018C0
 int __fastcall AudioIDXData::ReadSample(void * buffer, int bytes)
 {
 	int done;
@@ -272,7 +262,6 @@ int __fastcall AudioIDXData::ReadSample(void * buffer, int bytes)
 	return done;
 }
 
-// FUNCTION: GAMEMD 0x00401910
 void AudioIDXData::ClearCurrentSample(void)
 {
 	CurrentSampleFile = 0;
@@ -282,14 +271,6 @@ void AudioIDXData::ClearCurrentSample(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00401940
 // RawFileClass::File_Name
 
-// SYNTHETIC: GAMEMD 0x00401950
-// ??_GCDFileClass@@UAEPAXI@Z
-
-// FUNCTION: GAMEMD 0x00401980
 // CCFileClass::Open
-
-// SYNTHETIC: GAMEMD 0x004019A0
-// ??_GCCFileClass@@UAEPAXI@Z
