@@ -459,25 +459,9 @@ unk_005A74B0,0x005A74B0,0x005A7540,unknown,code not assigned to a module
 mpmath,0x005A7540,0x005AA380,tibsun,"functions compiled from src/mpmath.cpp, without gaps; matched except ?XMP_Small_Divisors_Test@@YI_NPBIH@Z; one placed by the gap; ?XMP_Fetch_Prime_Table@@YIPBGXZ not placed; ?XMP_Is_Prime@@YI_NPBIH@Z not placed"
 unk_005AA380,0x005AA380,0x005ABF20,unknown,code not assigned to a module
 mpu,0x005ABF20,0x005AC140,tibsun,"functions compiled from src/mpu.cpp, matched, without gaps"
-unk_005AC140,0x005AC140,0x005AC810,unknown,code not assigned to a module
-unk_005AC810,0x005AC810,0x005AC850,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005AC850,0x005AC850,0x005ACD00,unknown,code not assigned to a module
-unk_005ACD00,0x005ACD00,0x005ACDB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005ACDB0,0x005ACDB0,0x005AD9D0,unknown,code not assigned to a module
-unk_005AD9D0,0x005AD9D0,0x005ADA00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005ADA00,0x005ADA00,0x005ADF90,unknown,code not assigned to a module
-unk_005ADF90,0x005ADF90,0x005ADFE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005ADFE0,0x005ADFE0,0x005AE230,unknown,code not assigned to a module
-unk_005AE230,0x005AE230,0x005AE390,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005AE390,0x005AE390,0x005AE3E0,unknown,code not assigned to a module
-unk_005AE3E0,0x005AE3E0,0x005AE460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005AE460,0x005AE460,0x005AF400,unknown,code not assigned to a module
-unk_005AF400,0x005AF400,0x005AF450,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005AF450,0x005AF450,0x005AF8F0,unknown,code not assigned to a module
-unk_005AF8F0,0x005AF8F0,0x005AF910,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005AF910,0x005AF910,0x005AFBC0,unknown,code not assigned to a module
-unk_005AFBC0,0x005AFBC0,0x005AFBF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005AFBF0,0x005AFBF0,0x005AFF10,unknown,code not assigned to a module
+unk_005AC140,0x005AC140,0x005AC560,unknown,code not assigned to a module
+msanim,0x005AC560,0x005AFC00,tibsun,"functions compiled from src/msanim.cpp, matched, without gaps; four placed by the gap"
+unk_005AFC00,0x005AFC00,0x005AFF10,unknown,code not assigned to a module
 mschoice,0x005AFF10,0x005B16C0,tibsun,"functions compiled from src/mschoice.cpp, matched, without gaps; ??1MSSfxEntry@@QAE@XZ not placed; ?Play@MSSfxEntry@@QAEXXZ not placed"
 unk_005B16C0,0x005B16C0,0x005B3F40,unknown,code not assigned to a module
 msfont,0x005B3F40,0x005B4670,tibsun,"functions compiled from src/msfont.cpp, matched, without gaps"
