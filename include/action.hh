@@ -35,20 +35,21 @@ enum ActionType {
 	ACTION_TOGGLE_SELECT,	// Toggles select state of the object.
 	ACTION_CAPTURE,			// The unit will try to capture the object.
 	ACTION_REPAIR,			// The target object should be repaired.
+	ACTION_EATEN,			// RA2
 	ACTION_SELL,			// The target building should be sold back.
 	ACTION_SELL_UNIT,		// The target unit should be sold back.
 	ACTION_NO_SELL,  		// No sell or no repair.
 	ACTION_NO_REPAIR,		// No sell or no repair.
 	ACTION_SABOTAGE,		// The unit will try to sabotage/destroy the object.
 	ACTION_TOTE,
-	ACTION_PARA_INFANTRY,	// Parachute infantry strike.
-	ACTION_PARA_SABOTEUR,	// Parachute saboteur strike.
+	ACTION_DONT_USE2,		// RA2: unused
+	ACTION_DONT_USE3,		// RA2: unused
 	ACTION_NUKE_BOMB,		// That target object should be blasted.
-	ACTION_AIR_STRIKE,		// That target object should be blasted.
-	ACTION_CHRONOSPHERE,	// That target object should be teleported.
-	ACTION_CHRONO2,			// Teleport it to the given coordinates now.
-	ACTION_IRON_CURTAIN,	// That target object should be invulnerable.
-	ACTION_SPY_MISSION,		// Photo recon mission.
+	ACTION_DONT_USE4,		// RA2: unused
+	ACTION_DONT_USE5,		// RA2: unused
+	ACTION_DONT_USE6,		// RA2: unused
+	ACTION_DONT_USE7,		// RA2: unused
+	ACTION_DONT_USE8,		// RA2: unused
 	ACTION_GUARD_AREA,		// Guard the area/object clicked on.
 	ACTION_HEAL,			// Heal the infantryman clicked on.
 	ACTION_DAMAGE,			// Enter and damage building.
@@ -60,10 +61,11 @@ enum ActionType {
 	ACTION_NO_TOGGLE_POWER,
 	ACTION_ENTER_TUNNEL,
 	ACTION_NO_ENTER_TUNNEL,
-	ACTION_EMPULSE,
-	ACTION_ION_CANNON,
-	ACTION_EMPULSE_RANGE,
-	ACTION_CHEM_BOMB,
+	ACTION_IRON_CURTAIN,	// RA2: that target object should be invulnerable.
+	ACTION_LIGHTNING_STORM,	// RA2
+	ACTION_CHRONOSPHERE,	// RA2: that target object should be teleported.
+	ACTION_CHRONO_WARP,		// RA2: teleport it to the given coordinates now.
+	ACTION_PARA_DROP,		// RA2
 	ACTION_PLACE_WAYPOINT,
 	ACTION_NO_PLACE_WAYPOINT,
 	ACTION_ENTER_WAYPOINT_MODE,
@@ -74,9 +76,16 @@ enum ActionType {
 	ACTION_ATTACK_WAYPOINT,
 	ACTION_ENTER_WAYPOINT,
 	ACTION_PATROL_WAYPOINT,
-	ACTION_DROP_POD,
-	ACTION_RALLY_TO_POINT,
+	ACTION_AREA_ATTACK,		// RA2
+	ACTION_IVAN_BOMB,		// RA2
+	ACTION_NO_IVAN_BOMB,	// RA2
+	ACTION_DETONATE,		// RA2
+	ACTION_DETONATE_ALL,	// RA2
+	ACTION_DISARM_BOMB,		// RA2
+	ACTION_SELECT_NODE,		// RA2
 	ACTION_ATTACK_SUPPORT,
+	ACTION_PLACE_BEACON,	// RA2
+	ACTION_SELECT_BEACON,	// RA2
 
 	ACTION_COUNT
 };
