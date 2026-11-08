@@ -26,7 +26,8 @@ template<class T> class TRect;
 typedef TRect<int> Rect;
 
 int Format_Window_String(char * string, FontClass const * font, int maxlinelen, int & width, int & height);
-Point2D Conquer_Clip_Text_Print(char const *, Surface & surface, Rect const &rect, Point2D const & pt, ColorScheme * fore, int back=TBLACK, TextPrintType flag=TextPrintType(TPF_8POINT|TPF_DROPSHADOW), int width=-1, int const * tabs=0);
+Point2D Conquer_Clip_Text_Print(wchar_t const *, // RA2: wide
+ Surface & surface, Rect const &rect, Point2D const & pt, ColorScheme * fore, int back=TBLACK, TextPrintType flag=TextPrintType(TPF_8POINT|TPF_DROPSHADOW), int width=-1, int const * tabs=0);
 void Draw_Box(Rect const & rect, BoxStyleEnum up, bool filled);
 Point2D __cdecl Fancy_Text_Print(char const * text, Surface & surface, Rect const & rect, Point2D const &pt, ColorScheme * fore, int back, TextPrintType flag, ...);
 Point2D __cdecl Fancy_Text_Print(wchar_t const * text, Surface & surface, Rect const & rect, Point2D const &pt, ColorScheme * fore, int back, TextPrintType flag, ...); // RA2: wide text

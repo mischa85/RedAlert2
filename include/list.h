@@ -62,24 +62,24 @@ class ListClass : public ControlClass
 		ListClass(ListClass const & list);
 		virtual ~ListClass(void) override;
 
-		virtual int Add_Item(char const * text);
-		// RA2: no Add_Item(int text); the vtable goes from Add_Item(char const *) to Add_Scroll_Bar
+		virtual int Add_Item(wchar_t const * text); // RA2: wide
+		// RA2: no Add_Item(int text); the vtable goes from Add_Item(wchar_t const *) to Add_Scroll_Bar
 		virtual int Add_Scroll_Bar(void);
 		virtual void Bump(int up);
 		virtual int Count(void) const {return(List.Count());};
 		virtual int Current_Index(void) const;
-		virtual char const * Current_Item(void) const;
+		virtual wchar_t const * Current_Item(void) const;
 		virtual int Draw_Me(int forced) override;
-		virtual char const * Get_Item(int index) const;
+		virtual wchar_t const * Get_Item(int index) const;
 		virtual int Step_Selected_Index(int forward);
 		virtual void Flag_To_Redraw(void) override;
 
 		virtual void Peer_To_Peer(unsigned flags, KeyNumType & key, ControlClass & whom) override;
-		virtual void Remove_Item(char const * text);
+		virtual void Remove_Item(wchar_t const * text);
 		virtual void Remove_Item(int);
 		virtual int  Remove_Scroll_Bar(void);
 		virtual void Set_Selected_Index(int index);
-		virtual void Set_Selected_Index(char const * text);
+		virtual void Set_Selected_Index(wchar_t const * text);
 		virtual void Set_Tabs(int const * tabs);
 		virtual int  Set_View_Index(int index);
 		virtual void Step(int up);
@@ -115,7 +115,7 @@ class ListClass : public ControlClass
 		**	The actual list of text pointers is maintained by this list manager. The pointers
 		**	are stored in EMS. The text that is pointed to may also be in EMS.
 		*/
-		DynamicVectorClass<char const *> List;
+		DynamicVectorClass<wchar_t const *> List;
 
 		/*
 		**	This is the total pixel height of a standard line of text. This is greatly

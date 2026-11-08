@@ -118,7 +118,7 @@ ColorListClass::~ColorListClass(void)
  * HISTORY:                                                                *
  *   04/19/1995 BRR : Created.                                             *
  *=========================================================================*/
-int ColorListClass::Add_Item(char const * text, int color)
+int ColorListClass::Add_Item(wchar_t const * text, int color) // RA2: wide
 {
 	Colors.Add(color);
 	return(BASECLASS::Add_Item(text));
@@ -142,7 +142,7 @@ int ColorListClass::Add_Item(char const * text, int color)
  * HISTORY:                                                                *
  *   04/19/1995 BRR : Created.                                             *
  *=========================================================================*/
-void ColorListClass::Remove_Item(char const * text)
+void ColorListClass::Remove_Item(wchar_t const * text) // RA2: wide
 {
 	int index = List.ID(text);
 	if (index != -1) {

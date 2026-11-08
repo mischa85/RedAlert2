@@ -124,10 +124,10 @@ CheckListClass::~CheckListClass(void)
  * HISTORY:                                                                                    *
  *   02/14/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-int CheckListClass::Add_Item(char const * text)
+int CheckListClass::Add_Item(wchar_t const * text) // RA2: wide
 {
 	CheckObject * obj = new CheckObject(text, false);
-	return(BASECLASS::Add_Item((char const *)obj));
+	return(BASECLASS::Add_Item((wchar_t const *)obj));
 }
 
 
@@ -139,7 +139,7 @@ int CheckListClass::Add_Item(char const * text)
 /// </summary>
 /// <returns>Returns with the text pointer of the selected entry. If there is no selection,
 /// then NULL is returned.</returns>
-char const * CheckListClass::Current_Item(void) const
+wchar_t const * CheckListClass::Current_Item(void) const // RA2: wide
 {
 	CheckObject * obj = (CheckObject *)BASECLASS::Current_Item();
 	if (obj) {
@@ -164,7 +164,7 @@ char const * CheckListClass::Current_Item(void) const
  * HISTORY:                                                                                    *
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-char const * CheckListClass::Get_Item(int index) const
+wchar_t const * CheckListClass::Get_Item(int index) const // RA2: wide
 {
 	CheckObject * obj = (CheckObject *)BASECLASS::Get_Item(index);
 	if (obj) {
@@ -189,11 +189,11 @@ char const * CheckListClass::Get_Item(int index) const
  * HISTORY:                                                                                    *
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-void CheckListClass::Remove_Item(char const * text)
+void CheckListClass::Remove_Item(wchar_t const * text) // RA2: wide
 {
 	for (int index = 0; index < Count(); index++) {
 		CheckObject * obj = (CheckObject *)BASECLASS::Get_Item(index);
-		if (obj && stricmp(obj->Text, text) == 0) {
+		if (obj && wcsicmp(obj->Text, text) == 0) {
 			BASECLASS::Remove_Item(index);
 			delete obj;
 			break;
@@ -218,11 +218,11 @@ void CheckListClass::Remove_Item(char const * text)
  * HISTORY:                                                                                    *
  *   07/06/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-void CheckListClass::Set_Selected_Index(char const * text)
+void CheckListClass::Set_Selected_Index(wchar_t const * text) // RA2: wide
 {
 	for (int index = 0; index < Count(); index++) {
 		CheckObject * obj = (CheckObject *)BASECLASS::Get_Item(index);
-		if (obj && stricmp(obj->Text, text) == 0) {
+		if (obj && wcsicmp(obj->Text, text) == 0) {
 			Set_Selected_Index(index);
 			break;
 		}
@@ -352,7 +352,7 @@ void CheckListClass::Draw_Entry(int index, int x, int y, int width, int selected
 	CheckObject * obj = (CheckObject *)BASECLASS::Get_Item(index);
 
 	if (obj) {
-		char buffer[100] = "";
+		wchar_t buffer[100] = L""; // RA2: wide
 
 		if (obj->IsChecked) {
 			buffer[0] = CHECK_CHAR;
@@ -360,7 +360,7 @@ void CheckListClass::Draw_Entry(int index, int x, int y, int width, int selected
 			buffer[0] = UNCHECK_CHAR;
 		}
 		buffer[1] = ' ';
-		sprintf(&buffer[2], obj->Text);
+		swprintf(&buffer[2], obj->Text);
 
 		TextPrintType flags = TextFlags;
 		int scheme = GadgetClass::Get_Color_Scheme();

@@ -62,14 +62,14 @@ class ColorListClass : public ListClass
 		ColorListClass(int id, int x, int y, int w, int h, TextPrintType flags, ShapeSet const * up, ShapeSet const * down);
 		virtual ~ColorListClass(void) override;
 
-		virtual int  Add_Item(char const * text, int color = 0);
+		virtual int  Add_Item(wchar_t const * text, int color = 0);
 		// RA2: no Add_Item(int text, int color); the vtable has no slot for it
-		virtual void Remove_Item(char const * text) override;
+		virtual void Remove_Item(wchar_t const * text) override;
 		virtual void Remove_Item(int) override;
 
 		virtual void Set_Selected_Style(SelectStyleType style, int color = 0);
 
-		virtual int Add_Item(char const * text) override { return(Add_Item(text, 0)); }
+		virtual int Add_Item(wchar_t const * text) override { return(Add_Item(text, 0)); }
 		// RA2: no Add_Item(int text) override; ListClass has none
 
 		/*
