@@ -9,7 +9,9 @@ unk_00403CE0,0x00403CE0,0x00407030,unknown,code not assigned to a module
 audlevel,0x00407030,0x004071F0,source,"functions compiled from src/audlevel.cpp, matched, without gaps"
 audlists,0x004071F0,0x00407400,source,"functions compiled from src/audlists.cpp, matched, without gaps; three placed by the gap"
 audmpool,0x00407400,0x00407480,source,"functions compiled from src/audmpool.cpp, matched, without gaps; one placed by the gap"
-unk_00407480,0x00407480,0x00409280,unknown,code not assigned to a module
+unk_00407480,0x00407480,0x00408380,unknown,code not assigned to a module
+audsrc,0x00408380,0x00408530,source,"functions compiled from src/audsrc.cpp, matched, without gaps; two placed by the gap; ?AudioFormatReadWaveFile@@YIHPAVFileClass@@PAUAudioFormat@@PAH@Z not placed"
+unk_00408530,0x00408530,0x00409280,unknown,code not assigned to a module
 audtimer,0x00409280,0x00409390,source,"functions compiled from src/audtimer.cpp, matched, without gaps"
 unk_00409390,0x00409390,0x0040D7D0,unknown,code not assigned to a module
 unk_0040D7D0,0x0040D7D0,0x0040D810,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
