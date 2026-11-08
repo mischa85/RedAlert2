@@ -19,7 +19,7 @@ class rc_ptr_base
 		virtual ~rc_ptr_base(void);
 		rc_ptr_base(rc_object * ptr);
 		rc_ptr_base(rc_ptr_base const & that);
-		void FUN_0065D480(void * ptr);
+		void Assign(void * ptr); // RA2: points at a new object, taking a reference to it and dropping the old one
 
 		rc_object * Ptr;
 };
@@ -29,12 +29,12 @@ class rc_ptr : public rc_ptr_base
 {
 	public:
 		rc_ptr(void) {}
-		rc_ptr(T * ptr) { FUN_0065D480(ptr); }
-		template<class U> rc_ptr(rc_ptr<U> const & that) { FUN_0065D480(that.Ptr); }
-		rc_ptr(rc_ptr const & that) { FUN_0065D480(that.Ptr); }
+		rc_ptr(T * ptr) { Assign(ptr); }
+		template<class U> rc_ptr(rc_ptr<U> const & that) { Assign(that.Ptr); }
+		rc_ptr(rc_ptr const & that) { Assign(that.Ptr); }
 		virtual ~rc_ptr(void) {}
-		rc_ptr & operator=(rc_ptr const & that) { FUN_0065D480(that.Ptr); return(*this); }
-		rc_ptr & operator=(T * ptr) { FUN_0065D480(ptr); return(*this); }
+		rc_ptr & operator=(rc_ptr const & that) { Assign(that.Ptr); return(*this); }
+		rc_ptr & operator=(T * ptr) { Assign(ptr); return(*this); }
 		T * Get(void) const { return((T *)Ptr); }
 		T & operator*(void) const { return(*Get()); }
 		T * operator->(void) const { return(Ptr ? (T *)Ptr : NULL); }
