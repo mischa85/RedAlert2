@@ -86,11 +86,21 @@ class MissionClass : public ObjectClass
 
 		void Shorten_Mission_Timer(void) {Timer = 0;}
 		virtual MissionType Get_Mission(void) const override;
-		virtual void  Assign_Mission(MissionType mission) override;
-		virtual bool Commence(void);
-		virtual bool Ready_To_Commence(void) {return(true);};
 		virtual void AI(void) override;
 		virtual void Compute_CRC(CRCEngine &) const override;
+
+		/*
+		**	RA2: the mission virtuals come in this order; QueueMission takes the place of the
+		**	Assign_Mission override and can start the queued mission at once, and
+		**	Ready_To_Commence comes after Has_Suspended_Mission.
+		*/
+		virtual void QueueMission(MissionType mission, bool start);
+		virtual bool Commence(void);
+		virtual void Set_Mission(MissionType mission);
+		virtual void  Override_Mission(MissionType mission, AbstractClass *, AbstractClass *);
+		virtual bool Restore_Mission(void);
+		virtual bool Has_Suspended_Mission(void) const;
+		virtual bool Ready_To_Commence(void) {return(true);};
 
 		/*
 		**	Support functions.
@@ -100,6 +110,7 @@ class MissionClass : public ObjectClass
 		virtual int Do_MISSION_AMBUSH(void);
 		virtual int Do_MISSION_ATTACK(void);
 		virtual int Do_MISSION_CAPTURE(void);
+		virtual int Do_MISSION_EATEN(void); // RA2
 		virtual int Do_MISSION_GUARD(void);
 		virtual int Do_MISSION_GUARD_AREA(void);
 		virtual int Do_MISSION_HARVEST(void);
@@ -117,16 +128,15 @@ class MissionClass : public ObjectClass
 		virtual int Do_MISSION_OPEN(void);
 		virtual int Do_MISSION_RESCUE(void);
 		virtual int Do_MISSION_PATROL(void);
+		virtual int Do_MISSION_PARADROP_APPROACH(void); // RA2
+		virtual int Do_MISSION_PARADROP_OVERFLY(void); // RA2
+		virtual int Do_MISSION_WAIT(void); // RA2
 
-		virtual void Set_Mission(MissionType mission);
 		static bool Is_Recruitable_Mission(MissionType mission);
 
 		static char const *  Mission_Name(MissionType order);
 		static MissionType  Mission_From_Name(char const *name);
-		virtual void  Override_Mission(MissionType mission, AbstractClass *, AbstractClass *);
-		virtual bool Restore_Mission(void);
 		MissionControlClass const & Current_Mission_Control(void) const;
-		virtual bool Has_Suspended_Mission(void) const;
 
 	private:
 
