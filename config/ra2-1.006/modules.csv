@@ -808,9 +808,9 @@ unk_0071C320,0x0071C320,0x0071D660,unknown,code not assigned to a module
 unk_0071D660,0x0071D660,0x0071D6E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0071D6E0,0x0071D6E0,0x0071DB20,unknown,code not assigned to a module
 vqoption,0x0071DB20,0x0071DC10,tibsun,"functions compiled from src/vqoption.cpp, matched, without gaps"
-unk_0071DC10,0x0071DC10,0x0071FB10,unknown,code not assigned to a module
-unk_0071FB10,0x0071FB10,0x0071FBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0071FBA0,0x0071FBA0,0x007200C0,unknown,code not assigned to a module
+unk_0071DC10,0x0071DC10,0x0071DE00,unknown,code not assigned to a module
+walk,0x0071DE00,0x0071FDE0,tibsun,"functions compiled from src/walk.cpp, without gaps; matched except ?Movement_AI@WalkLocomotionClass@@QAEX_N@Z and ?Mark_Head_To@WalkLocomotionClass@@QAE_NABVCoord@@@Z; seven placed by the gap"
+unk_0071FDE0,0x0071FDE0,0x007200C0,unknown,code not assigned to a module
 warhead,0x007200C0,0x00721090,tibsun,"functions compiled from src/warhead.cpp, matched, without gaps; two placed by the gap"
 unk_00721090,0x00721090,0x00721BF0,unknown,code not assigned to a module
 unk_00721BF0,0x00721BF0,0x00721CC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
