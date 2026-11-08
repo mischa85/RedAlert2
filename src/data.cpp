@@ -37,6 +37,11 @@
 
 #include "data.h"
 
+#include "_mixfile.h"
+#include "ccfile.h"
+#include "mixfile.h"
+#include "wstring.h"
+
 #include <new.h>
 
 HINSTANCE LanguageResources;
@@ -69,6 +74,59 @@ void * Load_Alloc_Data(FileClass & file)
 			file.Read(ptr, size);
 		}
 	}
+	return(ptr);
+}
+
+
+/// <summary>
+/// RA2: fetches a whole file into memory by name.
+/// A file held in a mixfile is used where it lies; any other file is read into a new buffer.
+/// </summary>
+/// <param name="name">The name of the file to load.</param>
+/// <param name="allocated">Set when the data was read into a new buffer that the caller must free.</param>
+/// <returns>Returns with a pointer to the file's data, or NULL if it could not be found.</returns>
+void * Load_Alloc_Data(char const * name, bool & allocated)
+{
+	allocated = false;
+	void * loaded = (void *)MFCD::Retrieve(name);
+	if (loaded != NULL) return(loaded);
+
+	CCFileClass file(name);
+	FileClass * stream = &file;
+	void * ptr = NULL;
+	if (stream->Is_Available()) {
+		int size = stream->Size();
+		ptr = new char[size];
+		if (ptr != NULL) {
+			stream->Read(ptr, size);
+		}
+	}
+	allocated = (ptr != NULL);
+	return(ptr);
+}
+
+
+/// <summary>
+/// RA2: fetches a whole file into memory by name, as Load_Alloc_Data above.
+/// </summary>
+void * Load_Alloc_Data(Wstring const & name, bool * allocated)
+{
+	char const * filename = name.get();
+	*allocated = false;
+	void * found = (void *)MFCD::Retrieve(filename);
+	if (found != NULL) return(found);
+
+	CCFileClass file(filename);
+	FileClass * stream = &file;
+	void * ptr = NULL;
+	if (stream->Is_Available()) {
+		int size = stream->Size();
+		ptr = new char[size];
+		if (ptr != NULL) {
+			stream->Read(ptr, size);
+		}
+	}
+	*allocated = (ptr != NULL);
 	return(ptr);
 }
 
@@ -174,15 +232,6 @@ int Load_Uncompress(FileClass & file, Buffer & uncomp_buff, Buffer & dest_buff, 
 }
 
 
-struct SRecord {
-	int ID;						// ID number of the string resource.
-	int TimeStamp;				// 'Time' that this string was last requested.
-	char String[2048];			// Copy of string resource.
-
-	SRecord(void) : ID(-1), TimeStamp(-1) {}
-};
-
-
 /***********************************************************************************************
  * Fetch_String -- Fetches a string resource.                                                  *
  *                                                                                             *
@@ -199,62 +248,10 @@ struct SRecord {
  *=============================================================================================*/
 char const * Fetch_String(int id)
 {
-	static SRecord _buffers[128];
-	static int _time = 0;
-
 	/*
-	**	Determine if the string ID requested is valid. If not then return an empty string pointer.
+	**	RA2: the game's text comes from the string table; there are no string resources.
 	*/
-	if (id == -1 || id == TXT_NONE) return("");
-
-	/*
-	**	Adjust the 'time stamp' tracking value. This is an artificial value used merely to track
-	**	the relative age of the strings requested.
-	*/
-	_time = _time+1;
-
-	/*
-	**	Check to see if the requested string has already been fetched into a buffer. If so, then
-	**	return a pointer to that string (update the time stamp as well).
-	*/
-	for (int index = 0; index < ARRAY_SIZE(_buffers); index++) {
-		if (_buffers[index].ID == id) {
-			_buffers[index].TimeStamp = _time;
-			return(_buffers[index].String);
-		}
-	}
-
-	/*
-	**	Find a suitable buffer to hold the string to be fetched. The buffer should either be
-	**	empty or have the oldest fetched string.
-	*/
-	int oldest = -1;
-	int oldtime = -1;
-	for (int text = 0; text < ARRAY_SIZE(_buffers); text++) {
-		if (oldest == -1 || oldtime > _buffers[text].TimeStamp) {
-			oldest = text;
-			oldtime = _buffers[text].TimeStamp;
-			if (oldtime == -1 || _buffers[text].ID == -1) break;
-		}
-	}
-
-	/*
-	**	A suitable buffer has been found so fetch the string resource and then return a pointer
-	**	to the string.
-	*/
-	char * stringptr = _buffers[oldest].String;
-	_buffers[oldest].ID = id;
-	_buffers[oldest].TimeStamp = _time;
-
-	if (LanguageResources == NULL) {
-		Init_Language_Resources(false);
-	}
-
-	if (LoadString(LanguageResources, id, stringptr, sizeof(_buffers[oldest].String)) == 0) {
-		return("");
-	}
-	stringptr[sizeof(_buffers[oldest].String)-1] = '\0';
-	return(stringptr);
+	return(NULL);
 }
 
 
@@ -341,26 +338,9 @@ void * Hires_Load(FileClass & file)
 /// <returns>bool; Are the language resources available?</returns>
 bool Init_Language_Resources(bool show_error)
 {
-	if (LanguageResources == NULL) {
-
-		LanguageResources = LoadLibrary("Language.dll");
-
-		if (LanguageResources == NULL) {
-
-			if (show_error == true) {
-				MessageBox(NULL,
-					"Unable to initialize Language.dll, please reinstall Tiberian Sun.\n"
-					"Keine Initialisierung von Language.DLL m\xF6glich. Bitte installieren Sie Tiberian Sun erneut.\n"
-					"Initialisation de Language.DLL impossible. Veuillez r\xE9installer Tiberian Sun.",
-					"Tiberian Sun",
-					MB_ICONERROR);
-
-			}
-
-			return(false);
-		}
-	}
-
+	/*
+	**	RA2: there is no language resource library to load.
+	*/
 	return(true);
 }
 
@@ -376,58 +356,8 @@ bool Init_Language_Resources(bool show_error)
 /// <remarks>Be sure that the destination buffer is big enough to hold the composed text.</remarks>
 void Get_Language_Version(char *version_string)
 {
-	INT dwSize;
-	LPVOID pFileInfo;
-	UINT puInfoLen;
-	LPCTSTR pcData;
-	DWORD dwHandle;
-
-	struct LANGANDCODEPAGE {
-		WORD wLanguage;
-		WORD wCodePage;
-	} *pvInfo;
-
-	char szQuery[128];
-	char szFile[MAX_PATH];
-
-	if (version_string != NULL) {
-		version_string[0] = '\0';
-
-		if (LanguageResources != NULL && GetModuleFileName(LanguageResources, szFile, sizeof(szFile)) > 0) {
-
-			dwHandle = 1;
-			dwSize = GetFileVersionInfoSize(szFile, &dwHandle);
-
-			if (dwSize > 0) {
-				pFileInfo = new char[dwSize];
-
-				if (pFileInfo != NULL) {
-					if (GetFileVersionInfo(szFile, dwHandle, dwSize, pFileInfo)) {
-
-						VerQueryValue(pFileInfo, TEXT("\\VarFileInfo\\Translation"), (LPVOID *)&pvInfo, &puInfoLen);
-
-						if (puInfoLen > 0) {
-
-							sprintf(szQuery, TEXT("\\StringFileInfo\\%04X%04X\\InternalName"), pvInfo->wLanguage, pvInfo->wCodePage);
-							VerQueryValue(pFileInfo, szQuery, (LPVOID *)&pcData, &puInfoLen);
-
-							if (puInfoLen > 0) {
-
-								sprintf(version_string, "Language: %s ", pcData);
-								sprintf(szQuery, TEXT("\\StringFileInfo\\%04X%04X\\FileVersion"), pvInfo->wLanguage, pvInfo->wCodePage);
-
-								VerQueryValue(pFileInfo, szQuery, (LPVOID *)&pcData, &puInfoLen);
-
-								if (puInfoLen > 0) {
-									strcat(version_string, pcData);
-								}
-							}
-						}
-					}
-
-					delete [] pFileInfo;
-				}
-			}
-		}
-	}
+	/*
+	**	RA2: there is no language resource library to report the version of.
+	*/
+	version_string[0] = '\0';
 }

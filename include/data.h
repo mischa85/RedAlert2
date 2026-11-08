@@ -41,6 +41,9 @@
 
 int Load_Picture(FileClass &file, Buffer & scratchbuf, Buffer & destbuf, unsigned char * palette, PicturePlaneType format);
 void * Load_Alloc_Data(FileClass & file);
+void * Load_Alloc_Data(char const * name, bool & allocated); // RA2
+class Wstring;
+void * Load_Alloc_Data(Wstring const & name, bool * allocated); // RA2
 int Load_Uncompress(FileClass & file, Buffer & uncomp_buff, Buffer & dest_buff, void * reserved_data);
 char const * Fetch_String(int id);
 void const * Fetch_Resource(LPCSTR resname, LPCSTR restype);
