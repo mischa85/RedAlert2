@@ -308,5 +308,10 @@ class ConnectionClass
 		static char const * Commands[PACKET_COUNT];
 };
 
+/*
+**	RA2: the connection to the packet router of an internet game.
+*/
+extern ConnectionClass * PacketRouterConnection;
+
 
 /**************************** end of connect.h *****************************/
