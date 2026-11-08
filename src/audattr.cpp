@@ -6,7 +6,6 @@
 #include "always.h"
 #include "audattr.h"
 
-// FUNCTION: GAMEMD 0x00401000
 void __fastcall AudioAttribsInit(AudioAttribs * attr)
 {
 	AudioLevelInit(&attr->VolumeLevel, AUDIO_VOLUME_MAX);
@@ -18,7 +17,6 @@ void __fastcall AudioAttribsInit(AudioAttribs * attr)
 	AudioLevelSet(&attr->VolumeLevel, AUDIO_VOLUME_MAX);
 }
 
-// FUNCTION: GAMEMD 0x00401080
 void __fastcall AudioAttribsUpdate(AudioAttribs * attr)
 {
 	AudioLevelUpdate(&attr->VolumeLevel);
@@ -26,13 +24,11 @@ void __fastcall AudioAttribsUpdate(AudioAttribs * attr)
 	AudioLevelUpdate(&attr->PanPosition);
 }
 
-// FUNCTION: GAMEMD 0x004010A0
 int __fastcall AudioAttribsChanged(AudioAttribs * attr)
 {
 	return (attr->VolumeLevel.flags & AUDIO_LEVEL_CHANGED) || (attr->PitchLevel.flags & AUDIO_LEVEL_CHANGED) || (attr->PanPosition.flags & AUDIO_LEVEL_CHANGED);
 }
 
-// FUNCTION: GAMEMD 0x004010C0
 void __fastcall AudioAttribsApply(AudioAttribs * attr, AudioAttribs * mod)
 {
 	AudioLevelSet(&attr->VolumeLevel, AUDIO_LEVEL_APPLY(&mod->VolumeLevel, AudioAttribsGetVolume(attr)));
@@ -60,7 +56,6 @@ void __fastcall AudioAttribsApply(AudioAttribs * attr, AudioAttribs * mod)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00401170
 void __fastcall AudioAttribsUsed(AudioAttribs * attr)
 {
 	attr->VolumeLevel.flags &= ~AUDIO_LEVEL_CHANGED;
@@ -68,7 +63,6 @@ void __fastcall AudioAttribsUsed(AudioAttribs * attr)
 	attr->PitchLevel.flags &= ~AUDIO_LEVEL_CHANGED;
 }
 
-// FUNCTION: GAMEMD 0x00401190
 int __fastcall AudioAttribsCalcPitch(AudioAttribs * attr, int pitch)
 {
 	int level = AudioAttribsGetPitch(attr);
