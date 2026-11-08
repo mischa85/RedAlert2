@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -153,6 +154,38 @@ VeinholeMonsterClass::VeinholeMonsterClass(Cell const & cell) :
 
 
 /// <summary>
+/// RA2: frees the growth queue, nodes and state of a monster (inlined into its destructor).
+/// </summary>
+static inline void Clear_Growth_Data(VeinholeMonsterClass * monster)
+{
+	if (monster->GrowthQueue) {
+		monster->GrowthQueue->Clear();
+		delete monster->GrowthQueue;
+		monster->GrowthQueue = NULL;
+	}
+
+	if (monster->GrowthNodes) {
+		delete monster->GrowthNodes;
+		monster->GrowthNodes = NULL;
+	}
+
+	if (monster->GrowthState) {
+		delete monster->GrowthState;
+		monster->GrowthState = NULL;
+	}
+
+	monster->GrowthCount = 0;
+}
+
+/// <summary>
+/// RA2: stops a stage from advancing.
+/// </summary>
+static inline void Halt_Stage(StageClass & stage)
+{
+	stage.Set_Step(0);
+}
+
+/// <summary>
 /// Destroys this veinhole monster and scrubs its veins off the map.
 /// The cells around the veinhole are stripped of their vein overlay and flagged for
 /// redraw, and the monster is detached from everything that was tracking it.
@@ -183,9 +216,11 @@ VeinholeMonsterClass::~VeinholeMonsterClass(void)
 	IsInLimbo = true;
 	IsDown = false;
 
-	Detach_This_From_All(this);
+	if (Strength > 0) { // RA2
+		Detach_This_From_All(this);
+	}
 
-	Clear_Growth();
+	Clear_Growth_Data(this); // RA2: frees the growth data
 
 	VeinholeMonsters.Delete(this);
 	TargetTracker.Remove_Index(Fetch_ID());
@@ -246,8 +281,8 @@ void VeinholeMonsterClass::Update_All(void)
 /// <remarks>Only call this routine once per veinhole monster per game logic loop.</remarks>
 void VeinholeMonsterClass::AI(void)
 {
-	/// Frames are stored biased by one so that a zero entry means no frame.
 	static int _state_to_mouth_frame[STATE_COUNT][FRAME_COUNT + 1] = {{1, 7, 6, 5, 4, 3, 2, 1, 0, 0, 0, 0, 0}, {4, 3, 2, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0}, {1, 8, 9, 10, 11, 11, 11, 11, 11, 10, 9, 8, 1}, {12, 11, 10, 9, 8, 1, 0, 0, 0, 0, 0, 0, 0}};
+	/// Frames are stored biased by one so that a zero entry means no frame.
 	static int _state_transition_stage[STATE_COUNT] = {-1, 4, -1, -1};                                                          /// Check if we should transition to a different state as this stage
 	static int _state_loop_stage[STATE_COUNT] = {8, 4, 13, 6};                                                                  /// Loop around at this stage
 	static int _state_entry_step[STATE_COUNT] = {0, -1, -1, -1};                                                                /// Start the state at this stage
@@ -258,7 +293,7 @@ void VeinholeMonsterClass::AI(void)
 
 	switch (CurrentState) {
 	case IDLE:
-		if (LogicTimer != 0) {
+		if (LogicTimer != 0) { // RA2: checks reordered
 			if (DesiredState != DYING) {
 				DesiredState = ATTACKING;
 			}
@@ -267,7 +302,7 @@ void VeinholeMonsterClass::AI(void)
 				if (Map.Is_Something_Nearby(CellID, 2)) {
 					DesiredState = ALERT;
 				} else if (Control.Fetch_Stage() == _state_transition_stage[CurrentState]) {
-					if (Probability_Of(0.004)) {
+					if ((abs(Scen->RandomNumber()) % 10000) * 0.0001 < 0.004) { // RA2: scenario random
 						Control.Set_Stage(_state_loop_stage[CurrentState] - 1);
 						Control.Set_Step(-1);
 					}
@@ -277,21 +312,16 @@ void VeinholeMonsterClass::AI(void)
 		break;
 
 	case ALERT:
-		if (LogicTimer == 0 && DesiredState != DYING) {
-			if (!Map.Is_Something_Nearby(CellID, 2) && DesiredState == ALERT) {
-				DesiredState = IDLE;
-				Control.Set_Step(1);
-				if (Control.Fetch_Stage() < 0) {
-					Control.Set_Stage(0);
-				}
+		if (LogicTimer != 0) { // RA2: checks reordered
+			if (DesiredState != DYING) {
+				DesiredState = ATTACKING;
 			}
-		} else if (DesiredState != DYING) {
-			DesiredState = ATTACKING;
 			Control.Set_Step(1);
 			if (Control.Fetch_Stage() < 0) {
 				Control.Set_Stage(0);
 			}
-		} else {
+		} else if (!Map.Is_Something_Nearby(CellID, 2) && DesiredState == ALERT) {
+			DesiredState = IDLE;
 			Control.Set_Step(1);
 			if (Control.Fetch_Stage() < 0) {
 				Control.Set_Stage(0);
@@ -338,10 +368,10 @@ void VeinholeMonsterClass::AI(void)
 	if (GrowthTimer == 0) {
 		if (!IsDead) {
 			Grow();
-			GrowthTimer = Random_Pick(0, Rule->VeinholeGrowthRate / 2) + Rule->VeinholeGrowthRate;
+			GrowthTimer = Rule->VeinholeGrowthRate; // RA2: no random part
 		} else {
 			Shrink();
-			GrowthTimer = Random_Pick(0, Rule->VeinholeShrinkRate / 2) + Rule->VeinholeShrinkRate;
+			GrowthTimer = Rule->VeinholeShrinkRate; // RA2: no random part
 		}
 	}
 
@@ -352,12 +382,12 @@ void VeinholeMonsterClass::AI(void)
 				Control.Set_Step(_state_entry_step[CurrentState]);
 				Control.Set_Stage(_state_entry_stage[CurrentState]);
 			} else {
-				Control.Set_Step(0);
+				Halt_Stage(Control);
 			}
 		} else if (Control.Fetch_Stage() != -1) {
 			ShapeFrame = _state_to_mouth_frame[CurrentState][Control.Fetch_Stage()] - 1;
 		} else {
-			Control.Set_Step(0);
+			Halt_Stage(Control);
 		}
 	}
 }
@@ -407,11 +437,11 @@ void VeinholeMonsterClass::Draw_It(void)
 
 		Point2D drawpoint;
 		TacticalMap->Coord_To_Pixel(coord, drawpoint);
-		int height = LEVEL_PIXEL_H_1 * Map[CellID].Height;
-		drawpoint.Y += -49 - height;
-		TacticalMap->Add_To_Selectables(this, Point2D(drawpoint.X, TacticalRect.Y + drawpoint.Y + 49));
+		int height = 15 * Map[CellID].Height; // RA2: 15 pixels per level, drawn 58 pixels up
+		drawpoint.Y += -58 - height;
+		TacticalMap->Add_To_Selectables(this, Point2D(drawpoint.X, TacticalRect.Y + drawpoint.Y + 58));
 		ConvertClass * drawer = ColorSchemes[PlayerPtr->Scheme]->Converter;
-		Draw_Shape(*LogicalSurface, *drawer, shape, frame, drawpoint, TacticalRect, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ALPHA|SHAPE_ZGRAD), 0, -2 - LEVEL_PIXEL_H_1 - height, ZGRAD_GROUND, Map[coord].TileBrightness);
+		Draw_Shape(*LogicalSurface, *drawer, shape, frame, drawpoint, TacticalRect, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ALPHA|SHAPE_ZGRAD), 0, -17 - height, ZGRAD_GROUND, Map[coord].TileBrightness);
 	}
 }
 
@@ -511,15 +541,9 @@ void VeinholeMonsterClass::Reset(void)
 /// </summary>
 void VeinholeMonsterClass::Grow(void)
 {
-	static const int _mod = 5;
-
 	if (GrowthQueue && GrowthCount <= Rule->MaxVeinholeGrowth - 40 && VeinCount <= Rule->MaxVeinholeGrowth - 100 && Scen->IsVeinGrowth) {
-
-		double amount = GrowthQueue->Count();
-
 		int index = 0;
-		int count = (abs(Scen->RandomNumber) % _mod) + 1;
-
+		int count = (abs(Scen->RandomNumber) % 5) + 1; // RA2: no unused queue count
 		CellNode * node = GrowthQueue->Extract_Min();
 
 		while (index < count && node != NULL) {
@@ -709,8 +733,8 @@ void VeinholeMonsterClass::Build_Growth_Queue(void)
 		CellClass * cellptr = &Map[cells[last]];
 		cells.Delete_Index(last);
 
-		for (int facing = FACING_FIRST; facing < FACING_COUNT; facing++) {
-			CellClass * adjacent = &cellptr->Adjacent_Cell((FacingType)facing);
+		for (y = FACING_FIRST; y < FACING_COUNT; y++) { // RA2: reuses y
+			CellClass * adjacent = &cellptr->Adjacent_Cell((FacingType)y);
 			int index = Map_Cell_Index(adjacent->CellID);
 			if (adjacent->Overlay == OVERLAY_VEINS && !adjacent->IsToGrowVeins) {
 				if ((adjacent->OverlayData >= OVERLAYDATA_FIRST_SOLID_VEIN && adjacent->OverlayData < (OVERLAYDATA_FIRST_SOLID_VEIN + 5)) || !adjacent->Can_Place_Veins()) {
@@ -735,7 +759,6 @@ void VeinholeMonsterClass::Build_Growth_Queue(void)
 			}
 		}
 	}
-
 }
 
 
@@ -1045,7 +1068,6 @@ void VeinholeMonsterClass::Reduce_Veins_At(CellClass * cellptr)
 					GlobalGrowthState[cindex] = true;
 				}
 			}
-
 		}
 	}
 }
