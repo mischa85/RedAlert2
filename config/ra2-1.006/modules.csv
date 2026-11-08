@@ -476,14 +476,8 @@ unk_005A1620,0x005A1620,0x005A1650,unknown,code not assigned to a module
 unk_005A1650,0x005A1650,0x005A1710,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005A1710,0x005A1710,0x005A73E0,unknown,code not assigned to a module
 mplayer,0x005A73E0,0x005A74B0,tibsun,"functions compiled from src/mplayer.cpp, matched, without gaps"
-unk_005A74B0,0x005A74B0,0x005A7550,unknown,code not assigned to a module
-unk_005A7550,0x005A7550,0x005A7950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A7950,0x005A7950,0x005A7980,unknown,code not assigned to a module
-unk_005A7980,0x005A7980,0x005A9720,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A9720,0x005A9720,0x005A97D0,unknown,code not assigned to a module
-unk_005A97D0,0x005A97D0,0x005A9C90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A9C90,0x005A9C90,0x005A9CE0,unknown,code not assigned to a module
-unk_005A9CE0,0x005A9CE0,0x005AA380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005A74B0,0x005A74B0,0x005A7540,unknown,code not assigned to a module
+mpmath,0x005A7540,0x005AA380,tibsun,"functions compiled from src/mpmath.cpp, without gaps; matched except ?XMP_Small_Divisors_Test@@YI_NPBIH@Z; one placed by the gap; ?XMP_Fetch_Prime_Table@@YIPBGXZ not placed; ?XMP_Is_Prime@@YI_NPBIH@Z not placed"
 unk_005AA380,0x005AA380,0x005ABF20,unknown,code not assigned to a module
 mpu,0x005ABF20,0x005AC140,tibsun,"functions compiled from src/mpu.cpp, matched, without gaps"
 unk_005AC140,0x005AC140,0x005AC810,unknown,code not assigned to a module
