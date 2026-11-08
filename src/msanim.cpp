@@ -578,76 +578,76 @@ bool MSOverlayAnim::Has_Finished(void) const
 
 
 /// <summary>
-/// Creates a captioned button anim within the rectangle specified.
-/// The button pulls its artwork out of the image cache handed over. It starts out
-/// enabled and awaiting its first render.
+/// Creates an anim that plays a Bink movie within the rectangle specified.
+/// The movie is opened at once and placed at the top left corner of the rectangle. An
+/// empty name gives an anim that plays nothing.
 /// </summary>
-/// <param name="image_cache">The cache the button pulls its artwork from.</param>
-/// <param name="rect">The screen area the button occupies.</param>
-/// <param name="string">The caption to print on the button.</param>
-/// <param name="height">The artwork height to request from the cache.</param>
-/// <param name="left_cap_width">The width of the left hand end piece.</param>
-/// <param name="right_cap_width">The width of the right hand end piece.</param>
-MSButtonAnim::MSButtonAnim(Wstring const & text, int width, MS_ANIM_LIST * vector, Rect const & rect, bool persistent) :
+/// <param name="name">The name of the movie file to play.</param>
+/// <param name="surface">The surface the movie frames are drawn to.</param>
+/// <param name="vector">The anim list whose other anims are redrawn over each new frame.</param>
+/// <param name="rect">The screen area the movie occupies.</param>
+/// <param name="held">Should the anim stay on the list once the movie has ended?</param>
+MSBinkAnim::MSBinkAnim(Wstring const & name, Surface * surface, MS_ANIM_LIST * vector, Rect const & rect, bool held) :
 	MSAnim(rect.X, rect.Y),
-	Text(NULL),
-	Width(width),
+	Player(NULL),
+	DrawSurface(surface),
 	Area(rect),
 	Anims(vector),
-	Persistent(persistent)
+	IsHeld(held)
 {
-	if (text.length() > 0) {
-		Text = new MSTextLayout(text.text(), width);
-		Text->Set_Position(rect.X, rect.Y);
+	if (name.length() > 0) {
+		Player = new BinkHandle(name.text(), surface);
+		Player->Set_Position(rect.X, rect.Y);
 	}
 }
 
 
 /// <summary>
-/// Destroys the button anim.
+/// Destroys the movie anim, closing the movie.
 /// </summary>
-MSButtonAnim::~MSButtonAnim(void)
+MSBinkAnim::~MSBinkAnim(void)
 {
-	if (Text != NULL) {
-		delete Text;
+	if (Player != NULL) {
+		delete Player;
 	}
 }
 
 
 /// <summary>
-/// Fetches the screen rectangle this button occupies.
+/// Fetches the screen rectangle this movie occupies.
 /// </summary>
-/// <returns>Returns with the bounding rectangle the button was created with.</returns>
-Rect MSButtonAnim::Get_Rect(void) const
+/// <returns>Returns with the bounding rectangle the movie was created with.</returns>
+Rect MSBinkAnim::Get_Rect(void) const
 {
 	return(Area);
 }
 
 
 /// <summary>
-/// RA2
+/// Checks to see if the movie has run out of frames.
 /// </summary>
-bool MSButtonAnim::Has_Finished(void) const
+/// <returns>bool; Has the movie ended (or was there no movie at all)?</returns>
+bool MSBinkAnim::Has_Finished(void) const
 {
-	return(Text == NULL || Text->Is_Complete());
+	return(Player == NULL || Player->Is_Finished());
 }
 
 
 /// <summary>
-/// Draws the button whenever its appearance has changed.
-/// The artwork is only rebuilt when the pressed or enabled state has been altered
-/// since the last pass, so an idle button costs nothing.
+/// Shows the next frame of the movie once it is due.
+/// When a new frame has been drawn, the movie area is copied to the surface and the
+/// other anims of the list are redrawn over it.
 /// </summary>
-bool MSButtonAnim::Advance(Surface * surface, Rect & rect)
+bool MSBinkAnim::Advance(Surface * surface, Rect & rect)
 {
 	if (surface == NULL) {
 		return(false);
 	}
-	if (Text == NULL) {
+	if (Player == NULL) {
 		return(true);
 	}
 
-	if (!Text->Is_Complete() && Text->Is_Dirty()) {
+	if (!Player->Is_Finished() && Player->Render_Frame()) {
 		Redraw(surface, NULL);
 		rect = Area;
 		int my_id = Anims->ID(this);
@@ -658,16 +658,16 @@ bool MSButtonAnim::Advance(Surface * surface, Rect & rect)
 		}
 	}
 
-	return(Text->Is_Complete() && !Persistent);
+	return(Player->Is_Finished() && !IsHeld);
 }
 
 
 /// <summary>
-/// Draws the button onto the surface specified.
-/// This routine is used when another anim has drawn over the area the button sits in.
+/// Copies the movie area onto the surface specified.
+/// This routine is used when another anim has drawn over the area the movie sits in.
 /// </summary>
 /// <param name="rect">The damaged region to draw within, or NULL to draw unconditionally.</param>
-void MSButtonAnim::Redraw(Surface * surface, Rect const * rect)
+void MSBinkAnim::Redraw(Surface * surface, Rect const * rect)
 {
 	if (rect != NULL) {
 		Intersect(*rect, Area);
@@ -677,11 +677,9 @@ void MSButtonAnim::Redraw(Surface * surface, Rect const * rect)
 
 
 /// <summary>
-/// Flags the button as needing to be drawn again.
-/// This routine is called when something has covered the button. The artwork is not
-/// put back on the spot, but at the next advance.
+/// Restores the movie area. Nothing need be done, as the next frame covers it anyway.
 /// </summary>
-void MSButtonAnim::Restore(Rect const & rect)
+void MSBinkAnim::Restore(Rect const & rect)
 {
 }
 

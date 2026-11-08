@@ -172,10 +172,10 @@ class BinkHandle
 		void FUN_004333F0(void);
 		void FUN_00432C30(bool pause);
 		void FUN_00432C70(void);
-		bool FUN_00432C50(void);
-		bool FUN_00433040(void);
+		bool Is_Finished(void) const; // RA2: have all the frames been shown?
+		bool Render_Frame(void); // RA2: draws the next frame to the surface if it is due
 		void FUN_00433020(void);
-		void FUN_00432AB0(int x, int y);
+		void Set_Position(int x, int y); // RA2
 		void FUN_00432C10(void (__fastcall * callback)(void *));
 		void FUN_00432BD0(int frame);
 		int FUN_00432BF0(void);

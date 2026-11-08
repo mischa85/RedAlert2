@@ -287,10 +287,11 @@ class MSBinkAnim : public MSAnim
 		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
 		virtual Rect Get_Rect(void) const override;
 		virtual bool Has_Finished(void) const override;
+		virtual void Restore(Rect const & rect) override;
 
 	protected:
-		BinkHandle * Player; // RA2: +0x1C, made from the name and Surface; NULL for an empty name
-		Surface * Surface; // RA2: +0x20, what the movie is drawn to
+		BinkHandle * Player; // RA2: +0x1C, made from the name and surface; NULL for an empty name
+		Surface * DrawSurface; // RA2: +0x20, what the movie is drawn to
 		Rect Area; // RA2: +0x24
 		MS_ANIM_LIST * Anims; // RA2: +0x34, the anims redrawn over the movie
 		bool IsHeld; // RA2: +0x38, the anim is not finished when the movie ends
@@ -486,65 +487,6 @@ class MSWordAnim : public MSPrintAnim
 		 * backdrop on each pass of the fade, and cleared once the line has fully arrived.
 		 */
 		Rect LineRect;
-};
-
-
-/*
-**	RA2: the text a button anim prints, laid out to the button's width.
-*/
-class MSTextLayout
-{
-	public:
-		MSTextLayout(char const * text, int width);
-		~MSTextLayout(void);
-
-		void Set_Position(int x, int y);
-		bool Is_Complete(void) const;
-		bool Is_Dirty(void) const;
-
-	private:
-		char Data[0x30]; // RA2: 48 bytes
-};
-
-
-class MSButtonAnim : public MSAnim
-{
-	public:
-		MSButtonAnim(Wstring const & text, int width, MS_ANIM_LIST * vector, Rect const & rect, bool persistent); // RA2
-		virtual ~MSButtonAnim(void) override;
-
-		virtual bool Advance(Surface * surface, Rect & rect) override;
-		virtual void Redraw(Surface * surface, Rect const * rect=NULL) override;
-		virtual Rect Get_Rect(void) const override;
-		virtual bool Has_Finished(void) const override; // RA2
-		virtual void Restore(Rect const & rect) override;
-
-	protected:
-		/*
-		 * This is the caption laid out for printing. If NULL, then the button has no text.
-		 */
-		MSTextLayout * Text; // RA2
-
-		/*
-		 * This is the width, in pixels, the caption is laid out to.
-		 */
-		int Width; // RA2
-
-		/*
-		 * This is the screen area the button occupies.
-		 */
-		Rect Area;
-
-		/*
-		 * This is the list of anims the button belongs to.
-		 */
-		MS_ANIM_LIST * Anims; // RA2
-
-		/*
-		 * If the button is to stay on the list once its text is complete, then this flag will
-		 * be true.
-		 */
-		bool Persistent; // RA2
 };
 
 
