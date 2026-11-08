@@ -26,6 +26,7 @@
 #include "mixfile.h"
 #include "palette.h"
 #include "shapeset.h"
+int __fastcall AudioDeviceAvailable(void); // RA2: whether the audio library has a device
 
 #include <cstring>
 
@@ -49,43 +50,7 @@ MSFont::MSFont(bool use_side_palette) :
 	Green(0),
 	Blue(0)
 {
-	Init("FULLFNT3.SHP", use_side_palette ? "SIDEFNT3.PAL" : "FULLFNT3.PAL");
-	InstanceCount++;
-}
-
-
-/// <summary>
-/// Creates a font from a shape file.
-/// The palette is presumed to sit alongside the shapes under the same name, so only the
-/// shape file has to be named.
-/// </summary>
-/// <param name="file_name">The name of the font shape file to load.</param>
-MSFont::MSFont(char const * file_name) :
-	Red(0),
-	Green(0),
-	Blue(0)
-{
-	char palette_name[256];
-	strncpy(palette_name, file_name, 256);
-	strtok(palette_name, ".");
-	strncat(palette_name, ".PAL", 256);
-
-	Init(file_name, palette_name);
-	InstanceCount++;
-}
-
-
-/// <summary>
-/// Creates a font from a shape file and a palette.
-/// Use this routine when the colors for a font do not live in a palette named after the
-/// shape file itself.
-/// </summary>
-MSFont::MSFont(char const * file_name, char const * palette_name) :
-	Red(0),
-	Green(0),
-	Blue(0)
-{
-	Init(file_name, palette_name);
+	Init(use_side_palette); // RA2
 	InstanceCount++;
 }
 
@@ -101,11 +66,8 @@ MSFont::~MSFont(void)
 	if (InstanceCount == 0) {
 		for (int i = 0; i < ARRAY_SIZE(Sounds); i++) {
 			if (Sounds[i].Sample != NULL) {
-				Audio.Stop_Sample_Playing(Sounds[i].Sample);
-				if (Sounds[i].AllocLoaded == true) {
-					delete Sounds[i].Sample;
-				}
 				Sounds[i].Sample = NULL;
+				Sounds[i].AllocLoaded = false; // RA2
 			}
 		}
 
@@ -135,91 +97,68 @@ MSFont::~MSFont(void)
 /// <param name="palette_name">The name of the palette to color the glyphs with.</param>
 /// <returns>bool; Was the font made ready for use?</returns>
 /// <remarks>The global CCPalette is overwritten with this font's palette.</remarks>
-bool MSFont::Init(char const * file_name, char const * palette_name)
+bool MSFont::Init(bool use_side_palette) // RA2
 {
 	CCFileClass file;
 
-	AllocLoaded = false;
-	FontFile = (ShapeSet *)MFCD::Retrieve(file_name);
+	if (InstanceCount == 0) { // RA2
+		AllocLoaded = false;
+		FontFile = (ShapeSet *)MFCD::Retrieve("FULLFNT3.SHP");
 
-	if (FontFile == NULL) {
-		file.Set_Name(file_name);
-		FontFile = (ShapeSet *)Load_Alloc_Data(file);
-		AllocLoaded = true;
-		DebugString("MSFont: AllocLoaded FULLFNT3.SHP\n");
-	}
-
-	if (FontFile == NULL) {
-		return(false);
-	}
-
-	file.Set_Name(palette_name);
-	PaletteClass * palette = (PaletteClass *)Load_Alloc_Data(file);
-
-	if (palette == NULL) {
-		return(false);
-	}
-
-	for (int gindex = 0; gindex < 256; gindex++) {
-		CCPalette[gindex] = RGBClass(
-			((unsigned char *)*palette)[gindex*3]<<2,
-			((unsigned char *)*palette)[gindex*3+1]<<2,
-			((unsigned char *)*palette)[gindex*3+2]<<2);
-	}
-
-	unsigned char red = (*palette)[68].Get_Red()<<2;
-	unsigned char blue = (*palette)[68].Get_Blue()<<2;
-	unsigned char green = (*palette)[68].Get_Green()<<2;
-
-	Red = red;
-	Blue = blue;
-	Green = green;
-
-	Color = DSurface::Build_Hicolor_Pixel((*palette)[68].Get_Red()<<2, (*palette)[68].Get_Green()<<2, (*palette)[68].Get_Blue()<<2);
-
-	delete palette;
-
-	Drawer = new ConvertClass(CCPalette, CCPalette, *VisibleSurface);
-
-	if (Drawer == NULL) {
-		return(false);
-	}
-
-	FontWidth = FontFile->Get_Width();
-	FontHeight = FontFile->Get_Height();
-
-	if (InstanceCount == 0 && Audio_Available()) {
-		Sounds[0].AllocLoaded = false;
-		Sounds[0].Sample = (void *)MixFileClass::Retrieve("TEXT1.AUD");
-
-		if (Sounds[0].Sample == NULL) {
-			file.Open("TEXT1.AUD");
-			Sounds[0].Sample = Load_Alloc_Data(file);
-			Sounds[0].AllocLoaded = true;
-			DebugString("MSFont: AllocLoaded TEXT1.AUD\n");
+		if (FontFile == NULL) { // RA2
+			file.Set_Name("FULLFNT3.SHP");
+			FontFile = (ShapeSet *)Load_Alloc_Data(file);
+			AllocLoaded = true;
+			DebugString("MSFont: AllocLoaded FULLFNT3.SHP\n");
 		}
 
-		Sounds[1].AllocLoaded = false;
-		Sounds[1].Sample = (void *)MixFileClass::Retrieve("TEXT2.AUD");
-
-		if (Sounds[1].Sample == NULL) {
-			file.Open("TEXT2.AUD");
-			Sounds[1].Sample = Load_Alloc_Data(file);
-			Sounds[1].AllocLoaded = true;
-			DebugString("MSFont: AllocLoaded TEXT2.AUD\n");
+		if (FontFile == NULL) {
+			return(false);
 		}
 
-		Sounds[2].AllocLoaded = false;
-		Sounds[2].Sample = (void *)MixFileClass::Retrieve("TEXT3.AUD");
-
-		if (Sounds[2].Sample == NULL) {
-			file.Open("TEXT3.AUD");
-			Sounds[2].Sample = Load_Alloc_Data(file);
-			Sounds[2].AllocLoaded = true;
-			DebugString("MSFont: AllocLoaded TEXT3.AUD\n");
+		if (use_side_palette == true) {
+			file.Set_Name("SIDEFNT3.PAL");
+		} else {
+			file.Set_Name("FULLFNT3.PAL");
 		}
+		PaletteClass * palette = (PaletteClass *)Load_Alloc_Data(file);
+
+		if (palette == NULL) {
+			return(false);
+		}
+
+		for (int gindex = 0; gindex < 256; gindex++) {
+			CCPalette[gindex] = RGBClass(
+				((unsigned char *)*palette)[gindex*3]<<2,
+				((unsigned char *)*palette)[gindex*3+1]<<2,
+				((unsigned char *)*palette)[gindex*3+2]<<2);
+		}
+
+		unsigned char red = (*palette)[68].Get_Red()<<2;
+		unsigned char blue = (*palette)[68].Get_Blue()<<2;
+		unsigned char green = (*palette)[68].Get_Green()<<2;
+
+		Red = red;
+		Blue = blue;
+		Green = green;
+
+		Color = ((((*palette)[68].Get_Green()<<2) >> DSurface::GreenLeft) << DSurface::GreenRight)
+			| ((((*palette)[68].Get_Blue()<<2) >> DSurface::BlueLeft) << DSurface::BlueRight)
+			| ((((*palette)[68].Get_Red()<<2) >> DSurface::RedLeft) << DSurface::RedRight);
+
+		delete palette;
+
+		Drawer = new ConvertClass(CCPalette, CCPalette, *VisibleSurface);
+
+		if (Drawer == NULL) {
+			return(false);
+		}
+
+		FontWidth = FontFile->Get_Width();
+		FontHeight = FontFile->Get_Height();
 	}
 
+	AudioDeviceAvailable(); // RA2: the font sounds are not loaded here
 	return(true);
 }
 
@@ -231,11 +170,11 @@ bool MSFont::Init(char const * file_name, char const * palette_name)
 /// </summary>
 /// <param name="rect">The rectangle to fill in. It is anchored at the origin, since it
 /// describes the size of the text rather than where it will land.</param>
-void MSFont::Get_String_Rect(char const * string, Rect & rect)
+void MSFont::Get_String_Rect(wchar_t const * string, Rect & rect) // RA2
 {
 	int max_width = 0;
 
-	if (string != NULL && strlen(string) != 0) {
+	if (string != NULL && wcslen(string) != 0) { // RA2
 
 		int height = FontHeight;
 
@@ -269,7 +208,7 @@ void MSFont::Get_String_Rect(char const * string, Rect & rect)
 /// Newlines are honored, so a multiple line string reports the width of its longest line.
 /// </summary>
 /// <returns>Returns with the width in pixels.</returns>
-int MSFont::Get_String_Width(char const * string)
+int MSFont::Get_String_Width(wchar_t const * string) // RA2
 {
 	int max_width = 0;
 
@@ -302,16 +241,17 @@ int MSFont::Get_String_Width(char const * string)
 /// </summary>
 /// <returns>Returns with the width in pixels. Characters below the space are worth
 /// nothing.</returns>
-int MSFont::Get_Character_Width(unsigned char character)
+int MSFont::Get_Character_Width(wchar_t character) // RA2
 {
-	CharToOemBuff((LPCSTR)&character, (LPSTR)&character, 1);
+	unsigned char ch = (unsigned char)character; // RA2
+	CharToOemBuff((LPCSTR)&ch, (LPSTR)&ch, 1);
 
-	if (character == ' ') {
+	if (ch == ' ') { // RA2
 		return(8);
 	}
 
-	if (character > ' ') {
-		int index = (0 >= character - 33) ? 0 : character - 33;
+	if (ch > ' ') { // RA2
+		int index = (0 >= ch - 33) ? 0 : ch - 33;
 		index = (216 <= index) ? 216 : index;
 
 		int shape_frame = index * 3;
@@ -330,29 +270,23 @@ int MSFont::Get_Character_Width(unsigned char character)
 /// <param name="frame">The glyph frame to draw with. The print animations step through the
 /// frames to fade a character in.</param>
 /// <param name="do_sound">Should a typing sound accompany the character?</param>
-void MSFont::Draw_Character(Surface * surface, unsigned char character, int x, int y, int frame, bool do_sound)
+void MSFont::Draw_Character(Surface * surface, wchar_t character, int x, int y, int frame, bool do_sound) // RA2
 {
-	if (character == 176) {
+	char ch = (char)character; // RA2
+	if (ch == 176) {
 		DebugString("Denzil!\n");
 	}
 
-	CharToOemBuff((LPCSTR)&character, (LPSTR)&character, 1);
+	CharToOemBuff((LPCSTR)&ch, (LPSTR)&ch, 1); // RA2
 
-	if (character > ' ') {
+	if ((unsigned char)ch > ' ') { // RA2
 
-		int index = (0 >= character - 33) ? 0 : character - 33;
+		int index = (0 >= (unsigned char)ch - 33) ? 0 : (unsigned char)ch - 33; // RA2
 		index = (216 <= index) ? 216 : index;
 
 		int shape_frame = index * 3;
 
-		if (do_sound == true && frame == 0) {
-			void * sample = Sounds[rand() % 3].Sample;
-			if (sample != NULL) {
-				Audio.Play_Sample(sample, 10, int(Options.SoundVolume * 64));
-			}
-		}
-
-		Draw_Shape(*surface, *Drawer, FontFile, shape_frame + frame, Point2D(x - FontFile->Get_Rect(shape_frame + 2).X, y), surface->Get_Rect(), SHAPE_WIN_REL);
+		Draw_Shape(*surface, *Drawer, FontFile, shape_frame + frame, Point2D(x - FontFile->Get_Rect(shape_frame + 2).X, y), surface->Get_Rect(), SHAPE_WIN_REL); // RA2: no typing sound
 	}
 }
 
@@ -364,7 +298,7 @@ void MSFont::Draw_Character(Surface * surface, unsigned char character, int x, i
 /// </summary>
 /// <param name="x">The left edge to begin each line of the string at.</param>
 /// <param name="frame">The glyph frame to draw the text with.</param>
-void MSFont::Draw_String(Surface * surface, unsigned char const * string, int x, int y, int frame)
+void MSFont::Draw_String(Surface * surface, wchar_t const * string, int x, int y, int frame) // RA2
 {
 	int current_x = x;
 
@@ -374,10 +308,11 @@ void MSFont::Draw_String(Surface * surface, unsigned char const * string, int x,
 			y += FontHeight;
 		} else {
 			if (*string > ' ') {
-				unsigned char character;
-				CharToOemBuff((LPCSTR)string, (LPSTR)&character, 1);
+				char source = (char)*string; // RA2
+				char character;
+				CharToOemBuff((LPCSTR)&source, (LPSTR)&character, 1);
 
-				int index = (0 >= character - 33) ? 0 : character - 33;
+				int index = (0 >= character - 33u) ? 0 : character - 33u; // RA2
 				index = (216 <= index) ? 216 : index;
 
 				int shape_frame = index * 3;

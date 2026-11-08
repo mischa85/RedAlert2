@@ -9,6 +9,8 @@
 
 #pragma once
 
+#include <stddef.h>
+
 class Surface;
 class ConvertClass;
 class ShapeSet;
@@ -19,8 +21,6 @@ class MSFont
 {
 	public:
 		MSFont(bool use_side_palette = true);
-		MSFont(char const * file_name);
-		MSFont(char const * file_name, char const * palette_name);
 		virtual ~MSFont(void);
 
 		int Get_Font_Width(void) {return(FontWidth);}
@@ -31,15 +31,15 @@ class MSFont
 		unsigned char Get_Blue(void) {return(Blue);}
 		int Get_Color(void) {return(Color);}
 
-		bool Init(char const * file_name, char const * palette_name);
+		bool Init(bool use_side_palette); // RA2
 
-		void Get_String_Rect(char const * string, Rect & rect);
+		void Get_String_Rect(wchar_t const * string, Rect & rect); // RA2: wide
 
-		virtual int Get_Character_Width(unsigned char character);
-		virtual int Get_String_Width(char const * string);
+		virtual int Get_Character_Width(wchar_t character); // RA2: wide
+		virtual int Get_String_Width(wchar_t const * string); // RA2: wide
 
-		virtual void Draw_String(Surface * surface, unsigned char const * string, int x, int y, int frame);
-		virtual void Draw_Character(Surface * surface, unsigned char character, int x, int y, int frame, bool do_sound);
+		virtual void Draw_String(Surface * surface, wchar_t const * string, int x, int y, int frame); // RA2: wide
+		virtual void Draw_Character(Surface * surface, wchar_t character, int x, int y, int frame, bool do_sound); // RA2: wide
 
 	private:
 		/*
