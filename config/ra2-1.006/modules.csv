@@ -867,7 +867,7 @@ vqalib_drawer,0x00777870,0x00778430,source,"functions compiled from src/vqalib_d
 unk_00778430,0x00778430,0x00778450,unknown,code not assigned to a module
 vqalib_dstream,0x00778450,0x00778680,source,"functions compiled from src/vqalib_dstream.cpp, matched, without gaps"
 vqalib_loader,0x00778680,0x0077B7A0,source,"functions compiled from src/vqalib_loader.cpp, matched, without gaps"
-unk_0077B7A0,0x0077B7A0,0x0077CB20,unknown,code not assigned to a module
+vqalib_task,0x0077B7A0,0x0077CB20,source,"functions compiled from src/vqalib_task.cpp, without gaps; matched except ?VQA_Reset@@YIXPAU_VQAHandle@@@Z; two placed by the gap"
 vqalib_timer,0x0077CB20,0x0077CBD0,source,"functions compiled from src/vqalib_timer.cpp, matched, without gaps"
 vqalib_unvq,0x0077CBD0,0x0077EDD0,source,"functions compiled from src/vqalib_unvq.cpp, without gaps; matched except ?UnVQ2_C0_4x4_TRANS@@YAXPAE00KKK@Z"
 unk_0077EDD0,0x0077EDD0,0x00781C8C,unknown,code not assigned to a module
