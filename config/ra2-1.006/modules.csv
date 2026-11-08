@@ -156,12 +156,8 @@ unk_00494530,0x00494530,0x00494760,unknown,code not assigned to a module
 cstraw,0x00494760,0x00494800,tibsun,"functions compiled from src/cstraw.cpp, matched, without gaps"
 cstream,0x00494800,0x004950F0,tibsun,"functions compiled from src/cstream.cpp, without gaps; matched except ?Write@CStreamClass@@UAGJPBXKPAK@Z"
 unk_004950F0,0x004950F0,0x00495230,unknown,code not assigned to a module
-unk_00495230,0x00495230,0x00495270,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00495270,0x00495270,0x004953B0,unknown,code not assigned to a module
-unk_004953B0,0x004953B0,0x004954D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004954D0,0x004954D0,0x004954E0,unknown,code not assigned to a module
-unk_004954E0,0x004954E0,0x00495590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00495590,0x00495590,0x004955D0,unknown,code not assigned to a module
+data,0x00495230,0x004955B0,tibsun,"functions compiled from src/data.cpp, matched, without gaps; two placed by the gap"
+unk_004955B0,0x004955B0,0x004955D0,unknown,code not assigned to a module
 ddraw,0x004955D0,0x00496460,tibsun,"functions compiled from src/ddraw.cpp, without gaps; matched except ?GetVideoMemory@@YIKXZ"
 unk_00496460,0x00496460,0x00496A20,unknown,code not assigned to a module
 delay,0x00496A20,0x00496D10,tibsun,"functions compiled from src/delay.cpp, matched, without gaps"
