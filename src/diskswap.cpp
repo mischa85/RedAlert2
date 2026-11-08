@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -72,18 +73,14 @@ DiskID DiskSwap::Get_Disk_ID(int cd_drive, int timeout)
 		  {
 
 			enum {
-				NUM_VOLUMES = 3,
+				NUM_VOLUMES = 8, // RA2
 			};
 			/*
 			**	Match the volume label to the list of known C&C volume labels.
 			*/
 			for (int i = 0; i < NUM_VOLUMES; i++)
 			{
-				if (i == 2) {
-					strcpy(volname_label, "Firestorm");
-				} else {
-					sprintf(volname_label, "TS%d", i + 1);
-				}
+				sprintf(volname_label, "RA%d", i + 1); // RA2
 				if (!stricmp(volname_label,volume_name))
 				{
 					index = i;
@@ -120,7 +117,7 @@ DiskID DiskSwap::Get_Disk_ID(int cd_drive, int timeout)
 			 * Try opening '.dsk' to verify that the CD is really there and is what
 			 * it says it is.
 			 */
-			wsprintf(buffer, "%c:\\TS%d.dsk", cd, index + 1);
+			wsprintf(buffer, "%c:\\RA%d.dsk", cd, index + 1); // RA2
 
 			HANDLE handle = CreateFile(buffer, GENERIC_READ, FILE_SHARE_READ,NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
 
