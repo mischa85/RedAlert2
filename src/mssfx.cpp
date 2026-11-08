@@ -8,20 +8,18 @@
 #include <string.h>
 #include <stdlib.h>
 
-extern int FUN_00407000(void);
+int __fastcall AudioDeviceAvailable(void); // RA2: whether the audio library has a device
 
-// FUNCTION: GAMEMD 0x005D5820
 MSSfx::MSSfx(char const * name, char const * file_name) :
 	Name(NULL),
 	Sample(NULL),
 	Loaded(false)
 {
-	if (FUN_00407000()) {
+	if (AudioDeviceAvailable()) {
 		Name = strdup(name);
 	}
 }
 
-// FUNCTION: GAMEMD 0x005D5850
 MSSfx::~MSSfx(void)
 {
 	if (Name != NULL) {
@@ -29,7 +27,6 @@ MSSfx::~MSSfx(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005D5860
 void MSSfx::Play(int volume)
 {
 }
