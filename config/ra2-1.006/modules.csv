@@ -846,9 +846,9 @@ unk_00769EA0,0x00769EA0,0x0076B8A0,unknown,code not assigned to a module
 unk_0076B8A0,0x0076B8A0,0x0076B8F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0076B8F0,0x0076B8F0,0x0076B990,unknown,code not assigned to a module
 unk_0076B990,0x0076B990,0x0076B9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076B9E0,0x0076B9E0,0x0076C0F0,unknown,code not assigned to a module
-wspudp,0x0076C0F0,0x0076C290,tibsun,"functions compiled from src/wspudp.cpp, matched, without gaps; ??0UDPInterfaceClass@@QAE@XZ not placed; ?Set_Broadcast_Address@UDPInterfaceClass@@UAEXPAX@Z not placed; ?Open_Socket@UDPInterfaceClass@@UAE_NI@Z not placed; ?Broadcast@UDPInterfaceClass@@UAEXPAXH@Z not placed; ?Message_Handler@UDPInterfaceClass@@UAEHPAUHWND__@@IIJ@Z not placed"
-unk_0076C290,0x0076C290,0x0076D920,unknown,code not assigned to a module
+unk_0076B9E0,0x0076B9E0,0x0076C050,unknown,code not assigned to a module
+wspudp,0x0076C050,0x0076D460,tibsun,"functions compiled from src/wspudp.cpp, matched, without gaps; one placed by the gap"
+unk_0076D460,0x0076D460,0x0076D920,unknown,code not assigned to a module
 wstring,0x0076D920,0x0076F9B0,tibsun,"functions compiled from src/wstring.cpp, matched, without gaps; eight placed by the gap; ??0Wstring@@QAE@XZ not placed"
 unk_0076F9B0,0x0076F9B0,0x00773730,unknown,code not assigned to a module
 xpipe,0x00773730,0x00773840,tibsun,"functions compiled from src/xpipe.cpp, matched, without gaps"
