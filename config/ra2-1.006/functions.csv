@@ -2613,6 +2613,7 @@ address,size,evidence
 0x0070A890,,"inferred: target of the call at 0x004B48BD in matched src/emember.cpp; size not known"
 0x0070AB20,32,"function of the Tiberian Sun reconstruction, matched"
 0x0070B690,320,"function of the Tiberian Sun reconstruction, matched"
+0x0070B7D0,32,"code of src/unvqtblc.cpp, matched: its code occurs at 4 addresses; placed by the gap the other functions of the file leave"
 0x0070B7F0,48,"function of the Tiberian Sun reconstruction, matched"
 0x0070C440,64,"code of src/utracker.cpp, matched"
 0x0070C480,16,"code of src/utracker.cpp, matched: its code occurs at 931 addresses; placed by the gap the other functions of the file leave"
