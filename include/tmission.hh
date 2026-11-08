@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -74,6 +75,12 @@ enum TeamMissionType {
 	TMISSION_FLASH,							/// Flash team for a period of time.
 	TMISSION_PLAY_ANIM,						/// Play anim over every team member.
 	TMISSION_TALK_BUBBLE,					/// Talk bubble over first unit in team.
+	TMISSION_GATHER_AT_ENEMY_BASE,			/// RA2: gather outside the enemy base.
+	TMISSION_GATHER_AT_BASE,				/// RA2: gather outside our own base.
+	TMISSION_IRON_CURTAIN_ME,				/// RA2: ask for the Iron Curtain on the team.
+	TMISSION_CHRONO_PREP_FOR_ABWRD,			/// RA2: Chronosphere the team next to a building with a property.
+	TMISSION_CHRONO_PREP_FOR_AQ,			/// RA2: Chronosphere the team next to a target quarry.
+	TMISSION_MOVETO_OWN_BUILDING,			/// RA2: move to our own building with a property.
 
 	TMISSION_COUNT,
 	TMISSION_FIRST=0
