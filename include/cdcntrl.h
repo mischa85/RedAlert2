@@ -52,18 +52,6 @@ class CDControlClass {
 		*/
 		void Force_CD_Eject(int drive);
 
-		/*
-		**	Prevent the user from ejecting the CD in the specified drive.
-		*/
-		bool Lock_CD_Tray(int drive);
-
-		/*
-		**	Allow the user to eject the CD in the specified drive.
-		*/
-		bool Unlock_CD_Tray(int drive);
-
-		void Unlock_All_CD_Trays(void);
-
 
 	private:
 		/*

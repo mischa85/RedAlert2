@@ -39,7 +39,6 @@
  *  CDControlClass::Force_CD_Eject -- Ppen the CD tray on the given drive                      *
  *  CDControlClass::Lock_CD_Drive -- Lock the CD tray and prevent ejection                     *
  *  CDControlClass::Lock_CD_Drive_95 -- Prevent the user from ejecting the cd in the given driv*
- *  CDControlClass::Lock_CD_Tray -- Prevent CD ejection on the specified drive                 *
  *  CDControlClass::Lock_Logical_Volume -- Take a lock on a logical volume                     *
  *  CDControlClass::Lock_Volume -- Prevent access by other threads to a given volume           *
  *  CDControlClass::Lock_Volume_95 -- Locks removable media so that it can't be ejected        *
@@ -48,7 +47,6 @@
  *  CDControlClass::Prevent_Removal_Of_Volume -- Disable the eject button on the given drive   *
  *  CDControlClass::Unlock_CD_Drive -- Unlock the CD tray and allow ejection                   *
  *  CDControlClass::Unlock_CD_Drive_95 -- Allow the user to eject the cd in the given drive    *
- *  CDControlClass::Unlock_CD_Tray -- Allow CD ejection on the specified drive                 *
  *  CDControlClass::Unlock_Logical_Volume -- Unlocks a logical volume                          *
  *  CDControlClass::Unlock_Volume -- Allow access by other threads to a given volume           *
  *  CDControlClass::Unlock_Volume_95 -- Unlocks removable media so that it can be ejected      *
@@ -125,83 +123,6 @@ void CDControlClass::Force_CD_Eject(int drive)
 		Eject_CD_Win95(drive);
 	}else{
 		Eject_CD(drive);
-	}
-}
-
-/***********************************************************************************************
- * CDControlClass::Lock_CD_Tray -- Prevent CD ejection on the specified drive                  *
- *                                                                                             *
- * INPUT:    drive number (0=a: etc)                                                           *
- *                                                                                             *
- * OUTPUT:   true if locked                                                                    *
- *                                                                                             *
- * WARNINGS: None                                                                              *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *               2/17/99 1:56AM ST : Created                                                   *
- *=============================================================================================*/
-bool CDControlClass::Lock_CD_Tray (int drive)
-{
-	bool locked = true;
-
-	if ( WinVersion.Is_Win9x() ) {
-		locked = (Lock_CD_Drive_95(drive));
-	}else{
-		locked = (Lock_CD_Drive(drive));
-	}
-
-	if (locked) {
-		LockCount[drive]++;
-	}
-
-	DebugString("LockCount on drive %c is %d\n", drive + 'A', LockCount[drive]);
-	return(locked);
-}
-
-/***********************************************************************************************
- * CDControlClass::Unlock_CD_Tray -- Allow CD ejection on the specified drive                  *
- *                                                                                             *
- * INPUT:    drive number (0=a: etc)                                                           *
- *                                                                                             *
- * OUTPUT:   true if unlocked OK                                                               *
- *                                                                                             *
- * WARNINGS: None                                                                              *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *         2/17/99 1:57AM ST : Created                                                         *
- *=============================================================================================*/
-bool CDControlClass::Unlock_CD_Tray (int drive)
-{
-	bool unlocked = true;
-
-	if (LockCount[drive]) {
-		if ( WinVersion.Is_Win9x() ) {
-			unlocked = (Unlock_CD_Drive_95(drive));
-		}else{
-			unlocked = (Unlock_CD_Drive(drive));
-		}
-
-		if (unlocked) {
-			LockCount[drive]--;
-		}
-	}
-
-	DebugString("LockCount on drive %c is %d\n", drive + 'A', LockCount[drive]);
-	return(unlocked);
-}
-
-
-/// <summary>
-/// Releases every CD tray lock this object still holds.
-/// This routine is used when shutting down, so that the player is left able to eject their
-/// CDs again regardless of how many locks were taken while the game was running.
-/// </summary>
-void CDControlClass::Unlock_All_CD_Trays (void)
-{
-	for (int i = 0; i < MAX_CD_DRIVES; i++) {
-		while (LockCount[i] > 0) {
-			Unlock_CD_Tray(i);
-		}
 	}
 }
 
