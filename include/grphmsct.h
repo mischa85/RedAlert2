@@ -12,13 +12,15 @@
 #include "grphmitm.h"
 
 
+class Wstring;
+
 class GraphicMenuShortcutItem : public GraphicMenuItem
 {
 	typedef DynamicVectorClass<unsigned int> SHORTCUT_LIST;
 	typedef VectorCursor<unsigned int, SHORTCUT_LIST> SHORTCUT_ITER;
 
 	public:
-		GraphicMenuShortcutItem(int id, const char * keys);
+		GraphicMenuShortcutItem(int id, Wstring const & keys); // RA2: Wstring
 		virtual ~GraphicMenuShortcutItem(void) override;
 		virtual bool Is_Input_Key(KeyNumType key) override;
 

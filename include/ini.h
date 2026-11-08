@@ -52,6 +52,8 @@ template<class T> class TPoint3D;
 **	This is an INI database handler class. It handles a database with a disk format identical
 **	to the INI files commonly used by Windows.
 */
+class Wstring;
+
 class INIClass {
 	public:
 		INIClass(void) : TailComment(NULL) {}
@@ -99,6 +101,14 @@ class INIClass {
 		int Get_Hex(char const * section, char const * entry, int defvalue=0) const;
 		int Get_Int(char const * section, char const * entry, int defvalue=0) const;
 		int Get_String(char const * section, char const * entry, char const * defvalue, char * buffer, int size) const;
+		int Entry_Count(Wstring const & section) const; // RA2
+		Wstring Get_Entry(Wstring const & section, int index) const; // RA2
+		int Get_Int(Wstring const & section, Wstring const & entry, int defvalue=0) const; // RA2
+		int Get_String(Wstring const & section, Wstring const & entry, Wstring const & defvalue, Wstring & result) const; // RA2
+		Rect const Get_Rect(Wstring const & section, Wstring const & entry, Rect const & defvalue) const; // RA2
+		TPoint3D<float> const Get_Point(Wstring const & section, Wstring const & entry, TPoint3D<float> const & defvalue) const; // RA2
+		TPoint2D<int> const Get_Point(Wstring const & section, Wstring const & entry, TPoint2D<int> const & defvalue) const; // RA2
+		TPoint3D<int> const Get_Point(Wstring const & section, Wstring const & entry, TPoint3D<int> const & defvalue) const; // RA2
 		int Get_TextBlock(char const * section, char * buffer, int len) const;
 		int Get_UUBlock(char const * section, void * buffer, int len) const;
 		Rect const Get_Rect(char const * section, char const * entry, Rect const & defvalue) const;

@@ -16,9 +16,10 @@
 #include "grphmsct.h"
 #include "ini.h"
 #include "keyboard.h"
+#include "wstring.h"
 
 
-unsigned int GM_Build_Key(const char *list);
+unsigned int GM_Build_Key(Wstring const & list); // RA2: Wstring
 
 /// <summary>
 /// Creates a shortcut menu item from the INI database.
@@ -29,16 +30,21 @@ unsigned int GM_Build_Key(const char *list);
 /// <param name="name">The INI section to read the item from.</param>
 /// <returns>Returns with a pointer to the item created. If the section does not identify a
 /// menu item, NULL is returned.</returns>
-GraphicMenuItem * GM_Read_Shortcut_Item(const char * name, INIClass const & ini)
+GraphicMenuItem * GM_Read_Shortcut_Item(Wstring const & name, INIClass const & ini) // RA2: Wstring
 {
-	int id = ini.Get_Int(name, "ID", -1);
+	int id = ini.Get_Int(name, Wstring("ID"), -1);
 	if (id == -1) {
 		return(NULL);
 	}
-	char buffer[256];
-	ini.Get_String(name, "Keys", "", buffer, sizeof(buffer));
+	Wstring buffer;
+	{
+		Wstring defvalue("");
+		Wstring entry("Keys");
+		ini.Get_String(name, entry, defvalue, buffer);
+	}
 
-	return(new GraphicMenuShortcutItem(id, buffer));
+	GraphicMenuItem * item = new GraphicMenuShortcutItem(id, buffer);
+	return(item);
 }
 
 
@@ -49,18 +55,20 @@ GraphicMenuItem * GM_Read_Shortcut_Item(const char * name, INIClass const & ini)
 /// discarded.
 /// </summary>
 /// <param name="keys">The shortcut key descriptions, separated by commas.</param>
-GraphicMenuShortcutItem::GraphicMenuShortcutItem(int id, const char * keys) :
+GraphicMenuShortcutItem::GraphicMenuShortcutItem(int id, Wstring const & keys) :
 	GraphicMenuItem(id)
 {
-	char buffer[256];
-	strncpy(buffer, keys, sizeof(buffer));
-	char *tok = strtok(buffer, ",");
-	while (tok != NULL) {
+	Wstring tok; // RA2: the keys are a Wstring, split with getToken
+	int pos = keys.getToken(0, ",", tok);
+	while (tok.length() > 0) {
 		unsigned int key = GM_Build_Key(tok);
 		if (key != 0) {
 			Shortcuts.Add(key);
 		}
-		tok = strtok(NULL, ",;");
+		pos = keys.getToken(pos, ",;", tok);
+		if (pos == -1) {
+			tok.clear();
+		}
 	}
 }
 
@@ -75,55 +83,57 @@ GraphicMenuShortcutItem::GraphicMenuShortcutItem(int id, const char * keys) :
 /// <param name="list">The shortcut description to convert, modifier prefixes included.</param>
 /// <returns>Returns with the key code and modifier bits. If the description could not be
 /// recognized, VK_NONE is returned.</returns>
-unsigned int GM_Build_Key(const char *list)
+unsigned int GM_Build_Key(Wstring const & list) // RA2: Wstring
 {
 	static struct {
 		char const * Name;
 		unsigned int Key;
-	} _name2key[] =	{
-		{ "BACKSPACE", KN_BACKSPACE },
-		{ "ESC", KN_ESC }
+	} _name2key[] = {
+		{ "backspace", KN_BACKSPACE },
+		{ "esc", KN_ESC }
 	};
 
-	int modifiers = 0;
-	const char *lst = list;
+	unsigned int modifiers = 0;
+	Wstring lower = list;
+	lower.toLower();
 
-	if (strnicmp(lst, "ctrl-", 5) == 0) {
+	Wstring lst = lower;
+	lst.truncate(5u);
+	if (lst == "ctrl-") {
 		modifiers |= KN_CTRL_BIT;
-		lst += 5;
+		lower.remove(0, 5);
 	}
-	if (strnicmp(lst, "alt-", 4) == 0) {
+	lst = lower;
+	lst.truncate(4u);
+	if (lst == "alt-") {
 		modifiers |= KN_ALT_BIT;
-		lst += 4;
+		lower.remove(0, 4);
 	}
-	if (strnicmp(lst, "shift-", 6) == 0) {
+	lst = lower;
+	lst.truncate(6u);
+	if (lst == "shift-") {
 		modifiers |= KN_SHIFT_BIT;
-		lst += 6;
+		lower.remove(0, 6);
 	}
 
 	unsigned int key;
-	switch (strlen(lst)) {
+	switch (lower.length()) {
 		case 0:
 			key = 0;
 			break;
 
 		case 1:
-			if (*lst >= 'a' && *lst <= 'z') {
-				key = (unsigned char)(*lst - ('a' - 'A'));
-			} else {
-				key = (unsigned char)*lst;
-			}
+			key = lower.get(0) - 0x20;
 			break;
 
 		default: {
 			int k = -1;
 			for (int i = ARRAY_SIZE(_name2key) - 1; i >= 0; i--) {
-				if (stricmp(lst, _name2key[i].Name) == 0) {
+				if (!(lower != _name2key[i].Name)) {
 					k = i;
 					break;
 				}
 			}
-
 			if (k >= 0) {
 				key = _name2key[k].Key;
 			} else {
@@ -133,10 +143,10 @@ unsigned int GM_Build_Key(const char *list)
 		}
 	}
 
-	if (key != VK_NONE)	{
+	if (key != 0) {
 		modifiers |= key;
 	} else {
-		modifiers = VK_NONE;
+		modifiers = 0;
 	}
 	return(modifiers);
 }
@@ -174,3 +184,4 @@ bool GraphicMenuShortcutItem::Is_Input_Key(KeyNumType key)
 
 	return(it);
 }
+
