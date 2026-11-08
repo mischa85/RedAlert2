@@ -3141,7 +3141,6 @@ address,symbol,evidence
 0x00839C68,?MouseCursor@@3PAVMouse@@A,"inferred: referenced by matched src/winfix.cpp (28 references); across all matched code never at another address, and no other symbol here"
 0x00839C6C,?DepthBuffer@@3PAVZBuffer@@A,"inferred: referenced by matched src/blit.cpp (10 references); across all matched code never at another address, and no other symbol here"
 0x00839D4C,??_C@_11A@?$AA?$AA@,"inferred: referenced by matched src/campaign.cpp (2 references); across all matched code never at another address, and no other symbol here"
-0x0083C550,?LEVEL_LEPTON_H@@3HB,"inferred: referenced by matched src/airctype.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0083C554,?LRotorData@AircraftTypeClass@@2PBXB,"inferred: referenced by matched src/airctype.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0083C558,?RRotorData@AircraftTypeClass@@2PBXB,"inferred: referenced by matched src/airctype.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0083C55C,??_C@_00A@?$AA@,"inferred: referenced by matched src/tiberium.cpp (65 references); across all matched code never at another address, and no other symbol here"
