@@ -5,7 +5,6 @@
 #include "audmem.h"
 #include <stddef.h>
 
-// FUNCTION: GAMEMD 0x004074D0
 AudioMemoryPool * __fastcall MemoryPoolCreate(unsigned items, unsigned size)
 {
 	unsigned poolsize;
@@ -31,13 +30,11 @@ AudioMemoryPool * __fastcall MemoryPoolCreate(unsigned items, unsigned size)
 	return pool;
 }
 
-// FUNCTION: GAMEMD 0x00407510
 void __fastcall MemoryPoolDestroy(AudioMemoryPool * pool)
 {
 	operator delete(pool);
 }
 
-// FUNCTION: GAMEMD 0x00407520
 void * __fastcall MemoryPoolGetItem(AudioMemoryPool * pool)
 {
 	MemoryItem * item = NULL;
@@ -51,7 +48,6 @@ void * __fastcall MemoryPoolGetItem(AudioMemoryPool * pool)
 	return (void *)((unsigned)item + (unsigned)sizeof(MemoryItem));
 }
 
-// FUNCTION: GAMEMD 0x00407530
 void __fastcall MemoryPoolReturnItem(AudioMemoryPool * pool, void * item)
 {
 	MemoryItem * mi = (MemoryItem *)((unsigned)item - (unsigned)sizeof(MemoryItem));
@@ -60,7 +56,6 @@ void __fastcall MemoryPoolReturnItem(AudioMemoryPool * pool, void * item)
 	pool->next = mi;
 }
 
-// FUNCTION: GAMEMD 0x00407540
 int __fastcall MemoryPoolCount(AudioMemoryPool * pool)
 {
 	MemoryItem * item;
