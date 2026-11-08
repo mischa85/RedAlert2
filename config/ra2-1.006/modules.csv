@@ -483,9 +483,7 @@ unk_005A14D0,0x005A14D0,0x005A1620,tibsun,matched functions of one source file o
 unk_005A1620,0x005A1620,0x005A1650,unknown,code not assigned to a module
 unk_005A1650,0x005A1650,0x005A1710,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005A1710,0x005A1710,0x005A73E0,unknown,code not assigned to a module
-unk_005A73E0,0x005A73E0,0x005A7430,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A7430,0x005A7430,0x005A7480,unknown,code not assigned to a module
-unk_005A7480,0x005A7480,0x005A74B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+mplayer,0x005A73E0,0x005A74B0,tibsun,"functions compiled from src/mplayer.cpp, matched, without gaps"
 unk_005A74B0,0x005A74B0,0x005A7550,unknown,code not assigned to a module
 unk_005A7550,0x005A7550,0x005A7950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005A7950,0x005A7950,0x005A7980,unknown,code not assigned to a module
