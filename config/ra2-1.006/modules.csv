@@ -863,7 +863,8 @@ vqalib_buffer_,0x007768A0,0x00777850,source,"functions compiled from src/vqalib_
 vqalib_config,0x00777850,0x00777870,source,"functions compiled from src/vqalib_config.cpp, matched, without gaps"
 unk_00777870,0x00777870,0x00778450,unknown,code not assigned to a module
 vqalib_dstream,0x00778450,0x00778680,source,"functions compiled from src/vqalib_dstream.cpp, matched, without gaps"
-unk_00778680,0x00778680,0x0077CB20,unknown,code not assigned to a module
+vqalib_loader,0x00778680,0x0077B7A0,source,"functions compiled from src/vqalib_loader.cpp, matched, without gaps"
+unk_0077B7A0,0x0077B7A0,0x0077CB20,unknown,code not assigned to a module
 vqalib_timer,0x0077CB20,0x0077CBD0,source,"functions compiled from src/vqalib_timer.cpp, matched, without gaps"
 unk_0077CBD0,0x0077CBD0,0x00781C8C,unknown,code not assigned to a module
 libcmt/typinfo,0x00781C8C,0x00781CB5,library,"code sections of VC6 LIBCMT.LIB typinfo.obj, matched"
