@@ -321,7 +321,9 @@ unk_004FC900,0x004FC900,0x004FEBD0,unknown,code not assigned to a module
 unk_004FEBD0,0x004FEBD0,0x004FEC80,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004FEC80,0x004FEC80,0x004FEF70,unknown,code not assigned to a module
 hsv,0x004FEF70,0x004FF170,tibsun,"functions compiled from src/hsv.cpp, matched, without gaps; _$E3 not placed"
-unk_004FF170,0x004FF170,0x0050B8D0,unknown,code not assigned to a module
+unk_004FF170,0x004FF170,0x00509B20,unknown,code not assigned to a module
+infatype,0x00509B20,0x0050AF90,tibsun,"functions compiled from src/infatype.cpp, matched, without gaps; seven placed by the gap"
+unk_0050AF90,0x0050AF90,0x0050B8D0,unknown,code not assigned to a module
 unk_0050B8D0,0x0050B8D0,0x0050B9A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0050B9A0,0x0050B9A0,0x0050BBE0,unknown,code not assigned to a module
 unk_0050BBE0,0x0050BBE0,0x0050CAF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
