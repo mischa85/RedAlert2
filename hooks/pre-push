@@ -3,6 +3,7 @@
 # clone with git config core.hooksPath hooks, and give it an upload token from
 # the project's manage page:
 #   git config bytematch.token <token>
+# The report is sent gzip-encoded, as ByteMatch rejects large bodies (413).
 # It never blocks a push; skip it with git push --no-verify.
 cd "$(git rev-parse --show-toplevel)"
 token=${BYTEMATCH_TOKEN:-$(git config bytematch.token)}
@@ -23,9 +24,11 @@ while read -r local_ref local_sha remote_ref remote_sha; do
     python3 -I configure.py >/dev/null &&
         python3 -I compile.py >/dev/null &&
         objdiff-cli report generate -o build/ra2-1.006/report.json 2>/dev/null &&
+        gzip -c build/ra2-1.006/report.json > build/ra2-1.006/report.json.gz &&
         curl --fail --silent --show-error -w '\n' -X POST \
             -H "Authorization: Bearer $token" \
-            --data-binary @build/ra2-1.006/report.json \
+            -H "Content-Encoding: gzip" -H "Content-Type: application/json" \
+            --data-binary @build/ra2-1.006/report.json.gz \
             "https://bytematch.dev/api/v1/projects/mischa85/RedAlert2/reports?version=ra2-1.006&commit=$local_sha" &&
         echo "pre-push: report for $local_sha uploaded to ByteMatch" ||
         echo "pre-push: report not uploaded"
