@@ -175,9 +175,9 @@ unk_0049E870,0x0049E870,0x0049EE00,unknown,code not assigned to a module
 dllver,0x0049EE00,0x0049EE80,tibsun,"functions compiled from src/dllver.cpp, matched, without gaps"
 unk_0049EE80,0x0049EE80,0x0049EEA0,unknown,code not assigned to a module
 draw,0x0049EEA0,0x0049F430,tibsun,"functions compiled from src/draw.cpp, matched, without gaps"
-unk_0049F430,0x0049F430,0x004A4ED0,unknown,code not assigned to a module
-unk_004A4ED0,0x004A4ED0,0x004A4F30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004A4F30,0x004A4F30,0x004A5A40,unknown,code not assigned to a module
+unk_0049F430,0x0049F430,0x004A4DC0,unknown,code not assigned to a module
+drop,0x004A4DC0,0x004A5550,tibsun,"functions compiled from src/drop.cpp, matched, without gaps; two placed by the gap"
+unk_004A5550,0x004A5550,0x004A5A40,unknown,code not assigned to a module
 droppod,0x004A5A40,0x004A6590,tibsun,"functions compiled from src/droppod.cpp, matched, without gaps; five placed by the gap"
 unk_004A6590,0x004A6590,0x004A6910,unknown,code not assigned to a module
 dropship,0x004A6910,0x004A6B90,tibsun,"functions compiled from src/dropship.cpp, matched, without gaps; one placed by the gap; ?Dropship_Screen@@YIXXZ not placed; ?Draw_Cost@@YIXHHAAVSurface@@ABVPoint2D@@PBD_NAAVConvertClass@@PBVBlitter@@@Z not placed; ?Draw_Unit_Info@@YIXPAVSurface@@PAVConvertClass@@PAVTechnoTypeClass@@_N@Z not placed"
