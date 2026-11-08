@@ -33,6 +33,7 @@ Point2D Conquer_Clip_Text_Print(wchar_t const *, // RA2: wide
 void Draw_Box(Rect const & rect, BoxStyleEnum up, bool filled);
 Point2D __cdecl Fancy_Text_Print(char const * text, Surface & surface, Rect const & rect, Point2D const &pt, ColorScheme * fore, int back, TextPrintType flag, ...);
 Point2D __cdecl Fancy_Text_Print(wchar_t const * text, Surface & surface, Rect const & rect, Point2D const &pt, ColorScheme * fore, int back, TextPrintType flag, ...); // RA2: wide text
+Point2D __cdecl Fancy_Text_Print(wchar_t const * text, Surface & surface, Rect const & rect, Point2D const &pt, unsigned fore, unsigned back, TextPrintType flag, ...); // RA2: wide text in a pixel colour
 Point2D __cdecl Fancy_Text_Print(int text, Surface & surface, Rect const & rect, Point2D const & pt, ColorScheme * fore, int back, TextPrintType flag, ...);
 Point2D Simple_Text_Print(wchar_t const * text, // RA2: wide
 	 Surface & surface, Rect const & rect, Point2D const & pt, ColorScheme * scheme, int back, TextPrintType flag, int fore);

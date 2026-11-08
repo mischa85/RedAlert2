@@ -47,7 +47,7 @@ class TabClass: public SidebarClass, public INoticeSink // RA2: INoticeSink adde
 
 		virtual void AI(KeyNumType &input, Point2D const & xy) override;
 		virtual void Draw_It(bool complete=false) override;
-		static void Draw_Credits_Tab(void);
+		void Draw_Credits_Tab(void); // RA2: not static
 		static void Hilite_Tab(int tab);
 		void Flash_Money(void);
 

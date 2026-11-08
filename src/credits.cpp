@@ -57,6 +57,8 @@
 #include "bench.hh"
 #include "color.hh"
 
+extern RGBClass TooltipColor; // RA2: the outline colour of a tooltip
+
 
 /***********************************************************************************************
  * CreditClass::CreditClass -- Default constructor for the credit class object.                *
@@ -103,8 +105,7 @@ CreditClass::CreditClass(void) :
  *=============================================================================================*/
 void CreditClass::Graphic_Logic(bool forced)
 {
-	if (forced || IsToRedraw) {
-		BStart(BENCH_TABS);
+	if (forced || IsToRedraw) { // RA2: not benchmarked
 
 		int xx = SidebarSurface->Get_Width() / 2;
 
@@ -112,64 +113,24 @@ void CreditClass::Graphic_Logic(bool forced)
 		**	Play a sound effect when the money display changes, but only if a sound
 		**	effect was requested.
 		*/
-		if (IsAudible) {
+		if (IsAudible && Rule->CreditTicks.Count() >= 2) { // RA2: both ticks must be present
 			if (IsUp) {
-				Sound_Effect(VocType(Rule->CreditTicks[0]), .5);
+				VocClass::PlayGlobal(Rule->CreditTicks[0], 0.5f, 0x2000); // RA2: centred
 			} else  {
-				Sound_Effect(VocType(Rule->CreditTicks[1]), .5);
+				VocClass::PlayGlobal(Rule->CreditTicks[1], 0.5f, 0x2000); // RA2: centred
 			}
 		}
 
 		/*
 		**	Display the new current value.
 		*/
-		TabClass::Draw_Credits_Tab();
+		Map.Draw_Credits_Tab(); // RA2: called through the map
 
-		Fancy_Text_Print("%ld", *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(xx, 0), ColorSchemes[0], TBLACK, TextPrintType(TPF_USE_GRAD_PAL|TPF_CENTER|TPF_METAL12), Current);
-
-		if (Scen->MissionTimer.Is_Active()) {
-			int secs = Scen->MissionTimer / TICKS_PER_SECOND;
-			int mins = secs / 60;
-			int hours = mins / 60;
-			secs %= 60;
-			mins %= 60;
-
-			/*
-			**	Speak mission timer reminders.
-			*/
-			VoxType vox = VOX_NONE;
-			switch ((int)Scen->MissionTimer) {
-				case (1 * TICKS_PER_MINUTE):
-					vox = VOX_TIME_1;
-					break;
-				case (2 * TICKS_PER_MINUTE):
-					vox = VOX_TIME_2;
-					break;
-				case (3 * TICKS_PER_MINUTE):
-					vox = VOX_TIME_3;
-					break;
-				case (4 * TICKS_PER_MINUTE):
-					vox = VOX_TIME_4;
-					break;
-				case (5 * TICKS_PER_MINUTE):
-					vox = VOX_TIME_5;
-					break;
-				case (10 * TICKS_PER_MINUTE):
-					vox = VOX_TIME_10;
-					break;
-				case (20 * TICKS_PER_MINUTE):
-					vox = VOX_TIME_20;
-					break;
-			}
-			if (vox != VOX_NONE) {
-				Speak(vox);
-				Map.FlasherTimer = 7;
-			}
-		}
+		int color = DSurface::Build_Hicolor_Pixel(TooltipColor); // RA2: no mission timer display or reminders here
+		Fancy_Text_Print(L"%ld", *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(xx, 2), color, 0, TextPrintType(TPF_USE_GRAD_PAL|TPF_CENTER|TPF_METAL12), Current); // RA2: wide text in the tooltip colour
 
 		IsToRedraw = false;
 		IsAudible = false;
-		BEnd(BENCH_TABS);
 	}
 }
 
@@ -196,8 +157,7 @@ void CreditClass::AI(bool forced)
 {
 	static int _last = 0;
 
-	if (!forced && Frame == _last) return;
-	_last = Frame;
+	_last = Frame; // RA2: no early return when already updated this frame
 
 	Credits = PlayerPtr->Available_Money();
 
@@ -218,8 +178,7 @@ void CreditClass::AI(bool forced)
 		Current = Credits;
 	} else {
 
-		if (Countdown) Countdown--;
-		if (Countdown) return;
+		if (Countdown) Countdown--; // RA2: no waiting for the countdown
 
 		/*
 		**	Determine the amount to change the display toward the
