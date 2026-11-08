@@ -5,7 +5,9 @@ unk_00401940,0x00401940,0x004019E0,unknown,code not assigned to a module
 audcache,0x004019E0,0x00402040,source,"functions compiled from src/audcache.cpp, matched, without gaps; two placed by the gap"
 audchanl,0x00402040,0x00402860,source,"functions compiled from src/audchanl.cpp, matched, without gaps"
 auddev,0x00402860,0x00403CE0,source,"functions compiled from src/auddev.cpp, matched, without gaps; six placed by the gap"
-unk_00403CE0,0x00403CE0,0x0040D7D0,unknown,code not assigned to a module
+unk_00403CE0,0x00403CE0,0x00407030,unknown,code not assigned to a module
+audlevel,0x00407030,0x004071F0,source,"functions compiled from src/audlevel.cpp, matched, without gaps"
+unk_004071F0,0x004071F0,0x0040D7D0,unknown,code not assigned to a module
 unk_0040D7D0,0x0040D7D0,0x0040D810,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0040D810,0x0040D810,0x0040DB60,unknown,code not assigned to a module
 _rtti,0x0040DB60,0x0040DC70,tibsun,"functions compiled from src/_rtti.cpp, matched, without gaps; two placed by definition order; one placed by the gap"
