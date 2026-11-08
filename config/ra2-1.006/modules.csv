@@ -25,19 +25,9 @@ unk_0041F9C0,0x0041F9C0,0x00423F90,unknown,code not assigned to a module
 animfile,0x00423F90,0x00424B90,tibsun,"functions compiled from src/animfile.cpp, matched, without gaps"
 unk_00424B90,0x00424B90,0x00426B70,unknown,code not assigned to a module
 app,0x00426B70,0x00426E70,tibsun,"functions compiled from src/app.cpp, matched, without gaps; seven placed by the gap; ?QueryInterface@TiberianSunClassFactory@@UAGJABU_GUID@@PAPAX@Z not placed"
-unk_00426E70,0x00426E70,0x00427E90,unknown,code not assigned to a module
-unk_00427E90,0x00427E90,0x00428370,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00428370,0x00428370,0x004284E0,unknown,code not assigned to a module
-unk_004284E0,0x004284E0,0x004285D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004285D0,0x004285D0,0x00428A90,unknown,code not assigned to a module
-unk_00428A90,0x00428A90,0x00428AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00428AE0,0x00428AE0,0x00429570,unknown,code not assigned to a module
-unk_00429570,0x00429570,0x004296F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004296F0,0x004296F0,0x00429A90,unknown,code not assigned to a module
-unk_00429A90,0x00429A90,0x00429B60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00429B60,0x00429B60,0x0042A590,unknown,code not assigned to a module
-unk_0042A590,0x0042A590,0x0042AA30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0042AA30,0x0042AA30,0x0042B670,unknown,code not assigned to a module
+unk_00426E70,0x00426E70,0x00427060,unknown,code not assigned to a module
+astar,0x00427060,0x0042AD30,tibsun,"functions compiled from src/astar.cpp, without gaps; matched except ?Find_Path_Regular@AStarClass@@AAEPAUPathStruct@@ABVCell@@0PAVFootClass@@PAW4FacingType@@H_N@Z"
+unk_0042AD30,0x0042AD30,0x0042B670,unknown,code not assigned to a module
 b64pipe,0x0042B670,0x0042B850,tibsun,"functions compiled from src/b64pipe.cpp, matched, without gaps"
 b64straw,0x0042B850,0x0042B950,tibsun,"functions compiled from src/b64straw.cpp, matched, without gaps"
 unk_0042B950,0x0042B950,0x0042B970,unknown,code not assigned to a module
