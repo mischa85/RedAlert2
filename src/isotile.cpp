@@ -41,8 +41,7 @@ bool IsometricTileClass::Mark(MarkType mark)
 
 		for (int y = 0; y < Class->Height; y++) {
 			for (int x = 0; x < Class->Width; x++) {
-				Cell cell = PositionCell;
-				cell += Cell(x, y);
+				Cell cell = PositionCell + Cell(x, y);
 
 				if (Map.In_Radar(cell)) {
 					CellClass *cptr = &Map[cell];
@@ -55,11 +54,12 @@ bool IsometricTileClass::Mark(MarkType mark)
 								cptr->Height -= set->Tiles[subtile]->Height;
 							}
 						} else if (mark == MARK_DOWN || mark == MARK_DOWN_FORCED) {
-							if (Class->HeapID == TILE_CLEAR) {
+							const IsometricTileType tile_type = Class->HeapID;
+							if (tile_type == TILE_CLEAR) {
 								cptr->ITType = TILE_NONE;
 								cptr->SubTile = 0;
 							} else {
-								cptr->ITType = Class->HeapID;
+								cptr->ITType = tile_type;
 								cptr->SubTile = subtile;
 								cptr->Ramp = Class->Ramp_Type(subtile);
 								if (cptr->ITType == IsometricTileTypeClass::SlopeSetPieces + 5) {
@@ -99,13 +99,15 @@ bool IsometricTileClass::Mark(MarkType mark)
 							}
 							cptr->Smudge = SMUDGE_NONE;
 							cptr->SmudgeData = 0;
-							if (cptr->Overlay >= OVERLAY_LARGE_TIBERIUM01 && cptr->Overlay < OVERLAY_LARGE_TIBERIUM12) {
+							const OverlayType overlay = cptr->Overlay;
+							if (overlay >= OVERLAY_LARGE_TIBERIUM01 && overlay < OVERLAY_LARGE_TIBERIUM12) {
 								cptr->IsAnimAttached = false;
 								Coord ccoord = cptr->Center_Coord() + Coord(CELL_LEPTON_W + (CELL_LEPTON_W >> 1), CELL_LEPTON_H + (CELL_LEPTON_H >> 1), 0);
 								for (int i = 0; i < Anims.Count(); i++) {
 									AnimClass *anim = Anims[i];
 									if (anim->Class == OverlayTypes[cptr->Overlay]->CellAnim) {
-										if (anim->PositionCoord == ccoord) {
+										const Coord position = anim->PositionCoord;
+										if (position == ccoord) {
 											delete anim;
 											break;
 										}
@@ -198,7 +200,6 @@ HRESULT STDMETHODCALLTYPE IsometricTileClass::Save(IStream * stream, BOOL cleard
 {
 	HRESULT result = BASECLASS::Save(stream, cleardirty);
 	if (SUCCEEDED(result)) {
-
 		result = S_OK;
 	}
 	return(result);
@@ -245,7 +246,7 @@ bool IsometricTileClass::Limbo(void)
 /// object occupies.
 /// </summary>
 /// <returns>Returns with the size of this object in bytes.</returns>
-int IsometricTileClass::Fetch_Object_Size(bool) const
+int IsometricTileClass::Fetch_Object_Size(void) const
 {
 	return(sizeof(*this));
 }
@@ -293,5 +294,5 @@ ObjectTypeClass const * IsometricTileClass::Class_Of(void) const
 /// </summary>
 void IsometricTileClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 {
-	//nothing
 }
+
