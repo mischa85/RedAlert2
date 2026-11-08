@@ -111,7 +111,7 @@ class MapClass: public GScreenClass
 		void Pick_Up(Cell const & cell, ObjectClass * object);
 		int Overpass(void);
 		ObjectClass * Close_Object(Coord const & coord) const;
-		Cell Nearby_Location(Cell const & cell, SpeedType speed, int zone=-1, MZoneType check=MZONE_NORMAL, bool checkbridge=false, Point2D dimensions=Point2D(1,1), bool checkoverlay=false, bool checkheight=false, bool checkburrow=false, bool allowunderbridge=true, Cell const & nearto=Cell(0, 0)) const;
+		Cell Nearby_Location(Cell const & cell, SpeedType speed, int zone=-1, MZoneType check=MZONE_NORMAL, bool checkbridge=false, Point2D dimensions=Point2D(1,1), bool checkoverlay=false, bool checkheight=false, bool checkburrow=false, bool allowunderbridge=true, Cell const & nearto=Cell(0, 0), bool flag=false) const; // RA2: flag added
 		bool Base_Region(Cell const & cell, HousesType & house, ZoneType & zone) const;
 		int Cell_Region(Cell const & cell);
 		int Cell_Threat(Cell const & cell, HouseClass const & house);

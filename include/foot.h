@@ -456,6 +456,7 @@ class FootClass : public TechnoClass
 		virtual bool Is_Allowed_To_Leave_Map(void) const override;
 		virtual bool Is_Docked_For_Repair(void);
 		void Link_DropPod(void);
+		void Abort_Motion(void); // RA2
 		Cell Move_Order(Cell const & where, bool consider_fog);
 
 		/*
