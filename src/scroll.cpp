@@ -44,6 +44,7 @@
 #include "_rules.h"
 #include "_surface.h"
 #include "_tactica.h"
+#include "beacon.h"
 #include "bound.h"
 #include "building.h"
 #include "cell.h"
@@ -55,6 +56,7 @@
 #include "inline.h"
 #include "misc.h"
 #include "overtype.h"
+#include "planmgr.h"
 #include "rules.h"
 #include "suprtype.h"
 #include "surface.h"
@@ -222,9 +224,9 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 	*/
 	if (CurrentObject.Count()) {
 		if (object != NULL) {
-			action = Best_Selected_Object()->What_Action(object);
+			action = Best_Selected_Object(NULL, object)->What_Action(object, false); // RA2
 		} else {
-			action = Best_Selected_Object()->What_Action(cell, check_fog);
+			action = Best_Selected_Object(&cell, NULL)->What_Action(cell, check_fog, false); // RA2
 		}
 
 	} else {
@@ -250,8 +252,18 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 			}
 		}
 
-		if (visible && object != NULL && object->Class_Of() != NULL && object->Class_Of()->IsSelectable && (object->RTTI != RTTI_BUILDING || !((BuildingClass *)object)->IsFogged) && (techno == NULL || !techno->IsALoaner)) {
-			action = ACTION_SELECT;
+		if (visible) {
+			if (object != NULL && object->CanBeSelected() /* RA2 */ && (object->RTTI != RTTI_BUILDING || !((BuildingClass *)object)->IsFogged) && (techno == NULL || !techno->IsALoaner)) {
+				action = ACTION_SELECT;
+			}
+
+			/*
+			**	RA2: a beacon in the cell can be selected too.
+			*/
+			Coord beacon_coord = Coord(cell, Map[cell].Height * LEVEL_LEPTON_H);
+			if (BeaconManager.FindBeaconAt(beacon_coord) != NULL) {
+				action = ACTION_SELECT_BEACON;
+			}
 		}
 
 		if (Map.IsRepairMode) {
@@ -264,7 +276,7 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 
 		if (Map.IsPowerMode) {
 			action = ACTION_NO_TOGGLE_POWER;
-			if (object != NULL && object->Owner_HouseClass() != NULL && object->Owner_HouseClass()->Is_Player_Control() && object->RTTI == RTTI_BUILDING && object->Class_Of()->IsSelectable && !object->Considered_Vehicle()) {
+			if (object != NULL && object->Owner_HouseClass() != NULL && object->Owner_HouseClass()->Is_Player_Control() && object->RTTI == RTTI_BUILDING && object->CanBeSelected() && !object->Considered_Vehicle()) { // RA2: CanBeSelected
 				BuildingTypeClass * bclass = ((BuildingClass *)object)->Class;
 				if (bclass->IsCanTogglePower && (bclass->Drain > 0 || bclass->IsPowered)) {
 					action = ACTION_TOGGLE_POWER;
@@ -298,12 +310,16 @@ ActionType ScrollClass::What_Action(Cell const & cell, ObjectClass * object, boo
 			} else if (waypoint != NULL) {
 				action = ACTION_SELECT_WAYPOINT;
 
-			} else if (PlayerPtr->SelectedPath != PATH_NONE && PlayerPtr->Can_Add_Waypoint_To_Path() && Map.In_Local_Radar(cell)) {
+			} else if (PlayerPtr->SelectedPath != PATH_NONE && PlayerPtr->Can_Add_Waypoint_To_Path() && Map.In_Local_Radar(cell, true)) { // RA2
 				action = ACTION_PLACE_WAYPOINT;
 
 			} else {
 				action = ACTION_NO_PLACE_WAYPOINT;
 			}
+		}
+
+		if (Map.IsBeaconMode) { // RA2
+			action = ACTION_PLACE_BEACON;
 		}
 
 		if (Map.IsSellMode) {
@@ -372,16 +388,14 @@ void ScrollClass::Scroll_Edge(Point2D const & point)
 		/*
 		**	Special check to not scroll within the special no-scroll regions.
 		*/
-		bool noscroll = false;
 
-		if (!noscroll) {
 			Point2D p = TacticalRect.Top_Left() + point;
 			int x = p.X;
 			int y = p.Y;
 			int w = (CompositeSurface->Get_Width()+SidebarSurface->Get_Width()) - 1;
 			int h = CompositeSurface->Get_Height() - 1;
 
-			bool at_screen_edge = (y <= 0 || x == 0 || x >= w || y >= h);
+		bool at_screen_edge = (y <= 0 || x <= 0 || x >= w || y >= h); // RA2: x <= 0
 
 			bool player_scrolled=false;
 
@@ -496,7 +510,6 @@ void ScrollClass::Scroll_Edge(Point2D const & point)
 			}
 		}
 	}
-}
 
 
 /// <summary>
@@ -512,6 +525,9 @@ void ScrollClass::Scroll_AI(void)
 		Point2D mouse = MouseCursor->Get_Mouse_Point();
 		Point2D point = mouse - tacti;
 
+		if (Planning_Mouse_AI(point.X, point.Y)) { // RA2: planning mode takes the mouse
+			return;
+		}
 		if (IsMouseDown == true) {
 			if (Keyboard->Down(KN_LMOUSE)) {
 				Map.Mouse_Left_Held(point);
@@ -583,11 +599,7 @@ void ScrollClass::Message_Handler(HWND hwnd, UINT & message, UINT & wParam, LONG
 		return;
 	}
 
-	if (SpecialDialog != SDLG_NONE) {
-		return;
-	}
-
-	if (IgnoreInput && message != WM_CAPTURECHANGED) {
+	if (IgnoreInput && message != WM_CAPTURECHANGED) { // RA2: no special dialog check
 		return;
 	}
 
@@ -600,14 +612,13 @@ void ScrollClass::Message_Handler(HWND hwnd, UINT & message, UINT & wParam, LONG
 
 	switch (message) {
 
-		case WM_LBUTTONDOWN:
-			if (IsMouseDown == false) {
+		case WM_LBUTTONDOWN: {
+			POINTS pts = MAKEPOINTS(lParam);
+			point.X = pts.x - TacticalRect.X;
+			point.Y = pts.y - TacticalRect.Y;
 
-				POINTS pts = MAKEPOINTS(lParam);
-				point.X = pts.x - TacticalRect.X;
-				point.Y = pts.y - TacticalRect.Y;
-
-				if (Resolve_Point(point, cell, coord, object, fog, shadow)) {
+			if (Resolve_Point(point, cell, coord, object, fog, shadow)) {
+				if (!Planning_Left_Press(point.X, point.Y) && IsMouseDown == false) { // RA2: planning mode first
 					Map.Mouse_Left_Up(cell, shadow, object, What_Action(cell, object, true));
 					Map.Mouse_Left_Press(point);
 					SetCapture(MainWindow);
@@ -615,28 +626,29 @@ void ScrollClass::Message_Handler(HWND hwnd, UINT & message, UINT & wParam, LONG
 				}
 			}
 			break;
+		}
 
-		case WM_LBUTTONUP:
-			if (IsMouseDown == true) {
+		case WM_LBUTTONUP: {
+			POINTS pts = MAKEPOINTS(lParam);
+			point.X = pts.x - TacticalRect.X;
+			point.Y = pts.y - TacticalRect.Y;
 
-				POINTS pts = MAKEPOINTS(lParam);
-				point.X = pts.x - TacticalRect.X;
-				point.Y = pts.y - TacticalRect.Y;
-
+			if (!Planning_Left_Release(point) && IsMouseDown) { // RA2: planning mode first
 				Resolve_Point(point, cell, coord, object, fog, shadow);
 				Map.Mouse_Left_Release(coord, cell, object, What_Action(cell, object, false));
 				IsMouseDown = false;
 				ReleaseCapture();
 			}
 			break;
+		}
 
-		case WM_RBUTTONDOWN:
+		case WM_RBUTTONDOWN: {
+			POINTS pts = MAKEPOINTS(lParam);
+			point.X = pts.x - TacticalRect.X;
+			point.Y = pts.y - TacticalRect.Y;
+
+			Planning_Right_Press(point.X, point.Y); // RA2
 			if (IsMouseDown == false) {
-
-				POINTS pts = MAKEPOINTS(lParam);
-				point.X = pts.x - TacticalRect.X;
-				point.Y = pts.y - TacticalRect.Y;
-
 				if (Resolve_Point(point, cell, coord, object, fog, shadow)) {
 					Map.Mouse_Right_Press(point);
 					SetCapture(MainWindow);
@@ -644,15 +656,23 @@ void ScrollClass::Message_Handler(HWND hwnd, UINT & message, UINT & wParam, LONG
 				}
 			}
 			break;
+		}
 
-		case WM_RBUTTONUP:
-			if (IsMouseDown == true) {
+		case WM_RBUTTONUP: {
+			POINTS pts = MAKEPOINTS(lParam);
+			Point2D pos;
+			pos.X = pts.x - TacticalRect.X;
+			pos.Y = pts.y - TacticalRect.Y;
+
+			Planning_Right_Release(pos.X, pos.Y); // RA2
+			if (IsMouseDown) {
 				Map.Mouse_Right_Release(point);
 				BASECLASS::Abort_Drag_Select();
 				IsMouseDown = false;
 				ReleaseCapture();
 			}
 			break;
+		}
 
 		case WM_CAPTURECHANGED:
 			if (((HWND &)lParam) != MainWindow && IsMouseDown == true) {
@@ -727,6 +747,42 @@ void ScrollClass::Scroll_Coast(Point2D const & point)
 			int distx;
 			int disty;
 
+			/*
+			**	RA2: a drag that starts at the screen edge scrolls towards that edge, and a
+			**	drag near the edge scrolls faster.
+			*/
+			if (posx == 0) {
+				if (RightPressPoint.X == 0) {
+					posx = -1;
+				} else if (RightPressPoint.X >= VideoModeWidth - 1) {
+					posx = 1;
+				}
+			}
+			if (posy == 0) {
+				if (RightPressPoint.Y == 0) {
+					posy = -1;
+				} else if (RightPressPoint.Y >= VideoModeHeight) {
+					posy = 1;
+				}
+			}
+			if ((RightPressPoint.X < 10 && posx < 0) || (RightPressPoint.X > VideoModeWidth - 10 && posx > 0)) {
+				if (posx < 0 && posx > -5) {
+					posx = -5;
+				}
+				if (posx > 0 && posx < 5) {
+					posx = 5;
+				}
+				posx *= 4;
+			}
+			if ((RightPressPoint.Y < 10 && posy < 0) || (RightPressPoint.Y > VideoModeHeight - 10 && posy > 0)) {
+				if (posy < 0 && posy > -5) {
+					posy = -5;
+				}
+				if (posy > 0 && posy < 5) {
+					posy = 5;
+				}
+				posy *= 4;
+			}
 			switch (Options.Get_Scroll_Method()) {
 
 				case 0:

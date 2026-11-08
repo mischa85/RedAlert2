@@ -320,7 +320,9 @@ class ObjectClass : public AbstractClass
 
 	private:
 		virtual void Mark_For_Redraw(void);
+	public:
 		virtual bool CanBeSelected(void) const; // RA2
+	private:
 
 	public:
 

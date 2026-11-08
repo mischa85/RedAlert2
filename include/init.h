@@ -23,6 +23,7 @@ template<class T> class TRect;
 typedef TRect<int> Rect;
 class Surface;
 class ObjectClass;
+class Cell;
 
 bool Parse_Command_Line(int argc, char * argv[]);
 
@@ -60,4 +61,5 @@ ThemeType Fetch_Map_Select_Theme(void);
 void Draw_Version_Text(Surface * surface);
 
 ObjectClass * Best_Selected_Object(void);
+ObjectClass * Best_Selected_Object(Cell const * cell, ObjectClass const * object); // RA2: the selected object best suited to the cell or the object
 int New_Main_Menu(void);
