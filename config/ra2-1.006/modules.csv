@@ -43,7 +43,9 @@ base64,0x0042D520,0x0042D770,tibsun,"functions compiled from src/base64.cpp, mat
 unk_0042D770,0x0042D770,0x0042F0C0,unknown,code not assigned to a module
 bench,0x0042F0C0,0x0042F200,tibsun,"functions compiled from src/bench.cpp, matched, without gaps"
 bfiofile,0x0042F200,0x0042FDF0,tibsun,"functions compiled from src/bfiofile.cpp, matched, without gaps"
-unk_0042FDF0,0x0042FDF0,0x00431040,unknown,code not assigned to a module
+unk_0042FDF0,0x0042FDF0,0x0042FE70,unknown,code not assigned to a module
+bfiofile2,0x0042FE70,0x00431020,source,"functions compiled from src/bfiofile2.cpp, matched, without gaps; two placed by the gap"
+unk_00431020,0x00431020,0x00431040,unknown,code not assigned to a module
 bitfont,0x00431040,0x00432200,source,"functions compiled from src/bitfont.cpp, without gaps; matched except ?Load_Data@BitFont@@SIPAUInternalData@1@PBD@Z"
 unk_00432200,0x00432200,0x00432290,unknown,code not assigned to a module
 bittext,0x00432290,0x00432D20,source,"functions compiled from src/bittext.cpp, matched, without gaps"
