@@ -229,7 +229,9 @@ unk_004DE9E0,0x004DE9E0,0x004DED20,unknown,code not assigned to a module
 unk_004DED20,0x004DED20,0x004DED60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004DED60,0x004DED60,0x004DED70,unknown,code not assigned to a module
 unk_004DED70,0x004DED70,0x004DEEE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004DEEE0,0x004DEEE0,0x004DF810,unknown,code not assigned to a module
+unk_004DEEE0,0x004DEEE0,0x004DF350,unknown,code not assigned to a module
+grphmenu2,0x004DF350,0x004DF7B0,source,"functions compiled from src/grphmenu2.cpp, matched, without gaps"
+unk_004DF7B0,0x004DF7B0,0x004DF810,unknown,code not assigned to a module
 grphmimg,0x004DF810,0x004DFF10,tibsun,"functions compiled from src/grphmimg.cpp, matched, without gaps"
 unk_004DFF10,0x004DFF10,0x004DFF80,unknown,code not assigned to a module
 grphmitm,0x004DFF80,0x004E01F0,tibsun,"functions compiled from src/grphmitm.cpp, matched, without gaps; four placed by the gap"
