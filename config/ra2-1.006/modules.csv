@@ -863,7 +863,8 @@ zbuffer,0x00775B80,0x00776380,tibsun,"functions compiled from src/zbuffer.cpp, w
 vqalib_audio,0x00776380,0x007768A0,source,"functions compiled from src/vqalib_audio.cpp, matched, without gaps"
 vqalib_buffer_,0x007768A0,0x00777850,source,"functions compiled from src/vqalib_buffer_.cpp, matched, without gaps"
 vqalib_config,0x00777850,0x00777870,source,"functions compiled from src/vqalib_config.cpp, matched, without gaps"
-unk_00777870,0x00777870,0x00778450,unknown,code not assigned to a module
+vqalib_drawer,0x00777870,0x00778430,source,"functions compiled from src/vqalib_drawer.cpp, matched, without gaps; ?UnVQ_Nop@@YAXPAE00KKK@Z not placed; ?PageFlip_Nop@@YIJPAU_VQAHandle@@@Z not placed"
+unk_00778430,0x00778430,0x00778450,unknown,code not assigned to a module
 vqalib_dstream,0x00778450,0x00778680,source,"functions compiled from src/vqalib_dstream.cpp, matched, without gaps"
 vqalib_loader,0x00778680,0x0077B7A0,source,"functions compiled from src/vqalib_loader.cpp, matched, without gaps"
 unk_0077B7A0,0x0077B7A0,0x0077CB20,unknown,code not assigned to a module
