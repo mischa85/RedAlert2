@@ -64,6 +64,7 @@ struct SendQueueType {
 	char *Buffer;                   // the data packet
 	int ExtraLen;                   // size of extra data
 	char *ExtraBuffer;              // extra data buffer
+	unsigned short Port;            // RA2: port to send the packet to
 };
 
 /*---------------------------------------------------------------------------
@@ -73,6 +74,7 @@ struct ReceiveQueueType {
 	unsigned int IsActive	: 1;    // 1 = this entry is ready to be processed
 	unsigned int IsRead		: 1;    // 1 = caller has read this entry
 	unsigned int IsACK		: 1;    // 1 = ACK sent for this packet
+	unsigned int ReceiveTime;      // RA2: time this packet was received
 	int BufLen;                     // size of the packet stored in this entry
 	char *Buffer;                   // the data packet
 	int ExtraLen;                   // size of extra data
@@ -101,9 +103,9 @@ class CommBufferClass
 		......................... Send Queue routines .........................
 		*/
 		int Queue_Send(void *buf, int buflen, void *extrabuf = NULL,
-			int extralen = 0);
+			int extralen = 0, unsigned short port = 0); // RA2: port
 		int UnQueue_Send(void *buf, int *buflen, int index,
-			void *extrabuf = NULL, int *extralen = NULL);
+			void *extrabuf = NULL, int *extralen = NULL, unsigned short *port = NULL); // RA2: port
 		int Num_Send(void) {return(SendCount);}     // # entries in queue
 		int Max_Send(void) { return(MaxSend);}      // max # send queue entries
 		SendQueueType * Get_Send(int index);        // random access to queue
