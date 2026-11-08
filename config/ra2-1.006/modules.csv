@@ -702,7 +702,9 @@ unk_0065FBB0,0x0065FBB0,0x00662D60,unknown,code not assigned to a module
 unk_00662D60,0x00662D60,0x00662E00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00662E00,0x00662E00,0x00663690,unknown,code not assigned to a module
 scheme,0x00663690,0x00663DF0,tibsun,"functions compiled from src/scheme.cpp, without gaps; matched except ??0ColorScheme@@QAE@PBDAAVHSVClass@@ABVPaletteClass@@2H@Z and ?Find_Or_Make@ColorScheme@@SIHPBDAAVHSVClass@@ABVPaletteClass@@2H@Z; _$E6 and _$E4 not placed"
-unk_00663DF0,0x00663DF0,0x00669630,unknown,code not assigned to a module
+unk_00663DF0,0x00663DF0,0x00668730,unknown,code not assigned to a module
+script,0x00668730,0x006691A0,tibsun,"functions compiled from src/script.cpp, matched, without gaps; ten placed by the gap"
+unk_006691A0,0x006691A0,0x00669630,unknown,code not assigned to a module
 unk_00669630,0x00669630,0x00669650,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00669650,0x00669650,0x0066DA70,unknown,code not assigned to a module
 unk_0066DA70,0x0066DA70,0x0066DAE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
