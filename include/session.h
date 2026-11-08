@@ -212,14 +212,10 @@ struct NodeNameType {
 		} Chat;
 		struct {
 			char SerialPad[SERIAL_MAX];
-			int Country;
-			int InitialCountry;
+			int Country; // RA2: no initial country, colour, start or team (YR); SpectatorFlag is at +0x5B
 			int ColorIdx;
-			int InitialColor;
 			int Start;
-			int InitialStart;
 			int Team;
-			int InitialTeam;
 			int SpectatorFlag;
 			int HouseIndex;
 			int Time;
