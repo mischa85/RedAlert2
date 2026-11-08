@@ -657,8 +657,8 @@ unk_006816B0,0x006816B0,0x006816D0,tibsun,matched functions of one source file o
 unk_006816D0,0x006816D0,0x006846E0,unknown,code not assigned to a module
 slider,0x006846E0,0x00684D50,tibsun,"functions compiled from src/slider.cpp, matched, without gaps"
 unk_00684D50,0x00684D50,0x00684FC0,unknown,code not assigned to a module
-unk_00684FC0,0x00684FC0,0x006850B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006850B0,0x006850B0,0x006875C0,unknown,code not assigned to a module
+smartdeform,0x00684FC0,0x00686F40,tibsun,"functions compiled from src/smartdeform.cpp, matched, without gaps"
+unk_00686F40,0x00686F40,0x006875C0,unknown,code not assigned to a module
 smudge,0x006875C0,0x00687AB0,tibsun,"functions compiled from src/smudge.cpp, matched, without gaps; six placed by the gap; ?GetClassID@SmudgeClass@@UAGJPAU_GUID@@@Z not placed"
 unk_00687AB0,0x00687AB0,0x00687DA0,unknown,code not assigned to a module
 smudtype,0x00687DA0,0x00688BF0,tibsun,"functions compiled from src/smudtype.cpp, matched, without gaps; six placed by the gap"
