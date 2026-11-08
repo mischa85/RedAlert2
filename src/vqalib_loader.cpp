@@ -845,194 +845,6 @@ static inline long Load_VPTZ_K(VQAHandleP *vqap, unsigned long iffsize)
 	return(VQAERR_NONE);
 }
 
-long Load_VQF(VQAHandleP *vqap, unsigned long frame_iffsize, char flags)
-{
-	VQAFrameNode  *curframe;
-	ChunkHeader   *chunk;
-	unsigned long iffsize;
-	unsigned long framesize;
-	unsigned long bytes_loaded = 0;
-	VQADrawer     *drawer;
-	VQAConfig     *config;
-	int skip;
-
-	curframe = vqap->Loader.CurFrame;
-	drawer = &(vqap->Drawer);
-	chunk = &vqap->Loader.CurChunkHdr;
-	config = &(vqap->Config);
-	framesize = PADSIZE(frame_iffsize);
-
-	while (bytes_loaded < framesize) {
-		if (vqap->Config.StreamHandler((VQAHandle *)vqap, VQACMD_READ, chunk, sizeof(*chunk))) {
-			return(VQAERR_EOF);
-		}
-
-		iffsize = REVERSE_LONG(chunk->size);
-		bytes_loaded += sizeof(*chunk);
-		bytes_loaded += PADSIZE(iffsize);
-
-		skip = true;
-
-		switch (chunk->id) {
-			case ID_CBF0:
-				if (flags & VQALOADF_NOFCB) {
-					break;
-				}
-				if (Load_CBF0(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				break;
-
-			case ID_CBFZ:
-				if (flags & VQALOADF_NOFCB) {
-					break;
-				}
-				if (Load_CBFZ(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				break;
-
-			case ID_CBP0:
-				if (flags & VQALOADF_NOPCB) {
-					break;
-				}
-				if (Load_CBP0(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				break;
-
-			case ID_CBPZ:
-				if (flags & VQALOADF_NOPCB) {
-					break;
-				}
-				if (Load_CBPZ(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				break;
-
-			case ID_CPL0:
-				if (flags & VQALOADF_NOPAL) {
-					break;
-				}
-				if (Load_CPL0(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				curframe->Flags |= VQAFRMF_PALETTE;
-
-				skip = false;
-				break;
-
-			case ID_CPLZ:
-				if (flags & VQALOADF_NOPAL) {
-					break;
-				}
-				if (Load_CPLZ(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				curframe->Flags |= VQAFRMF_PALETTE;
-
-				skip = false;
-				break;
-
-			case ID_VPT0:
-			case ID_VPTD:
-				if (flags & VQALOADF_NOPTR) {
-					break;
-				}
-				if (Load_VPT0(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				break;
-
-			case ID_VPKZ:
-				if (flags & VQALOADF_NOPTR) {
-					break;
-				}
-				if (Load_VPTZ_K(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				curframe->Flags |= VQAFRMF_KEY;
-
-				break;
-
-			case ID_VPTZ:
-			case ID_VPDZ:
-				if (flags & VQALOADF_NOPTR) {
-					break;
-				}
-				if (Load_VPTZ(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				break;
-
-			case ID_VPTK:
-				if (flags & VQALOADF_NOPTR) {
-					break;
-				}
-				if (Load_VPT0(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				curframe->Flags |= VQAFRMF_KEY;
-
-				break;
-
-			case ID_VPTR:
-				if (flags & VQALOADF_NOPTR) {
-					break;
-				}
-				if (Load_VPT0(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				curframe->Flags |= VQAFRMF_RSDCOMP;
-
-				break;
-
-			case ID_VPRZ:
-				if (flags & VQALOADF_NOPTR) {
-					break;
-				}
-				if (Load_VPTZ(vqap, iffsize) != VQAERR_NONE) {
-					return(VQAERR_READ);
-				}
-
-				skip = false;
-				curframe->Flags |= VQAFRMF_RSDCOMP;
-
-				break;
-
-			default:
-				return(VQAERR_READ);
-		}
-
-		if (skip == true) {
-			if (vqap->Config.StreamHandler((VQAHandle *)vqap, VQACMD_SEEK, (void *)1, PADSIZE(iffsize))) {
-				return(VQAERR_SEEK);
-			}
-		}
-	}
-
-	return(VQAERR_NONE);
-}
 
 long Load_LINH(VQAHandleP *vqap, unsigned long iffsize)
 {
@@ -1662,6 +1474,195 @@ long VQA_SeekGroup(VQAHandleP *vqap, long framenum, long groupsize, VQABool prel
 	return(VQAERR_SEEK);
 #undef VQA_GROUP_START
 #undef VQA_GROUP_END
+}
+
+long Load_VQF(VQAHandleP *vqap, unsigned long frame_iffsize, char flags)
+{
+	VQAFrameNode  *curframe;
+	ChunkHeader   *chunk;
+	unsigned long iffsize;
+	unsigned long framesize;
+	unsigned long bytes_loaded = 0;
+	VQADrawer     *drawer;
+	VQAConfig     *config;
+	int skip;
+
+	curframe = vqap->Loader.CurFrame;
+	drawer = &(vqap->Drawer);
+	chunk = &vqap->Loader.CurChunkHdr;
+	config = &(vqap->Config);
+	framesize = PADSIZE(frame_iffsize);
+
+	while (bytes_loaded < framesize) {
+		if (vqap->Config.StreamHandler((VQAHandle *)vqap, VQACMD_READ, chunk, sizeof(*chunk))) {
+			return(VQAERR_EOF);
+		}
+
+		iffsize = REVERSE_LONG(chunk->size);
+		bytes_loaded += sizeof(*chunk);
+		bytes_loaded += PADSIZE(iffsize);
+
+		skip = true;
+
+		switch (chunk->id) {
+			case ID_CBF0:
+				if (flags & VQALOADF_NOFCB) {
+					break;
+				}
+				if (Load_CBF0(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				break;
+
+			case ID_CBFZ:
+				if (flags & VQALOADF_NOFCB) {
+					break;
+				}
+				if (Load_CBFZ(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				break;
+
+			case ID_CBP0:
+				if (flags & VQALOADF_NOPCB) {
+					break;
+				}
+				if (Load_CBP0(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				break;
+
+			case ID_CBPZ:
+				if (flags & VQALOADF_NOPCB) {
+					break;
+				}
+				if (Load_CBPZ(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				break;
+
+			case ID_CPL0:
+				if (flags & VQALOADF_NOPAL) {
+					break;
+				}
+				if (Load_CPL0(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				curframe->Flags |= VQAFRMF_PALETTE;
+
+				skip = false;
+				break;
+
+			case ID_CPLZ:
+				if (flags & VQALOADF_NOPAL) {
+					break;
+				}
+				if (Load_CPLZ(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				curframe->Flags |= VQAFRMF_PALETTE;
+
+				skip = false;
+				break;
+
+			case ID_VPT0:
+			case ID_VPTD:
+				if (flags & VQALOADF_NOPTR) {
+					break;
+				}
+				if (Load_VPT0(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				break;
+
+			case ID_VPKZ:
+				if (flags & VQALOADF_NOPTR) {
+					break;
+				}
+				if (Load_VPTZ_K(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				curframe->Flags |= VQAFRMF_KEY;
+
+				break;
+
+			case ID_VPTZ:
+			case ID_VPDZ:
+				if (flags & VQALOADF_NOPTR) {
+					break;
+				}
+				if (Load_VPTZ(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				break;
+
+			case ID_VPTK:
+				if (flags & VQALOADF_NOPTR) {
+					break;
+				}
+				if (Load_VPT0(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				curframe->Flags |= VQAFRMF_KEY;
+
+				break;
+
+			case ID_VPTR:
+				if (flags & VQALOADF_NOPTR) {
+					break;
+				}
+				if (Load_VPT0(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				curframe->Flags |= VQAFRMF_RSDCOMP;
+
+				break;
+
+			case ID_VPRZ:
+				if (flags & VQALOADF_NOPTR) {
+					break;
+				}
+				if (Load_VPTZ(vqap, iffsize) != VQAERR_NONE) {
+					return(VQAERR_READ);
+				}
+
+				skip = false;
+				curframe->Flags |= VQAFRMF_RSDCOMP;
+
+				break;
+
+			default:
+				return(VQAERR_READ);
+		}
+
+		if (skip == true) {
+			if (vqap->Config.StreamHandler((VQAHandle *)vqap, VQACMD_SEEK, (void *)1, PADSIZE(iffsize))) {
+				return(VQAERR_SEEK);
+			}
+		}
+	}
+
+	return(VQAERR_NONE);
 }
 
 long Load_CLIP(VQAHandleP *vqap, unsigned long iffsize)
