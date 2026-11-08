@@ -14,6 +14,7 @@
 #include "surface.h"
 #include "win.h"
 #include "winfix.h"
+#include "widewstring.h"
 #include "wstring.h"
 
 
@@ -51,13 +52,13 @@ namespace OwnerDraw {
 		 * This is the text drawn in a TEXT cell. A PRIMARY cell ignores it and takes its
 		 * text from the list box item itself instead.
 		 */
-		Wstring string;
+		WideWstring string; // RA2: wide
 
 		/*
 		 * This is the tooltip text for the cell, shown when the mouse rests over this
 		 * column of the row. If empty, then the cell has no tooltip.
 		 */
-		Wstring hint;
+		WideWstring hint; // RA2: wide
 
 		/*
 		 * This is the color the cell's text is drawn in. If -1, then the default list text
