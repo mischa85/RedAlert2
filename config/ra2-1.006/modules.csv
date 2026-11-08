@@ -578,7 +578,9 @@ unk_0060FD70,0x0060FD70,0x0060FE30,unknown,code not assigned to a module
 pkstraw,0x0060FE30,0x00610140,tibsun,"functions compiled from src/pkstraw.cpp, matched, without gaps; two placed by alphabetical order"
 unk_00610140,0x00610140,0x0061BE40,unknown,code not assigned to a module
 polygon,0x0061BE40,0x0061C260,tibsun,"functions compiled from src/polygon.cpp, matched, without gaps"
-unk_0061C260,0x0061C260,0x0061D440,unknown,code not assigned to a module
+unk_0061C260,0x0061C260,0x0061C450,unknown,code not assigned to a module
+power,0x0061C450,0x0061D220,tibsun,"functions compiled from src/power.cpp, without gaps; matched except ?Draw_It@PowerClass@@UAEX_N@Z and ?Reposition_Sidebar@PowerClass@@UAEXXZ; two placed by the gap"
+unk_0061D220,0x0061D220,0x0061D440,unknown,code not assigned to a module
 unk_0061D440,0x0061D440,0x0061D460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0061D460,0x0061D460,0x0061E2A0,unknown,code not assigned to a module
 unk_0061E2A0,0x0061E2A0,0x0061E490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
