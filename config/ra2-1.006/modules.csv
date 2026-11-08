@@ -850,7 +850,9 @@ unk_00769EA0,0x00769EA0,0x0076B8A0,unknown,code not assigned to a module
 unk_0076B8A0,0x0076B8A0,0x0076B8F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0076B8F0,0x0076B8F0,0x0076B990,unknown,code not assigned to a module
 unk_0076B990,0x0076B990,0x0076B9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0076B9E0,0x0076B9E0,0x0076D980,unknown,code not assigned to a module
+unk_0076B9E0,0x0076B9E0,0x0076C0F0,unknown,code not assigned to a module
+wspudp,0x0076C0F0,0x0076C290,tibsun,"functions compiled from src/wspudp.cpp, matched, without gaps; ??0UDPInterfaceClass@@QAE@XZ not placed; ?Set_Broadcast_Address@UDPInterfaceClass@@UAEXPAX@Z not placed; ?Open_Socket@UDPInterfaceClass@@UAE_NI@Z not placed; ?Broadcast@UDPInterfaceClass@@UAEXPAXH@Z not placed; ?Message_Handler@UDPInterfaceClass@@UAEHPAUHWND__@@IIJ@Z not placed"
+unk_0076C290,0x0076C290,0x0076D980,unknown,code not assigned to a module
 unk_0076D980,0x0076D980,0x0076D9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0076D9E0,0x0076D9E0,0x0076DA70,unknown,code not assigned to a module
 unk_0076DA70,0x0076DA70,0x0076DAE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
