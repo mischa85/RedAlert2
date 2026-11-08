@@ -85,11 +85,7 @@ carry,0x00468CB0,0x00468E80,tibsun,"functions compiled from src/carry.cpp, match
 unk_00468E80,0x00468E80,0x00468EA0,unknown,code not assigned to a module
 category,0x00468EA0,0x00468F30,tibsun,"functions compiled from src/category.cpp, matched, without gaps; two placed by definition order"
 unk_00468F30,0x00468F30,0x00468F50,unknown,code not assigned to a module
-unk_00468F50,0x00468F50,0x00468F90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00468F90,0x00468F90,0x00468FD0,unknown,code not assigned to a module
-unk_00468FD0,0x00468FD0,0x004691E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004691E0,0x004691E0,0x004691F0,unknown,code not assigned to a module
-unk_004691F0,0x004691F0,0x004694C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+ccfile,0x00468F50,0x004694C0,tibsun,"functions compiled from src/ccfile.cpp, matched, without gaps"
 unk_004694C0,0x004694C0,0x004696B0,unknown,code not assigned to a module
 unk_004696B0,0x004696B0,0x00469DD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00469DD0,0x00469DD0,0x00469E00,unknown,code not assigned to a module
