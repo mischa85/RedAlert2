@@ -3,13 +3,13 @@
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
-#include	"vqaplayp.h"
+#include "always.h"
+#include	"vqalib/vqaplayp.h"
 #include	<stdio.h>
 #include	<fcntl.h>
 #include	<io.h>
 #include	<string.h>
 
-// FUNCTION: GAMEMD 0x007BF240
 long __cdecl Disk_VQA_Stream_Handler(VQAHandle *vqa, long action, void *buffer, long nbytes)
 {
 	long fh;
@@ -79,7 +79,6 @@ long __cdecl Disk_VQA_Stream_Handler(VQAHandle *vqa, long action, void *buffer, 
 	return(error);
 }
 
-// FUNCTION: GAMEMD 0x007BF3A0
 long __cdecl Memory_VQA_Stream_Handler(VQAHandle *vqa, long action, void *buffer, long nbytes)
 {
 	long error = 0;
