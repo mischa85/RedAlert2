@@ -97,11 +97,7 @@ unk_0046E4D0,0x0046E4D0,0x0046E4F0,tibsun,matched functions of one source file o
 unk_0046E4F0,0x0046E4F0,0x0046EA40,unknown,code not assigned to a module
 unk_0046EA40,0x0046EA40,0x0046EA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0046EA60,0x0046EA60,0x0046EA70,unknown,code not assigned to a module
-unk_0046EA70,0x0046EA70,0x0046EA90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0046EA90,0x0046EA90,0x0046EAA0,unknown,code not assigned to a module
-unk_0046EAA0,0x0046EAA0,0x0046F510,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0046F510,0x0046F510,0x0046F750,unknown,code not assigned to a module
-unk_0046F750,0x0046F750,0x0046FD30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+cdcntrl,0x0046EA70,0x0046FD30,tibsun,"functions compiled from src/cdcntrl.cpp, matched, without gaps; three placed by the gap"
 cdfile,0x0046FD30,0x00470490,tibsun,"functions compiled from src/cdfile.cpp, matched, without gaps; one placed by the gap"
 unk_00470490,0x00470490,0x004763D0,unknown,code not assigned to a module
 unk_004763D0,0x004763D0,0x00476460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
