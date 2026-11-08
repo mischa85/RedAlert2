@@ -3,13 +3,14 @@
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
-#include	"vqaplayp.h"
-#include	"unvq.h"
-#include	"cmp.h"
-#include	"vqapalette.h"
+#include "always.h"
+#include	"vqalib/vqaplayp.h"
+#include	"vqalib/unvq.h"
+#include	"vqalib/cmp.h"
+#include	"vqalib/vqapalette.h"
 #include	<stdio.h>
 #include	<string.h>
-#include	"video.h"
+#include	"vqalib/video.h"
 
 _STATIC long Select_Frame(VQAHandleP *vqap);
 
@@ -100,7 +101,6 @@ void VQA_SetPreviousFrameNode(VQAHandleP *vqap)
 	drawer->CurFrame->Flags = drawer->CurFrame->PrevFlags;
 }
 
-// FUNCTION: GAMEMD 0x007BE660
 long VQA_ResetLastFrameNum(VQAHandle *vqa)
 {
 	VQAHandleP *vqap;
@@ -113,7 +113,6 @@ long VQA_ResetLastFrameNum(VQAHandle *vqa)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BE670
 long VQA_Configure_Drawer(VQAHandleP *vqap)
 {
 	VQAConfig *config;
@@ -202,7 +201,6 @@ long VQA_Configure_Drawer(VQAHandleP *vqap)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BE830
 void VQA_DispatchFrameChunks(VQAHandleP *vqap, long frame)
 {
 	unsigned long chunkid;
@@ -242,7 +240,6 @@ void VQA_DispatchFrameChunks(VQAHandleP *vqap, long frame)
 	}
 }
 
-// FUNCTION: GAMEMD 0x007BE940
 void VQA_UnVQFrame(VQAHandleP *vqap, VQAFrameNode *frame)
 {
 	VQACBNode *codebk;
@@ -306,7 +303,6 @@ void VQA_UnVQFrame(VQAHandleP *vqap, VQAFrameNode *frame)
 	}
 }
 
-// FUNCTION: GAMEMD 0x007BEA40
 long DrawFrame_MCGA(VQAHandle *vqa)
 {
 	VQAHandleP *vqap;
@@ -335,7 +331,6 @@ long DrawFrame_MCGA(VQAHandle *vqa)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BEA80
 STATIC long Select_Frame(VQAHandleP *vqap)
 {
 	VQADrawer    *drawer;
@@ -483,7 +478,6 @@ STATIC long Select_Frame(VQAHandleP *vqap)
 	return(VQA_SetCurrentFrameAsLast(vqap));
 }
 
-// FUNCTION: GAMEMD 0x007BEE20
 long VQA_ComputeDesiredFrame(VQAHandleP *vqap, VQAConfig *config, VQADrawer *drawer, VQAFrameNode *frame, unsigned long time)
 {
 	VQAHeader *header;
@@ -569,7 +563,6 @@ long VQA_ComputeDesiredFrame(VQAHandleP *vqap, VQAConfig *config, VQADrawer *dra
 	return(result);
 }
 
-// FUNCTION: GAMEMD 0x007BEFE0
 STATIC void Prepare_Frame(VQAHandleP *vqap)
 {
 	VQADrawer    *drawer;
@@ -620,7 +613,6 @@ STATIC void Prepare_Frame(VQAHandleP *vqap)
 	}
 }
 
-// FUNCTION: GAMEMD 0x007BF0B0
 STATIC long PageFlip_MCGA(VQAHandle *vqa)
 {
 	VQAHandleP *vqap;
@@ -667,7 +659,6 @@ STATIC long PageFlip_MCGA(VQAHandle *vqa)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BF140
 STATIC long DrawFrame_MCGABuf(VQAHandle *vqa)
 {
 	long rc;
@@ -698,7 +689,6 @@ STATIC long DrawFrame_MCGABuf(VQAHandle *vqa)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BF190
 STATIC long PageFlip_MCGABuf(VQAHandle *vqa)
 {
 	VQAHandleP *vqap;
@@ -742,12 +732,10 @@ STATIC long PageFlip_MCGABuf(VQAHandle *vqa)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007BF220
 void __cdecl UnVQ_Nop(unsigned char *codebook, unsigned char *pointers, unsigned char *buffer, unsigned long blocksperrow, unsigned long numrows, unsigned long bufwidth)
 {
 }
 
-// FUNCTION: GAMEMD 0x007BF230
 long PageFlip_Nop(VQAHandle *vqa)
 {
 	return(VQAERR_NONE);
