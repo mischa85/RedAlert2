@@ -93,6 +93,7 @@ class INIClass {
 		*/
 		PKey Get_PKey(bool fast) const;
 		bool Get_Bool(char const * section, char const * entry, bool defvalue=false) const;
+		int ReadStringtableEntry(char const * section, char const * entry, wchar_t * buffer, int size) const; // RA2 (YR name): a string table label read as wide text
 		class TechnoTypeClass * GetTechnoType(char const * section, char const * entry) const; // RA2 (YR name)
 		double Get_Float(char const * section, char const * entry, double defvalue=0.0) const;
 		int Get_Hex(char const * section, char const * entry, int defvalue=0) const;
