@@ -3,10 +3,11 @@
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
+#include "always.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include "vqaplay.h"
+#include "vqalib/vqaplay.h"
 
 static VQAConfig _defaultconfig = {
 	0,
@@ -74,7 +75,6 @@ static VQAConfig _defaultconfig = {
 	0
 };
 
-// FUNCTION: GAMEMD 0x007BE640
 void VQA_DefaultConfig(VQAConfig *config)
 {
 	memcpy(config, &_defaultconfig, sizeof(VQAConfig));
