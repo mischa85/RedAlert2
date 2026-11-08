@@ -643,7 +643,9 @@ unk_0061D460,0x0061D460,0x0061E2A0,unknown,code not assigned to a module
 unk_0061E2A0,0x0061E2A0,0x0061E490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0061E490,0x0061E490,0x00620600,unknown,code not assigned to a module
 psystype,0x00620600,0x00620EA0,tibsun,"functions compiled from src/psystype.cpp, matched, without gaps; five placed by the gap; ?Create_And_Place@ParticleSystemTypeClass@@UBE_NABVCell@@PAVHouseClass@@@Z not placed; ?Create_One_Of@ParticleSystemTypeClass@@UBEPAVObjectClass@@PAVHouseClass@@@Z not placed"
-unk_00620EA0,0x00620EA0,0x00622180,unknown,code not assigned to a module
+unk_00620EA0,0x00620EA0,0x00621120,unknown,code not assigned to a module
+ptype,0x00621120,0x00621E80,tibsun,"functions compiled from src/ptype.cpp, matched, without gaps; five placed by the gap"
+unk_00621E80,0x00621E80,0x00622180,unknown,code not assigned to a module
 unk_00622180,0x00622180,0x00622230,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00622230,0x00622230,0x00622250,unknown,code not assigned to a module
 unk_00622250,0x00622250,0x00622290,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
