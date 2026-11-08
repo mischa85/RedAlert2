@@ -123,6 +123,7 @@ class RadarClass: public DisplayClass
 		void Post_Load_Radar_Fixup(void);
 
 		virtual bool Map_Cell(Cell const & cell, HouseClass * house) override;
+		virtual void DisposeOfArt(void); // RA2
 		virtual Cell Click_Cell_Calc(Point2D const & point) const;
 		virtual void AI(KeyNumType & input, Point2D const & xy) override;
 		virtual void Draw_It(bool complete=false) override;

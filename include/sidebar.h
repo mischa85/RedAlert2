@@ -121,7 +121,7 @@ class SidebarClass : public PowerClass
 
 		void Zoom_Mode_Control(void);
 		bool Abandon_Production(RTTIType type, FactoryClass * factory);
-		bool Activate(int control);
+		virtual bool Activate(int control); // RA2: virtual
 		bool Add(RTTIType type, int ID);
 		bool Sidebar_Click(KeyNumType & input, int x, int y);
 		void Recalc(void);

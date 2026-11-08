@@ -90,6 +90,7 @@ class GScreenClass : public IGameMap
 		*/
 		virtual void Input(KeyNumType & key, int & x, int & y);
 		virtual void AI(KeyNumType &, Point2D const & xy);
+		virtual bool SetButtons(GadgetClass & gadget); // RA2
 		virtual void Add_A_Button(GadgetClass & gadget);
 		virtual void Remove_A_Button(GadgetClass & gadget);
 

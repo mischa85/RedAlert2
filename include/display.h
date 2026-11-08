@@ -148,6 +148,7 @@ class DisplayClass: public MapClass
 		virtual void Reposition_Sidebar(void);
 		virtual void Abort_Drag_Select(void);
 		virtual bool Map_Cell(Cell const & cell, HouseClass * house);
+		virtual bool RevealFogShroud(Cell const & cell, HouseClass * house, bool increase); // RA2
 		virtual bool Fog_Map_Cell(Cell const & cell, HouseClass * house);
 		virtual bool Shadow_Map_Cell(Cell const & cell, HouseClass * house);
 		virtual MouseType Get_Mouse_Shape(void) const = 0;
