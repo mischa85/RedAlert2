@@ -719,7 +719,9 @@ unk_006D3ED0,0x006D3ED0,0x006D7990,unknown,code not assigned to a module
 unk_006D7990,0x006D7990,0x006D79C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006D79C0,0x006D79C0,0x006E4D60,unknown,code not assigned to a module
 unk_006E4D60,0x006E4D60,0x006E5260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006E5260,0x006E5260,0x006E7C40,unknown,code not assigned to a module
+unk_006E5260,0x006E5260,0x006E7240,unknown,code not assigned to a module
+textbtn,0x006E7240,0x006E7520,tibsun,"functions compiled from src/textbtn.cpp, matched, without gaps"
+unk_006E7520,0x006E7520,0x006E7C40,unknown,code not assigned to a module
 unk_006E7C40,0x006E7C40,0x006E7C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006E7C60,0x006E7C60,0x006E89A0,unknown,code not assigned to a module
 tiberium,0x006E89A0,0x006EA9B0,tibsun,"functions compiled from src/tiberium.cpp, matched, without gaps; one placed by the gap; ?Post_Load_Game@TiberiumClass@@SIXXZ not placed"
