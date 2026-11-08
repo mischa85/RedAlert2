@@ -477,9 +477,9 @@ unk_005AF450,0x005AF450,0x005AF8F0,unknown,code not assigned to a module
 unk_005AF8F0,0x005AF8F0,0x005AF910,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005AF910,0x005AF910,0x005AFBC0,unknown,code not assigned to a module
 unk_005AFBC0,0x005AFBC0,0x005AFBF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005AFBF0,0x005AFBF0,0x005B0950,unknown,code not assigned to a module
-mschoice,0x005B0950,0x005B0980,tibsun,"functions compiled from src/mschoice.cpp, matched, without gaps; ??0MapChoice@@QAE@XZ not placed; ??1MapChoice@@QAE@XZ not placed; ?Initialize@MapChoice@@QAE_NPBD@Z not placed; ?Deinit@MapChoice@@QAEXXZ not placed; ?Find_Stage_By_Name@MapChoice@@QAEPAVMapStage@@PBD@Z not placed; ?Find_Sound@MapChoice@@QAEPAVMSSfxEntry@@PBD@Z not placed; ??0MapStage@@QAE@ABVINIClass@@PBD@Z not placed; ??1MapStage@@QAE@XZ not placed; ?Find_Selection_By_Name@MapStage@@QBEPAVMapSelection@@PBD@Z not placed; ?Find_Selection_By_Index@MapStage@@QBEPADH@Z not placed; ??0MSTextEntry@@QAE@PAD@Z not placed; ??0MSAnimEntry@@QAE@PAD@Z not placed; ??0MSSfxEntry@@QAE@PBDPAD@Z not placed; ??1MSSfxEntry@@QAE@XZ not placed; ?Play@MSSfxEntry@@QAEXXZ not placed"
-unk_005B0980,0x005B0980,0x005B3F40,unknown,code not assigned to a module
+unk_005AFBF0,0x005AFBF0,0x005AFF10,unknown,code not assigned to a module
+mschoice,0x005AFF10,0x005B16C0,tibsun,"functions compiled from src/mschoice.cpp, matched, without gaps; ??1MSSfxEntry@@QAE@XZ not placed; ?Play@MSSfxEntry@@QAEXXZ not placed"
+unk_005B16C0,0x005B16C0,0x005B3F40,unknown,code not assigned to a module
 msfont,0x005B3F40,0x005B4670,tibsun,"functions compiled from src/msfont.cpp, matched, without gaps"
 unk_005B4670,0x005B4670,0x005B4C40,unknown,code not assigned to a module
 unk_005B4C40,0x005B4C40,0x005B4C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
