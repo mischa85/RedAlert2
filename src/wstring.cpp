@@ -86,6 +86,10 @@ bool Wstring::operator==(IN char const* other) const
 {
 	if ((str == NULL) && (other == NULL))
 		return(TRUE);
+
+	if ((str == NULL) || (other == NULL)) // RA2
+		return(FALSE);
+
 	if (strcmp(str, other) != 0)
 		return(FALSE);
 	else
@@ -122,6 +126,12 @@ bool Wstring::operator==(IN Wstring const& other) const
 /// NULL.</remarks>
 bool Wstring::operator!=(IN char const* other) const
 {
+	if ((str == NULL) && (other == NULL)) // RA2
+		return(FALSE);
+
+	if ((str == NULL) || (other == NULL)) // RA2
+		return(TRUE);
+
 	if (strcmp(str, other) != 0)
 		return(TRUE);
 	else
@@ -246,6 +256,7 @@ char Wstring::cat(unsigned int size, IN char const* s)
 	else
 		str[0] = 0;
 
+	if (s)
 	strncat(str, s, size);
 
 	// delete the old string.
@@ -396,6 +407,36 @@ void Wstring::removeSpaces(void)
 
 
 /// <summary>
+/// RA2: Removes the leading characters that occur in the delimiter string.
+/// </summary>
+void Wstring::trimLeading(IN Wstring const& delim)
+{
+	int i = 0;
+
+	while (i < (int)length() && strchr(delim.get(), str[i]))
+		i++;
+	if (i > 0)
+		remove(0, i);
+}
+
+
+/// <summary>
+/// RA2: Removes the trailing characters that occur in the delimiter string.
+/// </summary>
+void Wstring::trimTrailing(IN Wstring const& delim)
+{
+	unsigned int i = length();
+
+	while (i--)
+	{
+		if (!strchr(delim.get(), str[i]))
+			break;
+	}
+	truncate(i + 1);
+}
+
+
+/// <summary>
 /// Frees the text and leaves the string empty.
 /// </summary>
 void Wstring::clear(void)
@@ -464,6 +505,39 @@ char* Wstring::get(void) const
 /// <returns>Returns with the character found, or zero if the position lies past the end
 /// of the string.</returns>
 char Wstring::get(unsigned int index)
+{
+	if (index < strlen(str))
+		return(str[index]);
+	return(0);
+}
+
+
+/// <summary>
+/// RA2: Fetches the text, or an empty string when there is none.
+/// </summary>
+char* Wstring::text(void) const
+{
+	if (!str)
+		return((char *)"");
+	return(str);
+}
+
+
+/// <summary>
+/// RA2: Fetches the character at the index, or zero past the end.
+/// </summary>
+char Wstring::operator[](unsigned int index) const
+{
+	if (index < strlen(str))
+		return(str[index]);
+	return(0);
+}
+
+
+/// <summary>
+/// RA2: Fetches the character at the index, or zero past the end.
+/// </summary>
+char Wstring::getChar(unsigned int index) const
 {
 	if (index < strlen(str))
 		return(str[index]);
@@ -592,10 +666,12 @@ char Wstring::set(IN char const* s)
 
 	clear();
 
-	len = (unsigned int)strlen(s) + 1;
+	len = s ? (unsigned int)strlen(s) + 1 : 1; // RA2: a NULL string sets an empty one
 
 	str = new char[len];
-	strcpy(str, s);
+	str[0] = 0; // RA2
+	if (s)
+		strcpy(str, s);
 
 	return(TRUE);
 }
@@ -636,6 +712,8 @@ char Wstring::set(unsigned int size, IN char const* string)
 	str = new char[len];
 
 	// Copy the bytes in the string, and NULL-terminate it.
+	str[0] = 0; // RA2
+	if (string)
 	strncpy(str, string, size);
 	str[size] = 0;
 
@@ -657,6 +735,17 @@ void Wstring::toLower(void)
 }
 
 
+/// <summary>
+/// RA2: Fetches a copy of the text in lower case.
+/// </summary>
+Wstring Wstring::toLower(void) const
+{
+	Wstring tmp = *this;
+	tmp.toLower();
+	return(tmp);
+}
+
+
 // This function converts all alphabetical characters in the string to upper
 // case.
 void Wstring::toUpper(void)
@@ -668,6 +757,17 @@ void Wstring::toUpper(void)
 		if ((str[i] >= 'a') && (str[i] <= 'z'))
 			str[i] = toupper(str[i]);
 	}
+}
+
+
+/// <summary>
+/// RA2: Fetches a copy of the text in upper case.
+/// </summary>
+Wstring Wstring::toUpper(void) const
+{
+	Wstring tmp = *this;
+	tmp.toUpper();
+	return(tmp);
 }
 
 
@@ -753,3 +853,72 @@ int Wstring::getLine(int offset, Wstring& out) const
 	out.truncate((unsigned int)stop - start + 1);
 	return(stop + 1);
 }
+
+/// <summary>
+/// RA2: Converts the text to an integer.
+/// </summary>
+int Wstring::toInt(void) const
+{
+	return(atoi(str));
+}
+
+/// <summary>
+/// RA2: Builds a string from an integer.
+/// </summary>
+Wstring Wstring_FromInt(int value)
+{
+	char buf[16];
+	sprintf(buf, "%d", value);
+	return(Wstring(buf));
+}
+
+/// <summary>
+/// RA2: Builds a string from an integer, zero padded to the width.
+/// </summary>
+Wstring Wstring_FromInt(int value, int width)
+{
+	char buf[16];
+	sprintf(buf, "%%0%dd", width);
+	sprintf(buf, buf, value);
+	return(Wstring(buf));
+}
+
+/// <summary>
+/// RA2: Joins a plain string and a Wstring.
+/// </summary>
+Wstring operator+(char const* a, Wstring const& b)
+{
+	Wstring tmp(a);
+	return(tmp + b);
+}
+
+/// <summary>
+/// RA2: Joins two strings.
+/// </summary>
+Wstring operator+(Wstring const& a, Wstring const& b)
+{
+	Wstring tmp = a;
+	tmp.cat(b);
+	return(tmp);
+}
+
+/// <summary>
+/// RA2: Checks whether the text holds any of the characters.
+/// </summary>
+bool Wstring::containsAny(char const* chars) const
+{
+	if (chars == NULL || str == NULL)
+		return(false);
+	unsigned int len = strlen(str);
+	return(strcspn(str, chars) < len);
+}
+
+/// <summary>
+/// RA2: Checks whether the text holds any of the characters.
+/// </summary>
+bool Wstring::containsAny(Wstring const& chars) const
+{
+	return(containsAny(chars.get()));
+}
+
+

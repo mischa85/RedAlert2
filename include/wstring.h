@@ -44,8 +44,13 @@ public:
 	char			remove(int pos, int count);
 	char			removeChar(char c);
 	void			removeSpaces(void);
+	void			trimLeading(Wstring const& delim); // RA2
+	void			trimTrailing(Wstring const& delim); // RA2
 	char*			get(void) const;
 	char			get(unsigned int index);
+	char*			text(void) const; // RA2
+	char			operator[](unsigned int index) const; // RA2
+	char			getChar(unsigned int index) const; // RA2
 	unsigned int	length(void) const;
 	char			insert(char c, unsigned int pos);
 	char			insert(char const* instring, unsigned int pos);
@@ -55,7 +60,12 @@ public:
 	char			set(char c, unsigned int index);
 	void			setSize(int bytes);  // create an empty string
 	void			toLower(void);
+	Wstring			toLower(void) const; // RA2
 	void			toUpper(void);
+	Wstring			toUpper(void) const; // RA2
+	int				toInt(void) const; // RA2
+	bool			containsAny(char const* chars) const; // RA2
+	bool			containsAny(Wstring const& chars) const; // RA2
 	char			truncate(unsigned int len);
 	char			truncate(char c);  // trunc after char c
 	int				getToken(int offset, char const* delim, Wstring& out) const;
@@ -76,3 +86,8 @@ public:
 private:
 	char*			str;    // Pointer to allocated string.
 };
+
+// RA2
+Wstring Wstring_FromInt(int value);
+Wstring Wstring_FromInt(int value, int width);
+Wstring operator+(char const* a, Wstring const& b);
