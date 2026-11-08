@@ -17,9 +17,8 @@
 
 template<class T> class DynamicVectorClass;
 
-GameType Select_MPlayer_Game (void);
 //void Clear_Listbox(ListClass *list);
 void Clear_Vector(DynamicVectorClass <NodeNameType *> *vector);
 //void Computer_Message(void);
-int Surrender_Dialog(int text);
+int Surrender_Dialog(wchar_t const * text); // RA2: wide text
 int Abort_Dialog(void);

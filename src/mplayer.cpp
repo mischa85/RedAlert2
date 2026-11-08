@@ -28,7 +28,6 @@
  *                                                                                             *
  *---------------------------------------------------------------------------------------------*
  * Functions:                                                                                  *
- *   Select_MPlayer_Game -- prompts user for NULL-Modem, Modem, or Network game                *
  *   Clear_Listbox -- clears the given list box                                                *
  *   Clear_Vector -- clears the given NodeNameType vector                                      *
  *   Computer_Message -- "sends" a message from the computer                                   *
@@ -49,127 +48,38 @@
 #include "ownrdraw.h"
 #include "session.h"
 #include "worlddom.h"
+#include "stringtable.h"
+
+/*
+**	RA2: the original path of this file, passed with each string table lookup (see stringtable.h).
+*/
+#define RA2_SOURCE "D:\\Ra2\\MPLayer.CPP"
 
 class ListClass;
 
 BOOL CALLBACK Select_MPlayer_Game_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
-/***********************************************************************************************
- * Select_MPlayer_Game -- prompts user for NULL-Modem, Modem, or Network game                  *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      GAME_NORMAL, GAME_MODEM, etc.                                                          *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   02/14/1995 BR : Created.                                                                  *
- *=============================================================================================*/
-GameType Select_MPlayer_Game (void)
-{
-	GameType retval = GAME_NORMAL;
-	AddonType addon;
-	if (Addon_Installed(ADDON_ANY) == ADDON_FIRESTORM && !Select_Game_Type_Dialog(addon)) {
-		return(retval);
-	}
-
-	HWND dialog;
-
-	if (Addon_Installed(ADDON_FIRESTORM) == ADDON_FIRESTORM) {
-		dialog = OwnerDraw::Begin_Dialog(IDD_MPLAYER_SELECT_GAME_FS, Select_MPlayer_Game_Dialog_Proc);
-	} else {
-		dialog = OwnerDraw::Begin_Dialog(IDD_MPLAYER_SELECT_GAME, Select_MPlayer_Game_Dialog_Proc);
-	}
-
-
-	if (dialog) {
-
-		int rc;
-		SetWindowLong(dialog, DWL_USER, (LONG)&rc);
-
-		bool process = true;
-		while (process) {
-			OwnerDraw::Move_Dialog(dialog, -1, (HiddenSurface->Get_Height() - 400) / 2 + 147);
-			OwnerDraw::Display_Dialog(dialog);
-			rc = -1;
-			while (rc == -1) {
-				if (OwnerDraw::Dialog_Message_Handler() == true) {
-					break;
-				}
-				Title_Screen_Restore();
-			}
-
-			ShowWindow(dialog, SW_HIDE);
-			UpdateWindow(MainWindow);
-			switch (rc) {
-				case IDC_MODEMSERIAL:
-					retval = Select_Serial_Dialog();
-					break;
-				case IDC_INTERNET:
-					retval = GAME_INTERNET;
-					break;
-
-				case IDC_WORLDDOM:
-					retval = GAME_WDT;
-					break;
-				case IDC_NETWORK:
-					retval = GAME_IPX;
-					break;
-				case IDC_SKIRMISH:
-					retval = GAME_SKIRMISH;
-					break;
-				default:
-					retval = GAME_NORMAL;
-					process = false;
-					break;
-			}
-			if (retval != GAME_NORMAL) {
-				break;
-			}
-		}
-
-		OwnerDraw::End_Dialog(dialog);
-		Session.Read_Scenario_Descriptions();
-	}
-	return(retval);
-}	/* end of Select_MPlayer_Game */
-
-
 /// <summary>
 /// Handles the messages for the multiplayer game type dialog.
-/// This routine gives the ownerdraw system first crack at the message, disables the world
-/// domination button when that mode is not available, and hands the control the player
-/// pressed back to Select_MPlayer_Game.
+/// This routine gives the ownerdraw system first crack at the message and hands the
+/// control the player pressed back to the caller.
 /// </summary>
 /// <returns>Returns with the result of the ownerdraw handler, or false when the message was
 /// left unhandled.</returns>
 BOOL CALLBACK Select_MPlayer_Game_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	int * retval;
-	HWND handle;
-
 	int rc = OwnerDraw::Default_Dialog_Proc(window, message, wparam, lparam);
 
-	if (message == WM_INITDIALOG) {
-		handle = GetDlgItem(window, IDC_WORLDDOM);
-		if (handle) {
-			EnableWindow(handle, WDT_Is_Allowed());
+	/*
+	**	RA2: there is no world domination button to disable.
+	*/
+	if (rc == 0) {
+		if (message == WM_COMMAND) {
+			*(int *)GetWindowLong(window, DWL_USER) = LOWORD(wparam);
 		}
+		return(false);
 	}
-
-	if (rc != 0) {
-		return(rc);
-	}
-
-	if (message == WM_COMMAND) {
-		retval = (int *)GetWindowLong(window, DWL_USER);
-		*retval = LOWORD(wparam);
-	}
-	return(false);
+	return(rc);
 }
 
 
@@ -188,9 +98,9 @@ BOOL CALLBACK Select_MPlayer_Game_Dialog_Proc(HWND window, UINT message, WPARAM 
  * HISTORY:                                                                *
  *   07/05/1995 BRR : Created.                                             *
  *=========================================================================*/
-int Surrender_Dialog(int text)
+int Surrender_Dialog(wchar_t const * text)
 {
-	return(WWMessageBox()._Process(text, 1, TXT_OK, TXT_CANCEL) == 0);
+	return(WWMessageBox().Process(text, StringTable::LoadString("TXT_OK", NULL, RA2_SOURCE, 108), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 108), NULL) == 0); // RA2: wide text
 }
 
 
