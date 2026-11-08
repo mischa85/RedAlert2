@@ -87,7 +87,10 @@ struct AudioChannel
 	AudioFormat current_format;
 	int format_changed;
 	int drv_format_changed;
-	char pad1A4[0x1c];
+	char pad1A4[4];
+	TimeStamp frameTime;
+	TimeStamp bufferTime;
+	char pad1B8[8];
 };
 
 extern AudioAttribs * audioStdChannelAttribs;

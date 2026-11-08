@@ -16,6 +16,11 @@
 #include "audattr.h"
 #include "audsvc.h"
 #include "audsrc.h"
+#include "audchan.h"
+#include "audstrm.h"
+#include "auddev.h"
+#include "conquer.h"
+#include "dbgprint.h"
 
 #define AS_PLAYING 0x01
 #define AS_PAUSED 0x02
@@ -24,42 +29,9 @@
 #define STM_FAIL 0
 #define STM_EOF 2
 
-struct Game { static bool __cdecl CallBack(void); static bool IsReadingAudioFile; };
 
-struct StmBlock
-{
-	unsigned reserved;
-	char * Data;
-	int Bytes;
-};
 
-struct StmStream;
-struct StmBuffer;
 
-struct AudioChannel
-{
-	ListNode nd;
-	int Type;
-	AudioAttribs ChannelAttribs;
-	char pad88[8];
-	AudioAttribs * SfxAttribs;
-	AudioAttribs * GroupAttribs;
-	AudioAttribs * CompAttribs;
-	AudioAttribs * FadeAttribs;
-	char padA0[0x10];
-	int (__fastcall * CB_NextFrame)(AudioChannel * chan);
-	char padB4[4];
-	int (__fastcall * CB_SampleDone)(AudioChannel * chan);
-	int (__fastcall * CB_Stop)(AudioChannel * chan);
-	void * Data;
-	char padC4[0xac];
-	char * frameData;
-	int bytesInFrame;
-	int bytesRemaining;
-	char pad17C[0x2c];
-	TimeStamp frameTime;
-	TimeStamp bufferTime;
-};
 
 struct AudioStreamer
 {
@@ -70,9 +42,9 @@ struct AudioStreamer
 	TimeStamp buffering;
 	TimeStamp end_time_stamp;
 	TimeStamp start_time_stamp;
-	StmStream * stream;
-	StmBlock * in;
-	StmBlock * out;
+	STM_STREAM * stream;
+	STM_ACCESS * in;
+	STM_ACCESS * out;
 	AudioSample sample;
 	AudioFormat format;
 	FileClass * file;
@@ -100,27 +72,9 @@ struct StreamThread
 	AudioServiceInfo info;
 };
 
-AudioChannel * __fastcall AudioDeviceReserveChannel(AudioDevice * dev, int newType);
-void __fastcall AudioChannelRelease(AudioChannel * chan);
-void __fastcall AudioChannelStop(AudioChannel * chan);
-void __fastcall AudioChannelPause(AudioChannel * chan);
-void __fastcall AudioChannelResume(AudioChannel * chan);
-int __fastcall AudioChannelStart(AudioChannel * chan);
-void __fastcall AudioChannelSetSample(AudioChannel * chan, AudioSample * sample);
 
-StmStream * FUN_004087F0(void);
-void __fastcall FUN_00408840(StmStream * stream);
-void __fastcall FUN_00408970(StmStream * stream);
-void __fastcall FUN_00408A70(StmStream * stream);
-void __fastcall FUN_00408B10(StmStream * stream, StmBuffer * buffer);
-StmBlock * __fastcall FUN_00408C30(StmStream * stream, int id);
-unsigned __fastcall FUN_00408D50(StmStream * stream);
-StmBuffer * __fastcall FUN_00408D80(unsigned size, int flags);
-void __fastcall FUN_00408E70(StmBlock * access);
-int __fastcall FUN_00408F80(StmBlock * access, FileClass * file, int bytes, int * transfered);
-void __fastcall FUN_004091C0(StmBlock * access, int bytes);
-void __fastcall FUN_00409310(StmBlock * access);
-void __cdecl FUN_004068E0(const char * format, ...);
+
+extern bool IsReadingAudioFile; // RA2: set while the streamer reads from a file
 
 static DWORD WINAPI streamerThread(void * data);
 static int __fastcall streamNextFrame(AudioChannel * channel);
@@ -140,20 +94,20 @@ static int threadCreated;
 static __forceinline int recalcBuffering(AudioStreamer * as, TimeStamp buffering, AudioFormat * format)
 {
 	unsigned size;
-	StmStream * stm;
-	StmBuffer * buffer;
+	STM_STREAM * stm;
+	STM_SBUFFER * buffer;
 
 	stm = as->stream;
 	size = AudioFormatBytes(format, buffering);
 	as->frame_size = AudioFormatBytes(format, as->channel->frameTime * 2);
-	if (FUN_00408D50(stm) != size) {
-		FUN_00408970(stm);
-		buffer = FUN_00408D80(size, 0);
+	if (STM_StreamTotalBytes(stm) != size) {
+		STM_StreamDestroyBuffers(stm);
+		buffer = STM_SBufferCreate(size, 0);
 		if (buffer) {
-			FUN_00408B10(stm, buffer);
+			STM_StreamAddSBuffer(stm, buffer);
 		}
 	}
-	return FUN_00408D50(stm) == size;
+	return STM_StreamTotalBytes(stm) == size;
 }
 
 static int streamFill(AudioStreamer * as, TimeStamp amount)
@@ -171,9 +125,9 @@ static int streamFill(AudioStreamer * as, TimeStamp amount)
 	} else {
 		bytes = as->bytes_left;
 	}
-	Game::IsReadingAudioFile = true;
-	result = FUN_00408F80(as->in, as->file, bytes, &transfered);
-	Game::IsReadingAudioFile = false;
+	IsReadingAudioFile = true;
+	result = STM_AccessFileTransfer(as->in, as->file, bytes, &transfered);
+	IsReadingAudioFile = false;
 	as->bytes_left -= transfered;
 	if (as->bytes_left <= 0 || result == STM_EOF || result == STM_FAIL) {
 		as->flags &= ~AS_FILL;
@@ -191,7 +145,6 @@ static void streamStopChannel(AudioStreamer * as)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00407550
 int AudioStreamerInit(void)
 {
 	char buffer[1024];
@@ -213,14 +166,13 @@ int AudioStreamerInit(void)
 	}
 	if (!SetThreadPriority(threadHandle, THREAD_PRIORITY_HIGHEST)) {
 		FormatMessageA(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, sizeof(buffer), NULL);
-		FUN_004068E0("Unable to change the priority of the Streamer Thread - %s\n", buffer);
+		DebugString("Unable to change the priority of the Streamer Thread - %s\n", buffer);
 	}
 	threadCreated = 1;
 	initialized = 1;
 	return 1;
 }
 
-// FUNCTION: GAMEMD 0x00407680
 static DWORD WINAPI streamerThread(void * data)
 {
 	StreamThread * t = (StreamThread *)data;
@@ -244,7 +196,6 @@ static DWORD WINAPI streamerThread(void * data)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00407780
 void AudioStreamerDeinit(void)
 {
 	AudioStreamer * as;
@@ -269,7 +220,6 @@ void AudioStreamerDeinit(void)
 	initialized = 0;
 }
 
-// FUNCTION: GAMEMD 0x00407860
 AudioStreamer * __fastcall AudioStreamerCreate(AudioDevice * dev, TimeStamp buffering)
 {
 	AudioStreamer * as;
@@ -302,7 +252,7 @@ AudioStreamer * __fastcall AudioStreamerCreate(AudioDevice * dev, TimeStamp buff
 	as->channel->CB_NextFrame = streamNextFrame;
 	as->channel->CB_SampleDone = streamSampleDone;
 	as->channel->CB_Stop = streamStop;
-	as->stream = FUN_004087F0();
+	as->stream = STM_StreamCreate();
 	if (!as->stream) {
 		goto error;
 	}
@@ -315,25 +265,23 @@ error:
 	return NULL;
 }
 
-// FUNCTION: GAMEMD 0x004079C0
 static int __fastcall streamNextFrame(AudioChannel * channel)
 {
 	AudioStreamer * as = (AudioStreamer *)channel->Data;
 
-	FUN_004091C0(as->out, as->pending_bytes);
-	FUN_00409310(as->out);
-	if (as->frame_size > as->out->Bytes) {
-		as->pending_bytes = as->out->Bytes;
+	STM_AccessAdvance(as->out, as->pending_bytes);
+	STM_AccessGetBlock(as->out);
+	if (as->frame_size > as->out->Block.Bytes) {
+		as->pending_bytes = as->out->Block.Bytes;
 	} else {
 		as->pending_bytes = as->frame_size;
 	}
 	channel->bytesInFrame = as->pending_bytes;
 	channel->bytesRemaining = channel->bytesInFrame;
-	channel->frameData = as->out->Data;
+	channel->frameData = (char *)as->out->Block.Data;
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00407A30
 static int __fastcall streamSampleDone(AudioChannel * channel)
 {
 	AudioStreamer * as = (AudioStreamer *)channel->Data;
@@ -346,7 +294,6 @@ static int __fastcall streamSampleDone(AudioChannel * channel)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00407A60
 static int __fastcall streamStop(AudioChannel * channel)
 {
 	AudioStreamer * as = (AudioStreamer *)channel->Data;
@@ -359,7 +306,6 @@ static int __fastcall streamStop(AudioChannel * channel)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00407A90
 void __fastcall AudioStreamerDestroy(AudioStreamer * as)
 {
 	if (as->nd.prev != &as->nd) {
@@ -369,15 +315,15 @@ void __fastcall AudioStreamerDestroy(AudioStreamer * as)
 	}
 	streamStopChannel(as);
 	if (as->in) {
-		FUN_00408E70(as->in);
+		STM_AccessRelease(as->in);
 		as->in = NULL;
 	}
 	if (as->out) {
-		FUN_00408E70(as->out);
+		STM_AccessRelease(as->out);
 		as->out = NULL;
 	}
 	if (as->stream) {
-		FUN_00408840(as->stream);
+		STM_StreamDestroy(as->stream);
 	}
 	if (as->channel) {
 		AudioChannelRelease(as->channel);
@@ -388,19 +334,16 @@ void __fastcall AudioStreamerDestroy(AudioStreamer * as)
 	operator delete(as);
 }
 
-// FUNCTION: GAMEMD 0x00407B40
 void __fastcall AudioStreamerSetAttribs(AudioStreamer * as, AudioAttribs * attribs)
 {
 	as->channel->GroupAttribs = attribs;
 }
 
-// FUNCTION: GAMEMD 0x00407B50
 void __fastcall AudioStreamerSetFadeAttribs(AudioStreamer * as, AudioAttribs * attribs)
 {
 	as->channel->FadeAttribs = attribs;
 }
 
-// FUNCTION: GAMEMD 0x00407B60
 int __fastcall AudioStreamerPlayWAV(AudioStreamer * as, const char * filename, int flag)
 {
 	TimeStamp time;
@@ -432,26 +375,25 @@ int __fastcall AudioStreamerPlayWAV(AudioStreamer * as, const char * filename, i
 		as->file = NULL;
 		goto error;
 	}
-	as->file->SkipCDCheck = true;
 	if (!AudioFormatReadWaveFile(as->file, &as->format, &as->total_bytes)) {
 		goto error;
 	}
 	as->bytes_left = as->total_bytes;
 	as->data_start = as->file->Seek(0, SEEK_CUR);
 	if (as->in) {
-		FUN_00408E70(as->in);
+		STM_AccessRelease(as->in);
 		as->in = NULL;
 	}
 	if (as->out) {
-		FUN_00408E70(as->out);
+		STM_AccessRelease(as->out);
 		as->out = NULL;
 	}
 	if (!recalcBuffering(as, as->buffering, &as->format)) {
 		goto cleanup;
 	}
-	FUN_00408A70(as->stream);
-	as->in = FUN_00408C30(as->stream, 0);
-	as->out = FUN_00408C30(as->stream, 1);
+	STM_StreamReset(as->stream);
+	as->in = STM_StreamAcquireAccess(as->stream, 0);
+	as->out = STM_StreamAcquireAccess(as->stream, 1);
 	if (!as->in || !as->out) {
 		goto cleanup;
 	}
@@ -461,11 +403,11 @@ int __fastcall AudioStreamerPlayWAV(AudioStreamer * as, const char * filename, i
 	if (!streamFill(as, time)) {
 		goto cleanup;
 	}
-	FUN_00409310(as->out);
-	as->sample.Data = as->out->Data;
+	STM_AccessGetBlock(as->out);
+	as->sample.Data = (char *)as->out->Block.Data;
 	as->sample.Bytes = AudioFormatBytes(&as->format, as->channel->frameTime);
-	if (as->sample.Bytes > as->out->Bytes) {
-		as->sample.Bytes = as->out->Bytes;
+	if (as->sample.Bytes > as->out->Block.Bytes) {
+		as->sample.Bytes = as->out->Block.Bytes;
 	}
 	as->sample.Format = &as->format;
 	as->pending_bytes = as->sample.Bytes;
@@ -474,9 +416,9 @@ int __fastcall AudioStreamerPlayWAV(AudioStreamer * as, const char * filename, i
 	as->flags |= AS_PLAYING;
 	if (AudioChannelStart(as->channel)) {
 		as->flags &= ~AS_PLAYING;
-		FUN_00408E70(as->in);
+		STM_AccessRelease(as->in);
 		as->in = NULL;
-		FUN_00408E70(as->out);
+		STM_AccessRelease(as->out);
 		as->out = NULL;
 		goto cleanup;
 	}
@@ -487,35 +429,31 @@ int __fastcall AudioStreamerPlayWAV(AudioStreamer * as, const char * filename, i
 cleanup:
 error:
 	if (as->in) {
-		FUN_00408E70(as->in);
+		STM_AccessRelease(as->in);
 		as->in = NULL;
 	}
 	if (as->out) {
-		FUN_00408E70(as->out);
+		STM_AccessRelease(as->out);
 		as->out = NULL;
 	}
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x00407F40
 void __fastcall AudioStreamerStop(AudioStreamer * as)
 {
 	streamStopChannel(as);
 }
 
-// FUNCTION: GAMEMD 0x00407F80
 void __fastcall AudioStreamerLock(AudioStreamer * as)
 {
 	LockAcquire(&as->lock);
 }
 
-// FUNCTION: GAMEMD 0x00407F90
 void __fastcall AudioStreamerUnlock(AudioStreamer * as)
 {
 	LockRelease(&as->lock);
 }
 
-// FUNCTION: GAMEMD 0x00407FB0
 void __fastcall AudioStreamerPause(AudioStreamer * as)
 {
 	if (NotLocked(&as->pause) && as->channel) {
@@ -529,7 +467,6 @@ void __fastcall AudioStreamerPause(AudioStreamer * as)
 	LockAcquire(&as->pause);
 }
 
-// FUNCTION: GAMEMD 0x00408000
 void __fastcall AudioStreamerResume(AudioStreamer * as)
 {
 	if (Locked(&as->pause)) {
@@ -545,60 +482,51 @@ void __fastcall AudioStreamerResume(AudioStreamer * as)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408070
 int __fastcall AudioStreamerIsPlaying(AudioStreamer * as)
 {
 	return as->flags & AS_PLAYING;
 }
 
-// FUNCTION: GAMEMD 0x00408080
 void __fastcall AudioStreamerSetName(AudioStreamer * as, const char * name)
 {
 	strncpy(as->stream_name, name, sizeof(as->stream_name));
 	as->stream_name[sizeof(as->stream_name) - 1] = 0;
 }
 
-// FUNCTION: GAMEMD 0x004080A0
 const char * __fastcall AudioStreamerName(AudioStreamer * as)
 {
 	return as->stream_name;
 }
 
-// FUNCTION: GAMEMD 0x004080B0
 void __fastcall AudioStreamerFadeIn(AudioStreamer * as)
 {
 	AudioLevelAdjust(&as->channel->ChannelAttribs.VolumeLevel, AUDIO_VOLUME_MAX);
 }
 
-// FUNCTION: GAMEMD 0x004080C0
 void __fastcall AudioStreamerFadeOut(AudioStreamer * as)
 {
 	AudioLevelAdjust(&as->channel->ChannelAttribs.VolumeLevel, 0);
 }
 
-// FUNCTION: GAMEMD 0x004080D0
 int __fastcall AudioStreamerIsFading(AudioStreamer * as)
 {
 	return (as->flags & AS_PLAYING) && as->channel->ChannelAttribs.VolumeLevel.level != as->channel->ChannelAttribs.VolumeLevel.newLevel;
 }
 
-// FUNCTION: GAMEMD 0x004080F0
 void __fastcall AudioStreamerWaitForFade(AudioStreamer * as)
 {
 	TimeStamp time_out = AudioGetTime() + as->channel->ChannelAttribs.VolumeLevel.duration;
 
 	while (AudioStreamerIsFading(as) && AudioGetTime() < time_out) {
-		Game::CallBack();
+		Call_Back();
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408140
 TimeStamp __fastcall AudioStreamerEndTimeStamp(AudioStreamer * as)
 {
 	return as->end_time_stamp;
 }
 
-// FUNCTION: GAMEMD 0x00408150
 void AudioStreamerStarve(void)
 {
 	AudioStreamer * as;
@@ -615,7 +543,6 @@ void AudioStreamerStarve(void)
 	LeaveCriticalSection(&streamLock);
 }
 
-// FUNCTION: GAMEMD 0x004081A0
 void AudioStreamerStopAllStreams(void)
 {
 	AudioStreamer * as;
@@ -630,7 +557,6 @@ void AudioStreamerStopAllStreams(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408200
 void AudioStreamerLockAllStreams(void)
 {
 	AudioStreamer * as;
@@ -645,7 +571,6 @@ void AudioStreamerLockAllStreams(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408230
 void AudioStreamerUnlockAllStreams(void)
 {
 	AudioStreamer * as;
@@ -660,7 +585,6 @@ void AudioStreamerUnlockAllStreams(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408270
 void AudioStreamerPauseAllStreams(void)
 {
 	AudioStreamer * as;
@@ -675,7 +599,6 @@ void AudioStreamerPauseAllStreams(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004082F0
 void AudioStreamerResumeAllStreams(void)
 {
 	AudioStreamer * as;
@@ -690,7 +613,6 @@ void AudioStreamerResumeAllStreams(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408390
 void AudioStreamerFadeOutAllStreams(void)
 {
 	AudioStreamer * as;
@@ -705,7 +627,6 @@ void AudioStreamerFadeOutAllStreams(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004083D0
 void AudioStreamerFadeInAllStreams(void)
 {
 	AudioStreamer * as;
@@ -720,7 +641,6 @@ void AudioStreamerFadeInAllStreams(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00408410
 int AudioStreamerAllFaded(void)
 {
 	AudioStreamer * as;
