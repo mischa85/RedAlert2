@@ -343,7 +343,10 @@ void Init_Deform_Grid(Cell center, bool forced)
 						}
 					}
 
-					if (deform_cell == center || (deform_cell + Cell(0, -1)) == center || (deform_cell + Cell(-1, -1)) == center || (deform_cell + Cell(-1, 0)) == center) {
+					if (deform_cell == center ||
+						Cell(deform_cell.X, deform_cell.Y - 1) == center ||
+						Cell(deform_cell.X - 1, deform_cell.Y - 1) == center ||
+						Cell(deform_cell.X - 1, deform_cell.Y) == center) {
 						deform_point.CanForce = true;
 					}
 				}
@@ -495,11 +498,12 @@ bool Commit_Deform_Grid(Cell center, bool forced)
 					objects[objindex]->Mark(MARK_UP);
 				}
 
-				Rect cell_bound(0, 0, 0, 0);
+				Rect cell_bound;
 
 				cell_bound = cellptr->Cell_Render_Rect();
 				int oldheight = cellptr->Height;
 				cellptr->Height = (char)(min_height / RAMP_HALF_HEIGHT);
+				Map.Lower_Max_Level(cellptr->Height); // RA2
 
 				if (oldheight != cellptr->Height) {
 					cellptr->Remove_Fogged_Objects();

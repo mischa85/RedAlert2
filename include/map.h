@@ -144,6 +144,7 @@ class MapClass: public GScreenClass
 		 */
 		void Reset_All_Subzones(void);
 		void Reset_Subzone(int subzone);
+		void Lower_Max_Level(int level); // RA2
 		int Subzone_Span(CellSubzoneStruct * seed, int subzone_level, int subzone_id, Rect const & bounds, Cell const & cell);
 		void Register_Subzone_Zone_Connections(int subzone);
 		void Register_Zone_Connection_Entries(ZoneConnectionClass & connection, int index);
