@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -44,12 +45,15 @@
 **	is controlled by the path list as submitted to Set_Search_Drives(). The format of the path
 **	string is the same as the DOS path string.
 */
+class Wstring;
+
 class CDFileClass : public BufferIOFileClass
 {
 		typedef BufferIOFileClass BASECLASS;
 
 	public:
 		CDFileClass(char const *filename);
+		CDFileClass(Wstring const & filename); // RA2
 		CDFileClass(void);
 		virtual ~CDFileClass(void) override {};
 

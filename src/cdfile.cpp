@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -40,6 +41,7 @@
 #include "always.h"
 
 #include "cdfile.h"
+#include "wstring.h"
 
 #include "diskswap.h"
 
@@ -64,6 +66,16 @@ CDFileClass::CDFileClass(char const *filename) :
 {
 	CDFileClass::Set_Name(filename);
 //	memset (RawPath, 0, sizeof(RawPath));
+}
+
+
+/**
+ *  RA2: Constructs a file object for the file named by the string object.
+ */
+CDFileClass::CDFileClass(Wstring const & filename) :
+	IsDisabled(false)
+{
+	CDFileClass::Set_Name(filename.get());
 }
 
 
