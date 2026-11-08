@@ -63,3 +63,6 @@ class WideWstring
 
 		wchar_t * str;
 };
+
+class Wstring;
+WideWstring Wstring_ToWide(Wstring const & text); // RA2: widens each character of a narrow string
