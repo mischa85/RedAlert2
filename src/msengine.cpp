@@ -28,6 +28,8 @@
 
 #include "color.hh"
 
+int __fastcall AudioDeviceAvailable(void); // RA2: whether the audio library has a device
+
 #include <climits>
 
 
@@ -476,7 +478,7 @@ bool MSEngine::Add_Sound_Effect(char const * name, char const * file_name)
 /// <param name="volume">Volume to play at, before the player's sound option is applied.</param>
 void MSEngine::Play_Sound_Effect(char const * name, int volume)
 {
-	if (name == NULL || !Audio_Available()) {
+	if (name == NULL || !AudioDeviceAvailable()) { // RA2
 		return;
 	}
 
