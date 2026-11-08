@@ -10,6 +10,7 @@
 #include "ini.h"
 #include "convert.h"
 #include "msanim.h"
+#include "wstring.h"
 
 /// <summary>
 /// Creates an animated menu item from its INI description.
