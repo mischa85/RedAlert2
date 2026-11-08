@@ -84,118 +84,48 @@ IPXAddressClass::IPXAddressClass(void)
 }	/* end of IPXAddressClass */
 
 
-/***************************************************************************
- * IPXAddressClass::IPXAddressClass -- class constructor form 2            *
- *                                                                         *
- * INPUT:                                                                  *
- *      net      Network Number for this address                           *
- *      node      Node Address for this address                            *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/19/1994 BR : Created.                                              *
- *=========================================================================*/
-IPXAddressClass::IPXAddressClass(NetNumType net, NetNodeType node)
+/*
+**	RA2: an address of either protocol; a UDP address keeps the port where IPX keeps the network number.
+*/
+IPXAddressClass::IPXAddressClass(NetNumType net, NetNodeType node, unsigned short port)
 {
-	memcpy(NetworkNumber, net, 4);
 	memcpy(NodeAddress, node, 6);
-
-}	/* end of IPXAddressClass */
-
-
-/***************************************************************************
- * IPXAddressClass::IPXAddressClass -- class constructor form 3            *
- *                                                                         *
- * This form of the constructor takes an IPX header as an argument.  It    *
- * extracts the address from the Source address fields in the header.      *
- *                                                                         *
- * INPUT:                                                                  *
- *      header   Header from which to extract the address                  *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/19/1994 BR : Created.                                              *
- *=========================================================================*/
-IPXAddressClass::IPXAddressClass(IPXHeaderType *header)
-{
-	memcpy(NetworkNumber,header->SourceNetworkNumber,4);
-	memcpy(NodeAddress,header->SourceNetworkNode,6);
-
-}	/* end of IPXAddressClass */
-
-
-/***************************************************************************
- * IPXAddressClass::Set_Address -- sets the IPX address values             *
- *                                                                         *
- * INPUT:                                                                  *
- *      net      Network Number for this address                           *
- *      node      Node Address for this address                            *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/19/1994 BR : Created.                                              *
- *=========================================================================*/
-void IPXAddressClass::Set_Address(NetNumType net, NetNodeType node)
-{
-	memcpy(NetworkNumber,net,4);
-	memcpy(NodeAddress,node,6);
-
-}	/* end of Set_Address */
-
-
-/***************************************************************************
- * IPXAddressClass::Set_Address -- sets the IPX values from a header       *
- *                                                                         *
- * This routine extracts the source addresses from the given IPX header.   *
- *                                                                         *
- * INPUT:                                                                  *
- *      net      Network Number for this address                           *
- *      node      Node Address for this address                            *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/19/1994 BR : Created.                                              *
- *=========================================================================*/
-void IPXAddressClass::Set_Address(IPXHeaderType *header)
-{
-	ProtocolEnum protocol = PROTOCOL_IPX;
-	if ( PacketTransport ) protocol = PacketTransport->Get_Protocol();
-
-	switch ( protocol ) {
-
-		case PROTOCOL_IPX:
-			memcpy(NetworkNumber,header->SourceNetworkNumber,4);
-			memcpy(NodeAddress,header->SourceNetworkNode,6);
-			break;
-
-		case PROTOCOL_UDP:
-			unsigned char *addr = (unsigned char*) header;
-			memset (NodeAddress, 0, 6);
-			memcpy (NodeAddress, addr, 4);
-			memset (NetworkNumber, 0, 4);
-			break;
+	if (AddressProtocol == 1) {
+		memcpy(NetworkNumber, net, 4);
+	} else {
+		*(unsigned long *)NetworkNumber = 0;
+		*(unsigned short *)NetworkNumber = port;
 	}
-}	/* end of Set_Address */
+}
+
+
+/*
+**	RA2: sets an address of either protocol.
+*/
+void IPXAddressClass::Set_Address(NetNumType net, NetNodeType node, unsigned short port)
+{
+	memcpy(NodeAddress, node, 6);
+	if (AddressProtocol == 1) {
+		memcpy(NetworkNumber, net, 4);
+	} else {
+		*(unsigned long *)NetworkNumber = 0;
+		*(unsigned short *)NetworkNumber = port;
+	}
+}
+
+
+/*
+**	RA2: gets an address of either protocol.
+*/
+void IPXAddressClass::Get_Address(NetNumType net, NetNodeType node, unsigned short * port)
+{
+	memcpy(node, NodeAddress, 6);
+	if (AddressProtocol == 1) {
+		memcpy(net, NetworkNumber, 4);
+	} else {
+		*port = *(unsigned short *)NetworkNumber;
+	}
+}
 
 
 /***************************************************************************
@@ -216,34 +146,28 @@ void IPXAddressClass::Set_Address(IPXHeaderType *header)
  *=========================================================================*/
 void IPXAddressClass::Get_Address(NetNumType net, NetNodeType node)
 {
+	memcpy(node,NodeAddress,6); // RA2: the node first
 	memcpy(net,NetworkNumber,4);
-	memcpy(node,NodeAddress,6);
 
 }	/* end of Get_Address */
 
 
-/***************************************************************************
- * IPXAddressClass::Get_Address -- copies address into an IPX header       *
- *                                                                         *
- * INPUT:                                                                  *
- *      net      Network Number for this address                           *
- *      node      Node Address for this address                            *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      none.                                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/19/1994 BR : Created.                                              *
- *=========================================================================*/
-void IPXAddressClass::Get_Address(IPXHeaderType *header)
+/*
+**	RA2: gets the node address alone.
+*/
+void IPXAddressClass::Get_Node(NetNodeType node)
 {
-	memcpy(header->DestNetworkNumber,NetworkNumber,4);
-	memcpy(header->DestNetworkNode,NodeAddress,6);
+	memcpy(node, NodeAddress, 6);
+}
 
-}	/* end of Get_Address */
+
+/*
+**	RA2: sets the node address alone.
+*/
+void IPXAddressClass::Set_Node(NetNodeType node)
+{
+	memcpy(NodeAddress, node, 6);
+}
 
 
 /***************************************************************************
@@ -263,11 +187,28 @@ void IPXAddressClass::Get_Address(IPXHeaderType *header)
  *=========================================================================*/
 int IPXAddressClass::Is_Broadcast(void)
 {
-	if (	NetworkNumber[0] == 0xff &&
-			NetworkNumber[1] == 0xff &&
-			NetworkNumber[2] == 0xff &&
-			NetworkNumber[3] == 0xff &&
-			NodeAddress[0] == 0xff &&
+	if (AddressProtocol == 1) { // RA2: IPX
+		if (	NetworkNumber[0] == 0xff &&
+				NetworkNumber[1] == 0xff &&
+				NetworkNumber[2] == 0xff &&
+				NetworkNumber[3] == 0xff &&
+				NodeAddress[0] == 0xff &&
+				NodeAddress[1] == 0xff &&
+				NodeAddress[2] == 0xff &&
+				NodeAddress[3] == 0xff &&
+				NodeAddress[4] == 0xff &&
+				NodeAddress[5] == 0xff) {
+			return(1);
+		}
+		else {
+			return(0);
+		}
+	}
+
+	/*
+	**	RA2: a UDP address has no network number; only its node address counts.
+	*/
+	if (	NodeAddress[0] == 0xff &&
 			NodeAddress[1] == 0xff &&
 			NodeAddress[2] == 0xff &&
 			NodeAddress[3] == 0xff &&
@@ -275,9 +216,7 @@ int IPXAddressClass::Is_Broadcast(void)
 			NodeAddress[5] == 0xff) {
 		return(1);
 	}
-	else {
-		return(0);
-	}
+	return(0);
 
 }	/* end of Is_Broadcast */
 
@@ -303,6 +242,16 @@ int IPXAddressClass::Is_Broadcast(void)
  *=========================================================================*/
 bool IPXAddressClass::operator == (IPXAddressClass & addr)
 {
+	/*
+	**	RA2: UDP addresses compare the IP address and the port.
+	*/
+	if (AddressProtocol == 2) {
+		if (memcmp(NodeAddress, addr.NodeAddress, 4) == 0 && memcmp(NetworkNumber, addr.NetworkNumber, 2) == 0) {
+			return(1);
+		}
+		return(0);
+	}
+
 	//------------------------------------------------------------------------
 	// If either Network Number is all 0's (which can happen if the system is
 	// not running NETX), compare only the Node Addresses.
@@ -340,6 +289,15 @@ bool IPXAddressClass::operator == (IPXAddressClass & addr)
 }	/* end of operator== */
 
 
+/*
+**	RA2: compares the node addresses alone (the IP address for UDP).
+*/
+bool IPXAddressClass::Is_Same_Node(IPXAddressClass & addr)
+{
+	return(memcmp(NodeAddress, addr.NodeAddress, (AddressProtocol == 2) ? 4 : 6) == 0);
+}
+
+
 /***************************************************************************
  * IPXAddressClass::operator!= -- overloaded comparison operator           *
  *                                                                         *
@@ -361,6 +319,16 @@ bool IPXAddressClass::operator == (IPXAddressClass & addr)
  *=========================================================================*/
 bool IPXAddressClass::operator != (IPXAddressClass & addr)
 {
+	/*
+	**	RA2: UDP addresses compare the IP address and the port.
+	*/
+	if (AddressProtocol == 2) {
+		if (memcmp(NodeAddress, addr.NodeAddress, 4) == 0 && memcmp(NetworkNumber, addr.NetworkNumber, 2) == 0) {
+			return(0);
+		}
+		return(1);
+	}
+
 	//------------------------------------------------------------------------
 	// If either Network Number is all 0's (which can happen if the system is
 	// not running NETX), compare only the Node Addresses.
@@ -490,25 +458,56 @@ bool IPXAddressClass::operator <= (IPXAddressClass & addr)
 /// This routine is used by the debug output when a network address has to be shown in a
 /// human readable form. The network number and the node address are printed as pairs of
 /// hexadecimal digits, separated by a colon.
+/// RA2: a UDP address prints as its IP address and port instead.
 /// </summary>
+/// <param name="address">RA2: The address to convert; NULL converts this one.</param>
 /// <returns>Returns with a pointer to the formatted address text.</returns>
 /// <remarks>The text is built in a shared static buffer, so it only survives until the next
 /// call to this routine.</remarks>
-const char *IPXAddressClass::As_String(void)
+const char *IPXAddressClass::As_String(IPXAddressClass * address)
 {
 	static char _addr_str[128];
 
 	NetNumType num;
 	NetNodeType node;
 
-	memcpy(num,NetworkNumber,4);
-	memcpy(node,NodeAddress,6);
+	if (!address) address = this; // RA2
 
-	sprintf (_addr_str, "%02X %02X %02X %02X : %02X %02X %02X %02X %02X %02X",
-			 num[0], num[1], num[2], num[3], node[0], node[1], node[2], node[3], node[4], node[5]
-	);
+	memcpy(node,address->NodeAddress,6);
+
+	if (AddressProtocol == 1) {
+		memcpy(num,address->NetworkNumber,4);
+		sprintf (_addr_str, "%02X %02X %02X %02X : %02X %02X %02X %02X %02X %02X",
+				 num[0], num[1], num[2], num[3], node[0], node[1], node[2], node[3], node[4], node[5]
+		);
+	} else {
+		/*
+		**	RA2: a UDP address prints as the IP address and the port.
+		*/
+		sprintf(_addr_str, "%d.%d.%d.%d ; %d", node[0], node[1], node[2], node[3], *(unsigned short *)NetworkNumber);
+	}
 
 	return(_addr_str);
+}
+
+
+/*
+**	RA2: sets the protocol the addresses are for.
+*/
+void Set_Address_Protocol(int protocol)
+{
+	AddressProtocol = protocol;
+}
+
+
+/*
+**	RA2: sets the port of a UDP address.
+*/
+void IPXAddressClass::Set_Port(unsigned short port)
+{
+	if (AddressProtocol == 2) {
+		*(unsigned short *)NetworkNumber = port;
+	}
 }
 
 /************************** end of ipxaddr.cpp *****************************/

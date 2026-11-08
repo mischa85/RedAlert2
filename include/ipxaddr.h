@@ -55,21 +55,28 @@ class IPXAddressClass
 		Constructors:
 		.....................................................................*/
 		IPXAddressClass(void);
-		IPXAddressClass(NetNumType net, NetNodeType node);
-		IPXAddressClass(IPXHeaderType *header);
+		IPXAddressClass(NetNumType net, NetNodeType node); // RA2: not defined
+		IPXAddressClass(NetNumType net, NetNodeType node, unsigned short port); // RA2
+		IPXAddressClass(IPXHeaderType *header); // RA2: not defined
 
 		/*.....................................................................
 		Set the address from explicit variables, or from the SOURCE values
 		in an IPX packet header.
 		.....................................................................*/
-		void Set_Address(NetNumType net, NetNodeType node);
-		void Set_Address(IPXHeaderType *header);
+		void Set_Address(NetNumType net, NetNodeType node); // RA2: not defined
+		void Set_Address(NetNumType net, NetNodeType node, unsigned short port); // RA2
+		void Set_Address(IPXHeaderType *header); // RA2: not defined
 		/*.....................................................................
 		Get the address values explicitly, or copy them into the DESTINATION
 		values in an IPX packet header.
 		.....................................................................*/
 		void Get_Address (NetNumType net, NetNodeType node);
-		void Get_Address(IPXHeaderType *header);
+		void Get_Address(NetNumType net, NetNodeType node, unsigned short * port); // RA2
+		void Get_Node(NetNodeType node); // RA2
+		void Set_Node(NetNodeType node); // RA2
+		void Set_Port(unsigned short port); // RA2: only for UDP addresses
+		bool Is_Same_Node(IPXAddressClass & addr); // RA2: compares the node addresses only
+		void Get_Address(IPXHeaderType *header); // RA2: not defined
 
 		/*.....................................................................
 		Tells if this address is a broadcast address
@@ -89,7 +96,7 @@ class IPXAddressClass
 		/*.....................................................................
 		Convert address to human readable string
 		.....................................................................*/
-		const char *As_String(void);
+		const char *As_String(IPXAddressClass * address = NULL); // RA2: of another address, or this one
 
 	/*
 	-------------------------- Protected Interface ---------------------------
@@ -103,6 +110,13 @@ class IPXAddressClass
 		NetNodeType NodeAddress;
 		unsigned short Unused_A; // RA2: +0xA, never accessed; the class is 0xC bytes
 };
+
+
+/*
+**	RA2: which protocol the addresses are for: 1 for IPX; 2 for UDP, where the network number field holds the port.
+*/
+extern int AddressProtocol;
+void Set_Address_Protocol(int protocol);
 
 
 /**************************** end of ipxaddr.h *****************************/
