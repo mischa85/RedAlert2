@@ -41,8 +41,10 @@
 #include "_tactica.h"
 #include "abstract.h"
 #include "aircraft.h"
+#include "bomblist.h"
 #include "building.h"
 #include "infantry.h"
+#include "kamikaze.h"
 #include "object.h"
 #include "partsys.h"
 #include "rules.h"
@@ -66,6 +68,17 @@ DynamicVectorClass<AbstractClass *> HousePtrTracker;
 DynamicVectorClass<AbstractClass *> NeuronPtrTracker;
 
 DynamicVectorClass<AbstractClass *> ObjectsToDelete;
+
+
+/*
+**	RA2: an object is flagged as such in its abstract flags.
+*/
+static inline bool Is_Object(AbstractClass const * a)
+{
+	if (a == NULL) return(false);
+	unsigned char flag = (a->AbstractFlags >> 1) & 1;
+	return(flag != 0);
+}
 
 
 /***********************************************************************************************
@@ -92,6 +105,7 @@ DynamicVectorClass<AbstractClass *> ObjectsToDelete;
 void Detach_This_From_All(AbstractClass const * target, bool all)
 {
 	int index = 0;
+	RTTIType rtti = target->RTTI; // RA2: fetched once
 
 	if (Map.PendingObjectPtr == target) {
 		Map.PendingObjectPtr = NULL;
@@ -102,11 +116,11 @@ void Detach_This_From_All(AbstractClass const * target, bool all)
 		Map.Set_Cursor_Shape(NULL);
 	}
 
-	if (target->RTTI == RTTI_PARTICLESYSTEM && target == GasSystem) {
+	if (rtti == RTTI_PARTICLESYSTEM && target == GasSystem) {
 		GasSystem = NULL;
 	}
 
-	if (target->RTTI == RTTI_HOUSE) {
+	if (rtti == RTTI_HOUSE) {
 		for (index = 0; index < HousePtrTracker.Count(); index++) {
 			HousePtrTracker[index]->Detach(target, all);
 		}
@@ -117,7 +131,7 @@ void Detach_This_From_All(AbstractClass const * target, bool all)
 		return;
 	}
 
-	if (target->RTTI == RTTI_ANIM) {
+	if (rtti == RTTI_ANIM) {
 		for (index = 0; index < AnimPtrTracker.Count(); index++) {
 			AnimPtrTracker[index]->Detach(target, all);
 		}
@@ -127,10 +141,16 @@ void Detach_This_From_All(AbstractClass const * target, bool all)
 		return;
 	}
 
-	if (target->As_ObjectClass() != NULL) {
+	if (Is_Object(target)) { // RA2: by flag
 		for (index = 0; index < ObjectPtrTracker.Count(); index++) {
 			ObjectPtrTracker[index]->Detach(target, all);
 		}
+		BombList.Detach((AbstractClass *)target); // RA2
+		Kamikazes.Remove((AbstractClass *)target); // RA2
+		if (rtti == RTTI_INFANTRY || rtti == RTTI_UNIT || rtti == RTTI_AIRCRAFT) { // RA2
+			AircraftTracker.Detach((AbstractClass *)target);
+		}
+		Detach_From_Command_List((AbstractClass *)target); // RA2
 		if (TacticalMap != NULL) {
 			TacticalMap->Detach(target, true);
 		}
@@ -152,7 +172,7 @@ void Detach_This_From_All(AbstractClass const * target, bool all)
 		return;
 	}
 
-	switch ((RTTIType)target->RTTI)
+	switch (rtti)
 	{
 		case RTTI_TAG:
 			for (index = 0; index < TagPtrTracker.Count(); index++) {

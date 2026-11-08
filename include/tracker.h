@@ -44,3 +44,16 @@ extern DynamicVectorClass<AbstractClass *> NeuronPtrTracker;
  * This vector holds all objects marked by ObjectClass::Delete_Me.
  */
 extern DynamicVectorClass<AbstractClass *> ObjectsToDelete;
+
+/*
+**	RA2: the tracker of the aircraft in flight, and the selection list of the user
+**	interface commands; both forget an object when it goes away.
+*/
+class AircraftTrackerClass
+{
+	public:
+		void Detach(AbstractClass * target);
+};
+
+extern AircraftTrackerClass AircraftTracker;
+void Detach_From_Command_List(AbstractClass * object);
