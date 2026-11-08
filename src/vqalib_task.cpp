@@ -3,12 +3,13 @@
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
+#include "always.h"
 #include <stdio.h>
-#include "vqaplay.h"
-#include "vqaplayp.h"
-#include "video.h"
+#include "vqalib/vqaplay.h"
+#include "vqalib/vqaplayp.h"
+#include "vqalib/video.h"
 #include "ahandle.h"
-#include "vqadebug.h"
+#include "vqalib/vqadebug.h"
 
 long VQA_ResetLastFrameNum(VQAHandle *vqa);
 
@@ -61,7 +62,6 @@ extern void __cdecl UnVQ_Nop(unsigned char *codebook, unsigned char *pointers,
 		unsigned char *buffer, unsigned long blocksperrow,
 		unsigned long numrows, unsigned long bufwidth);
 
-// FUNCTION: GAMEMD 0x007C2590
 long VQA_Open(char const *filename, VQAConfig *_config, VQAHandle **handle)
 {
 	VQAHandle   *vqa;
@@ -313,7 +313,6 @@ long VQA_Open(char const *filename, VQAConfig *_config, VQAHandle **handle)
 
 		VQA_sosCODECInitStream(&audio->ADPCM_Info);
 
-
 	} else {
 		if (config->AudioHandler != NULL) {
 			vqap->Config.AudioHandler(vqa, VQAAUDIO_INIT, NULL, NULL);
@@ -374,7 +373,6 @@ long VQA_Open(char const *filename, VQAConfig *_config, VQAHandle **handle)
 			}
 		}
 
-
 	} else {
 		vqap->LoopEndFrameMode2 = vqap->StopFrame;
 	}
@@ -395,7 +393,6 @@ long VQA_Open(char const *filename, VQAConfig *_config, VQAHandle **handle)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007C2C60
 void VQA_Close(VQAHandle *vqa)
 {
 	VQAHandleP *vqap;
@@ -428,7 +425,6 @@ void VQA_Close(VQAHandle *vqa)
 	config->MemoryHandler((VQAHandle *)vqap, VQAMEM_FREE, (VQAHandleP *)vqap, NULL);
 }
 
-// FUNCTION: GAMEMD 0x007C2D00
 long VQA_Play(VQAHandle *vqa, long mode, int flags)
 {
 	VQAHandleP *vqabuf;
@@ -718,7 +714,6 @@ long VQA_Play(VQAHandle *vqa, long mode, int flags)
 	return(rc);
 }
 
-// FUNCTION: GAMEMD 0x007C30D0
 long VQA_SeekFrame(VQAHandle *vqa, long framenum, long fromwhere)
 {
 	VQAHandleP   *vqap;
@@ -806,7 +801,6 @@ long VQA_SeekFrame(VQAHandle *vqa, long framenum, long fromwhere)
 	return(rc);
 }
 
-// FUNCTION: GAMEMD 0x007C3230
 long VQA_SetUnVQ(VQAHandle *vqa, UNVQ_FUNC unvq1, UNVQ_FUNC unvq2)
 {
 	VQAHandleP *vqap = (VQAHandleP *)vqa;
@@ -825,7 +819,6 @@ long VQA_SetUnVQ(VQAHandle *vqa, UNVQ_FUNC unvq1, UNVQ_FUNC unvq2)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007C3270
 long VQA_Set_DrawBuffer(VQAHandle *vqa, unsigned char *buffer, unsigned long width, unsigned long height, long xpos, long ypos)
 {
 	long origin;
@@ -915,7 +908,6 @@ long VQA_Set_DrawBuffer(VQAHandle *vqa, unsigned char *buffer, unsigned long wid
 	return(VQAERR_SETBUFFR);
 }
 
-// FUNCTION: GAMEMD 0x007C3430
 long VQA_SetLoop(VQAHandle *vqa, int id, int iterations, int mode)
 {
 	VQAHandleP *vqap = (VQAHandleP *)vqa;
@@ -941,7 +933,6 @@ long VQA_SetLoop(VQAHandle *vqa, int id, int iterations, int mode)
 	return(rc);
 }
 
-// FUNCTION: GAMEMD 0x007C34B0
 long VQA_SetLoop_Internal(VQAHandle *vqa, int start, int end, int iterations, int mode)
 {
 	VQAHandleP *vqap = (VQAHandleP *)vqa;
@@ -995,13 +986,41 @@ long VQA_SetLoop_Internal(VQAHandle *vqa, int start, int end, int iterations, in
 	return(rc);
 }
 
-// FUNCTION: GAMEMD 0x007C35B0
 int VQA_GetLoopCount(VQAHandleP *vqap)
 {
 	return(vqap->LoopInfo.Header.Count);
 }
 
-// FUNCTION: GAMEMD 0x007C3670
+void VQA_Reset(VQAHandle *vqa)
+{
+	VQAHandleP *vqap = (VQAHandleP *)vqa;
+
+	vqap->LoadedFrames = 0;
+	vqap->DrawnFrames = 0;
+	vqap->StopFrame = vqap->Header.Frames - 1;
+	vqap->LoopEndFrameMode2 = vqap->Header.Frames - 1;
+	vqap->LoopEndFrame2 = vqap->Header.Frames - 1;
+	vqap->Audio.Flags &= ~(VQAAUDF_ISREPEATING | VQAAUDF_ISENDOFFILE | VQAAUDF_ISDONE | VQAAUDF_ISSTARVED);
+	vqap->StartTime = 0;
+	vqap->EndTime = 0;
+	vqap->Flags = 0;
+	vqap->LoopIterations = 0;
+	vqap->LoopID = -1;
+	vqap->LoopStartFrame0 = -1;
+	vqap->LoopEndFrameJump = -1;
+	vqap->LoopIterationsJump = -1;
+	vqap->LoopStartFrame1 = -1;
+	vqap->LoopEndFrameNormal = -1;
+	vqap->LoopStartFrame2 = -1;
+	vqap->LastCallbackCount = -1;
+	vqap->MaxCallbackDelta = 0;
+	vqap->Audio.Block1 = 0;
+	vqap->Audio.Block2 = -1;
+	vqap->Audio.BufferPosition = 0;
+	vqap->RepeatedBuffers = 0;
+	VQA_ResetCache(vqap);
+}
+
 void VQA_ResetCache(VQAHandleP *vqap)
 {
 	vqap->LoopCache.ID = -1;
@@ -1009,7 +1028,6 @@ void VQA_ResetCache(VQAHandleP *vqap)
 	vqap->LoopCache.Max = -1;
 }
 
-// FUNCTION: GAMEMD 0x007C3690
 long VQA_SetStop(VQAHandle *vqa, long stop)
 {
 	VQAHandleP *vqap = (VQAHandleP *)vqa;
@@ -1026,13 +1044,11 @@ long VQA_SetStop(VQAHandle *vqa, long stop)
 	return(oldstop);
 }
 
-// FUNCTION: GAMEMD 0x007C36C0
 char *VQA_Version(void)
 {
 	return(VQA_VERSION);
 }
 
-// FUNCTION: GAMEMD 0x007C36D0
 long VQA_GetClipping(VQAHandleP *vqap, int & clipw, long & cliph)
 {
 	if (vqap->Clipper.Width > 0) {
@@ -1045,7 +1061,6 @@ long VQA_GetClipping(VQAHandleP *vqap, int & clipw, long & cliph)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007C3710
 long VQA_GetBlockInfo(VQAHandle *vqa, long & blockw, long & blockh, long & clrmode)
 {
 	VQAHandleP *vqap = (VQAHandleP *)vqa;
@@ -1059,13 +1074,11 @@ long VQA_GetBlockInfo(VQAHandle *vqa, long & blockw, long & blockh, long & clrmo
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007C3740
 char *VQA_IDString(void)
 {
 	return("VQA playback 5.0 (Oct 30 2001 17:30:47)");
 }
 
-// FUNCTION: GAMEMD 0x007C3750
 long User_Update(VQAHandle *vqa)
 {
 	VQAHandleP *vqap;
@@ -1116,7 +1129,6 @@ long User_Update(VQAHandle *vqa)
 	return(rc);
 }
 
-// FUNCTION: GAMEMD 0x007C3820
 long VQA_NumFramesWithPalettes(VQAHandleP *vqap)
 {
 	long num = 0;
@@ -1128,7 +1140,6 @@ long VQA_NumFramesWithPalettes(VQAHandleP *vqap)
 	return(num);
 }
 
-// FUNCTION: GAMEMD 0x007C3840
 long VQA_GetXYPos(VQAHandleP *vqap, int & x, long & y)
 {
 	VQAHeader *header;
@@ -1141,7 +1152,6 @@ long VQA_GetXYPos(VQAHandleP *vqap, int & x, long & y)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x007C3860
 long VQA_LargestLoop(VQAHandleP *vqap, long streamsize)
 {
 	VQALoopInfo::HEADER *infohdr = &vqap->LoopInfo.Header;
