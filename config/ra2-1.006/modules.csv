@@ -16,7 +16,7 @@ airctype,0x0041BC90,0x0041C2E0,tibsun,"functions compiled from src/airctype.cpp,
 unk_0041C2E0,0x0041C2E0,0x0041C5C0,unknown,code not assigned to a module
 aitrig,0x0041C5C0,0x0041E270,tibsun,"functions compiled from src/aitrig.cpp, matched, without gaps; five placed by the gap"
 unk_0041E270,0x0041E270,0x0041E3E0,unknown,code not assigned to a module
-unk_0041E3E0,0x0041E3E0,0x0041E600,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+alphalighting,0x0041E3E0,0x0041E600,tibsun,"functions compiled from src/alphalighting.cpp, matched, without gaps; ??0AlphaLightingRemapInitClass@@QAE@XZ not placed; ??1AlphaLightingRemapInitClass@@QAE@XZ not placed; ??1AlphaLightingRemapClass@@QAE@XZ not placed"
 unk_0041E600,0x0041E600,0x0041F0C0,unknown,code not assigned to a module
 unk_0041F0C0,0x0041F0C0,0x0041F0F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0041F0F0,0x0041F0F0,0x0041F950,unknown,code not assigned to a module
