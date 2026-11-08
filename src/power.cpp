@@ -61,11 +61,28 @@
 #include "surface.h"
 
 #include "bench.hh"
+#include "scenario.h"
+#include "stringtable.h"
+
+/*
+**	RA2: the original path of this file, passed with each string table lookup (see stringtable.h).
+*/
+#define RA2_SOURCE "D:\\Ra2\\Power.CPP"
 
 /*
 **	Points to the shape to use for the "desired" power level indicator.
 */
+/*
+**	RA2: the power bar sits 5 pixels in on the GDI (Allied) sidebar and flush on the others.
+*/
+static inline int Power_X(void)
+{
+	return(Scen->IsGDI ? 5 : 0);
+}
+
+
 void const * PowerClass::PowerPipShape;
+bool PowerClass::PowerPipShapeAllocated; // RA2
 
 
 /***********************************************************************************************
@@ -157,7 +174,20 @@ void PowerClass::One_Time(void)
 void PowerClass::Init_For_House(void)
 {
 	BASECLASS::Init_For_House();
-	PowerPipShape = MFCD::Retrieve("POWERP.SHP");
+	PowerPipShape = Load_Alloc_Data("POWERP.SHP", PowerPipShapeAllocated);
+}
+
+
+/// <summary>
+/// RA2: frees the power pip shape if it was read from disk.
+/// </summary>
+void PowerClass::DisposeOfArt(void)
+{
+	BASECLASS::DisposeOfArt();
+	if (PowerPipShapeAllocated) {
+		delete [] (char *)PowerPipShape;
+		PowerPipShapeAllocated = false;
+	}
 }
 
 
@@ -193,14 +223,14 @@ void PowerClass::Flash_Power(void)
 int PowerClass::Desired_Power_Height(void)
 {
 	int max_pips = Max_Power_Height();
+	int unused = PlayerPtr->Buildings.Count() + PlayerPtr->Buildings.Count();
 	int drain = 0;
 	int power = 0;
 
-	for (int i = 0; i < Buildings.Count(); i++) {
-		if (Buildings[i]->House == PlayerPtr) {
-			drain += Buildings[i]->Class->Drain;
-			power += Buildings[i]->Class->Power;
-		}
+	for (int i = 0; i < PlayerPtr->Buildings.Count(); i++) {
+		BuildingClass * bptr = PlayerPtr->Buildings[i];
+		drain += bptr->Class->Drain;
+		power += bptr->Class->Power;
 	}
 
 	int empty_pips = (400.0 / ((drain + power) + 400.0) * max_pips);
@@ -238,7 +268,7 @@ int PowerClass::Update_Delay(void)
 /// <returns>Returns with the maximum number of pips the power bar can hold.</returns>
 int PowerClass::Max_Power_Height(void)
 {
-	return(SidebarClass::StripClass::SideBarGeneralEnums::OBJECT_HEIGHT * Map.Max_Visible() / POWER_PIP_HEIGHT);
+	return((PowerBarHeight + 3) / 3);
 }
 
 
@@ -256,15 +286,6 @@ int PowerClass::Desired_Levels(int & green, int & yellow, int & red)
 {
 	int max_pips = Max_Power_Height();
 	int desired_pips = Desired_Power_Height();
-
-	int drain = 0;
-	int power = 0;
-
-	for (int i = 0; i < Buildings.Count(); i++) {
-		BuildingClass * bptr = Buildings[i];
-		drain += bptr->Class->Drain;
-		power += bptr->Class->Power;
-	}
 
 	double power_delta = PlayerPtr->Power_Output() - PlayerPtr->Power_Drain();
 
@@ -322,15 +343,13 @@ int PowerClass::Desired_Levels(int & green, int & yellow, int & red)
 void PowerClass::Draw_It(bool complete)
 {
 	if (complete || IsToRedraw) {
-		BStart(BENCH_POWER);
-
 		if (Map.IsSidebarActive) {
 			IsToRedraw = false;
 			Map.IsToBlitSidebar = true;
 
-			Rect rect = SidebarSurface->Get_Rect();
-			int x = POWER_X;
+			int x = Power_X();
 			int y = SidebarRect.Y + POWER_Y;
+			Rect rect = SidebarSurface->Get_Rect();
 
 			int num = Max_Power_Height() - RedPipCount - YellowPipCount - GreenPipCount;
 
@@ -376,7 +395,6 @@ void PowerClass::Draw_It(bool complete)
 				index = 0;
 			}
 		}
-		BEnd(BENCH_POWER);
 	}
 
 	BASECLASS::Draw_It(complete);
@@ -555,10 +573,10 @@ void PowerClass::Reposition_Sidebar(void)
 		ToolTip tt;
 		tt.Text = TXT_NONE;
 		tt.ID = GADGET_POWER;
-		tt.Region.X = SidebarRect.X + POWER_X;
+		tt.Region.X = SidebarRect.X + Power_X();
 		tt.Region.Y = SidebarRect.Y + POWER_Y;
 		tt.Region.Width = POWER_WIDTH;
-		tt.Region.Height = (SidebarClass::StripClass::SideBarGeneralEnums::OBJECT_HEIGHT) * Map.Max_Visible();
+		tt.Region.Height = PowerBarHeight; // RA2
 
 		ToolTips->Remove(tt.ID);
 		ToolTips->Add(&tt);
@@ -577,11 +595,11 @@ void PowerClass::Reposition_Sidebar(void)
 /// this routine again.</remarks>
 const char * PowerClass::Help_Text(int id)
 {
-	static char _str[128];
+	static wchar_t _str[128]; // RA2: wide text
 
 	if (id == GADGET_POWER) {
-		sprintf(_str, Fetch_String(TXT_POWER_DRAIN), PlayerPtr->Power, PlayerPtr->Drain);
-		return(_str);
+		swprintf(_str, StringTable::LoadString("TXT_POWER_DRAIN", NULL, RA2_SOURCE, 662), PlayerPtr->Power, PlayerPtr->Drain);
+		return((char const *)_str);
 	}
 
 	return(BASECLASS::Help_Text(id));
