@@ -840,7 +840,9 @@ unk_0073CFF0,0x0073CFF0,0x00752710,unknown,code not assigned to a module
 unk_00752710,0x00752710,0x00752730,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00752730,0x00752730,0x007698C0,unknown,code not assigned to a module
 writepcx,0x007698C0,0x00769EA0,tibsun,"functions compiled from src/writepcx.cpp, matched, without gaps"
-unk_00769EA0,0x00769EA0,0x0076AC80,unknown,code not assigned to a module
+unk_00769EA0,0x00769EA0,0x0076A070,unknown,code not assigned to a module
+wspipx,0x0076A070,0x0076AA00,tibsun,"functions compiled from src/wspipx.cpp, matched, without gaps"
+unk_0076AA00,0x0076AA00,0x0076AC80,unknown,code not assigned to a module
 wsproto,0x0076AC80,0x0076B9E0,tibsun,"functions compiled from src/wsproto.cpp, matched, without gaps"
 unk_0076B9E0,0x0076B9E0,0x0076C050,unknown,code not assigned to a module
 wspudp,0x0076C050,0x0076D460,tibsun,"functions compiled from src/wspudp.cpp, matched, without gaps; one placed by the gap"
