@@ -1,6 +1,7 @@
 unit,start,end,category,evidence
 audattr,0x00401000,0x004011B0,source,"functions compiled from src/audattr.cpp, matched, without gaps"
-unk_004011B0,0x004011B0,0x0040D7D0,unknown,code not assigned to a module
+audbag,0x004011B0,0x00401940,source,"functions compiled from src/audbag.cpp, matched, without gaps"
+unk_00401940,0x00401940,0x0040D7D0,unknown,code not assigned to a module
 unk_0040D7D0,0x0040D7D0,0x0040D810,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0040D810,0x0040D810,0x0040DB60,unknown,code not assigned to a module
 _rtti,0x0040DB60,0x0040DC70,tibsun,"functions compiled from src/_rtti.cpp, matched, without gaps; two placed by definition order; one placed by the gap"
