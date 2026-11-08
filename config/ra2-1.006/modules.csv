@@ -137,7 +137,7 @@ unk_00486120,0x00486120,0x00491620,unknown,code not assigned to a module
 unk_00491620,0x00491620,0x004916D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004916D0,0x004916D0,0x00491750,unknown,code not assigned to a module
 coord,0x00491750,0x004918F0,tibsun,"functions compiled from src/coord.cpp, matched, without gaps"
-unk_004918F0,0x004918F0,0x00491C00,unknown,code not assigned to a module
+copyprotection,0x004918F0,0x00491C00,source,"functions compiled from src/copyprotection.cpp, matched, without gaps"
 counter,0x00491C00,0x00491F00,tibsun,"functions compiled from src/counter.cpp, matched, without gaps; one placed by the gap"
 unk_00491F00,0x00491F00,0x00492140,unknown,code not assigned to a module
 cpoint,0x00492140,0x00493010,tibsun,"functions compiled from src/cpoint.cpp, matched, without gaps; one placed by the gap"
