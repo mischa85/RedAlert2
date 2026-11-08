@@ -182,6 +182,7 @@ class IPXManagerClass : public ConnManClass
 		char *Connection_Name(int id);
 		IPXAddressClass * Connection_Address(int id);
 		virtual int Connection_Index(int id) override;
+		int Index_Of_Connection(IPXConnClass * connection); // RA2: the index of the connection, or a negative value
 		void Set_Connection_Parms(int index, int id, char *name);
 
 		/*.....................................................................

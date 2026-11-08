@@ -69,7 +69,7 @@ class IPXConnClass : public ConnectionClass
 		Constructor/destructor.
 		.....................................................................*/
 		IPXConnClass(int numsend, int numrecieve, int maxlen,
-			unsigned short magicnum, IPXAddressClass *address, int id, char const *name,
+			unsigned short magicnum, IPXAddressClass *address, int id, wchar_t const *name, // RA2: wide name
 			int extralen = 0);
 		virtual ~IPXConnClass () override {};
 
@@ -125,7 +125,7 @@ class IPXConnClass : public ConnectionClass
 		This is the overloaded Send routine declared in ConnectionClass, and
 		used in SequencedConnClass.
 		.....................................................................*/
-		virtual int Send (char *buf, int buflen, void *extrabuf, int extralen) override;
+		virtual int Send (char *buf, int buflen, void *extrabuf, int extralen, bool flag, unsigned short port) override; // RA2: flag and port
 
 		/*.....................................................................
 		These are the routines that access IPX.  Open_Socket & Close_Socket are
@@ -135,8 +135,8 @@ class IPXConnClass : public ConnectionClass
 		.....................................................................*/
 		static int Open_Socket(unsigned short socket);
 		static void Close_Socket(unsigned short socket);
-		static int Send_To(char *buf, int buflen, IPXAddressClass *address,
-			NetNodeType immed);
+		virtual int Send_To(char *buf, int buflen, IPXAddressClass *address,
+			NetNodeType immed, bool flag, unsigned short port); // RA2: virtual, flag and port
 		static int Broadcast(char *buf, int buflen);
 
 		/*.....................................................................

@@ -541,6 +541,7 @@ class SessionClass
 {
 
 	public:
+		unsigned short Player_Port(int connection_id); // RA2: the port of the player on the connection
 
 		SessionClass(void);
 		~SessionClass(void);
