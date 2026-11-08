@@ -3,10 +3,10 @@
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
-#include	"vqaplayp.h"
+#include "always.h"
+#include	"vqalib/vqaplayp.h"
 #include	<stdio.h>
 
-// FUNCTION: GAMEMD 0x007C3910
 void VQA_SetTimer(VQAHandleP *vqap, long time)
 {
 	vqap->TickOffset = 0;
@@ -14,13 +14,11 @@ void VQA_SetTimer(VQAHandleP *vqap, long time)
 	vqap->TickOffset = (time - curtime);
 }
 
-// FUNCTION: GAMEMD 0x007C3950
 void VQA_StepTimer(VQAHandleP *vqap, long step)
 {
 	vqap->TickOffset += step;
 }
 
-// FUNCTION: GAMEMD 0x007C3960
 unsigned long VQA_GetTime(VQAHandleP *vqap)
 {
 	unsigned long ticks;
@@ -31,7 +29,6 @@ unsigned long VQA_GetTime(VQAHandleP *vqap)
 	return(ticks);
 }
 
-// FUNCTION: GAMEMD 0x007C3990
 unsigned long VQA_GetMovieTime(VQAHandle *vqa)
 {
 	VQAHandleP *vqap = (VQAHandleP *)vqa;
