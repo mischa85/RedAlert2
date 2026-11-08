@@ -136,7 +136,7 @@ class IPXGlobalConnClass : public IPXConnClass
 		// Constructor/destructor.
 		//.....................................................................
 		IPXGlobalConnClass (int numsend, int numrecieve, int maxlen,
-			unsigned short product_id);
+			unsigned short product_id, unsigned short magicnum); // RA2: magic number
 		virtual ~IPXGlobalConnClass () override;
 
 		//.....................................................................
@@ -147,11 +147,15 @@ class IPXGlobalConnClass : public IPXConnClass
 		virtual int Get_Packet (void * buf, int * buflen) override;
 
 		virtual int Send_Packet (void * buf, int buflen,
-			IPXAddressClass *address, int ack_req);
+			IPXAddressClass *address, int ack_req, unsigned short port, int packet_id); // RA2: port and packet ID
 		virtual int Receive_Packet (void * buf, int buflen,
-			IPXAddressClass *address);
+			IPXAddressClass *address, unsigned short port); // RA2: port
 		virtual int Get_Packet (void * buf, int *buflen,
 			IPXAddressClass *address, unsigned short *product_id);
+		virtual int Peek_Packet(int index, int buf, int buflen, int address, int product_id, int packet_id); // RA2: pointers passed as ints
+		virtual void Mark_Packet_Read(int index); // RA2
+		virtual int Discard_Packets_To(IPXAddressClass *address, unsigned short port); // RA2
+		virtual void Discard_Old_Packets(unsigned age); // RA2
 
 		virtual int Discard_Undeliverable_Packets(void) override;
 
@@ -187,7 +191,9 @@ class IPXGlobalConnClass : public IPXConnClass
 		// used in SequencedConnClass.  This special version sends to the address
 		// stored in the extra buffer within the Queue.
 		//.....................................................................
-		virtual int Send (char *buf, int buflen, void *extrabuf, int extralen) override;
+		virtual int Send (char *buf, int buflen, void *extrabuf, int extralen, bool flag, unsigned short port) override; // RA2: flag and port
+		virtual int Send_To(char *buf, int buflen, IPXAddressClass *address,
+			NetNodeType immed, bool flag, unsigned short port) override; // RA2
 
 		//.....................................................................
 		// This routine is overloaded from SequencedConnClass, because the

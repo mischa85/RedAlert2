@@ -199,11 +199,7 @@ struct NodeNameType {
 			int : 32;
 			int Color;
 			int : 32;
-			int : 32;
-			int : 32;
-			int : 32;
-			int : 32;
-			int : 32;
+			int : 32; // RA2: three ints more than TS (YR has seven); ID is at +0x5F, the rest is not verified
 			int ID;
 			int ProcessTime;
 			int Status;
