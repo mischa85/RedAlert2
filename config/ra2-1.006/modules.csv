@@ -866,8 +866,8 @@ vqoption,0x0071DB20,0x0071DC10,tibsun,"functions compiled from src/vqoption.cpp,
 unk_0071DC10,0x0071DC10,0x0071FB10,unknown,code not assigned to a module
 unk_0071FB10,0x0071FB10,0x0071FBA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0071FBA0,0x0071FBA0,0x007200C0,unknown,code not assigned to a module
-unk_007200C0,0x007200C0,0x00720100,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00720100,0x00720100,0x00721BF0,unknown,code not assigned to a module
+warhead,0x007200C0,0x00721090,tibsun,"functions compiled from src/warhead.cpp, matched, without gaps; two placed by the gap"
+unk_00721090,0x00721090,0x00721BF0,unknown,code not assigned to a module
 unk_00721BF0,0x00721BF0,0x00721CC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00721CC0,0x00721CC0,0x00721DB0,unknown,code not assigned to a module
 unk_00721DB0,0x00721DB0,0x00721EB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
