@@ -859,7 +859,8 @@ xsurface,0x00773950,0x00775980,tibsun,"functions compiled from src/xsurface.cpp,
 unk_00775980,0x00775980,0x00775B80,unknown,code not assigned to a module
 zbuffer,0x00775B80,0x00776380,tibsun,"functions compiled from src/zbuffer.cpp, without gaps; matched except ?Pan@ZBuffer@@QAEXHHG@Z; five placed by alphabetical order"
 vqalib_audio,0x00776380,0x007768A0,source,"functions compiled from src/vqalib_audio.cpp, matched, without gaps"
-unk_007768A0,0x007768A0,0x00781C8C,unknown,code not assigned to a module
+vqalib_buffer_,0x007768A0,0x00777850,source,"functions compiled from src/vqalib_buffer_.cpp, matched, without gaps"
+unk_00777850,0x00777850,0x00781C8C,unknown,code not assigned to a module
 libcmt/typinfo,0x00781C8C,0x00781CB5,library,"code sections of VC6 LIBCMT.LIB typinfo.obj, matched"
 unk_00781CB5,0x00781CB5,0x00781D46,unknown,code not assigned to a module
 libcmt/qsort,0x00781D46,0x00781F20,library,"code sections of VC6 LIBCMT.LIB qsort.obj, matched"

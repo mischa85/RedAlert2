@@ -3070,6 +3070,11 @@ address,symbol,evidence
 0x007764E0,?CopyAudio@@YIJPAU_VQAHandleP@@@Z,"compiled from src/vqalib_audio.cpp, matched"
 0x00776680,?VQA_AudioFillCallback@@YAJPAU_VQAHandleP@@@Z,"compiled from src/vqalib_audio.cpp, matched"
 0x007767D0,?VQA_AudioDoneCallback@@YAJPAU_VQAHandleP@@K@Z,"compiled from src/vqalib_audio.cpp, matched"
+0x007768A0,?AllocBuffers@@YIJPAU_VQAHandleP@@@Z,"compiled from src/vqalib_buffer_.cpp, matched"
+0x00777190,?FreeBuffers@@YIXPAU_VQAHandleP@@@Z,"compiled from src/vqalib_buffer_.cpp, matched"
+0x007776B0,?VQA_Configure_Buffer@@YIJPAU_VQAHandleP@@@Z,"compiled from src/vqalib_buffer_.cpp, matched"
+0x007777E0,?VQA_Memory_Handler@@YAJPAU_VQAHandle@@JPAXJ@Z,"compiled from src/vqalib_buffer_.cpp, matched"
+0x0077C480,?VQA_Set_DrawBuffer@@YIJPAU_VQAHandle@@PAEKKJJ@Z,"inferred: referenced by matched src/vqalib_buffer_.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0077F110,__ftol,"inferred: referenced by matched src/xsurface.cpp (180 references); across all matched code never at another address, and no other symbol here"
 0x0077F14D,_Detect_MMX_Availability,"inferred: referenced by matched src/getcpu.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0077F20F,_Detect_CMOV_Availability,"inferred: referenced by matched src/getcpu.cpp (1 reference); across all matched code never at another address, and no other symbol here"
@@ -3111,7 +3116,7 @@ address,symbol,evidence
 0x007824D0,__alldiv,symbol of VC6 LIBCMT.LIB lldiv.obj / MSVCRTD.LIB lldiv.obj
 0x00782580,__aulldiv,symbol of VC6 LIBCMT.LIB ulldiv.obj / MSVCRTD.LIB ulldiv.obj
 0x007825E8,_free,symbol of VC6 LIBCMT.LIB free.obj
-0x00782630,_malloc,"inferred: referenced by matched src/bitfont.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x00782630,_malloc,"inferred: referenced by matched src/bitfont.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x00782642,__nh_malloc,symbol of VC6 LIBCMT.LIB malloc.obj
 0x0078266E,__heap_alloc,symbol of VC6 LIBCMT.LIB malloc.obj
 0x007826BC,_fread,"inferred: referenced by matched src/audstrm.cpp (1 reference); across all matched code never at another address, and no other symbol here"
