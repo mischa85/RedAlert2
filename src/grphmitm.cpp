@@ -14,9 +14,9 @@
 #include "ini.h"
 #include "mschoice.h"
 
-GraphicMenuItem * GM_Read_Image_Item(const char * name, INIClass const & ini, MSEngine & engine, Point2D & image_size);
-GraphicMenuItem * GM_Read_Shortcut_Item(const char * name, INIClass const & ini);
-GraphicMenuItem * GM_Read_Version_Item(const char * name, INIClass const & ini, MSEngine & engine);
+GraphicMenuItem * GM_Read_Image_Item(Wstring const & name, INIClass const & ini, MSEngine & engine, Point2D & image_size); // RA2: Wstring
+GraphicMenuItem * GM_Read_Shortcut_Item(Wstring const & name, INIClass const & ini); // RA2: Wstring
+GraphicMenuItem * GM_Read_Anim_Item(Wstring const & name, INIClass const & ini, MSEngine & engine, Point2D & image_size); // RA2
 
 
 /// <summary>
@@ -31,23 +31,23 @@ GraphicMenuItem * GM_Read_Version_Item(const char * name, INIClass const & ini, 
 /// <param name="image_size">The screen offset of the menu backdrop. Item positions are
 /// relative to it.</param>
 /// <returns>Returns with a pointer to the item created. Otherwise, NULL is returned.</returns>
-GraphicMenuItem *GM_Create_Item_From_INI(const char * name, INIClass const & ini, MSEngine & engine, Point2D & image_size)
+GraphicMenuItem * GM_Create_Item_From_INI(Wstring const & name, INIClass const & ini, MSEngine & engine, Point2D & image_size) // RA2: Wstring
 {
-	char type[256];
-	ini.Get_String(name, "Type", "", type, sizeof(type));
+	Wstring type;
+	ini.Get_String(name, "Type", "", type); // RA2
 	GraphicMenuItem * item = NULL;
 
-	if (strcmpi(type, "Image") == 0) {
+	if (type == "Image") { // RA2
 		item = GM_Read_Image_Item(name, ini, engine, image_size);
-	} else if (strcmpi(type, "Shortcut") == 0) {
+	} else if (type == "Shortcut") { // RA2
 		item = GM_Read_Shortcut_Item(name, ini);
-	} else if (strcmpi(type, "Version") == 0) {
-		item = GM_Read_Version_Item(name, ini, engine);
+	} else if (type == "Anim") { // RA2: anims instead of the version text
+		item = GM_Read_Anim_Item(name, ini, engine, image_size);
 	}
 
 	if (item != NULL) {
-		char sound[64];
-		if (ini.Get_String(name, "SelectSound", "", sound, sizeof(sound)) > 0) {
+		Wstring sound; // RA2
+		if (ini.Get_String(name, "SelectSound", "", sound) > 0) { // RA2
 			item->Set_Select_Sound(new MSSfxEntry("SelectSound", sound));
 		}
 	}
