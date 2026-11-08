@@ -92,9 +92,8 @@ unk_004694C0,0x004694C0,0x004696B0,unknown,code not assigned to a module
 ccini,0x004696B0,0x0046CB80,tibsun,"functions compiled from src/ccini.cpp, matched, without gaps; 22 placed by the gap"
 unk_0046CB80,0x0046CB80,0x0046DFC0,unknown,code not assigned to a module
 cctooltip,0x0046DFC0,0x0046E4A0,tibsun,"functions compiled from src/cctooltip.cpp, matched, without gaps"
-unk_0046E4A0,0x0046E4A0,0x0046E4D0,unknown,code not assigned to a module
-unk_0046E4D0,0x0046E4D0,0x0046E4F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0046E4F0,0x0046E4F0,0x0046EA40,unknown,code not assigned to a module
+unk_0046E4A0,0x0046E4A0,0x0046E4C0,unknown,code not assigned to a module
+cd,0x0046E4C0,0x0046EA40,tibsun,"functions compiled from src/cd.cpp, matched, without gaps"
 unk_0046EA40,0x0046EA40,0x0046EA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0046EA60,0x0046EA60,0x0046EA70,unknown,code not assigned to a module
 cdcntrl,0x0046EA70,0x0046FD30,tibsun,"functions compiled from src/cdcntrl.cpp, matched, without gaps; three placed by the gap"
