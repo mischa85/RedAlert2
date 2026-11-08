@@ -244,3 +244,5 @@ class WinsockInterfaceClass {
 };
 
 int __cdecl Get_Packet_Loss_Percent(void); // RA2: the percentage of received packets to drop on purpose
+extern int PacketLossPercent; // RA2
+extern bool IsPacketLossReported; // RA2: the packet loss simulation was announced
