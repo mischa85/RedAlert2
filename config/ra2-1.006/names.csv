@@ -96,7 +96,7 @@ address,symbol,evidence
 0x00403A80,?AudioDeviceDump@@YIXPAUAudioDevice@@P6IXPBD@ZH@Z,"compiled from src/auddev.cpp, matched"
 0x00406680,?Play_Named_Sound@@YIXPBDH@Z,"inferred: referenced by matched src/msanim.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x004068F0,?DebugString@@YAXPBDZZ,"inferred: referenced by matched src/wincomm.cpp (347 references); across all matched code never at another address, and no other symbol here"
-0x00406F30,?AudioDeviceAvailable@@YIHXZ,"inferred: referenced by matched src/msfont.cpp (7 references); across all matched code never at another address, and no other symbol here"
+0x00406F30,?AudioDeviceAvailable@@YIHXZ,"inferred: referenced by matched src/msfont.cpp (8 references); across all matched code never at another address, and no other symbol here"
 0x00407030,?AudioLevelInit@@YIXPAUAudioLevel@@H@Z,"compiled from src/audlevel.cpp, matched"
 0x00407080,?AudioLevelSet@@YIXPAUAudioLevel@@H@Z,"compiled from src/audlevel.cpp, matched"
 0x00407090,?AudioLevelForce@@YIXPAUAudioLevel@@@Z,"compiled from src/audlevel.cpp, matched"
@@ -3348,7 +3348,7 @@ address,symbol,evidence
 0x0078D587,__decomp,symbol of VC6 LIBCMT.LIB util.obj
 0x0078D665,__ctrlfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
 0x0078D688,__set_statfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
-0x0078D816,_strdup,"inferred: referenced by matched src/rawfile.cpp (13 references); across all matched code never at another address, and no other symbol here"
+0x0078D816,_strdup,"inferred: referenced by matched src/rawfile.cpp (14 references); across all matched code never at another address, and no other symbol here"
 0x0078D841,_open,"inferred: referenced by matched src/vqalib_dstream.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0078D858,__sopen,symbol of VC6 LIBCMT.LIB open.obj
 0x0078DB27,__itoa,symbol of VC6 LIBCMT.LIB xtoa.obj
