@@ -62,6 +62,7 @@
 #include "session.h"
 #include "surface.h"
 #include "tactical.h"
+#include <d3d.h>
 
 #include "bench.hh"
 
@@ -310,6 +311,15 @@ void GScreenClass::Input(KeyNumType & key, int & x, int & y)
 }
 
 
+/// <summary>
+/// RA2: checks whether the gadget list already holds this gadget (YR name).
+/// </summary>
+bool GScreenClass::SetButtons(GadgetClass & gadget)
+{
+	return Buttons == &gadget.Head_Of_List();
+}
+
+
 /***********************************************************************************************
  * GScreenClass::Add_A_Button -- Add a gadget to the game input system.                        *
  *                                                                                             *
@@ -325,31 +335,18 @@ void GScreenClass::Input(KeyNumType & key, int & x, int & y)
  * HISTORY:                                                                                    *
  *   01/19/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void GScreenClass::Add_A_Button(GadgetClass & gadget)
+bool GScreenClass::Add_A_Button(GadgetClass & gadget)
 {
-	/*
-	**	If this gadget is already in the list, remove it before adding it in:
-	**	- If 1st gadget in list, use Remove_A_Button to remove it, to reset the
-	**	value of 'Buttons' appropriately
-	**	- Otherwise, just call the Remove function for that gadget to remove it
-	**	from any list it may be in
-	*/
-	if (Buttons == &gadget) {
-		Remove_A_Button(gadget);
-	} else {
-		gadget.Remove();
+	if (SetButtons(gadget)) {
+		return false;
 	}
 
-	/*
-	**	Now add the gadget to our list:
-	**	- If there are not buttons, start the list with this one
-	**	- Otherwise, add it to the tail of the existing list
-	*/
 	if (Buttons) {
 		gadget.Add_Tail(*Buttons);
 	} else {
 		Buttons = &gadget;
 	}
+	return true;
 }
 
 
@@ -366,9 +363,14 @@ void GScreenClass::Add_A_Button(GadgetClass & gadget)
  * HISTORY:                                                                                    *
  *   01/19/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void GScreenClass::Remove_A_Button(GadgetClass & gadget)
+bool GScreenClass::Remove_A_Button(GadgetClass & gadget)
 {
+	if (!SetButtons(gadget)) {
+		return false;
+	}
+
 	Buttons = (GadgetClass *)gadget.Remove();
+	return true;
 }
 
 
@@ -392,8 +394,6 @@ void GScreenClass::Remove_A_Button(GadgetClass & gadget)
  *=============================================================================================*/
 void GScreenClass::Render(void)
 {
-	BStart(BENCH_GSCREEN_RENDER);
-
 	Surface * oldpage = LogicalSurface;
 	LogicalSurface = CompositeSurface;
 
@@ -401,6 +401,7 @@ void GScreenClass::Render(void)
 
 	bool redraw = DrawFlags != GS_REDRAW_DIRTY;
 	bool complete = DrawFlags == GS_REDRAW_ALL;
+	DrawFlags = GS_REDRAW_DIRTY; // RA2: reset before drawing
 
 	TacticalMap->Render(*CompositeSurface, redraw, DRAW_PASS_PAN);
 	TacticalMap->Render(*CompositeSurface, redraw, DRAW_PASS_BACKGROUND);
@@ -434,11 +435,13 @@ void GScreenClass::Render(void)
 		ToolTips->Draw_Current();
 	}
 
+	if (Session.EnableMultiplayerDebug) {
+		Draw_Multiplayer_Debug(false); // RA2
+	}
+
 	MouseCursor->Draw_Mouse(CompositeSurface);
 	Blit_Display();
-	DrawFlags = GS_REDRAW_DIRTY;
 
-	BEnd(BENCH_GSCREEN_RENDER);
 	LogicalSurface = oldpage;
 }
 
@@ -461,9 +464,13 @@ void GScreenClass::Render(void)
  *=============================================================================================*/
 void GScreenClass::Blit_Display(void)
 {
-	BStart(BENCH_BLIT_DISPLAY);
+	/*
+	**	RA2: an empty scene is begun and ended on the Direct3D device first.
+	*/
+	if (UseDirect3D && Direct3DDevice->BeginScene() == D3D_OK) {
+		Direct3DDevice->EndScene();
+	}
 	Update_Visible_Surface(false, CompositeSurface, NULL);
-	BEnd(BENCH_BLIT_DISPLAY);
 }
 
 
@@ -479,11 +486,11 @@ void GScreenClass::Blit_Display(void)
 /// <param name="rect">The portion of the surface to present, or NULL for all of it.</param>
 void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 {
-	Rect fill_rect;
+	Rect default_rect;
 
 	if (rect == NULL) {
-		fill_rect = surface->Get_Rect();
-		rect = &fill_rect;
+		default_rect = surface->Get_Rect();
+		rect = &default_rect;
 	}
 
 	RECT client_rect;
@@ -525,6 +532,7 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 		dest_rect.X += MAX(MIN(SidebarSurface->Get_Width(), VisibleRect.Width - dest_rect.Width), 0);
 	}
 
+	{
 	/*
 	 * Copy input rect to source rect
 	 */
@@ -568,9 +576,21 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 		src_rect.X -= Map.ScreenX;
 	}
 
+	/*
+	**	RA2: while the tactical view is active, the tab bar is left out of the blit unless
+	**	the screen is shaking vertically or a tooltip is showing.
+	*/
+	if (TacticalActive) {
+		bool showing = ToolTips != NULL && ToolTips->IsToolTipShowing();
+		if (!Map.IsDrawn && Map.ScreenY == 0 && !showing) {
+			dest_rect.Height -= TabBarRect->Height;
+			src_rect.Height -= TabBarRect->Height;
+		}
+	}
+
 	/// Draw filler for X offset
 	if (Map.ScreenX != 0) {
-		fill_rect.Set(fill_rect.X, screen_pt.y, abs(Map.ScreenX), surface->Get_Height());
+		Rect fill_rect(screen_pt.x, screen_pt.y, abs(Map.ScreenX), surface->Get_Height() - TabBarRect->Height); // RA2: down to the tab bar
 		fill_rect.X = Map.ScreenX < 0 ? dest_rect.X + dest_rect.Width : dest_rect.X - Map.ScreenX;
 
 		VisibleSurface->Fill_Rect(VisibleSurface->Get_Rect(), fill_rect, 0);
@@ -578,7 +598,7 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 
 	/// Draw filler for Y offset
 	if (Map.ScreenY != 0) {
-		fill_rect.Set(screen_pt.x, fill_rect.Y, surface->Get_Width(), abs(Map.ScreenY));
+		Rect fill_rect(screen_pt.x, 0, surface->Get_Width(), abs(Map.ScreenY));
 		fill_rect.Y = Map.ScreenY < 0 ? dest_rect.Y + dest_rect.Height : dest_rect.Y - Map.ScreenY;
 
 		VisibleSurface->Fill_Rect(VisibleSurface->Get_Rect(), fill_rect, 0);
@@ -597,6 +617,7 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 		Sleep(50);
 		MouseCursor->Erase_Mouse(surface, false);
 	}
+	}
 }
 
 
@@ -609,8 +630,21 @@ void Update_Visible_Surface(bool flip_mouse, Surface *surface, Rect *rect)
 /// <param name="xy">The current mouse position.</param>
 void GScreenClass::AI(KeyNumType &, Point2D const & xy)
 {
-	ScreenX < 0 ? ScreenX += 1 : ScreenX > 0 ? ScreenX -= 1 : 0;
-	ScreenY < 0 ? ScreenY += 1 : ScreenY > 0 ? ScreenY -= 1 : 0;
+	/*
+	**	RA2: the shake only eases back every other frame, and flips to the other side as it does.
+	*/
+	if (!(Frame & 1)) {
+		if (ScreenX < 0) {
+			ScreenX = -1 - ScreenX;
+		} else if (ScreenX > 0) {
+			ScreenX = 1 - ScreenX;
+		}
+		if (ScreenY < 0) {
+			ScreenY = -1 - ScreenY;
+		} else if (ScreenY > 0) {
+			ScreenY = 1 - ScreenY;
+		}
+	}
 }
 
 

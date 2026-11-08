@@ -786,3 +786,4 @@ class SessionClass
 
 extern SessionClass Session;
 
+void Draw_Multiplayer_Debug(bool flag); // RA2: 0x005419E0, draws the multiplayer debug text when Session.EnableMultiplayerDebug is set

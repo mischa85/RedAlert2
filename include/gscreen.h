@@ -90,9 +90,9 @@ class GScreenClass : public IGameMap
 		*/
 		virtual void Input(KeyNumType & key, int & x, int & y);
 		virtual void AI(KeyNumType &, Point2D const & xy);
-		virtual bool SetButtons(GadgetClass & gadget); // RA2
-		virtual void Add_A_Button(GadgetClass & gadget);
-		virtual void Remove_A_Button(GadgetClass & gadget);
+		virtual bool SetButtons(GadgetClass & gadget); // RA2: YR name; true when the gadget list already holds this gadget
+		virtual bool Add_A_Button(GadgetClass & gadget); // RA2: returns whether it was added
+		virtual bool Remove_A_Button(GadgetClass & gadget); // RA2: returns whether it was removed
 
 		/*
 		**	Called when map needs complete updating.

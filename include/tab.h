@@ -75,7 +75,8 @@ class TabClass: public SidebarClass, public INoticeSink // RA2: INoticeSink adde
 		*/
 		bool IsToRedraw; // RA2: after MoneyFlashTimer, at +0x4F15
 
-		bool IsDrawn; // RA2: +0x4F16; set once the tab bar has been drawn
+	public:
+		bool IsDrawn; // RA2: +0x4F16; set once the tab bar has been drawn; public, Update_Visible_Surface reads it
 
 	private:
 

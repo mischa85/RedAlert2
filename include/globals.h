@@ -326,6 +326,10 @@ extern bool IsOldSaveGame;
 void Memory_Error_Handler(void);				//Memory error handler function
 
 extern bool TacticalActive;
+extern Rect * TabBarRect; // RA2: the area of the tab bar above the tactical view
+struct IDirect3DDevice2;
+extern bool UseDirect3D; // RA2: a Direct3D device is in use
+extern IDirect3DDevice2 * Direct3DDevice; // RA2
 
 extern CDTimerClass<FrameTimerClass> TournamentTimer;
 

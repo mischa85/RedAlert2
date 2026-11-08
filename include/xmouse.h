@@ -99,6 +99,7 @@ class Mouse {
 		virtual int Get_Mouse_X(void) const = 0;
 		virtual int Get_Mouse_Y(void) const = 0;
 		virtual Point2D Get_Mouse_Point(void) const = 0;
+		virtual void Set_Mouse_Point(int x, int y) = 0; // RA2
 
 		/*
 		**	The following two routines can be used to render the mouse onto an alternate
