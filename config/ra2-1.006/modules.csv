@@ -314,8 +314,8 @@ unk_00519480,0x00519480,0x0051E820,unknown,code not assigned to a module
 interpal,0x0051E820,0x0051ECF0,tibsun,"functions compiled from src/interpal.cpp, matched, without gaps"
 unk_0051ECF0,0x0051ECF0,0x0051EEE0,unknown,code not assigned to a module
 intro,0x0051EEE0,0x0051EF10,tibsun,"functions compiled from src/intro.cpp, matched, without gaps"
-unk_0051EF10,0x0051EF10,0x00522040,unknown,code not assigned to a module
-unk_00522040,0x00522040,0x005221A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0051EF10,0x0051EF10,0x00521FB0,unknown,code not assigned to a module
+ionblast,0x00521FB0,0x005221A0,tibsun,"functions compiled from src/ionblast.cpp, matched, without gaps; ??0IonBlastClass@@QAE@VCoord@@@Z not placed; ??1IonBlastClass@@QAE@XZ not placed; ?AI@IonBlastClass@@QAEXXZ not placed; ?Update_All@IonBlastClass@@SIXXZ not placed; ?One_Time@IonBlastClass@@SIXXZ not placed; ?Clear_All@IonBlastClass@@SIXXZ not placed; ?Draw_It@IonBlastClass@@QAEXXZ not placed"
 unk_005221A0,0x005221A0,0x00523410,unknown,code not assigned to a module
 ipxaddr,0x00523410,0x00523980,tibsun,"functions compiled from src/ipxaddr.cpp, matched, without gaps; one placed by the gap"
 unk_00523980,0x00523980,0x00523C30,unknown,code not assigned to a module
