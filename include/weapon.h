@@ -67,6 +67,7 @@ class WeaponTypeClass : public AbstractTypeClass
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
 		static WeaponType From_Name(char const * name);
+		int Get_Speed(int range) const; // RA2 (YR name)
 
 		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_WEAPONTYPE);}
 		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
