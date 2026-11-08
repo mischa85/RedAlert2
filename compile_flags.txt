@@ -5,6 +5,7 @@
 -fms-compatibility-version=12.0
 -fdelayed-template-parsing
 -DNDEBUG
+-DWIN32
 -nostdlibinc
 -Iinclude
 -Isrc

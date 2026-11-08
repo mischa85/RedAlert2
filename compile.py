@@ -19,7 +19,7 @@ import tempfile
 
 ROOT = os.path.dirname(os.path.abspath(__file__))
 DEFAULT_VERSION = "ra2-1.006"
-FLAGS = ["/nologo", "/c", "/W3", "/O2", "/Ob2", "/Gr", "/GR", "/DNDEBUG"]
+FLAGS = ["/nologo", "/c", "/W3", "/O2", "/Ob2", "/Gr", "/GR", "/DNDEBUG", "/DWIN32"]
 
 
 def environment():
