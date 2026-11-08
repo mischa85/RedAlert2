@@ -3,6 +3,7 @@
  *******************************************************************************
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * See LICENSE.md for applicable additional terms and warranty disclaimers.
  ******************************************************************************/
@@ -218,7 +219,7 @@ void VoxelDrawSystem::Reset(void)
 /// <param name="motion">The object's own transform.</param>
 /// <param name="light">The direction the shadow is thrown in.</param>
 /// <remarks>Reset must be called before the first shadow of a frame is prepared.</remarks>
-void VoxelDrawSystem::Prep_For_Shadow(VoxelLibrary * voxlib, int layer, int info, Matrix3D const & camera, Matrix3D const & motion, Vector3 const & light)
+void VoxelDrawSystem::Prep_For_Shadow(VoxelLibrary * voxlib, int layer, int info, Matrix3D const & camera, Matrix3D const & motion, Vector3 const & light, Surface * surface, int shadow_x, int shadow_y)
 {
 	VoxelLibrary::LayerInfoStruct const & layer_info = voxlib->Get_Layer_Info(layer, info);
 
@@ -227,6 +228,9 @@ void VoxelDrawSystem::Prep_For_Shadow(VoxelLibrary * voxlib, int layer, int info
 	data.VoxLib = voxlib;
 	data.Layer = layer;
 	data.Info = info;
+	data.ShadowSurface = surface;
+	data.ShadowX = shadow_x;
+	data.ShadowY = shadow_y;
 
 	for (int i = 0; i < 4; i++) {
 		data.ShadowCorner[i] = motion * layer_info.BoxCorner[i];
@@ -321,25 +325,17 @@ void VoxelDrawSystem::Prep_For_Object(VoxelLibrary * voxlib, int layer, int info
 }
 
 
-/// <summary>
-/// Draws every prepared voxel object into the drawing buffer.
-/// This routine finishes the voxel drawing sequence. The shadows go down first, then the
-/// objects in depth order, and the caller blits the result out of the voxel surface. This
-/// overload serves the voxel animation drawer, which wants the drawn rectangle and the
-/// screen offset as loose values rather than as a surface region.
-/// </summary>
-/// <param name="rect">Filled in with the rectangle of the voxel buffer that was drawn.</param>
-/// <param name="x">Filled in with the horizontal screen offset to blit that rectangle at.</param>
-/// <param name="y">Filled in with the vertical screen offset to blit that rectangle at.</param>
-/// <remarks>Reset must be called, and the objects prepared, before this routine.</remarks>
-void VoxelDrawSystem::Render(Rect & rect, int & x, int & y)
+/*
+**	RA2: the rendering both Render functions share.
+*/
+static inline void _Render(VoxelRenderStruct ** render_data, Rect & rect, int & x, int & y)
 {
-	static VoxelRenderStruct * render_data[64];
+	Vector3 center;
+	center.X = (MaxVoxelBounds.X + MinVoxelBounds.X) * 0.5f;
+	center.Y = (MaxVoxelBounds.Y + MinVoxelBounds.Y) * 0.5f;
+	center.Z = (MaxVoxelBounds.Z + MinVoxelBounds.Z) * 0.5f;
 
 	int index;
-
-	Vector3 center((MaxVoxelBounds.X + MinVoxelBounds.X) * 0.5f, (MaxVoxelBounds.Y + MinVoxelBounds.Y) * 0.5f, (MaxVoxelBounds.Z + MinVoxelBounds.Z) * 0.5f);
-
 	for (index = 0; index < VoxelShadowRenderDataCount; index++) {
 		VoxelShadowRenderData[index].VoxLib->Render_Shadow(VoxelShadowRenderData[index], center);
 	}
@@ -348,13 +344,13 @@ void VoxelDrawSystem::Render(Rect & rect, int & x, int & y)
 		render_data[index] = &VoxelRenderData[index];
 	}
 
-	for (index = 1; index - 1 < VoxelRenderDataCount -1; index++) {
-		for (int index2 = index; index2 < VoxelRenderDataCount; index2++) {
-			VoxelRenderStruct * first = render_data[index - 1];
+	for (int i = 0; i < VoxelRenderDataCount - 1; i++) {
+		for (int index2 = i + 1; index2 < VoxelRenderDataCount; index2++) {
+			VoxelRenderStruct * first = render_data[i];
 			VoxelRenderStruct * second = render_data[index2];
 
 			if (first->MaxBounds.Z > second->MaxBounds.Z) {
-				render_data[index - 1] = second;
+				render_data[i] = second;
 				render_data[index2] = first;
 			}
 		}
@@ -388,6 +384,24 @@ void VoxelDrawSystem::Render(Rect & rect, int & x, int & y)
 /// <summary>
 /// Draws every prepared voxel object into the drawing buffer.
 /// This routine finishes the voxel drawing sequence. The shadows go down first, then the
+/// objects in depth order, and the caller blits the result out of the voxel surface. This
+/// overload serves the voxel animation drawer, which wants the drawn rectangle and the
+/// screen offset as loose values rather than as a surface region.
+/// </summary>
+/// <param name="rect">Filled in with the rectangle of the voxel buffer that was drawn.</param>
+/// <param name="x">Filled in with the horizontal screen offset to blit that rectangle at.</param>
+/// <param name="y">Filled in with the vertical screen offset to blit that rectangle at.</param>
+/// <remarks>Reset must be called, and the objects prepared, before this routine.</remarks>
+void VoxelDrawSystem::Render(Rect & rect, int & x, int & y)
+{
+	static VoxelRenderStruct * render_data[64];
+	_Render(render_data, rect, x, y);
+}
+
+
+/// <summary>
+/// Draws every prepared voxel object into the drawing buffer.
+/// This routine finishes the voxel drawing sequence. The shadows go down first, then the
 /// objects in depth order, and the caller blits the result out of the voxel surface.
 /// </summary>
 /// <returns>Returns with the region drawn -- the rectangle within the voxel buffer, and the
@@ -396,54 +410,13 @@ void VoxelDrawSystem::Render(Rect & rect, int & x, int & y)
 SurfaceRegion VoxelDrawSystem::Render(void)
 {
 	static VoxelRenderStruct * render_data[64];
-
-	int index;
-
-	Vector3 center((MaxVoxelBounds.X + MinVoxelBounds.X) * 0.5f, (MaxVoxelBounds.Y + MinVoxelBounds.Y) * 0.5f, (MaxVoxelBounds.Z + MinVoxelBounds.Z) * 0.5f);
-
-	for (index = 0; index < VoxelShadowRenderDataCount; index++) {
-		VoxelShadowRenderData[index].VoxLib->Render_Shadow(VoxelShadowRenderData[index], center);
-	}
-
-	for (index = 0; index < VoxelRenderDataCount; index++) {
-		render_data[index] = &VoxelRenderData[index];
-	}
-
-	for (index = 1; index - 1 < VoxelRenderDataCount - 1; index++) {
-		for (int index2 = index; index2 < VoxelRenderDataCount; index2++) {
-			VoxelRenderStruct * first = render_data[index - 1];
-			VoxelRenderStruct * second = render_data[index2];
-
-			if (first->MaxBounds.Z > second->MaxBounds.Z) {
-				render_data[index - 1] = second;
-				render_data[index2] = first;
-			}
-		}
-	}
-
-	if (VoxelDrawSystem::EnableZBuffer) {
-		for (index = VoxelRenderDataCount - 1; index >= 0; index--) {
-			render_data[index]->VoxLib->Render_Object(*render_data[index], center);
-		}
-	} else {
-		for (index = 0; index < VoxelRenderDataCount; index++) {
-			render_data[index]->VoxLib->Render_Object(*render_data[index], center);
-		}
-	}
-
-	int width = MaxVoxelBounds.X - MinVoxelBounds.X;
-	int height = MaxVoxelBounds.Y - MinVoxelBounds.Y;
-
-	LastRenderRect = Rect(VOXEL_BITMAP_WIDTH / 2 - width / 2 - 4, VOXEL_BITMAP_HEIGHT / 2 - height / 2 - 4, width + 8, height + 8);
-
+	Rect rect;
+	int x;
+	int y;
+	_Render(render_data, rect, x, y);
 	SurfaceRegion region;
-	region.Point.X = (int)center.X - (width + 8) / 2;
-	region.Point.Y = (int)center.Y - (height + 8) / 2;
-	region.Bounds.Width = width + 8;
-	region.Bounds.Height = height + 8;
-	region.Bounds.X = VOXEL_BITMAP_WIDTH / 2 - width / 2 - 4;
-	region.Bounds.Y = VOXEL_BITMAP_HEIGHT / 2 - height / 2 - 4;
-
+	region.Point = Point2D(x, y);
+	region.Bounds = rect;
 	return(region);
 }
 

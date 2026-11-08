@@ -56,7 +56,7 @@ namespace VoxelDrawSystem
 
 	void Reset(void);
 
-	void Prep_For_Shadow(VoxelLibrary * voxlib, int layer, int info, Matrix3D const & camera, Matrix3D const & motion, Vector3 const & light);
+	void Prep_For_Shadow(VoxelLibrary * voxlib, int layer, int info, Matrix3D const & camera, Matrix3D const & motion, Vector3 const & light, Surface * surface, int shadow_x, int shadow_y); // RA2: shadow surface and position
 	void Prep_For_Object(VoxelLibrary * voxlib, int layer, int info, Matrix3D const & transform);
 
 	void Render(Rect & rect, int & x, int & y);
@@ -104,6 +104,13 @@ struct VoxelShadowRenderStruct {
 	 * layer's silhouette is smeared across to make the shadow.
 	 */
 	Vector3 ShadowCorner[4];
+
+	/*
+	 * RA2: the surface the shadow is drawn on and where on it.
+	 */
+	Surface * ShadowSurface;
+	int ShadowX;
+	int ShadowY;
 };
 
 
