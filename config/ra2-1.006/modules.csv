@@ -78,7 +78,9 @@ unk_00457A50,0x00457A50,0x0045D830,unknown,code not assigned to a module
 unk_0045D830,0x0045D830,0x0045D880,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0045D880,0x0045D880,0x004644E0,unknown,code not assigned to a module
 bullettype,0x004644E0,0x00465180,tibsun,"functions compiled from src/bullettype.cpp, matched, without gaps; five placed by the gap"
-unk_00465180,0x00465180,0x00468960,unknown,code not assigned to a module
+unk_00465180,0x00465180,0x00465450,unknown,code not assigned to a module
+campaign,0x00465450,0x00465970,tibsun,"functions compiled from src/campaign.cpp, matched, without gaps; four placed by the gap"
+unk_00465970,0x00465970,0x00468960,unknown,code not assigned to a module
 cargo,0x00468960,0x00468AC0,tibsun,"functions compiled from src/cargo.cpp, matched, without gaps; one placed by the gap"
 unk_00468AC0,0x00468AC0,0x00468CB0,unknown,code not assigned to a module
 carry,0x00468CB0,0x00468E80,tibsun,"functions compiled from src/carry.cpp, matched, without gaps"
