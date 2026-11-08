@@ -13,7 +13,7 @@
 
 #pragma once
 
-#include "vqaplay.h"
+#include "vqalib/vqaplay.h"
 
 #include <dsound.h>
 #include <windows.h>
