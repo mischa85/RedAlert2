@@ -40,7 +40,7 @@ __declspec(dllimport) int __stdcall BinkCopyToBuffer(BinkInfo *, void *, int, un
 
 
 int __fastcall AudioDeviceAvailable(void); // RA2: whether the audio library has a device
-unsigned int AudioDirectSound(void); // RA2: the DirectSound object of the audio library
+void * GetDirectSoundObject(void); // RA2: the DirectSound object of the audio library
 /*
 **	RA2: the voice volume last handed to Bink; a change in the options is passed on as the movie plays.
 */
@@ -104,7 +104,7 @@ bool BinkHandle::Open(char const * name)
 {
 	Close();
 	if (AudioDeviceAvailable()) {
-		BinkSetSoundSystem(BinkOpenDirectSound, AudioDirectSound());
+		BinkSetSoundSystem(BinkOpenDirectSound, (unsigned int)GetDirectSoundObject());
 	}
 	bool exists = (RawFileClass(name).Is_Available(0) == 1);
 	if (exists) {
