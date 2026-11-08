@@ -609,6 +609,9 @@ class TechnoClass :	public RadioClass,
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual TechnoTypeClass const * Techno_Type_Class(void) const override;
 
+		/*
+		**	RA2: the virtual functions TechnoClass adds, in RA2's vtable order (+0x264 on).
+		*/
 		virtual bool Is_Move_Override(void) const;
 		virtual bool Is_Allowed_To_Recloak(void) const;
 		virtual bool Can_Scatter(void) const;
@@ -622,46 +625,136 @@ class TechnoClass :	public RadioClass,
 		virtual bool Is_Weapon_Equipped(void) const;
 		virtual bool Is_On_Elevation(void) const;
 		virtual double Tiberium_Load(void) const;
-		virtual double Weed_Load(void) const;
 		virtual int Pip_Count(void) const;
 		virtual int Refund_Amount(void) const;
 		virtual int Risk(void) const;
 		virtual bool Is_In_Same_Zone_As(ObjectClass const * object) const;
 		virtual DirType Barrel_Pitch(AbstractClass * target) const;
 		virtual bool Is_In_Same_Zone(Coord const & coord) const;
-
 		virtual int How_Many_Survivors(void) const;
-		virtual void Scatter_Incoming_Infantry(void) const;
-		int What_Weapon_Should_I_Use(AbstractClass * target) const;
-		virtual int Get_Collateral_Damage(void) const;
+		virtual void GotHijacked(void); // RA2
+		virtual int What_Weapon_Should_I_Use(AbstractClass * target) const; // RA2: virtual
+		virtual int SelectNavalTargeting(AbstractClass * target) const; // RA2
 		virtual int Get_Z_Adjust(void) const;
-		bool Is_Z_Fudge_Bridge(void) const;
-		bool Was_Z_Fudge_Bridge(void) const;
-		int Get_Z_Fudge_Column(void) const;
-		int Get_Z_Fudge_Tunnel(void) const;
-		int Get_Z_Fudge_Cliff(void) const;
 		virtual ZGradientType Get_Z_Gradient(void) const {return(ZGRAD_90DEG);}
-
-		virtual BuildingClass * Find_Docking_Bay(BuildingTypeClass const * b, bool friendly = false, bool evenoccupied = false) const;
+		virtual Cell GetLastFlightMapCoords(void) const; // RA2
+		virtual void SetLastFlightMapCoords(Cell coord); // RA2
 		virtual Cell Find_Exit_Cell(TechnoClass const * techno) const;
 		virtual Coord Turret_Coord(int which=0) const;
 		virtual FacingType Desired_Load_Dir(ObjectClass * , Cell & moveto) const;
 		virtual DirType Fire_Direction(void) const;
 		virtual InfantryTypeClass const * Crew_Type(void) const;
-
 		virtual bool Can_Attack_Now(void) const;
 		virtual bool Can_Deploy_Now(void) const;
-		virtual bool Is_Immobilized(void) const;
-		virtual int Get_Max_Speed(void) const;
 		virtual int Rearm_Delay(int which=0) const;
 		virtual int Threat_Range(int control) const;
 		virtual bool Is_Allowed_To_Leave_Map(void) const;
-
 		virtual bool Is_Radar_Visible(DetectedType & detected) const;
 		virtual bool Is_Sensed_By_Player(void) const;
 		virtual bool Is_Sensed_By_House(HouseClass const * house) const;
 		virtual bool Is_Renovator(void) const;
 		virtual void Advance_Waypoint_Path(void);
+		virtual bool IsPowerOnline(void) const; // RA2
+		virtual void Response_Select(void);
+		virtual void Response_Move(void);
+		virtual void Response_Attack(void);
+		virtual bool ClickedEvent(int event); // RA2
+		virtual bool Player_Assign_Mission(MissionType order, AbstractClass * target=NULL, AbstractClass * destination=NULL, AbstractClass * nearby=NULL); // RA2: fourth argument, returns bool
+		virtual bool IsUnderEMP(void) const; // RA2
+		virtual bool IsParalyzed(void) const; // RA2
+		// RA2: vtable +0x32C is a virtual neither Tiberian Sun nor Yuri's Revenge has; it returns whether a timer at +0x154 is still running.
+		virtual bool Unknown_Virtual_32C(void) const;
+		virtual bool CanCheer(void) const; // RA2
+		virtual void Cheer(void); // RA2
+		virtual int Get_Max_Speed(void) const;
+		virtual void Reduce_Ammunition(void);
+		virtual bool CanDisguiseAs(AbstractClass * target) const; // RA2
+		virtual bool Target_Something_Nearby(Coord const & coord, ThreatType threat=THREAT_NORMAL);
+		virtual void Stun(void);
+		virtual bool TriggersCellInset(AbstractClass * target); // RA2
+		virtual bool In_Range(AbstractClass * target, int which=0) const;
+		virtual bool IsCloseEnoughToAttack(AbstractClass * target) const; // RA2
+		virtual bool IsCloseEnoughToAttackCoords(Coord const & coord) const; // RA2
+		virtual bool InAuxiliarySearchRange(AbstractClass * target) const; // RA2
+		virtual void Death_Announcement(TechnoClass const * source=0) const = 0;
+		virtual int GetFireErrorWithoutRange(AbstractClass * target, int which) const; // RA2
+		virtual FireErrorType Can_Fire(AbstractClass * target, int which=0, bool ignoreRange=false) const; // RA2: ignoreRange
+		virtual AbstractClass * Greatest_Threat(ThreatType threat, Coord const & coord, bool) const;
+		virtual void Assign_Target(AbstractClass * target);
+		virtual BulletClass * Fire_At(AbstractClass * target, int which=0);
+		virtual bool Captured(HouseClass * newowner, bool announce = true); // RA2: announce
+		virtual void Rock(Coord const & coord, float force);
+		virtual bool Crash(ObjectClass * killer); // RA2
+		virtual bool IsAreaFire(void) const; // RA2
+		virtual int IsNotSprayAttack(void) const; // RA2
+		virtual int GetSecondaryWeaponIndex(void) const; // RA2
+		virtual int IsNotSprayAttack2(void) const; // RA2
+		virtual WeaponDataStruct const * GetDeployWeapon(void) const; // RA2
+		virtual WeaponDataStruct const * GetTurretWeapon(void) const; // RA2
+		virtual WeaponDataStruct const * Get_Class_Weapon_Data(int which=0) const;
+		virtual bool Is_Turret_Equipped(void) const;
+		virtual void Renovate(void);
+		virtual void Cloaking_AI(bool=false);
+		virtual void CreateGap(void); // RA2
+		virtual void DestroyGap(void); // RA2
+		virtual void Try_To_Cloak(void);
+		virtual void Sensed(void); // RA2
+		virtual void Reload(void); // RA2
+		virtual void Rocking_AI(void);
+		virtual Coord GetAttackCoordinates(void) const; // RA2
+		virtual bool IsNotWarpingIn(void) const; // RA2
+		virtual void Draw_Action_Line(bool force, int unknown) const; // RA2: two arguments
+		virtual unsigned GetDisguiseFlags(unsigned flags) const; // RA2
+		virtual bool IsClearlyVisibleTo(HouseClass * house) const; // RA2
+		virtual void Draw_Voxel(VoxelDataStruct const & voxeldata, int frame, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, int brightness, ShapeFlags_Type negflags) const;
+		virtual void Unknown_Virtual_3DC(unsigned, unsigned); // RA2
+		virtual void Draw_Health_Bar(Point2D const & point, Rect const & rect, bool sensed_underground) const;
+		virtual void Draw_Pips(Point2D const & bottomleft, Point2D const & bottomright, Rect const & rect) const;
+		virtual void DrawVeterancyPips(Point2D const & point, Rect const & rect) const; // RA2
+		virtual void Draw_Text_Overlay(Point2D const & point1, Point2D const & point2, Rect const & rect) const;
+		virtual void Do_Uncloak(bool silent=false);
+		virtual void Do_Cloak(bool silent=false);
+		virtual int Apparent_Brightness(int brightness = 1000) const;
+		virtual unsigned DisguiseAs(AbstractClass * target); // RA2
+		virtual void ClearDisguise(void); // RA2
+		virtual bool Is_Ready_To_Random_Animate(void) const;
+		virtual bool Random_Animate(void) {return(false);}
+		virtual void Unknown_Virtual_40C(AbstractClass * target); // RA2
+		virtual void Assign_Destination(AbstractClass * target, bool = true);
+		virtual bool Enter_Idle_Mode(bool initial=false, bool = true);
+		virtual void UpdateSight(bool, bool, bool, HouseClass *); // RA2: four arguments
+		virtual void Unknown_Virtual_41C(bool, bool, bool, HouseClass *); // RA2
+		virtual void Radar_Track(void);
+		virtual void Radar_Untrack(void);
+		virtual void Plot_On_Radar(void) const;
+		virtual void Update_Radar_Position(bool force_update=false);
+		virtual int RespondMegaEventMission(void * event); // RA2
+		virtual void ClearMegaMissionData(void); // RA2
+		virtual bool HaveMegaMission(void) const; // RA2
+		virtual bool HaveAttackMoveTarget(void) const; // RA2
+		virtual int GetMegaMission(void) const; // RA2
+		virtual Coord GetAttackMoveCoords(void); // RA2
+		virtual bool CanUseWaypoint(void) const; // RA2
+		virtual bool CanAttackOnTheMove(void) const; // RA2
+		virtual bool MegaMissionIsAttackMove(void) const; // RA2
+		virtual bool ContinueMegaMission(void); // RA2
+		virtual void UpdateAttackMove(void); // RA2
+		virtual bool RefreshMegaMission(void); // RA2
+
+		double Weed_Load(void) const; // RA2: not a virtual
+
+		void Scatter_Incoming_Infantry(void) const; // RA2: not a virtual
+		int Get_Collateral_Damage(void) const; // RA2: not a virtual
+		bool Is_Z_Fudge_Bridge(void) const;
+		bool Was_Z_Fudge_Bridge(void) const;
+		int Get_Z_Fudge_Column(void) const;
+		int Get_Z_Fudge_Tunnel(void) const;
+		int Get_Z_Fudge_Cliff(void) const;
+
+		BuildingClass * Find_Docking_Bay(BuildingTypeClass const * b, bool friendly = false, bool evenoccupied = false) const; // RA2: not a virtual
+
+		bool Is_Immobilized(void) const; // RA2: not a virtual
+
 
 		bool Is_Allowed_To_Retaliate(TechnoClass const * source, WarheadTypeClass const * warhead) const;
 		virtual bool Is_Players_Army(void) const override;
@@ -691,10 +784,6 @@ class TechnoClass :	public RadioClass,
 		*/
 		virtual void Clicked_As_Target(int count = 7) override;
 		virtual bool Select(void) override;
-		virtual void Response_Select(void);
-		virtual void Response_Move(void);
-		virtual void Response_Attack(void);
-		virtual void Player_Assign_Mission(MissionType order, AbstractClass * target=NULL, AbstractClass * destination=NULL);
 		Coord Predict_Target_Coord(void) const;
 
 		/*
@@ -704,25 +793,12 @@ class TechnoClass :	public RadioClass,
 		void Base_Is_Attacked(TechnoClass const * enemy);
 		void Kill_Cargo(TechnoClass * source);
 		virtual void Record_The_Kill(TechnoClass * source) override;
-		virtual void Reduce_Ammunition(void);
-		virtual bool Target_Something_Nearby(Coord const & coord, ThreatType threat=THREAT_NORMAL);
-		virtual void Stun(void);
 		virtual bool In_Range(Coord const & coord, int which=0) const override;
-		virtual bool In_Range(AbstractClass * target, int which=0) const;
-		virtual void Death_Announcement(TechnoClass const * source=0) const = 0;
-		virtual FireErrorType Can_Fire(AbstractClass * target, int which=0) const;
-		virtual AbstractClass * Greatest_Threat(ThreatType threat, Coord const & coord, bool) const;
-		virtual void Assign_Target(AbstractClass * target);
 		virtual void Override_Mission(MissionType mission, AbstractClass * tarcom, AbstractClass * navcom) override;
 		virtual bool Restore_Mission(void) override;
-		virtual BulletClass * Fire_At(AbstractClass * target, int which=0);
 		virtual int Weapon_Range(int which) const override;
-		virtual bool Captured(HouseClass * newowner);
 		void Set_Owner(HouseClass * newowner);
-		virtual void Laser_Zap(AbstractClass * target, int which, WeaponTypeClass const * weapon, Coord const & source_coord);
-		virtual void Rock(Coord const & coord, float force);
-		virtual WeaponDataStruct const * Get_Class_Weapon_Data(int which=0) const;
-		virtual bool Is_Turret_Equipped(void) const;
+		void Laser_Zap(AbstractClass * target, int which, WeaponTypeClass const * weapon, Coord const & source_coord); // RA2: not a virtual
 		int Get_Sight_Bonus(Coord const & coord);
 		static void Remove_Target(AbstractClass * target);
 		bool Has_Ability(AbilityType ability) const;
@@ -748,13 +824,9 @@ class TechnoClass :	public RadioClass,
 		/*
 		**	AI.
 		*/
-		virtual void Renovate(void);
 		virtual void AI(void) override;
 		virtual bool Revealed(HouseClass * house) override;
 		virtual RadioMessageType Receive_Message(RadioClass * from, RadioMessageType message, int & param) override;
-		virtual void Cloaking_AI(bool=false);
-		virtual void Rocking_AI(void);
-		virtual void Try_To_Cloak(void);
 
 		/*
 		**	Scenario and debug support.
@@ -771,24 +843,17 @@ class TechnoClass :	public RadioClass,
 
 		virtual void Draw_Pre_Render(Point2D const & point, Rect const & cliprect) const override;
 		virtual void Draw_Post_Render(Point2D const & point, Rect const & cliprect) const override;
-		virtual void Draw_Action_Line(void) const;
 
-		virtual void Draw_Voxel(VoxelDataStruct const & voxeldata, int frame, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, int brightness, ShapeFlags_Type negflags) const;
 
 		void Techno_Blit_Voxel(StaticBufferClass::Entry const & cache, Point2D const & point, Rect const & cliprect, ShapeFlags_Type flags, int brightness) const;
 		void Techno_Draw_Voxel_Shadow(VoxelDataStruct const & voxeldata, int layer_index, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, bool force_cache) const;
 		SurfaceRegion Techno_Render_Voxel_Object(VoxelDataStruct const & voxeldata, Matrix3D const & matrix, Point2D const & point, Rect const & cliprect, int frame, ShapeFlags_Type flags, int brightness) const;
 		SurfaceRegion Techno_Render_Voxel_Shadow(VoxelDataStruct const & voxeldata, Matrix3D const & matrix, Point2D const & point, Rect const & cliprect, int layer_index, ShapeFlags_Type flags, bool cached) const;
 
-		virtual void Draw_Health_Bar_Old(Point2D const & point, Rect const & rect) const;
-		virtual void Draw_Health_Bar(Point2D const & point, Rect const & rect, bool sensed_underground) const;
-		virtual void Draw_Pips(Point2D const & bottomleft, Point2D const & bottomright, Rect const & rect) const;
-		virtual void Draw_Text_Overlay(Point2D const & point1, Point2D const & point2, Rect const & rect) const;
+		void Draw_Health_Bar_Old(Point2D const & point, Rect const & rect) const; // RA2: not a virtual
 		virtual void Hidden(void) override;
 		virtual bool Mark(MarkType mark=MARK_CHANGE) override;
 		virtual int Exit_Object(TechnoClass *) override;
-		virtual void Do_Uncloak(bool silent=false);
-		virtual void Do_Cloak(bool silent=false);
 		virtual void Do_Shimmer(void) override;
 		int Get_Predator_Offset(void) const;
 		void Calculate_Sinking_Offset(short height, int y);
@@ -799,17 +864,8 @@ class TechnoClass :	public RadioClass,
 		/*
 		**	Movement and animation.
 		*/
-		virtual int Apparent_Brightness(int brightness = 1000) const;
-		virtual bool Is_Ready_To_Random_Animate(void) const;
-		virtual bool Random_Animate(void) {return(false);}
-		virtual void Assign_Destination(AbstractClass * target, bool = true);
 		virtual void Per_Cell_Process(PCPType why) override;
-		virtual bool Enter_Idle_Mode(bool initial=false, bool = true);
 		virtual void Look(bool incremental=false, bool dontmap=false) override;
-		virtual void Radar_Track(void);
-		virtual void Radar_Untrack(void);
-		virtual void Plot_On_Radar(void) const;
-		virtual void Update_Radar_Position(bool force_update=false);
 		static void Set_Talker(TechnoClass * techno, TalkType bubble=TALK_NONE);
 		static void Set_Action_Lines(bool on);
 		void Remove_Damage_Particle(void);
@@ -886,7 +942,7 @@ inline void TechnoClass::Advance_Waypoint_Path(void)
 }
 
 
-inline void TechnoClass::Draw_Action_Line(void) const
+inline void TechnoClass::Draw_Action_Line(bool force, int unknown) const
 {
 
 }

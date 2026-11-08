@@ -171,7 +171,7 @@ class InfantryClass : public FootClass
 		virtual ActionType What_Action(Cell const &, bool check_fog = false, bool disallow_force = false) const override;
 		virtual BulletClass * Fire_At(AbstractClass * target, int which) override;
 		virtual ResultType Take_Damage(int & damage, int distance, WarheadTypeClass const * warhead, TechnoClass * source=0, bool forced=false, bool=false) override;
-		virtual FireErrorType Can_Fire(AbstractClass * target, int which) const override;
+		virtual FireErrorType Can_Fire(AbstractClass * target, int which, bool ignoreRange=false) const override; // RA2: ignoreRange
 		virtual void Assign_Target(AbstractClass *) override;
 		virtual void Set_Occupy_Bit(Coord const & coord) override;
 		virtual void Clear_Occupy_Bit(Coord const & coord) override;
@@ -230,7 +230,7 @@ class InfantryClass : public FootClass
 		virtual bool Enter_Idle_Mode(bool initial=false, bool=true) override;
 		virtual void Scatter(Coord const & threat, bool forced=false, bool nokidding=false) override;
 		virtual Coord Turret_Coord(int which=0) const override;
-		virtual bool Is_Immobilized(void) const override;
+		bool Is_Immobilized(void) const; // RA2: not a virtual
 		virtual int Current_Speed(void) override;
 		virtual void Approach_Target(void) override;
 		virtual void Stop_Movement_Animation(void) override;

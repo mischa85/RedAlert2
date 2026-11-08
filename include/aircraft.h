@@ -114,7 +114,7 @@ class AircraftClass : public FootClass, public IFlyControl
 		Dir256 Pose_Dir(void) const;
 		AbstractClass * Good_LZ(void) const;
 		virtual DirType Fire_Direction(void) const override;
-		virtual FireErrorType Can_Fire(AbstractClass * target, int which) const override;
+		virtual FireErrorType Can_Fire(AbstractClass * target, int which, bool ignoreRange=false) const override; // RA2: ignoreRange
 		virtual bool Should_Delete_Off_Map(void) override;
 
 		/*
@@ -141,7 +141,7 @@ class AircraftClass : public FootClass, public IFlyControl
 		*/
 		virtual bool Active_Click_With(ActionType action, ObjectClass * object, bool) override;
 		virtual bool Active_Click_With(ActionType action, Cell const & cell, Cell const &, bool) override; // RA2: a second cell
-		virtual void Player_Assign_Mission(MissionType mission, AbstractClass * target=NULL, AbstractClass * destination=NULL) override;
+		virtual bool Player_Assign_Mission(MissionType mission, AbstractClass * target=NULL, AbstractClass * destination=NULL, AbstractClass * nearby=NULL) override; // RA2: fourth argument, returns bool
 
 		/*
 		**	Combat related.

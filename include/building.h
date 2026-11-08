@@ -392,8 +392,8 @@ class BuildingClass : public TechnoClass
 		virtual void Compute_CRC(CRCEngine &) const override;
 		virtual void const * Get_Image_Data(void) const override;
 		virtual int How_Many_Survivors(void) const override;
-		virtual void Scatter_Incoming_Infantry(void) const override;
-		virtual int Get_Collateral_Damage(void) const override;
+		void Scatter_Incoming_Infantry(void) const; // RA2: not a virtual
+		int Get_Collateral_Damage(void) const; // RA2: not a virtual
 		virtual int Get_Z_Adjust(void) const override;
 		virtual bool Is_Move_Override(void) const override;
 		virtual DirType Turret_Facing(void) const override;
@@ -439,7 +439,7 @@ class BuildingClass : public TechnoClass
 		virtual Coord Render_Coord(void) const override;
 		virtual Coord Fire_Coord(int which) const override;
 		virtual Coord Center_Coord(void) const override;
-		virtual Coord Destination_Coord(void) const override;
+		virtual Coord Destination_Coord(int) const override; // RA2: the AbstractClass virtual takes an argument
 		virtual int Sort_Y(void) const override;
 		virtual Coord Exit_Coord(int index) const override; // RA2: an index
 
@@ -492,10 +492,10 @@ class BuildingClass : public TechnoClass
 		**	Combat related.
 		*/
 		virtual void Death_Announcement(TechnoClass const * source=0) const override;
-		virtual FireErrorType Can_Fire(AbstractClass *, int which) const override;
+		virtual FireErrorType Can_Fire(AbstractClass *, int which, bool ignoreRange=false) const override; // RA2: ignoreRange
 		virtual AbstractClass * Greatest_Threat(ThreatType threat, Coord const & coord, bool) const override;
 		virtual ResultType Take_Damage(int & damage, int distance, WarheadTypeClass const * warhead, TechnoClass * source=0, bool forced=false, bool=false) override;
-		virtual bool Captured(HouseClass * newowner) override;
+		virtual bool Captured(HouseClass * newowner, bool announce = true) override; // RA2: announce
 		virtual WeaponDataStruct const * Get_Class_Weapon_Data(int which=0) const override;
 		virtual bool Is_Turret_Equipped() const override;
 		void Update_Radar_Spied(void);

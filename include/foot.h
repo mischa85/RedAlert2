@@ -416,7 +416,7 @@ class FootClass : public TechnoClass
 		bool Basic_Path(Cell cell, int path_offset = 0, int avoidance = 0);
 
 		virtual void Compute_CRC(CRCEngine &) const override;
-		virtual Coord Destination_Coord(void) const override;
+		virtual Coord Destination_Coord(int) const override; // RA2: the AbstractClass virtual takes an argument
 		virtual RadioMessageType Receive_Message(RadioClass * from, RadioMessageType message, int & param) override;
 		virtual bool Can_Demolish(void) const override;
 		bool Is_Recruitable(HouseClass const * house=NULL) const;
@@ -424,9 +424,13 @@ class FootClass : public TechnoClass
 		virtual bool Is_Moving_Onto_Bridge(TechnoClass * docker = NULL) const override; // RA2: the docking object
 		virtual bool Occupies_Cells(void) const override {return(IsOccupyingCell);};
 		virtual void Delete_Me(void) override;
+		virtual void ReceiveGunner(FootClass * gunner); // RA2
+		virtual void RemoveGunner(FootClass * gunner); // RA2
 		virtual bool Should_Delete_Off_Map(void);
 		virtual bool Is_Considered_Slow(void);
 		virtual bool Deploy_To_Fire(void) const {return(false);};
+		virtual void AddSensorsAt(Cell cell); // RA2
+		virtual void RemoveSensorsAt(Cell cell); // RA2
 
 		/*
 		**	Coordinate inquiry functions. These are used for both display and
@@ -466,7 +470,7 @@ class FootClass : public TechnoClass
 		virtual bool Mark(MarkType mark=MARK_CHANGE) override;
 		virtual int Get_Z_Adjust(void) const override;
 		virtual ZGradientType Get_Z_Gradient(void) const override;
-		virtual void Draw_Action_Line(void) const override;
+		virtual void Draw_Action_Line(bool force, int unknown) const override;
 		virtual void Draw_Voxel(VoxelDataStruct const & voxeldata, int frame, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, int brightness, ShapeFlags_Type flags) const override;
 		void Draw_Voxel_Shadow(VoxelDataStruct const & voxeldata, int layer_index, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, bool force_cache) const;
 		virtual void Draw_Object(ShapeSet const * shapefile, int shapenum, Point2D const & xy, Rect const & rect, Dir256 rotation=DIR_N, int scale=0x0100, int zadjust=0, ZGradientType zgrad=ZGRAD_GROUND, bool=false, int brightness=0, ShapeSet const * zshapefile=0, int zshapenum=0, Point2D zoff=Point2D(0,0), ShapeFlags_Type flags=SHAPE_NORMAL) const;
@@ -485,7 +489,7 @@ class FootClass : public TechnoClass
 		virtual void Stun(void) override;
 		virtual ResultType Take_Damage(int & damage, int distance, WarheadTypeClass const * warhead, TechnoClass * source=0, bool forced=false, bool=false) override;
 		virtual void Death_Announcement(TechnoClass const * source=0) const override;
-		virtual bool Captured(HouseClass * newowner) override;
+		virtual bool Captured(HouseClass * newowner, bool announce = true) override; // RA2: announce
 		virtual void Berzerk(void) {};
 		virtual void Start_Fear(void) {};
 		virtual void Stop_Fear(void) {};
@@ -499,6 +503,9 @@ class FootClass : public TechnoClass
 		virtual void Set_Waypoint_Path(PathType path, char index) override;
 		void Execute_Waypoint_Path(WaypointClass * waypoint);
 		virtual int Offload_Tiberium_Bail(void);
+		virtual BuildingClass * TryNearestDockBuilding(TypeList<BuildingTypeClass *> * list, unsigned unk2, unsigned unk3) const; // RA2
+		virtual BuildingClass * FindCloserDockBuilding(BuildingTypeClass * type, unsigned unk2, unsigned unk3, int * distance) const; // RA2
+		virtual BuildingClass * FindNearestDockBuilding(BuildingTypeClass * type, unsigned unk2, unsigned unk3) const; // RA2
 		virtual AbstractClass * Greatest_Threat(ThreatType threat, Coord const & coord, bool) const override;
 		virtual void Detach(AbstractClass const * target, bool all) override;
 		virtual void Detach_All(bool all=true) override;
@@ -538,6 +545,7 @@ class FootClass : public TechnoClass
 		virtual void Fixup_Path(PathStruct *) {};
 		virtual void Set_Speed(double speed);
 		virtual void Stop_Movement_Animation(void);
+		virtual void Unknown_Virtual_4D0(void); // RA2: vtable +0x4D0; its name is not known
 		virtual MoveType Can_Enter_Cell(CellClass const * cellptr, FacingType dir = FACING_NONE, int cell_height = -1, CellClass const * = 0, bool = true) const override;
 		virtual MoveType Can_Reach(CellClass const * current_cell, FacingType facing, int & cell_height, bool & onto_bridge, CellClass const * adjacent_cell) const override;
 		virtual void Set_Coord(Coord const & coord) override;

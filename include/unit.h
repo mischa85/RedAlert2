@@ -162,10 +162,10 @@ class UnitClass : public FootClass
 		virtual int Pip_Count(void) const override;
 		virtual InfantryTypeClass const * Crew_Type(void) const override;
 		virtual DirType Fire_Direction(void) const override;
-		virtual FireErrorType Can_Fire(AbstractClass * target, int which) const override;
+		virtual FireErrorType Can_Fire(AbstractClass * target, int which, bool ignoreRange=false) const override; // RA2: ignoreRange
 		virtual double Tiberium_Load(void) const override;
-		virtual double Weed_Load(void) const override;
-		virtual bool Is_Immobilized(void) const override;
+		double Weed_Load(void) const; // RA2: not a virtual
+		bool Is_Immobilized(void) const; // RA2: not a virtual
 		virtual int Get_Max_Speed(void) const override;
 		bool Is_Route_Broken(Cell const & from, Cell const & to) const;
 		AbstractClass * Plan_Route(AbstractClass const & object) const;
@@ -202,7 +202,7 @@ class UnitClass : public FootClass
 		*/
 		virtual ResultType Take_Damage(int & damage, int distance, WarheadTypeClass const * warhead, TechnoClass * source=0, bool forced=false, bool=false) override;
 		virtual BulletClass * Fire_At(AbstractClass * target, int which=0) override;
-		virtual bool Captured(HouseClass * newowner) override;
+		virtual bool Captured(HouseClass * newowner, bool announce = true) override; // RA2: announce
 		virtual bool Deploy_To_Fire(void) const override;
 		void EMPulse_Blast(void);
 		void Explode(void);
