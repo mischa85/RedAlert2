@@ -111,9 +111,7 @@ unk_0047F8B0,0x0047F8B0,0x0047F9B0,tibsun,matched functions of one source file o
 unk_0047F9B0,0x0047F9B0,0x0047FB70,unknown,code not assigned to a module
 unk_0047FB70,0x0047FB70,0x0047FCC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0047FCC0,0x0047FCC0,0x004809F0,unknown,code not assigned to a module
-unk_004809F0,0x004809F0,0x00480A60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00480A60,0x00480A60,0x00480A80,unknown,code not assigned to a module
-unk_00480A80,0x00480A80,0x00480AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+combuf,0x004809F0,0x00480AE0,tibsun,"functions compiled from src/combuf.cpp, matched, without gaps; two placed by the gap; ??0CommBufferClass@@QAE@HHHH@Z not placed; ??1CommBufferClass@@UAE@XZ not placed; ?Init@CommBufferClass@@QAEXXZ not placed; ?Init_Send_Queue@CommBufferClass@@QAEXXZ not placed; ?Queue_Send@CommBufferClass@@QAEHPAXH0H@Z not placed; ?UnQueue_Send@CommBufferClass@@QAEHPAXPAHH01@Z not placed; ?Get_Send@CommBufferClass@@QAEPAUSendQueueType@@H@Z not placed; ?Queue_Receive@CommBufferClass@@QAEHPAXH0H@Z not placed; ?UnQueue_Receive@CommBufferClass@@QAEHPAXPAHH01@Z not placed; ?Get_Receive@CommBufferClass@@QAEPAUReceiveQueueType@@H@Z not placed; ?Mono_Debug_Print@CommBufferClass@@QAEXH@Z not placed; ?Mono_Debug_Print2@CommBufferClass@@QAEXH@Z not placed"
 unk_00480AE0,0x00480AE0,0x00480EA0,unknown,code not assigned to a module
 unk_00480EA0,0x00480EA0,0x00480F00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00480F00,0x00480F00,0x00481370,unknown,code not assigned to a module
