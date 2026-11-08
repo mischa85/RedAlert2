@@ -38,7 +38,7 @@
 /// </summary>
 DropPodLocomotionClass::DropPodLocomotionClass(void) :
 	BASECLASS(),
-	Direction(DPOD_DIR_NE),
+	Flipped(false),
 	DestinationCoord(COORD_NONE),
 	Piggybacker(NULL)
 {
@@ -91,22 +91,10 @@ boolean STDMETHODCALLTYPE DropPodLocomotionClass::Process(void)
 		speed = Rule->DropPodSpeed;
 	}
 
-	double horspeed = fastmath::cos(Rule->DropPodAngle) * speed;
-
-	switch (Direction) {
-		case DPOD_DIR_NE:
-		default:
-			coord.X -= horspeed;
-			break;
-		case DPOD_DIR_NW:
-			coord.X += horspeed;
-			break;
-		case DPOD_DIR_SE:
-			coord.Y -= horspeed;
-			break;
-		case DPOD_DIR_SW:
-			coord.Y += horspeed;
-			break;
+	if (Flipped) {
+		coord.X += fastmath::cos(Rule->DropPodAngle) * speed;
+	} else {
+		coord.X -= fastmath::cos(Rule->DropPodAngle) * speed;
 	}
 
 	coord.Z -= fastmath::sin(Rule->DropPodAngle) * speed;
@@ -125,9 +113,13 @@ boolean STDMETHODCALLTYPE DropPodLocomotionClass::Process(void)
 		if (!linked->Unlimbo(coord, DIR_N)) {
 			Explosion_Damage(coord, 100, LinkedTo, Rule->C4Warhead);
 			new AnimClass(Combat_Anim(100, Rule->C4Warhead, LAND_CLEAR, coord), coord, 0, 1, ShapeFlags_Type(SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_ZGRAD), Get_Explosion_Z(coord));
-			linked->Delete_Me();
 		} else {
-			new AnimClass(Rule->DropPod[Direction % Rule->DropPod.Count()], coord);
+			new AnimClass(Rule->DropPodPuff, coord); // RA2
+			if (Flipped) {
+				new AnimClass(Rule->DropPod[1], coord);
+			} else {
+				new AnimClass(Rule->DropPod[0], coord);
+			}
 			linked->Mark(MARK_DOWN);
 			linked->HeightAGL = 0;
 			linked->Enter_Idle_Mode();
@@ -146,7 +138,7 @@ boolean STDMETHODCALLTYPE DropPodLocomotionClass::Process(void)
 			if (Frame % 3 == 0) {
 				if (!LinkedTo->House->Is_Ally(Map[DestinationCoord].Cell_Techno())) {
 					Coord scattered_coord = Coord_Scatter(DestinationCoord, CELL_LEPTON / 3, false);
-					Sound_Effect((VocType)weapon->Sound.Pick(NonCriticalRandomNumber), coord);
+					VocClass::PlayAt(weapon->Sound.Pick(NonCriticalRandomNumber), coord);
 					Explosion_Damage(scattered_coord, 2 * weapon->Attack, LinkedTo, weapon->WarheadPtr);
 					new AnimClass(Combat_Anim(2 * weapon->Attack, weapon->WarheadPtr, LAND_CLEAR, scattered_coord), scattered_coord, 0, 1, ShapeFlags_Type(SHAPE_CENTER | SHAPE_WIN_REL | SHAPE_ZGRAD), Get_Explosion_Z(scattered_coord));
 				}
@@ -174,32 +166,14 @@ void STDMETHODCALLTYPE DropPodLocomotionClass::Move_To(CoordStruct to)
 
 		Coord dropcoord = DestinationCoord;
 		dropcoord.Z += Rule->DropPodHeight;
-		double dropradius = (double)Rule->DropPodHeight / fastmath::tan(Rule->DropPodAngle);
-		dropcoord.X += dropradius;
+		dropcoord.X += (double)Rule->DropPodHeight / fastmath::tan(Rule->DropPodAngle);
 
-		CellClass * cptr = &Map[dropcoord];
-
-		if (Map.In_Local_Radar(dropcoord)) {
-			Direction = DPOD_DIR_NE;
-		} else {
-			dropcoord.X = DestinationCoord.X - dropradius;
-			cptr = &Map[dropcoord];
-
-			if (Map.In_Local_Radar(dropcoord)) {
-				Direction = DPOD_DIR_NW;
-			} else {
-				dropcoord.X = DestinationCoord.X;
-				dropcoord.Y = DestinationCoord.Y + dropradius;
-				cptr = &Map[dropcoord];
-
-				if (Map.In_Local_Radar(dropcoord)) {
-					Direction = DPOD_DIR_SE;
-				} else {
-					dropcoord.Y = DestinationCoord.Y - dropradius;
-					cptr = &Map[dropcoord];
-					Direction = DPOD_DIR_SW;
-				}
-			}
+		/*
+		**	RA2: only the -X side is tried when the +X start point is off the radar.
+		*/
+		if (!Map.In_Local_Radar(dropcoord)) {
+			Flipped = true;
+			dropcoord.X = DestinationCoord.X - (double)Rule->DropPodHeight / fastmath::tan(Rule->DropPodAngle);
 		}
 
 		LinkedTo->PositionCoord = dropcoord;
@@ -413,5 +387,5 @@ HRESULT STDMETHODCALLTYPE DropPodLocomotionClass::Piggyback_CLSID(GUID * classid
 /// </summary>
 int STDMETHODCALLTYPE DropPodLocomotionClass::Drawing_Code(void)
 {
-	return((unsigned)Direction % 2);
+	return(Flipped ? 1 : 0);
 }

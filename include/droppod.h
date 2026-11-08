@@ -55,19 +55,12 @@ class DropPodLocomotionClass : public LocomotionClass, public IPiggyback
 		virtual int Fetch_Object_Size(bool oldsave = false) const override {return(sizeof(*this));}
 
 	private:
-		enum DropPodDirType {
-			DPOD_DIR_NE,
-			DPOD_DIR_NW,
-			DPOD_DIR_SE,
-			DPOD_DIR_SW,
-		};
-
 		/*
-		 * This is the compass direction the pod falls in, chosen so that its approach
-		 * begins on screen wherever possible. It decides which way the pod slides as it
-		 * descends, the artwork it is drawn with, and the wreckage it leaves on landing.
+		 * RA2: the pod starts its fall on the +X side of its destination, or on the -X side
+		 * when that start point is off the radar; this is set for the -X side. It decides
+		 * which way the pod slides as it descends and the wreckage it leaves on landing.
 		 */
-		int Direction;
+		bool Flipped;
 
 		/*
 		 * This is the ground coordinate the pod is falling toward, and the point its

@@ -55,6 +55,7 @@ class VocClass
 
 		static VocType From_Name(char const * name);
 		static void * PlayGlobal(int voc, float volume, int panning, AudioController * controller = NULL); // RA2
+		static void * PlayAt(int voc, Coord const & coord, AudioController * controller = NULL); // RA2
 		friend VocClass *VocClass_From_Name(char const * name);
 		friend char const * Voc_Name(VocType voc);
 
