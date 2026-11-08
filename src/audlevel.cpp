@@ -4,7 +4,6 @@
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 #include "audlevel.h"
 
-// FUNCTION: GAMEMD 0x00407100
 void __fastcall AudioLevelInit(AudioLevel * level, int startLevel)
 {
 	level->flags = 0;
@@ -14,20 +13,17 @@ void __fastcall AudioLevelInit(AudioLevel * level, int startLevel)
 	AudioLevelUpdate(level);
 }
 
-// FUNCTION: GAMEMD 0x00407150
 void __fastcall AudioLevelSet(AudioLevel * level, int newLevel)
 {
 	level->flags |= AUDIO_LEVEL_SET;
 	level->newLevel = newLevel << AUDIO_LEVEL_SCALE;
 }
 
-// FUNCTION: GAMEMD 0x00407160
 void __fastcall AudioLevelForce(AudioLevel * level)
 {
 	level->flags |= AUDIO_LEVEL_SET;
 }
 
-// FUNCTION: GAMEMD 0x00407170
 void __fastcall AudioLevelAdjust(AudioLevel * level, int newLevel)
 {
 	level->flags &= ~AUDIO_LEVEL_SET;
@@ -39,14 +35,12 @@ void __fastcall AudioLevelAdjust(AudioLevel * level, int newLevel)
 	level->newLevel = newLevel << AUDIO_LEVEL_SCALE;
 }
 
-// FUNCTION: GAMEMD 0x004071A0
 void __fastcall AudioLevelSetDuration(AudioLevel * level, TimeStamp time, int range)
 {
 	level->change = (range << AUDIO_LEVEL_SCALE) / (unsigned)time;
 	level->duration = time;
 }
 
-// FUNCTION: GAMEMD 0x004071C0
 int __fastcall AudioLevelUpdate(AudioLevel * level)
 {
 	int dif;
@@ -89,7 +83,6 @@ int __fastcall AudioLevelUpdate(AudioLevel * level)
 	return 0;
 }
 
-// FUNCTION: GAMEMD 0x004072B0
 int __fastcall AudioLevelGetVal(AudioLevel * level)
 {
 	return (unsigned)level->newLevel >> AUDIO_LEVEL_SCALE;
