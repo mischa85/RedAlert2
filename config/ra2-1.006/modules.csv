@@ -794,8 +794,8 @@ unk_006E7C40,0x006E7C40,0x006E7C60,tibsun,matched functions of one source file o
 unk_006E7C60,0x006E7C60,0x006E89A0,unknown,code not assigned to a module
 tiberium,0x006E89A0,0x006EA9B0,tibsun,"functions compiled from src/tiberium.cpp, matched, without gaps; one placed by the gap; ?Post_Load_Game@TiberiumClass@@SIXXZ not placed"
 unk_006EA9B0,0x006EA9B0,0x006EAF60,unknown,code not assigned to a module
-unk_006EAF60,0x006EAF60,0x006EAFE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006EAFE0,0x006EAFE0,0x006EB120,unknown,code not assigned to a module
+tmission,0x006EAF60,0x006EB100,tibsun,"functions compiled from src/tmission.cpp, matched, without gaps"
+unk_006EB100,0x006EB100,0x006EB120,unknown,code not assigned to a module
 toggle,0x006EB120,0x006EB180,tibsun,"functions compiled from src/toggle.cpp, matched, without gaps; ?Action@ToggleClass@@MAEHIAAW4KeyNumType@@@Z not placed"
 unk_006EB180,0x006EB180,0x006EBE90,unknown,code not assigned to a module
 unk_006EBE90,0x006EBE90,0x006EBEB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
