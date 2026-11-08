@@ -9,7 +9,7 @@ unk_00403CE0,0x00403CE0,0x00407030,unknown,code not assigned to a module
 audlevel,0x00407030,0x004071F0,source,"functions compiled from src/audlevel.cpp, matched, without gaps"
 audlists,0x004071F0,0x00407400,source,"functions compiled from src/audlists.cpp, matched, without gaps; three placed by the gap"
 audmpool,0x00407400,0x00407480,source,"functions compiled from src/audmpool.cpp, matched, without gaps; one placed by the gap"
-unk_00407480,0x00407480,0x00408380,unknown,code not assigned to a module
+audplay,0x00407480,0x00408380,source,"functions compiled from src/audplay.cpp, matched, without gaps; two placed by the gap"
 audsrc,0x00408380,0x00408530,source,"functions compiled from src/audsrc.cpp, matched, without gaps; two placed by the gap; ?AudioFormatReadWaveFile@@YIHPAVFileClass@@PAUAudioFormat@@PAH@Z not placed"
 unk_00408530,0x00408530,0x00408710,unknown,code not assigned to a module
 audstrm,0x00408710,0x00409280,source,"functions compiled from src/audstrm.cpp, matched, without gaps; five placed by the gap"
