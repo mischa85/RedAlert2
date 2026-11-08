@@ -249,8 +249,8 @@ unk_004DED70,0x004DED70,0x004DEEE0,tibsun,matched functions of one source file o
 unk_004DEEE0,0x004DEEE0,0x004DFD10,unknown,code not assigned to a module
 unk_004DFD10,0x004DFD10,0x004DFF10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004DFF10,0x004DFF10,0x004E0120,unknown,code not assigned to a module
-unk_004E0120,0x004E0120,0x004E01A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004E01A0,0x004E01A0,0x004E0560,unknown,code not assigned to a module
+grphmitm,0x004E0120,0x004E01F0,tibsun,"functions compiled from src/grphmitm.cpp, matched, without gaps; four placed by the gap; ?GM_Create_Item_From_INI@@YIPAVGraphicMenuItem@@PBDABVINIClass@@AAVMSEngine@@AAVPoint2D@@@Z not placed"
+unk_004E01F0,0x004E01F0,0x004E0560,unknown,code not assigned to a module
 unk_004E0560,0x004E0560,0x004E0630,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004E0630,0x004E0630,0x004E08D0,unknown,code not assigned to a module
 gscreen,0x004E08D0,0x004E1110,tibsun,"functions compiled from src/gscreen.cpp, matched, without gaps; three placed by the gap"
