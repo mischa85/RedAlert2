@@ -44,7 +44,8 @@ class DropListClass : public EditClass {
 		typedef EditClass BASECLASS;
 
 	public:
-		DropListClass(int id, char * text, int max_len, TextPrintType flags, int x, int y, int w, int h, ShapeSet const * up, ShapeSet const * down);
+		DropListClass(int id, wchar_t * text, // RA2: wide
+			 int max_len, TextPrintType flags, int x, int y, int w, int h, ShapeSet const * up, ShapeSet const * down);
 		virtual ~DropListClass(void) override {};
 
 		virtual LinkClass & Add(LinkClass & object) override;
@@ -53,15 +54,15 @@ class DropListClass : public EditClass {
 		virtual LinkClass * Remove(void) override;
 		virtual void Zap(void) override;
 
-		virtual int Add_Item(char const * text);
-		virtual char const * Current_Item(void);
+		virtual int Add_Item(wchar_t const * text);
+		virtual wchar_t const * Current_Item(void);
 		virtual int Current_Index(void);
 		virtual void Set_Selected_Index(int index);
-		virtual void Set_Selected_Index(char const * text);
+		virtual void Set_Selected_Index(wchar_t const * text);
 		virtual void Peer_To_Peer(unsigned flags, KeyNumType &, ControlClass & whom) override;
 		virtual void Clear_Focus(void) override;
 		virtual int Count(void) const {return(List.Count());};
-		virtual char const * Get_Item(int index) const {return(List.Get_Item(index));};
+		virtual wchar_t const * Get_Item(int index) const {return(List.Get_Item(index));};
 
 		void Expand(void);
 		void Collapse(void);
