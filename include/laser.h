@@ -31,6 +31,10 @@ class LaserDrawClass : public StageClass
 		static void Draw_All(void);
 
 	public:
+		int Thickness; // RA2
+		bool IsHouseColor; // RA2
+		bool IsSupported; // RA2
+
 		/*
 		 * These are the world coordinates of the two ends of the beam. Neither end follows
 		 * the object that fired or the object that was hit, so the beam stays where it was

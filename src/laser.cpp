@@ -43,6 +43,9 @@ DynamicVectorClass<LaserDrawClass *> LaserDrawClass::LaserDraws;
 /// <param name="fades">Should the beam's intensity slide from start to end over its life?</param>
 LaserDrawClass::LaserDrawClass(Coord start, Coord end, int zadjust, bool unknown, RGBClass inner_color, RGBClass outer_color, RGBClass outer_spread, int duration, bool blinks, bool fades, float start_intensity, float end_intensity) :
 	StageClass(),
+	Thickness(1), // RA2
+	IsHouseColor(false), // RA2
+	IsSupported(false), // RA2
 	Start(start),
 	End(end),
 	ZAdjust(zadjust),
