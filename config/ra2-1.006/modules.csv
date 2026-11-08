@@ -883,9 +883,9 @@ unk_0072A840,0x0072A840,0x00732A50,unknown,code not assigned to a module
 unk_00732A50,0x00732A50,0x00732AE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00732AE0,0x00732AE0,0x00732BE0,unknown,code not assigned to a module
 unk_00732BE0,0x00732BE0,0x00732C10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00732C10,0x00732C10,0x00733A20,unknown,code not assigned to a module
-unk_00733A20,0x00733A20,0x00733A60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00733A60,0x00733A60,0x00734120,unknown,code not assigned to a module
+unk_00732C10,0x00732C10,0x00732EA0,unknown,code not assigned to a module
+weapon,0x00732EA0,0x00733FE0,tibsun,"functions compiled from src/weapon.cpp, matched, without gaps; three placed by the gap"
+unk_00733FE0,0x00733FE0,0x00734120,unknown,code not assigned to a module
 wincomm,0x00734120,0x00735610,tibsun,"functions compiled from src/wincomm.cpp, matched, without gaps"
 unk_00735610,0x00735610,0x00735690,unknown,code not assigned to a module
 unk_00735690,0x00735690,0x00735700,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
