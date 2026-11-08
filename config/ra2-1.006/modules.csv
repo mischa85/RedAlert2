@@ -226,9 +226,9 @@ unk_0049EE80,0x0049EE80,0x0049EEA0,unknown,code not assigned to a module
 draw,0x0049EEA0,0x0049F430,tibsun,"functions compiled from src/draw.cpp, matched, without gaps"
 unk_0049F430,0x0049F430,0x004A4ED0,unknown,code not assigned to a module
 unk_004A4ED0,0x004A4ED0,0x004A4F30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004A4F30,0x004A4F30,0x004A6330,unknown,code not assigned to a module
-unk_004A6330,0x004A6330,0x004A63C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004A63C0,0x004A63C0,0x004A6910,unknown,code not assigned to a module
+unk_004A4F30,0x004A4F30,0x004A5A40,unknown,code not assigned to a module
+droppod,0x004A5A40,0x004A6590,tibsun,"functions compiled from src/droppod.cpp, without gaps; matched except ?Process@DropPodLocomotionClass@@UAGEXZ; five placed by the gap"
+unk_004A6590,0x004A6590,0x004A6910,unknown,code not assigned to a module
 unk_004A6910,0x004A6910,0x004A6930,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004A6930,0x004A6930,0x004A6AE0,unknown,code not assigned to a module
 unk_004A6AE0,0x004A6AE0,0x004A6B40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
