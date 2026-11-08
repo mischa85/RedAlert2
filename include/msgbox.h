@@ -37,10 +37,10 @@
 
 class WWMessageBox
 {
-		int Caption;
+		wchar_t const * Caption; // RA2: wide text
 
 	public:
-		WWMessageBox(int caption=TXT_NONE) {Caption = caption;};
+		WWMessageBox(wchar_t const * caption = L" ") {Caption = caption;}; // RA2: wide caption, a space by default
 
 		/*
 		 * Convenience forwarders; the Enter key answers with button 0.
@@ -51,6 +51,7 @@ class WWMessageBox
 		int Process(const char * msg, int b1txt) { return(_Process(msg, 0, b1txt, TXT_NONE, TXT_NONE, false)); }
 		int Process(char const * msg, int b1txt, int b2txt, bool preserve=false) { return(_Process(msg, 0, b1txt, b2txt, TXT_NONE, preserve)); }
 		int Process(char const * msg, int b1txt, int b2txt, int b3txt, bool preserve=false) { return(_Process(msg, 0, b1txt, b2txt, b3txt, preserve)); }
+		int Process(wchar_t const * msg, wchar_t const * b1txt, wchar_t const * b2txt, wchar_t const * b3txt, bool preserve = false); // RA2: wide text
 
 		/*
 		 * 'defresponse' is the button index the box returns when the player

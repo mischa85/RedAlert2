@@ -306,8 +306,8 @@ namespace OwnerDraw {
 	bool Hide_Tooltip(void);
 	bool End_Tooltip(void);
 
-	HWND Custom_Message_Box(const char * btn1txt, const char * btn2txt = NULL, bool * cancelled = NULL);
-	void Set_Custom_Message_Box_Text(HWND window, LPCSTR text);
+	HWND Custom_Message_Box(wchar_t const * btn1txt, wchar_t const * btn2txt = NULL, bool * cancelled = NULL); // RA2: wide text
+	void Set_Custom_Message_Box_Text(HWND window, wchar_t const * text); // RA2: wide text
 };
 
 

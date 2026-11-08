@@ -158,7 +158,7 @@ class ConnectionClass
 		/*.....................................................................
 		Send/Receive routines.
 		.....................................................................*/
-		virtual int Send_Packet (void * buf, int buflen, int ack_req);
+		virtual int Send_Packet (void * buf, int buflen, int ack_req, int extra); // RA2: extra argument
 		virtual int Receive_Packet (void * buf, int buflen);
 		virtual int Get_Packet (void * buf, int * buflen);
 

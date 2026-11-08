@@ -142,7 +142,7 @@ class IPXGlobalConnClass : public IPXConnClass
 		//.....................................................................
 		// Send/Receive routines.
 		//.....................................................................
-		virtual int Send_Packet (void * buf, int buflen, int ack_req) override;
+		virtual int Send_Packet (void * buf, int buflen, int ack_req, int extra) override; // RA2: extra argument
 		virtual int Receive_Packet (void * buf, int buflen) override;
 		virtual int Get_Packet (void * buf, int * buflen) override;
 

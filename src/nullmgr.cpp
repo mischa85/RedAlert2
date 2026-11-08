@@ -62,6 +62,12 @@
 #include "ownrdraw.h"
 #include "session.h"
 #include "wincomm.h"
+#include "stringtable.h"
+
+/*
+**	RA2: the original path of this file, passed with each string table lookup (see stringtable.h).
+*/
+#define RA2_SOURCE "D:\\Ra2\\NullMgr.CPP"
 
 
 // the following line was taken from Greenleaf's <ibmkeys.h> <asciidef.h>
@@ -708,7 +714,7 @@ int NullModemClass::Send_Message (void *buf, int buflen, int ack_req)
 		return( false );
 	}
 
-	rc = Connection->Send_Packet(buf,buflen,ack_req);
+	rc = Connection->Send_Packet(buf, buflen, ack_req, 0);
 	if (!rc)
 		SendOverflows++;
 
@@ -1202,7 +1208,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 		Determine the dimensions of the text to be used for the dialog box.
 		These dimensions will control how the dialog box looks.
 		------------------------------------------------------------------------*/
-		HWND dialog = OwnerDraw::Custom_Message_Box( Fetch_String( TXT_INITIALIZING_MODEM ) );
+		HWND dialog = OwnerDraw::Custom_Message_Box( StringTable::LoadString("TXT_INITIALIZING_MODEM", NULL, RA2_SOURCE, 1134) );
 
 		if (dialog != NULL) {
 
@@ -1286,7 +1292,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 					**	Handle error case.
 					*/
 					if (status < MODEM_CMD_OK) {
-						if (WWMessageBox()._Process(TXT_ERROR_NO_INIT, 1, TXT_IGNORE, TXT_CANCEL)) {
+						if (WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_NO_INIT", NULL, RA2_SOURCE, 1215), StringTable::LoadString("TXT_IGNORE", NULL, RA2_SOURCE, 1215), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1215), NULL)) {
 							delete istr;
 							OwnerDraw::End_Dialog(dialog);
 							SerialPort->Leave_Failsafe_Mode();
@@ -1318,7 +1324,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 					DebugString("Command response was %s\n", _send_resp[status]);
 
 					if (status != MODEM_CMD_OK && status != MODEM_CMD_0) {
-						if (WWMessageBox()._Process(TXT_NO_FLOW_CONTROL_RESPONSE, 1, TXT_IGNORE, TXT_CANCEL)) {
+						if (WWMessageBox().Process(StringTable::LoadString("TXT_NO_FLOW_CONTROL_RESPONSE", NULL, RA2_SOURCE, 1247), StringTable::LoadString("TXT_IGNORE", NULL, RA2_SOURCE, 1247), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1247), NULL)) {
 							OwnerDraw::End_Dialog(dialog);
 							SerialPort->Leave_Failsafe_Mode();
 							return( false );
@@ -1339,7 +1345,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 						DebugString("Command response was %s\n", _send_resp[status]);
 
 						if (status != MODEM_CMD_OK && status != MODEM_CMD_0) {
-							if (WWMessageBox()._Process(TXT_NO_COMP_ENABLE_RESPONSE, 1, TXT_IGNORE, TXT_CANCEL)) {
+							if (WWMessageBox().Process(StringTable::LoadString("TXT_NO_COMP_ENABLE_RESPONSE", NULL, RA2_SOURCE, 1266), StringTable::LoadString("TXT_IGNORE", NULL, RA2_SOURCE, 1266), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1266), NULL)) {
 								OwnerDraw::End_Dialog(dialog);
 								SerialPort->Leave_Failsafe_Mode();
 								return( false );
@@ -1355,7 +1361,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 						DebugString("Command response was %s\n", _send_resp[status]);
 
 						if (status != MODEM_CMD_OK && status != MODEM_CMD_0) {
-							if (WWMessageBox()._Process(TXT_NO_COMP_DISABLE_RESPONSE, 1, TXT_IGNORE, TXT_CANCEL)) {
+							if (WWMessageBox().Process(StringTable::LoadString("TXT_NO_COMP_DISABLE_RESPONSE", NULL, RA2_SOURCE, 1281), StringTable::LoadString("TXT_IGNORE", NULL, RA2_SOURCE, 1281), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1281), NULL)) {
 								OwnerDraw::End_Dialog(dialog);
 								SerialPort->Leave_Failsafe_Mode();
 								return( false );
@@ -1377,7 +1383,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 						DebugString("Command response was %s\n", _send_resp[status]);
 
 						if (status != MODEM_CMD_OK && status != MODEM_CMD_0) {
-							if (WWMessageBox()._Process(TXT_NO_EC_ENABLE_RESPONSE, 1, TXT_IGNORE, TXT_CANCEL)) {
+							if (WWMessageBox().Process(StringTable::LoadString("TXT_NO_EC_ENABLE_RESPONSE", NULL, RA2_SOURCE, 1301), StringTable::LoadString("TXT_IGNORE", NULL, RA2_SOURCE, 1301), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1301), NULL)) {
 								OwnerDraw::End_Dialog(dialog);
 								SerialPort->Leave_Failsafe_Mode();
 								return( false );
@@ -1392,7 +1398,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 						DebugString("Command response was %s\n", _send_resp[status]);
 
 						if (status != MODEM_CMD_OK && status != MODEM_CMD_0) {
-							if (WWMessageBox()._Process(TXT_NO_EC_DISABLE_RESPONSE, 1, TXT_IGNORE, TXT_CANCEL)) {
+							if (WWMessageBox().Process(StringTable::LoadString("TXT_NO_EC_DISABLE_RESPONSE", NULL, RA2_SOURCE, 1316), StringTable::LoadString("TXT_IGNORE", NULL, RA2_SOURCE, 1316), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1316), NULL)) {
 								OwnerDraw::End_Dialog(dialog);
 								SerialPort->Leave_Failsafe_Mode();
 								return( false );
@@ -1410,7 +1416,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 			DebugString("Command response was %s\n", _send_resp[status]);
 
 			if (status != MODEM_CMD_OK) {
-				if (WWMessageBox()._Process(TXT_ERROR_NO_DISABLE, 1, TXT_IGNORE, TXT_CANCEL)) {
+				if (WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_NO_DISABLE", NULL, RA2_SOURCE, 1334), StringTable::LoadString("TXT_IGNORE", NULL, RA2_SOURCE, 1334), StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1334), NULL)) {
 					OwnerDraw::End_Dialog(dialog);
 					SerialPort->Leave_Failsafe_Mode();
 					return( false );
@@ -1422,7 +1428,7 @@ bool NullModemClass::Detect_Modem( SerialSettingsType *settings, bool reconnect 
 			**	If we had an unreasonable number of ignored errors then return failure
 			*/
 			if (error_count >= 3) {
-				WWMessageBox().Process(TXT_ERROR_TOO_MANY, TXT_OK);
+				WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_TOO_MANY", NULL, RA2_SOURCE, 1347), StringTable::LoadString("TXT_OK", NULL, RA2_SOURCE, 1347), NULL, NULL);
 				OwnerDraw::End_Dialog(dialog);
 				SerialPort->Leave_Failsafe_Mode();
 				return(false);
@@ -1471,7 +1477,7 @@ DialStatusType NullModemClass::Dial_Modem( char *string, DialMethodType method, 
 	bool process = true;						// process while true
 	int delay;
 	DialStatusType dialstatus = DIAL_ERROR;
-	const char *text_buffer;
+	wchar_t const * text_buffer;
 	char buffer[80*3];
 
 	DebugString("Dial_Modem\n");
@@ -1481,12 +1487,12 @@ DialStatusType NullModemClass::Dial_Modem( char *string, DialMethodType method, 
 	These dimensions will control how the dialog box looks.
 	------------------------------------------------------------------------*/
 	if (reconnect == true) {
-		text_buffer = Fetch_String(TXT_MODEM_CONNERR_REDIALING);
+		text_buffer = StringTable::LoadString("TXT_MODEM_CONNERR_REDIALING", NULL, RA2_SOURCE, 1409);
 	} else {
-		text_buffer = Fetch_String(TXT_DIALING);
+		text_buffer = StringTable::LoadString("TXT_DIALING", NULL, RA2_SOURCE, 1411);
 	}
 	ModemDialogIsOpen = false;
-	HWND dialog = OwnerDraw::Custom_Message_Box(text_buffer, Fetch_String(TXT_CANCEL), &ModemDialogIsOpen);
+	HWND dialog = OwnerDraw::Custom_Message_Box(text_buffer, StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1415), &ModemDialogIsOpen);
 
 	if (dialog) {
 		OwnerDraw::Display_Dialog(dialog);
@@ -1513,7 +1519,8 @@ DialStatusType NullModemClass::Dial_Modem( char *string, DialMethodType method, 
 		**	Sets up the ability to abort modem commands when any input is in the
 		**	Keyboard buffer.  This also calls the game CallBack().
 		*/
-		Setup_Abort_Modem();
+		SerialPort->Set_Abort_Function((int(*)(void))Abort_Modem);
+		ModemDialogIsOpen = false;
 
 		/*------------------------------------------------------------------------
 		Main Processing Loop
@@ -1592,7 +1599,8 @@ DialStatusType NullModemClass::Dial_Modem( char *string, DialMethodType method, 
 			}
 		}
 
-		Remove_Abort_Modem();
+		SerialPort->Set_Abort_Function(NULL);
+		ModemDialogIsOpen = false;
 
 		OwnerDraw::End_Dialog(dialog);
 	}
@@ -1627,7 +1635,7 @@ DialStatusType NullModemClass::Answer_Modem( bool reconnect )
 	int delay;
 	DialStatusType dialstatus;
 	bool ring = false;
-	const char *text_buffer;
+	wchar_t const * text_buffer;
 	char comm_buffer[80*3];
 
 	dialstatus = DIAL_ERROR;
@@ -1637,16 +1645,16 @@ DialStatusType NullModemClass::Answer_Modem( bool reconnect )
 	These dimensions will control how the dialog box looks.
 	------------------------------------------------------------------------*/
 	if (reconnect == true) {
-		text_buffer = Fetch_String(TXT_MODEM_CONNERR_WAITING);
+		text_buffer = StringTable::LoadString("TXT_MODEM_CONNERR_WAITING", NULL, RA2_SOURCE, 1580);
 	} else {
-		text_buffer = Fetch_String(TXT_WAITING_FOR_CALL);
+		text_buffer = StringTable::LoadString("TXT_WAITING_FOR_CALL", NULL, RA2_SOURCE, 1582);
 	}
 
 	DebugString("Waiting for ring\n");
 
 	process = true;
 	ModemDialogIsOpen = false;
-	HWND dialog = OwnerDraw::Custom_Message_Box(text_buffer, Fetch_String(TXT_CANCEL), &ModemDialogIsOpen);
+	HWND dialog = OwnerDraw::Custom_Message_Box(text_buffer, StringTable::LoadString("TXT_CANCEL", NULL, RA2_SOURCE, 1589), &ModemDialogIsOpen);
 	if (dialog) {
 
 		OwnerDraw::Display_Dialog(dialog);
@@ -1701,7 +1709,7 @@ DialStatusType NullModemClass::Answer_Modem( bool reconnect )
 			if (process) {
 				if ( strncmp( comm_buffer, "RING", 4 ) == 0 ) {
 					DebugString("RING\n");
-					OwnerDraw::Set_Custom_Message_Box_Text(dialog, Fetch_String(TXT_ANSWERING));
+					OwnerDraw::Set_Custom_Message_Box_Text(dialog, StringTable::LoadString("TXT_ANSWERING", NULL, RA2_SOURCE, 1647));
 					DebugString("Answering with ATA\n");
 					SerialPort->Write_To_Serial_Port ((unsigned char*)"ATA\r", strlen("ATA\r"));
 
@@ -1724,7 +1732,7 @@ DialStatusType NullModemClass::Answer_Modem( bool reconnect )
 				} else if ( strncmp( comm_buffer, "ERRO", 4 ) == 0 ) {
 					dialstatus = DIAL_ERROR;
 					DebugString("Result is %s\n", comm_buffer);
-					WWMessageBox().Process(TXT_ERROR_ERROR, TXT_OK);
+					WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_ERROR", NULL, RA2_SOURCE, 1671), StringTable::LoadString("TXT_OK", NULL, RA2_SOURCE, 1671), NULL, NULL);
 					process = false;
 				}
 			}
@@ -1740,7 +1748,7 @@ DialStatusType NullModemClass::Answer_Modem( bool reconnect )
 						if (strlen(comm_buffer)) {
 							DebugString("Answer result is %s\n", comm_buffer);
 						}
-						WWMessageBox().Process(TXT_ERROR_TIMEOUT, TXT_OK);
+						WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_TIMEOUT", NULL, RA2_SOURCE, 1687), StringTable::LoadString("TXT_OK", NULL, RA2_SOURCE, 1687), NULL, NULL);
 						DebugString("Not connected\n");
 						dialstatus = DIAL_TIMEOUT;
 					}
