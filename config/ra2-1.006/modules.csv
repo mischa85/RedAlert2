@@ -544,21 +544,7 @@ nullconn,0x005CDB40,0x005CDCB0,tibsun,"functions compiled from src/nullconn.cpp,
 unk_005CDCB0,0x005CDCB0,0x005CE990,unknown,code not assigned to a module
 unk_005CE990,0x005CE990,0x005CEA60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005CEA60,0x005CEA60,0x005CFFC0,unknown,code not assigned to a module
-unk_005CFFC0,0x005CFFC0,0x005D0350,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D0350,0x005D0350,0x005D0360,unknown,code not assigned to a module
-unk_005D0360,0x005D0360,0x005D05F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D05F0,0x005D05F0,0x005D0630,unknown,code not assigned to a module
-unk_005D0630,0x005D0630,0x005D08A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D08A0,0x005D08A0,0x005D08E0,unknown,code not assigned to a module
-unk_005D08E0,0x005D08E0,0x005D09A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D09A0,0x005D09A0,0x005D1B70,unknown,code not assigned to a module
-unk_005D1B70,0x005D1B70,0x005D1D40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D1D40,0x005D1D40,0x005D1D50,unknown,code not assigned to a module
-unk_005D1D50,0x005D1D50,0x005D1DA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D1DA0,0x005D1DA0,0x005D1DB0,unknown,code not assigned to a module
-unk_005D1DB0,0x005D1DB0,0x005D1E40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D1E40,0x005D1E40,0x005D1E50,unknown,code not assigned to a module
-unk_005D1E50,0x005D1E50,0x005D1F20,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+nullmgr,0x005CFFC0,0x005D1F20,tibsun,"functions compiled from src/nullmgr.cpp, matched, without gaps; four placed by the gap"
 unk_005D1F20,0x005D1F20,0x005D4A60,unknown,code not assigned to a module
 unk_005D4A60,0x005D4A60,0x005D4AB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005D4AB0,0x005D4AB0,0x005D5D10,unknown,code not assigned to a module
