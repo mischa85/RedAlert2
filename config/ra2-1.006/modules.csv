@@ -362,9 +362,9 @@ unk_0053B200,0x0053B200,0x0053BF90,unknown,code not assigned to a module
 unk_0053BF90,0x0053BF90,0x0053C010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0053C010,0x0053C010,0x0053C7D0,unknown,code not assigned to a module
 unk_0053C7D0,0x0053C7D0,0x0053C7F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0053C7F0,0x0053C7F0,0x0053D2B0,unknown,code not assigned to a module
-unk_0053D2B0,0x0053D2B0,0x0053D360,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0053D360,0x0053D360,0x0053E110,unknown,code not assigned to a module
+unk_0053C7F0,0x0053C7F0,0x0053CFC0,unknown,code not assigned to a module
+loco,0x0053CFC0,0x0053D630,tibsun,"functions compiled from src/loco.cpp, matched, without gaps; 21 placed by the gap"
+unk_0053D630,0x0053D630,0x0053E110,unknown,code not assigned to a module
 unk_0053E110,0x0053E110,0x0053E180,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0053E180,0x0053E180,0x0053E420,unknown,code not assigned to a module
 lzo1x_c,0x0053E420,0x0053E970,tibsun,"functions compiled from src/lzo1x_c.cpp, matched, without gaps"
