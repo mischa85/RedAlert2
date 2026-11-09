@@ -471,7 +471,9 @@ unk_0059F250,0x0059F250,0x005A0250,unknown,code not assigned to a module
 movie,0x005A0250,0x005A0B50,tibsun,"functions compiled from src/movie.cpp, matched, without gaps"
 unk_005A0B50,0x005A0B50,0x005A0DC0,unknown,code not assigned to a module
 movies,0x005A0DC0,0x005A1F00,tibsun,"functions compiled from src/movies.cpp, matched, without gaps; 14 placed by the gap"
-unk_005A1F00,0x005A1F00,0x005A73E0,unknown,code not assigned to a module
+unk_005A1F00,0x005A1F00,0x005A70C0,unknown,code not assigned to a module
+mpfreeforall,0x005A70C0,0x005A71B0,source,"functions compiled from src/mpfreeforall.cpp, matched, without gaps; ??0FreeForAll@@QAE@ABVWideWstring@@0ABVWstring@@1_NH@Z not placed; ??1FreeForAll@@UAE@XZ not placed; ?AssignTeams@FreeForAll@@UAE_NXZ not placed; ?IsSkirmishAllowed@FreeForAll@@UAE_NXZ not placed"
+unk_005A71B0,0x005A71B0,0x005A73E0,unknown,code not assigned to a module
 mplayer,0x005A73E0,0x005A74B0,tibsun,"functions compiled from src/mplayer.cpp, matched, without gaps"
 unk_005A74B0,0x005A74B0,0x005A7540,unknown,code not assigned to a module
 mpmath,0x005A7540,0x005AA380,tibsun,"functions compiled from src/mpmath.cpp, without gaps; matched except ?XMP_Small_Divisors_Test@@YI_NPBIH@Z; one placed by the gap; ?XMP_Fetch_Prime_Table@@YIPBGXZ not placed; ?XMP_Is_Prime@@YI_NPBIH@Z not placed"
