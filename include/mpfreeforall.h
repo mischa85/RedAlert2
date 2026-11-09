@@ -6,15 +6,15 @@
 
 #include "multiplayer.h"
 
-class MPFreeForAllClass : public MultiplayerGameMode
+class FreeForAll : public MultiplayerGameMode
 {
 	public:
-		MPFreeForAllClass(NoInitClass const & x) : MultiplayerGameMode(x) {}
-		MPFreeForAllClass(WideWstring const & title, WideWstring const & tooltip, Wstring const & inifile, Wstring const & mapfilter, bool aiallowed, int modeindex);
-		virtual ~MPFreeForAllClass(void);
-		virtual bool vt_entry_10(void) override;
-		virtual bool vt_entry_14(WideWstring * message) override;
-		virtual bool vt_entry_18(void) override;
-		virtual bool vt_entry_40(void) override;
+		FreeForAll(NoInitClass const & x) : MultiplayerGameMode(x) {}
+		FreeForAll(WideWstring const & title, WideWstring const & tooltip, Wstring const & inifile, Wstring const & mapfilter, bool aiallowed, int modeindex);
+		virtual ~FreeForAll(void);
+		virtual bool AssignTeams(void) override;
+		virtual bool CheckStartConditions(WideWstring * message) override;
+		virtual bool AssignTeamsAtStart(void) override;
+		virtual bool IsSkirmishAllowed(void) override;
 		virtual void PopulateTeamDropdownForPlayer(HWND hwnd, int index) override;
 };

@@ -48,6 +48,7 @@ class MultiplayerGameMode
 		bool IsMapAllowed(MultiMission const * map);
 		MultiplayerTeam * GetTeam(int index);
 		void DeleteTeams(void);
+		bool GenerateUnits(void); // RA2: 0x005B7CE0, gives every house its base unit and starting units
 
 		MultiplayerGameMode(NoInitClass const &) {}
 		MultiplayerGameMode(WideWstring const & title, WideWstring const & tooltip, Wstring const & inifile, Wstring const & mapfilter, bool aiallowed, int modeindex);
@@ -63,7 +64,7 @@ class MultiplayerGameMode
 		virtual void vt_entry_24(void) {}
 		virtual int DefaultCountry(void);
 		virtual bool IsAIAllowed(void);
-		virtual bool vt_entry_30(void);
+		virtual bool IsSkirmishAllowed(void); // RA2: Fill_Game_Mode_List lists only the modes returning true in a skirmish; FreeForAll does
 		virtual int FirstValidMapIndex(void);
 		virtual void PopulateTeamDropdown(HWND hwnd, DynamicVectorClass<MultiplayerTeam *> * teams, MultiplayerTeam * team);
 		virtual void DrawTeamDropdown(HWND hwnd, DynamicVectorClass<MultiMission const *> * maps, MultiMission const * map);
