@@ -8,34 +8,17 @@
 #include "_xmouse.h"
 #include "globals.h"
 #include "init.h"
+#include "ownrdraw.h"
+#include "winfix.h"
 #include <windows.h>
 #undef LoadString
 
-// SYNTHETIC: GAMEMD 0x005D3470 SYMBOL
-// _$E2
-
 class Surface;
-void __fastcall FUN_0052FEC0(Surface * surface, bool flag);
+void __fastcall Darken_Surface(Surface * surface, bool update); // RA2: dims the screen behind the dialog
 
-namespace UI {
-	HWND __fastcall BeginDialog(int resource, DLGPROC proc, int param);
-	void __fastcall FocusOnWindow(HWND window);
-	void __fastcall EndDialog(HWND window);
-	bool Updated(void);
-	int __fastcall StandardWndProc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-}
+BOOL CALLBACK Message_Box_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
+void __fastcall Message_Box_On_WM_COMMAND(HWND window, int id, int control, int notify_code);
 
-namespace Game {
-	bool __fastcall OnWindowMoving(HWND window, WPARAM wparam, LPARAM lparam);
-}
-BOOL CALLBACK FUN_005D36A0(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-void __fastcall FUN_005D3760(HWND window, int id, int control, int notify_code);
-int FUN_00ABFC18;
-int FUN_00ABFC1C;
-int FUN_00ABFC20;
-int FUN_00ABFC24;
-
-// FUNCTION: GAMEMD 0x005D3490
 int WWMessageBox::Process(wchar_t const * msg, wchar_t const * b1txt, wchar_t const * b2txt, wchar_t const * b3txt, bool preserve)
 {
 	int retval = -1;
@@ -48,7 +31,7 @@ int WWMessageBox::Process(wchar_t const * msg, wchar_t const * b1txt, wchar_t co
 	bool has2 = (b2txt != NULL && b2txt[0] != L'\0');
 	bool has3 = (b3txt != NULL && b3txt[0] != L'\0');
 
-	FUN_0052FEC0(NULL, true);
+	Darken_Surface(NULL, true);
 
 	int id = 0xCE;
 	if (has3) {
@@ -57,7 +40,7 @@ int WWMessageBox::Process(wchar_t const * msg, wchar_t const * b1txt, wchar_t co
 		id = 0x120;
 	}
 
-	HWND dialog = UI::BeginDialog(id, FUN_005D36A0, 0);
+	HWND dialog = OwnerDraw::Begin_Dialog(id, Message_Box_Proc, 0);
 	if (dialog != NULL) {
 		SetWindowLong(dialog, DWL_USER, (LONG)&retval);
 
@@ -81,14 +64,14 @@ int WWMessageBox::Process(wchar_t const * msg, wchar_t const * b1txt, wchar_t co
 			numbuttons = 3;
 		}
 
-		UI::FocusOnWindow(dialog);
+		OwnerDraw::Display_Dialog(dialog);
 
 		if (numbuttons > 0) {
 			while (MouseCursor->Get_Mouse_State()) {
 				MouseCursor->Show_Mouse();
 			}
 			while (retval < 0) {
-				if (UI::Updated()) {
+				if (OwnerDraw::Dialog_Message_Handler()) {
 					break;
 				}
 				if (!GameActive) {
@@ -99,7 +82,7 @@ int WWMessageBox::Process(wchar_t const * msg, wchar_t const * b1txt, wchar_t co
 			retval = 0;
 		}
 
-		UI::EndDialog(dialog);
+		OwnerDraw::End_Dialog(dialog);
 	}
 
 	while (mousestate < MouseCursor->Get_Mouse_State()) {
@@ -109,20 +92,19 @@ int WWMessageBox::Process(wchar_t const * msg, wchar_t const * b1txt, wchar_t co
 	return retval;
 }
 
-// FUNCTION: GAMEMD 0x005D36A0
-BOOL CALLBACK FUN_005D36A0(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
+BOOL CALLBACK Message_Box_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
-	BOOL rc = UI::StandardWndProc(window, message, wparam, lparam);
+	BOOL rc = OwnerDraw::Default_Dialog_Proc(window, message, wparam, lparam);
 
 	if (rc == FALSE) {
 		switch (message) {
 			case WM_COMMAND:
-				FUN_005D3760(window, LOWORD(wparam), 0, HIWORD(wparam));
+				Message_Box_On_WM_COMMAND(window, LOWORD(wparam), 0, HIWORD(wparam));
 				rc = FALSE;
 				break;
 
 			case WM_MOVING:
-				rc = Game::OnWindowMoving(window, wparam, lparam);
+				rc = On_WM_MOVING(window, wparam, lparam);
 				break;
 
 			default:
@@ -134,8 +116,7 @@ BOOL CALLBACK FUN_005D36A0(HWND window, UINT message, WPARAM wparam, LPARAM lpar
 	return rc;
 }
 
-// FUNCTION: GAMEMD 0x005D3760
-void __fastcall FUN_005D3760(HWND window, int id, int control, int notify_code)
+void __fastcall Message_Box_On_WM_COMMAND(HWND window, int id, int control, int notify_code)
 {
 	int * retval = (int *)GetWindowLong(window, DWL_USER);
 
