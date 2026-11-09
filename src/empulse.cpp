@@ -1,17 +1,13 @@
-/*******************************************************************************
- *                                O P E N  T S
- *******************************************************************************
- * SPDX-License-Identifier: GPL-3.0-or-later
- * Copyright 2026 OpenTS contributors
- *
- * See LICENSE.md for applicable additional terms and warranty disclaimers.
- ******************************************************************************/
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright 2026 ra2-decomp contributors
+// Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
+// Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
 #define INCLUDE_COM
 #include "always.h"
-
+#include "geometry.h"
+#include <math.h>
 #include "empulse.h"
-
 #include "_map.h"
 #include "_rules.h"
 #include "aircraft.h"
@@ -34,17 +30,6 @@
 
 DynamicVectorClass<EMPulseClass *> EMPulseClass::EMPulses;
 
-
-/// <summary>
-/// Creates an electromagnetic pulse over the map.
-/// This routine is used when a warhead with the electromagnetic effect detonates, and by
-/// the trigger action that fires the pulse weapon off. The new pulse adds itself to the
-/// global pulse list and immediately disrupts everything standing within its radius.
-/// </summary>
-/// <param name="cell">The cell that the pulse is centered upon.</param>
-/// <param name="spread">The radius of the pulse, expressed in cells.</param>
-/// <param name="duration">The number of game frames the pulse will remain in effect.</param>
-/// <param name="source">The object that will be credited with the pulse's handiwork.</param>
 EMPulseClass::EMPulseClass(Cell cell, int spread, int duration, TechnoClass * source) :
 	BASECLASS(),
 	CellID(cell),
@@ -57,12 +42,6 @@ EMPulseClass::EMPulseClass(Cell cell, int spread, int duration, TechnoClass * so
 	Create(source);
 }
 
-
-/// <summary>
-/// Creates a blank pulse.
-/// This routine is used by the save/load system, which needs an empty object to read the
-/// saved state into.
-/// </summary>
 EMPulseClass::EMPulseClass(void) :
 	BASECLASS(),
 	CellID(CELL_NONE),
@@ -70,27 +49,13 @@ EMPulseClass::EMPulseClass(void) :
 	CreationFrame(0),
 	Duration(0)
 {
-
 }
 
-
-/// <summary>
-/// Creates a pulse without initializing it.
-/// This routine is used by the load process, which is about to overwrite every member with
-/// the values read out of the save stream.
-/// </summary>
 EMPulseClass::EMPulseClass(NoInitClass const & x) :
 	BASECLASS(x)
 {
-
 }
 
-
-/// <summary>
-/// Destroys the pulse.
-/// This routine lifts the pulse's effect off the map, breaks any references other objects
-/// hold to it, and takes it out of the global pulse list.
-/// </summary>
 EMPulseClass::~EMPulseClass(void)
 {
 	if (GameActive) {
@@ -100,12 +65,6 @@ EMPulseClass::~EMPulseClass(void)
 	EMPulses.Delete(this);
 }
 
-
-/// <summary>
-/// Deletes every pulse in the game.
-/// This routine is used when the scenario is torn down, so that no pulse survives into the
-/// next game.
-/// </summary>
 void EMPulseClass::Reset(void)
 {
 	while (EMPulses.Count()) {
@@ -113,12 +72,6 @@ void EMPulseClass::Reset(void)
 	}
 }
 
-
-/// <summary>
-/// Deletes any pulses that have outlived their duration.
-/// This routine is called by the game logic so that an expired pulse releases its hold on
-/// the objects and cells it was disrupting.
-/// </summary>
 void EMPulseClass::Update_All(void)
 {
 	for (int i = EMPulses.Count() - 1; i >= 0; i--) {
@@ -129,15 +82,6 @@ void EMPulseClass::Update_All(void)
 	}
 }
 
-
-/// <summary>
-/// Applies the pulse's effect to everything within its radius.
-/// Aircraft that are aloft are brought down, subterranean and surface units are stunned
-/// and left sparking, and buildings are powered off for as long as the pulse lasts. Core
-/// defenders and limpet mines have their own reactions, and everything caught is given the
-/// chance to spring a paralyzed trigger event.
-/// </summary>
-/// <param name="source">The object that will be credited with the pulse's handiwork.</param>
 void EMPulseClass::Create(TechnoClass * source)
 {
 	if (Duration + CreationFrame > Frame) {
@@ -147,28 +91,8 @@ void EMPulseClass::Create(TechnoClass * source)
 			AircraftClass * aircraft = Aircraft[i];
 			if (aircraft->IsDown && !aircraft->IsInLimbo && !aircraft->In_Air() && aircraft->Strength > 0) {
 				if (aircraft->Center_Coord().Distance_To(CellID.As_Coord()) < Spread * CELL_LEPTON) {
-					aircraft->Spring_Tag(TEVENT_PARALYZED, aircraft, CELL_NONE, false, source);
-					aircraft->Crash(source);
+					((TechnoClass *)aircraft)->Crash(source); // RA2: virtual TechnoClass::Crash
 				}
-			}
-		}
-
-		for (int j = 0; j < DisplayClass::Layer[LAYER_UNDERGROUND].Count(); j++) {
-			FootClass * foot = (FootClass *)DisplayClass::Layer[LAYER_UNDERGROUND][j];
-			Cell center = foot->PositionCoord;
-			int x = center.X - CellID.X;
-			int y = center.Y - CellID.Y;
-			if (x * x + y * y < spread_sq) {
-				foot->Locomotion->Power_Off();
-				if (foot->Locomotion->Is_Moving()) {
-					foot->Locomotion->Stop_Moving();
-				}
-				foot->StunDuration = Duration;
-				AnimClass * sparks = new AnimClass(Rule->EMPulseSparkles, foot->Center_Coord(), Random_Pick(0, 25));
-				if (sparks != NULL) {
-					sparks->Attach_To(foot);
-				}
-				foot->Spring_Tag(TEVENT_PARALYZED, foot, CELL_NONE, false, source);
 			}
 		}
 
@@ -186,60 +110,32 @@ void EMPulseClass::Create(TechnoClass * source)
 							if (building != NULL) {
 								if (building->Center_Coord().As_Cell() == cell) {
 									if (!building->Class->IsInvisibleInGame) {
-										if (building->Class->IsLimpetMine == true) {
-											building->Do_Destruction(NULL, source, true, building->Occupy_List());
-										} else if (!building->Class->IsCoreDefender) {
-											building->Power_Off();
-											building->StunDuration = Duration;
-											if (building->Class->IsRadar) {
-												building->House->RecalcRadar = true;
-											}
-											if (building->Class->Is_Mobile_Deployer()) {
-												Coord coord = building->Center_Coord();
-												coord.X += CELL_LEPTON_W / 4;
-												coord.Y += CELL_LEPTON_H / 4;
-												coord.Z += LEVEL_LEPTON_H / 2;
-												AnimClass * sparks = new AnimClass(Rule->EMPulseSparkles, coord, Random_Pick(0, 25));
-												if (sparks != NULL) {
-													sparks->Attach_To(building);
-												}
-											}
+										building->Power_Off(); // RA2: 0x44D6C0
+										building->StunDuration = Duration;
+										if (building->Class->IsRadar) {
+											building->House->RecalcRadar = true;
 										}
-										building->Spring_Tag(TEVENT_PARALYZED, building, CELL_NONE, false, source);
 									}
 								}
 							} else {
 								TechnoClass * techno = cellptr.Cell_Techno();
-								while (techno != NULL) {
-									bool paralyze = false;
-									if ((techno->RTTI == RTTI_UNIT || techno->RTTI == RTTI_AIRCRAFT) && techno->Is_Foot()) {
-										if (((FootClass *)techno)->Locomotion != NULL) {
-											UnitClass * unit = dynamic_cast<UnitClass *>(techno);
-											if (unit != NULL && unit->Class->IsCoreDefender) {
-												paralyze = false;
-												techno->Spring_Tag(TEVENT_PARALYZED, unit, CELL_NONE, false, source);
-											} else {
-												paralyze = techno != source;
+								if (techno != NULL) {
+									if (techno->RTTI == RTTI_UNIT || techno->RTTI == RTTI_AIRCRAFT) {
+										if (techno->Is_Foot() && ((FootClass *)techno)->Locomotion != NULL) {
+											if (techno->RTTI != RTTI_UNIT || !((UnitClass *)techno)->Class->IsLargeVisceroid || !((UnitClass *)techno)->Class->IsSmallVisceroid) {
+												FootClass * foot = (FootClass *)techno;
+												foot->Locomotion->Power_Off();
+												if (foot->Locomotion->Is_Moving()) {
+													foot->Locomotion->Stop_Moving();
+												}
+												foot->StunDuration = Duration;
+												AnimClass * sparks = new AnimClass(Rule->EMPulseSparkles, foot->Center_Coord(), Random_Pick(0, 25));
+												if (sparks != NULL) {
+													sparks->Attach_To(foot);
+												}
 											}
 										}
 									}
-									if (techno->RTTI == RTTI_INFANTRY && ((InfantryClass *)techno)->Class->IsCyborg || paralyze) {
-										if (techno->RTTI != RTTI_UNIT || (!((UnitClass *)techno)->Class->IsLargeVisceroid && !((UnitClass *)techno)->Class->IsSmallVisceroid)) {
-											FootClass * foot = ((FootClass *) techno);
-											foot->Locomotion->Power_Off();
-											if (foot->Locomotion->Is_Moving()) {
-												foot->Locomotion->Stop_Moving();
-											}
-											foot->StunDuration = Duration;
-											AnimClass * sparks = new AnimClass(Rule->EMPulseSparkles, foot->Center_Coord(), Random_Pick(0, 25));
-											if (sparks != NULL) {
-												sparks->Attach_To(foot);
-											}
-											foot->Spring_Tag(TEVENT_PARALYZED, foot, CELL_NONE, false, source);
-										}
-									}
-									if (techno->Next == NULL || !techno->Next->Is_Techno()) break;
-									techno = (TechnoClass *)techno->Next;
 								}
 							}
 						}
@@ -250,12 +146,6 @@ void EMPulseClass::Create(TechnoClass * source)
 	}
 }
 
-
-/// <summary>
-/// Lifts the pulse's disruption from the cells it covers.
-/// This routine is used when the pulse expires, so that the cells within its radius stop
-/// reporting themselves as being under an electromagnetic pulse.
-/// </summary>
 void EMPulseClass::Destroy(void)
 {
 	int spread_sq = Spread * Spread;
@@ -276,13 +166,6 @@ void EMPulseClass::Destroy(void)
 	}
 }
 
-
-/// <summary>
-/// Adds the state of this pulse to the running game checksum.
-/// This routine is used by the multiplayer sync check to prove that every machine holds
-/// an identical copy of this object.
-/// </summary>
-/// <param name="crc">The checksum engine to submit the object state to.</param>
 void EMPulseClass::Compute_CRC(CRCEngine &crc) const
 {
 	BASECLASS::Compute_CRC(crc);
@@ -293,14 +176,6 @@ void EMPulseClass::Compute_CRC(CRCEngine &crc) const
 	crc(Duration);
 }
 
-
-/// <summary>
-/// Fetches the class identifier used to persist this object.
-/// The save system writes this identifier ahead of the object data so that the loader
-/// knows what kind of object to reconstruct.
-/// </summary>
-/// <param name="retval">Pointer to the buffer that will receive the class identifier.</param>
-/// <returns>Returns with S_OK, or E_POINTER if no buffer was supplied.</returns>
 HRESULT STDMETHODCALLTYPE EMPulseClass::GetClassID(CLSID * retval)
 {
 	if (retval == NULL) return(E_POINTER);
@@ -308,12 +183,6 @@ HRESULT STDMETHODCALLTYPE EMPulseClass::GetClassID(CLSID * retval)
 	return(S_OK);
 }
 
-
-/// <summary>
-/// Loads this pulse from the save game stream.
-/// The object is rebuilt in place over the state that was read back off the stream.
-/// </summary>
-/// <returns>Returns with S_OK if the object was read successfully.</returns>
 HRESULT STDMETHODCALLTYPE EMPulseClass::Load(IStream * stream)
 {
 	HRESULT result = BASECLASS::Load(stream);
@@ -325,18 +194,23 @@ HRESULT STDMETHODCALLTYPE EMPulseClass::Load(IStream * stream)
 	return(result);
 }
 
-
-/// <summary>
-/// Saves this pulse to the save game stream.
-/// </summary>
-/// <param name="cleardirty">Should the dirty flag be cleared once the object is written?</param>
-/// <returns>Returns with S_OK if the object was written successfully.</returns>
 HRESULT STDMETHODCALLTYPE EMPulseClass::Save(IStream * stream, BOOL cleardirty)
 {
 	HRESULT result = BASECLASS::Save(stream, cleardirty);
 	if (SUCCEEDED(result)) {
-
 		result = S_OK;
 	}
 	return(result);
+}
+
+
+int EMPulseClass::Fetch_Object_Size(void) const
+{
+	return(sizeof(EMPulseClass));
+}
+
+
+RTTIType EMPulseClass::Fetch_RTTI(void) const
+{
+	return(RTTI_EMPULSE);
 }

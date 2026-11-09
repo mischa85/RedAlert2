@@ -29,10 +29,10 @@ class EMPulseClass : public AbstractClass
 		EMPulseClass(NoInitClass const & x);
 		virtual ~EMPulseClass(void) override;
 
-		virtual int Fetch_Object_Size(void) const override {return(sizeof(EMPulseClass));} // RA2: no argument
+		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual void Compute_CRC(CRCEngine &crc) const override;
 
-		virtual RTTIType Fetch_RTTI(void) const override {return(RTTI_EMPULSE);}
+		virtual RTTIType Fetch_RTTI(void) const override;
 
 		virtual HRESULT STDMETHODCALLTYPE GetClassID(CLSID * retval) override;
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
