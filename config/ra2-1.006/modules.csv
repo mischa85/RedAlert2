@@ -811,11 +811,9 @@ unk_00735610,0x00735610,0x00735690,unknown,code not assigned to a module
 windlg,0x00735690,0x00736210,tibsun,"functions compiled from src/windlg.cpp, matched, without gaps; four placed by the gap"
 unk_00736210,0x00736210,0x00736230,unknown,code not assigned to a module
 winfix,0x00736230,0x007371B0,tibsun,"functions compiled from src/winfix.cpp, matched, without gaps; one placed by the gap"
-unk_007371B0,0x007371B0,0x00737A60,unknown,code not assigned to a module
-unk_00737A60,0x00737A60,0x00737AF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00737AF0,0x00737AF0,0x00737B00,unknown,code not assigned to a module
-unk_00737B00,0x00737B00,0x00737BD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00737BD0,0x00737BD0,0x0073A8E0,unknown,code not assigned to a module
+unk_007371B0,0x007371B0,0x007373A0,unknown,code not assigned to a module
+winstub,0x007373A0,0x00738420,tibsun,"functions compiled from src/winstub.cpp, matched, without gaps; eight placed by the gap"
+unk_00738420,0x00738420,0x0073A8E0,unknown,code not assigned to a module
 unk_0073A8E0,0x0073A8E0,0x0073A900,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0073A900,0x0073A900,0x0073CFD0,unknown,code not assigned to a module
 unk_0073CFD0,0x0073CFD0,0x0073CFF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
