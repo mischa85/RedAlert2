@@ -8,7 +8,6 @@
 #include "globals.h"
 #include "rawfile.h"
 #include "winstub.h"
-#include "veteran.h"
 #include "_rules.h"
 #include "rules.h"
 #include <stdio.h>
@@ -20,7 +19,6 @@ static VersionProtocolType VersionProtocol[] = {
 	{0x00010000,COMM_PROTOCOL_MULTI_E_COMP},
 };
 
-// FUNCTION: GAMEMD 0x0074F730
 VersionClass::VersionClass(void) :
 	Version(0),
 	MajorVer(0),
@@ -36,7 +34,6 @@ VersionClass::VersionClass(void) :
 	VersionName[0] = '\0';
 }
 
-// FUNCTION: GAMEMD 0x0074F760
 unsigned int VersionClass::Version_Number(void)
 {
 	if (!TextInit) {
@@ -54,7 +51,6 @@ unsigned int VersionClass::Version_Number(void)
 	return(Version);
 }
 
-// FUNCTION: GAMEMD 0x0074F960
 unsigned short VersionClass::Major_Version(void)
 {
 	if (!TextInit) {
@@ -72,7 +68,6 @@ unsigned short VersionClass::Major_Version(void)
 	return(MajorVer);
 }
 
-// FUNCTION: GAMEMD 0x0074FA20
 unsigned short VersionClass::Minor_Version(void)
 {
 	if (!TextInit) {
@@ -90,18 +85,23 @@ unsigned short VersionClass::Minor_Version(void)
 	return(MinorVer);
 }
 
-// FUNCTION: GAMEMD 0x0074FAE0
 char * VersionClass::Version_Name(void)
 {
 	unsigned short adjusted_minor;
+	int i;
 
 	adjusted_minor = Minor_Version();
+	for (i = 0; i < 4; i++) { // RA2: trims trailing zero digits as in TS
+		if ((adjusted_minor & 0x000f) != 0) {
+			break;
+		}
+		adjusted_minor >>= 4;
+	}
 	sprintf(VersionName, "%d.%3.3d", VerNum.Major_Version(), adjusted_minor);
 
 	return(VersionName);
 }
 
-// FUNCTION: GAMEMD 0x0074FC80
 void VersionClass::Read_Text_String(void)
 {
 	RawFileClass file("VERSION.TXT");
@@ -117,7 +117,6 @@ void VersionClass::Read_Text_String(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x0074FD20
 CommProtocolType VersionClass::Version_Protocol(unsigned int version)
 {
 	int i,j;
@@ -133,14 +132,12 @@ CommProtocolType VersionClass::Version_Protocol(unsigned int version)
 	return(VersionProtocol[j-1].Protocol);
 }
 
-// FUNCTION: GAMEMD 0x0074FD50
 void VersionClass::Init_Clipping(void)
 {
 	MinClipVer = Min_Version();
 	MaxClipVer = Max_Version();
 }
 
-// FUNCTION: GAMEMD 0x0074FD60
 unsigned int VersionClass::Clip_Version(unsigned int minver,
 	unsigned int maxver)
 {
@@ -159,25 +156,22 @@ unsigned int VersionClass::Clip_Version(unsigned int minver,
 	return(MaxClipVer);
 }
 
-// FUNCTION: GAMEMD 0x0074FDA0
 unsigned int VersionClass::Min_Version(void)
 {
 	return(MIN_VERSION);
 }
 
-// FUNCTION: GAMEMD 0x0074FDB0
 unsigned int VersionClass::Max_Version(void)
 {
 	return(MAX_VERSION);
 }
 
 extern "C" {
-DWORD __stdcall FUN_007C89EC(LPSTR filename, LPDWORD handle);
-BOOL __stdcall FUN_007C89E6(LPSTR filename, DWORD handle, DWORD size, LPVOID block);
-BOOL __stdcall FUN_007C89E0(LPVOID block, LPSTR sub, LPVOID * buffer, UINT * len);
+DWORD __stdcall GetFileVersionInfoSizeA(LPSTR filename, LPDWORD handle); // RA2: version.lib, no dllimport
+BOOL __stdcall GetFileVersionInfoA(LPSTR filename, DWORD handle, DWORD size, LPVOID block);
+BOOL __stdcall VerQueryValueA(LPVOID block, LPSTR sub, LPVOID * buffer, UINT * len);
 }
 
-// FUNCTION: GAMEMD 0x0074FDC0
 char const * Version_Name(void)
 {
 	static char buffer[512] = {"zzz"};
@@ -202,14 +196,14 @@ char const * Version_Name(void)
 
 		if (GetModuleFileName(ProgramInstance, filename, sizeof(filename)) > 0) {
 			handle = 1;
-			size = FUN_007C89EC(filename, &handle);
+			size = GetFileVersionInfoSizeA(filename, &handle);
 			if (size > 0) {
 				block = new BYTE[size];
-				if (FUN_007C89E6(filename, handle, size, block)) {
-					FUN_007C89E0(block, "\\VarFileInfo\\Translation", (LPVOID *)&translate, &translate_len);
+				if (GetFileVersionInfoA(filename, handle, size, block)) {
+					VerQueryValueA(block, "\\VarFileInfo\\Translation", (LPVOID *)&translate, &translate_len);
 					if (translate_len > 0) {
 						sprintf(query, "\\StringFileInfo\\%04d%04d\\ProductVersion", translate->wLanguage, translate->wCodePage);
-						FUN_007C89E0(block, query, (LPVOID *)&translate, &translate_len);
+						VerQueryValueA(block, query, (LPVOID *)&translate, &translate_len);
 						if (translate_len > 0) {
 							strcpy(buffer, (const char *)translate);
 						}
@@ -243,101 +237,3 @@ static const char *AbilityName[ABILITY_COUNT] = {
 	"GUARD_AREA",
 	"CRUSHER"
 };
-
-// FUNCTION: GAMEMD 0x0074FEF0
-AbilityType Ability_From_Name(const char *name)
-{
-	for (int ability = ABILITY_FIRST; ability < ABILITY_COUNT; ability++) {
-		if (stricmp(AbilityName[ability], name) == 0) {
-			return((AbilityType)ability);
-		}
-	}
-	return(ABILITY_NONE);
-}
-
-// FUNCTION: GAMEMD 0x0074FF30
-VeterancyClass::VeterancyClass(void) :
-	Experience(0)
-{
-}
-
-// FUNCTION: GAMEMD 0x0074FF40
-VeterancyClass::~VeterancyClass(void)
-{
-}
-
-// FUNCTION: GAMEMD 0x0074FF50
-void VeterancyClass::Made_A_Kill(int cost, int value)
-{
-	Experience += value / (cost * Rule->VeteranRatio);
-	Experience = MIN(Experience, Rule->VeteranCap);
-}
-
-// FUNCTION: GAMEMD 0x0074FF90
-bool VeterancyClass::Is_Veteran(void) const
-{
-	return Experience >= 1.0f && Experience < 2.0f;
-}
-
-// FUNCTION: GAMEMD 0x0074FFC0
-bool VeterancyClass::Is_Rookie(void) const
-{
-	return Experience >= 0.0f && Experience < 1.0f;
-}
-
-// FUNCTION: GAMEMD 0x0074FFF0
-bool VeterancyClass::Is_Dumbass(void) const
-{
-	return Experience < 0.0f;
-}
-
-// FUNCTION: GAMEMD 0x00750010
-bool VeterancyClass::Is_Elite(void) const
-{
-	return Experience >= 2.0f;
-}
-
-// FUNCTION: GAMEMD 0x00750030
-int VeterancyClass::Remaining_Levels(void) const
-{
-	if (Experience >= 2.0f) {
-		return 0;
-	}
-	return Experience >= 1.0f ? 1 : 2;
-}
-
-// FUNCTION: GAMEMD 0x00750060
-void VeterancyClass::Set_Dumbass(bool set)
-{
-	Experience = set ? -0.25f : 0.0f;
-}
-
-// FUNCTION: GAMEMD 0x00750080
-void VeterancyClass::Set_Rookie(bool set)
-{
-	Experience = 0.0f;
-}
-
-// FUNCTION: GAMEMD 0x00750090
-void VeterancyClass::Set_Veteran(bool set)
-{
-	Experience = set ? 1.0f : 0.0f;
-}
-
-// FUNCTION: GAMEMD 0x007500B0
-void VeterancyClass::Set_Elite(bool set)
-{
-	Experience = set ? 2.0f : 0.0f;
-}
-
-// FUNCTION: GAMEMD 0x007500D0
-int VeterancyClass::To_Integer(void) const
-{
-	return (int)(Experience * 100.0f);
-}
-
-// FUNCTION: GAMEMD 0x007500E0
-void VeterancyClass::From_Integer(int value)
-{
-	Experience = value * 0.01;
-}

@@ -104,8 +104,8 @@ class VersionClass {
 		// version.  Change these values to change the game's version #!
 		//.....................................................................
 		enum VersionEnum {
-			MAJOR_VERSION = 0x0002,
-			MINOR_VERSION = 0x0000
+			MAJOR_VERSION = 0x0001, // RA2: 1.006
+			MINOR_VERSION = 0x0006
 		};
 
 		//.....................................................................
