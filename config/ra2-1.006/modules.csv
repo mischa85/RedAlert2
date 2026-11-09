@@ -615,16 +615,8 @@ unk_0063D890,0x0063D890,0x0064DB60,unknown,code not assigned to a module
 unk_0064DB60,0x0064DB60,0x0064DD90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0064DD90,0x0064DD90,0x00657FA0,unknown,code not assigned to a module
 unk_00657FA0,0x00657FA0,0x00658040,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00658040,0x00658040,0x0065A3A0,unknown,code not assigned to a module
-unk_0065A3A0,0x0065A3A0,0x0065A490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0065A490,0x0065A490,0x0065A540,unknown,code not assigned to a module
-unk_0065A540,0x0065A540,0x0065A620,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0065A620,0x0065A620,0x0065A700,unknown,code not assigned to a module
-unk_0065A700,0x0065A700,0x0065A9D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0065A9D0,0x0065A9D0,0x0065AAD0,unknown,code not assigned to a module
-unk_0065AAD0,0x0065AAD0,0x0065ABF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0065ABF0,0x0065ABF0,0x0065ACE0,unknown,code not assigned to a module
-unk_0065ACE0,0x0065ACE0,0x0065B280,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00658040,0x00658040,0x00659240,unknown,code not assigned to a module
+savever,0x00659240,0x0065B280,tibsun,"functions compiled from src/savever.cpp, matched, without gaps; four placed by the gap"
 unk_0065B280,0x0065B280,0x0065C480,unknown,code not assigned to a module
 unk_0065C480,0x0065C480,0x0065C520,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0065C520,0x0065C520,0x0065F980,unknown,code not assigned to a module
