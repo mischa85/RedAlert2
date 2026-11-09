@@ -754,13 +754,7 @@ vector,0x0070EFC0,0x0070F3B0,tibsun,"functions compiled from src/vector.cpp, mat
 unk_0070F3B0,0x0070F3B0,0x0070F820,unknown,code not assigned to a module
 vein,0x0070F820,0x00712700,tibsun,"functions compiled from src/vein.cpp, matched, without gaps; four placed by the gap"
 unk_00712700,0x00712700,0x00712B20,unknown,code not assigned to a module
-unk_00712B20,0x00712B20,0x00712B50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00712B50,0x00712B50,0x00713090,unknown,code not assigned to a module
-unk_00713090,0x00713090,0x00713160,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00713160,0x00713160,0x00713170,unknown,code not assigned to a module
-unk_00713170,0x00713170,0x007131B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_007131B0,0x007131B0,0x007131D0,unknown,code not assigned to a module
-unk_007131D0,0x007131D0,0x00713300,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+version,0x00712B20,0x00713300,tibsun,"functions compiled from src/version.cpp, matched, without gaps; two placed by the gap"
 unk_00713300,0x00713300,0x00713360,unknown,code not assigned to a module
 veteran,0x00713360,0x007135A0,tibsun,"functions compiled from src/veteran.cpp, matched, without gaps; three placed by the gap; ?Ability_From_Name@@YI?AW4AbilityType@@PBD@Z not placed; ??0VeterancyClass@@QAE@XZ not placed; ??1VeterancyClass@@QAE@XZ not placed"
 unk_007135A0,0x007135A0,0x00715090,unknown,code not assigned to a module
