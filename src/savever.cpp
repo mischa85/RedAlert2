@@ -11,7 +11,6 @@
 #include <comdef.h>
 #include "fastmath.h"
 
-// FUNCTION: GAMEMD 0x00680FF0
 SavegameInformation::SavegameInformation(void)
 {
 	InternalVersion = 0;
@@ -32,144 +31,121 @@ SavegameInformation::SavegameInformation(void)
 	LastSaveTime.dwHighDateTime = 0;
 }
 
-// FUNCTION: GAMEMD 0x00681060
 void SavegameInformation::Set_Version(int num)
 {
 	Version = num;
 }
 
-// FUNCTION: GAMEMD 0x00681070
 int SavegameInformation::Get_Version(void)
 {
 	return Version;
 }
 
-// FUNCTION: GAMEMD 0x00681080
 void SaveVersionInfo::Set_Internal_Version(int num)
 {
 	InternalVersion = num;
 }
 
-// FUNCTION: GAMEMD 0x00681090
 int SaveVersionInfo::Get_Internal_Version(void)
 {
 	return InternalVersion;
 }
 
-// FUNCTION: GAMEMD 0x006810A0
 void SaveVersionInfo::Set_Scenario_Description(const wchar_t * desc)
 {
 	ScenarioDescription[ARRAY_SIZE(ScenarioDescription) - 1] = 0;
 	wcsncpy(ScenarioDescription, desc, ARRAY_SIZE(ScenarioDescription) - 1);
 }
 
-// FUNCTION: GAMEMD 0x006810C0
 const wchar_t * SaveVersionInfo::Get_Scenario_Description(void)
 {
 	return ScenarioDescription;
 }
 
-// FUNCTION: GAMEMD 0x006810D0
 void SaveVersionInfo::Set_Player_House(const wchar_t * name)
 {
 	PlayerHouse[ARRAY_SIZE(PlayerHouse) - 1] = 0;
 	wcsncpy(PlayerHouse, name, ARRAY_SIZE(PlayerHouse) - 1);
 }
 
-// FUNCTION: GAMEMD 0x00681100
 const wchar_t * SaveVersionInfo::Get_Player_House(void)
 {
 	return PlayerHouse;
 }
 
-// FUNCTION: GAMEMD 0x00681110
 void SaveVersionInfo::Set_Campaign_Number(int num)
 {
 	CampaignNumber = num;
 }
 
-// FUNCTION: GAMEMD 0x00681120
 int SaveVersionInfo::Get_Campaign_Number(void)
 {
 	return CampaignNumber;
 }
 
-// FUNCTION: GAMEMD 0x00681130
 void SaveVersionInfo::Set_Scenario_Number(int num)
 {
 	ScenarioNumber = num;
 }
 
-// FUNCTION: GAMEMD 0x00681140
 int SaveVersionInfo::Get_Scenario_Number(void)
 {
 	return ScenarioNumber;
 }
 
-// FUNCTION: GAMEMD 0x00681150
 void SaveVersionInfo::Set_Unknown_String(const char * name)
 {
 	UnknownString[ARRAY_SIZE(UnknownString) - 1] = 0;
 	strncpy(UnknownString, name, ARRAY_SIZE(UnknownString) - 1);
 }
 
-// FUNCTION: GAMEMD 0x00681180
 const char * SaveVersionInfo::Get_Unknown_String(void)
 {
 	return UnknownString;
 }
 
-// FUNCTION: GAMEMD 0x00681190
 void SaveVersionInfo::Set_Player_Name(const char * name)
 {
 	PlayerName[ARRAY_SIZE(PlayerName) - 1] = 0;
 	strncpy(PlayerName, name, ARRAY_SIZE(PlayerName) - 1);
 }
 
-// FUNCTION: GAMEMD 0x006811B0
 const char * SaveVersionInfo::Get_Player_Name(void)
 {
 	return PlayerName;
 }
 
-// FUNCTION: GAMEMD 0x006811C0
 void SaveVersionInfo::Set_Executable_Name(const char * name)
 {
 	ExecutableName[ARRAY_SIZE(ExecutableName) - 1] = 0;
 	strncpy(ExecutableName, name, ARRAY_SIZE(ExecutableName) - 1);
 }
 
-// FUNCTION: GAMEMD 0x006811F0
 const char * SaveVersionInfo::Get_Executable_Name(void)
 {
 	return ExecutableName;
 }
 
-// FUNCTION: GAMEMD 0x00681200
 void SaveVersionInfo::Set_Start_Time(FILETIME &time)
 {
 	StartTime = time;
 }
 
-// FUNCTION: GAMEMD 0x00681220
 FILETIME SaveVersionInfo::Get_Start_Time(void)
 {
 	return StartTime;
 }
 
-// FUNCTION: GAMEMD 0x00681240
 void SaveVersionInfo::Set_Play_Time(FILETIME &time)
 {
 	PlayTime = time;
 }
 
-// FUNCTION: GAMEMD 0x00681260
 FILETIME SaveVersionInfo::Get_Play_Time(void)
 {
 	return PlayTime;
 }
 
-// FUNCTION: GAMEMD 0x00681280
 void SaveVersionInfo::Set_Last_Time(FILETIME &time)
 {
 	LastSaveTime = time;
@@ -181,19 +157,16 @@ FILETIME SaveVersionInfo::Get_Last_Time(void)
 	return LastSaveTime;
 }
 
-// FUNCTION: GAMEMD 0x006812C0
 void SaveVersionInfo::Set_Game_Type(int id)
 {
 	GameType = id;
 }
 
-// FUNCTION: GAMEMD 0x006812D0
 int SaveVersionInfo::Get_Game_Type(void)
 {
 	return GameType;
 }
 
-// FUNCTION: GAMEMD 0x006812E0
 HRESULT SaveVersionInfo::Save(IStorage *storage)
 {
 	if (storage == NULL) {
@@ -341,7 +314,6 @@ HRESULT SaveVersionInfo::Save(IStorage *storage)
 	return(S_OK);
 }
 
-// FUNCTION: GAMEMD 0x00681840
 HRESULT SaveVersionInfo::Load(IStorage *storage)
 {
 	char buf[256];
@@ -487,7 +459,6 @@ HRESULT SaveVersionInfo::Load(IStorage *storage)
 	return(S_OK);
 }
 
-// FUNCTION: GAMEMD 0x00682150
 HRESULT SaveVersionInfo::Load_String(IStorage *storage, int id, char *string)
 {
 	*string = '\0';
@@ -517,7 +488,6 @@ HRESULT SaveVersionInfo::Load_String(IStorage *storage, int id, char *string)
 	return(S_OK);
 }
 
-// FUNCTION: GAMEMD 0x00682240
 HRESULT SaveVersionInfo::Load_String(IStorage *storage, int id, wchar_t *string)
 {
 	*string = '\0';
@@ -542,7 +512,6 @@ HRESULT SaveVersionInfo::Load_String(IStorage *storage, int id, wchar_t *string)
 	}
 }
 
-// FUNCTION: GAMEMD 0x006822F0
 HRESULT SaveVersionInfo::Load_String_Set(IPropertySetStorage *storageset, int id, char *string)
 {
 	*string = '\0';
@@ -572,7 +541,6 @@ HRESULT SaveVersionInfo::Load_String_Set(IPropertySetStorage *storageset, int id
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x006823D0
 HRESULT SaveVersionInfo::Load_String_Set(IPropertySetStorage *storageset, int id, wchar_t *string)
 {
 	*string = '\0';
@@ -602,7 +570,6 @@ HRESULT SaveVersionInfo::Load_String_Set(IPropertySetStorage *storageset, int id
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x006824B0
 HRESULT SaveVersionInfo::Load_Int(IStorage *storage, int id, int *integer)
 {
 	*integer = 0;
@@ -623,7 +590,6 @@ HRESULT SaveVersionInfo::Load_Int(IStorage *storage, int id, int *integer)
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682570
 HRESULT SaveVersionInfo::Load_Int_Set(IPropertySetStorage *storageset, int id, int *integer)
 {
 	*integer = 0;
@@ -653,7 +619,6 @@ HRESULT SaveVersionInfo::Load_Int_Set(IPropertySetStorage *storageset, int id, i
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682640
 HRESULT SaveVersionInfo::Save_String(IStorage *storage, int id, char *string)
 {
 	WCHAR buf[128];
@@ -679,7 +644,6 @@ HRESULT SaveVersionInfo::Save_String(IStorage *storage, int id, char *string)
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682780
 HRESULT SaveVersionInfo::Save_String(IStorage *storage, int id, const wchar_t *string)
 {
 	IStreamPtr stm(NULL);
@@ -701,7 +665,6 @@ HRESULT SaveVersionInfo::Save_String(IStorage *storage, int id, const wchar_t *s
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682880
 HRESULT SaveVersionInfo::Save_String_Set(IPropertySetStorage *storageset, int id, const char *string)
 {
 	WCHAR buf[128];
@@ -735,7 +698,6 @@ HRESULT SaveVersionInfo::Save_String_Set(IPropertySetStorage *storageset, int id
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x006829A0
 HRESULT SaveVersionInfo::Save_String_Set(IPropertySetStorage *storageset, int id, const wchar_t *string)
 {
 	HRESULT res;
@@ -765,7 +727,6 @@ HRESULT SaveVersionInfo::Save_String_Set(IPropertySetStorage *storageset, int id
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682A90
 HRESULT SaveVersionInfo::Save_Int(IStorage *storage, int id, int integer)
 {
 	IStreamPtr stm(NULL);
@@ -787,7 +748,6 @@ HRESULT SaveVersionInfo::Save_Int(IStorage *storage, int id, int integer)
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682B80
 HRESULT SaveVersionInfo::Save_Int_Set(IPropertySetStorage *storageset, int id, int integer)
 {
 	HRESULT res;
@@ -817,7 +777,6 @@ HRESULT SaveVersionInfo::Save_Int_Set(IPropertySetStorage *storageset, int id, i
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682C70
 HRESULT SaveVersionInfo::Load_Time(IStorage *storage, int id, FILETIME *time)
 {
 	time->dwLowDateTime = 0;
@@ -839,7 +798,6 @@ HRESULT SaveVersionInfo::Load_Time(IStorage *storage, int id, FILETIME *time)
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682D30
 HRESULT SaveVersionInfo::Load_Time_Set(IPropertySetStorage *storageset, int id, FILETIME *time)
 {
 	time->dwLowDateTime = 0;
@@ -870,7 +828,6 @@ HRESULT SaveVersionInfo::Load_Time_Set(IPropertySetStorage *storageset, int id, 
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682E10
 HRESULT SaveVersionInfo::Save_Time(IStorage *storage, int id, FILETIME *time)
 {
 	IStreamPtr stm(NULL);
@@ -892,7 +849,6 @@ HRESULT SaveVersionInfo::Save_Time(IStorage *storage, int id, FILETIME *time)
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00682F00
 HRESULT SaveVersionInfo::Save_Time_Set(IPropertySetStorage *storageset, int id, FILETIME *time)
 {
 	HRESULT res;
@@ -922,7 +878,6 @@ HRESULT SaveVersionInfo::Save_Time_Set(IPropertySetStorage *storageset, int id, 
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00683000
 const WCHAR *Stream_Name_From_ID(int id)
 {
 	static struct pidsiStruct {
@@ -953,12 +908,4 @@ const WCHAR *Stream_Name_From_ID(int id)
 	return(NULL);
 }
 
-// TEMPLATE: GAMEMD 0x00683030
-// ??C?$_com_ptr_t@V?$_com_IIID@UIStream@@$1?_GUID_0000000c_0000_0000_c000_000000000046@@3U__s_GUID@@A@@@@QBEPAUIStream@@XZ
 template class _com_ptr_t<_com_IIID<IStream, &__uuidof(IStream)> >;
-
-// TEMPLATE: GAMEMD 0x00683050
-// ?_Release@?$_com_ptr_t@V?$_com_IIID@UIPropertySetStorage@@$1?_GUID_0000013a_0000_0000_c000_000000000046@@3U__s_GUID@@A@@@@AAEXXZ
-
-// TEMPLATE: GAMEMD 0x00683060
-// ?_Release@?$_com_ptr_t@V?$_com_IIID@UIStream@@$1?_GUID_0000000c_0000_0000_c000_000000000046@@3U__s_GUID@@A@@@@AAEXXZ
