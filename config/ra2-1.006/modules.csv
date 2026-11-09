@@ -470,13 +470,9 @@ unk_0059EDE0,0x0059EDE0,0x0059F1D0,unknown,code not assigned to a module
 unk_0059F1D0,0x0059F1D0,0x0059F250,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0059F250,0x0059F250,0x005A0250,unknown,code not assigned to a module
 movie,0x005A0250,0x005A0B50,tibsun,"functions compiled from src/movie.cpp, matched, without gaps"
-unk_005A0B50,0x005A0B50,0x005A0E30,unknown,code not assigned to a module
-unk_005A0E30,0x005A0E30,0x005A0EC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A0EC0,0x005A0EC0,0x005A14D0,unknown,code not assigned to a module
-unk_005A14D0,0x005A14D0,0x005A1620,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A1620,0x005A1620,0x005A1650,unknown,code not assigned to a module
-unk_005A1650,0x005A1650,0x005A1710,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A1710,0x005A1710,0x005A73E0,unknown,code not assigned to a module
+unk_005A0B50,0x005A0B50,0x005A0DC0,unknown,code not assigned to a module
+movies,0x005A0DC0,0x005A1F00,tibsun,"functions compiled from src/movies.cpp, matched, without gaps; 14 placed by the gap"
+unk_005A1F00,0x005A1F00,0x005A73E0,unknown,code not assigned to a module
 mplayer,0x005A73E0,0x005A74B0,tibsun,"functions compiled from src/mplayer.cpp, matched, without gaps"
 unk_005A74B0,0x005A74B0,0x005A7540,unknown,code not assigned to a module
 mpmath,0x005A7540,0x005AA380,tibsun,"functions compiled from src/mpmath.cpp, without gaps; matched except ?XMP_Small_Divisors_Test@@YI_NPBIH@Z; one placed by the gap; ?XMP_Fetch_Prime_Table@@YIPBGXZ not placed; ?XMP_Is_Prime@@YI_NPBIH@Z not placed"
