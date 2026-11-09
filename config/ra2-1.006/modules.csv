@@ -478,7 +478,9 @@ unk_005A1F00,0x005A1F00,0x005A73E0,unknown,code not assigned to a module
 mplayer,0x005A73E0,0x005A74B0,tibsun,"functions compiled from src/mplayer.cpp, matched, without gaps"
 unk_005A74B0,0x005A74B0,0x005A7540,unknown,code not assigned to a module
 mpmath,0x005A7540,0x005AA380,tibsun,"functions compiled from src/mpmath.cpp, without gaps; matched except ?XMP_Small_Divisors_Test@@YI_NPBIH@Z; one placed by the gap; ?XMP_Fetch_Prime_Table@@YIPBGXZ not placed; ?XMP_Is_Prime@@YI_NPBIH@Z not placed"
-unk_005AA380,0x005AA380,0x005ABF20,unknown,code not assigned to a module
+unk_005AA380,0x005AA380,0x005ABDC0,unknown,code not assigned to a module
+mpsiegeteam,0x005ABDC0,0x005ABEB0,source,"functions compiled from src/mpsiegeteam.cpp, matched, without gaps; one placed by the gap; ??1MultiplayerSiegeAttackerTeam@@UAE@XZ not placed"
+unk_005ABEB0,0x005ABEB0,0x005ABF20,unknown,code not assigned to a module
 mpu,0x005ABF20,0x005AC140,tibsun,"functions compiled from src/mpu.cpp, matched, without gaps"
 unk_005AC140,0x005AC140,0x005AC560,unknown,code not assigned to a module
 msanim,0x005AC560,0x005AFC00,tibsun,"functions compiled from src/msanim.cpp, matched, without gaps; four placed by the gap"
