@@ -458,13 +458,9 @@ unk_005950F0,0x005950F0,0x00595190,unknown,code not assigned to a module
 mixfile,0x00595190,0x00595BC0,tibsun,"functions compiled from src/mixfile.cpp, without gaps; matched except ??0MixFileClass@@QAE@PBDPBVPKey@@@Z"
 unk_00595BC0,0x00595BC0,0x00596FC0,unknown,code not assigned to a module
 unk_00596FC0,0x00596FC0,0x00597010,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00597010,0x00597010,0x0059AA20,unknown,code not assigned to a module
-unk_0059AA20,0x0059AA20,0x0059AAF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0059AAF0,0x0059AAF0,0x0059AC80,unknown,code not assigned to a module
-unk_0059AC80,0x0059AC80,0x0059AFD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0059AFD0,0x0059AFD0,0x0059B050,unknown,code not assigned to a module
-unk_0059B050,0x0059B050,0x0059B090,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0059B090,0x0059B090,0x0059CBA0,unknown,code not assigned to a module
+unk_00597010,0x00597010,0x00598E10,unknown,code not assigned to a module
+modemhst,0x00598E10,0x0059CB80,tibsun,"functions compiled from src/modemhst.cpp, matched, without gaps; three placed by the gap"
+unk_0059CB80,0x0059CB80,0x0059CBA0,unknown,code not assigned to a module
 modemreg,0x0059CBA0,0x0059D590,tibsun,"functions compiled from src/modemreg.cpp, matched, without gaps; one placed by the gap"
 unk_0059D590,0x0059D590,0x0059EB60,unknown,code not assigned to a module
 motlib,0x0059EB60,0x0059EDE0,tibsun,"functions compiled from src/motlib.cpp, without gaps; matched except ?Read_File@MotionLibrary@@QAEHAAVFileClass@@@Z; two placed by definition order"
