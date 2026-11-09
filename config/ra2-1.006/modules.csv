@@ -597,7 +597,9 @@ unk_00639450,0x00639450,0x006394F0,unknown,code not assigned to a module
 rc_ptr_base,0x006394F0,0x00639580,source,"functions compiled from src/rc_ptr_base.cpp, matched, without gaps; ??0rc_ptr_base@@QAE@XZ not placed"
 unk_00639580,0x00639580,0x006395C0,unknown,code not assigned to a module
 readline,0x006395C0,0x00639710,tibsun,"functions compiled from src/readline.cpp, matched, without gaps"
-unk_00639710,0x00639710,0x0063BB40,unknown,code not assigned to a module
+unk_00639710,0x00639710,0x0063B090,unknown,code not assigned to a module
+restate,0x0063B090,0x0063B300,tibsun,"functions compiled from src/restate.cpp, matched, without gaps"
+unk_0063B300,0x0063B300,0x0063BB40,unknown,code not assigned to a module
 unk_0063BB40,0x0063BB40,0x0063BB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0063BB90,0x0063BB90,0x0063BEF0,unknown,code not assigned to a module
 unk_0063BEF0,0x0063BEF0,0x0063BFA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
