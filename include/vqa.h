@@ -6,7 +6,7 @@
 
 #include "ccfile.h"
 
-#include <vqaplay.h>
+#include "vqalib/vqaplay.h"
 
 typedef void * (*VQA_SURF_LOCK_CALLBACK) (void);
 typedef bool (*VQA_SURF_UNLOCK_CALLBACK) (void);
@@ -48,12 +48,12 @@ struct VQACacheHeader {
 	unsigned char	*file_buffer;
 };
 
-class MovieSubtitles;
+class MovieSubtitles; // RA2
 
 class VQAClass
 {
 	public:
-		MovieSubtitles * Subtitles;
+		MovieSubtitles * Subtitles; // RA2
 	private:
 		CCFileClass FileHandle;
 		bool IsFileOpen;
