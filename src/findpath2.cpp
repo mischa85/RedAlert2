@@ -5,7 +5,6 @@
 
 #include "always.h"
 #include "rect.h"
-#include "geometry.h"
 #include "cell.h"
 #include "bullettype.h"
 #include "weapon.h"
@@ -21,49 +20,6 @@
 
 #include <math.h>
 
-// SYNTHETIC: GAMEMD 0x004CBEF0 SYMBOL
-// _$E2
-
-// SYNTHETIC: GAMEMD 0x004CBF10 SYMBOL
-// _$E5
-
-// SYNTHETIC: GAMEMD 0x004CBF40 SYMBOL
-// _$E8
-
-// SYNTHETIC: GAMEMD 0x004CBF60 SYMBOL
-// _$E11
-
-// SYNTHETIC: GAMEMD 0x004CBF80 SYMBOL
-// _$E14
-
-// SYNTHETIC: GAMEMD 0x004CBFA0 SYMBOL
-// _$E17
-
-// SYNTHETIC: GAMEMD 0x004CBFC0 SYMBOL
-// _$E20
-
-// SYNTHETIC: GAMEMD 0x004CBFE0 SYMBOL
-// _$E23
-
-// SYNTHETIC: GAMEMD 0x004CC020 SYMBOL
-// _$E26
-
-// SYNTHETIC: GAMEMD 0x004CC050 SYMBOL
-// _$E29
-
-// SYNTHETIC: GAMEMD 0x004CC080 SYMBOL
-// _$E32
-
-// SYNTHETIC: GAMEMD 0x004CC0B0 SYMBOL
-// _$E35
-
-// SYNTHETIC: GAMEMD 0x004CC0C0 SYMBOL
-// _$E38
-
-// SYNTHETIC: GAMEMD 0x004CC0E0 SYMBOL
-// _$E41
-
-// FUNCTION: GAMEMD 0x004CC100
 CellClass * TrajectoryHelper::FindFirstObstacle(Coord const & source, Coord const & target, BulletTypeClass const * type, HouseClass const * owner)
 {
 	if (type->SubjectToCliffs || type->SubjectToWalls) {
@@ -98,7 +54,6 @@ CellClass * TrajectoryHelper::FindFirstObstacle(Coord const & source, Coord cons
 	return(NULL);
 }
 
-// FUNCTION: GAMEMD 0x004CC310
 CellClass * TrajectoryHelper::FindFirstImpenetrableObstacle(Coord const & source, Coord const & target, WeaponTypeClass const * weapon, HouseClass const * owner)
 {
 	BulletTypeClass const * bullet = weapon->Bullet;
@@ -109,7 +64,6 @@ CellClass * TrajectoryHelper::FindFirstImpenetrableObstacle(Coord const & source
 	return(cell);
 }
 
-// FUNCTION: GAMEMD 0x004CC360
 CellClass * TrajectoryHelper::GetObstacle(CellClass const * source, CellClass const * target, CellClass const * bullet, Coord current, BulletTypeClass const * type, HouseClass const * owner)
 {
 	Cell cell = current.As_Cell();
@@ -141,13 +95,11 @@ CellClass * TrajectoryHelper::GetObstacle(CellClass const * source, CellClass co
 	return(NULL);
 }
 
-// FUNCTION: GAMEMD 0x004CC680
 bool TrajectoryHelper::IsCliffHit(CellClass const * source, CellClass const * before, CellClass const * after)
 {
 	return(after->GetLevel() - before->GetLevel() >= 4 && after->GetLevel() - source->GetLevel() > 0);
 }
 
-// FUNCTION: GAMEMD 0x004CC6D0
 bool TrajectoryHelper::IsWallHit(CellClass const * source, CellClass const * check, CellClass const * target, HouseClass const * owner)
 {
 	bool iswall = check->Overlay != OVERLAY_NONE && OverlayTypes[check->Overlay]->IsWall;

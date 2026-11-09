@@ -558,6 +558,7 @@ class CellClass : public AbstractClass
 		**	Query functions.
 		*/
 		LEPTON Get_Height(Point2D const & point = Point2D(CELL_LEPTON_W / 2, CELL_LEPTON_H / 2)) const;
+		int GetLevel(void) const; // RA2: height with the bridge deck
 		bool Can_Tiberium_Germinate(TiberiumClass const * tiberium) const;
 		bool Can_Tiberium_Grow(void) const;
 		bool Can_Tiberium_Spread(void) const;
