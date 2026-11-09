@@ -2269,7 +2269,6 @@ address,symbol,evidence
 0x0061D1C0,?Help_Text@PowerClass@@UAEPBDH@Z,"compiled from src/power.cpp, matched"
 0x0061D430,??0MapPreviewClass@@QAE@XZ,"inferred: referenced by matched src/modemhst.cpp (5 references); across all matched code never at another address, and no other symbol here"
 0x0061D440,??1MapPreviewClass@@QAE@XZ,"inferred: referenced by matched src/modemhst.cpp (5 references); across all matched code never at another address, and no other symbol here"
-0x0061D460,?DrawStartPoints@MapPreviewClass@@QAEXPAUHWND__@@@Z,"inferred: referenced by matched src/modemhst.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0061E170,?Read_PCX_Preview@MapPreviewClass@@QAE_NPBD@Z,"inferred: referenced by matched src/modemhst.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x0061E2A0,?Read_INI_Preview@MapPreviewClass@@QAE_NPBD@Z,"inferred: referenced by matched src/modemhst.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0061E490,?Create_Paletted_Preview@MapPreviewClass@@QAEPAIHAAH@Z,"inferred: referenced by matched src/modemhst.cpp (1 reference); across all matched code never at another address, and no other symbol here"

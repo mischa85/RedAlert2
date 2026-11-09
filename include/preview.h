@@ -21,7 +21,6 @@ class Cell;
 class MapPreviewClass
 {
 public:
-	void DrawStartPoints(HWND window); // RA2
 	MapPreviewClass(void);
 	~MapPreviewClass(void);
 
