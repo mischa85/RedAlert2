@@ -46,6 +46,8 @@
 
 #define INCLUDE_COM
 #include "always.h"
+#include "ccfile.h"
+#include "data.h"
 
 #include "terrtype.h"
 
@@ -109,20 +111,17 @@ TerrainTypeClass::TerrainTypeClass(char const * ininame) :
 	BASECLASS(ininame),
 	HeapID(TERRAIN_NONE),
 	Foundation(BSIZE_FIRST),
-	RadarColor(0,0,0),
+	RadarColor(0, 0, 0),
 	TemperateOccupationBits(7),
 	SnowOccupationBits(7),
 	AnimationRate(0),
 	AnimationProbability(0),
-	YDrawFudge(0),
-	TiberiumToSpawn(0),
 	IsWaterBased(false),
 	IsTiberiumSpawn(false),
 	IsFlammable(false),
 	IsAnimated(false),
 	IsVeinhole(false),
 	Occupy(NULL)
-
 {
 	Create_ID();
 	IsSentient = true;
@@ -149,7 +148,6 @@ TerrainTypeClass::TerrainTypeClass(NoInitClass const & x) :
 	BASECLASS(x),
 	RadarColor(x)
 {
-
 }
 
 
@@ -189,18 +187,13 @@ void TerrainTypeClass::Init(TheaterType theater)
 			char	fullname[_MAX_FNAME+_MAX_EXT];
 
 			if (terrain->IsTheater) {
-
-				/*
-				 * Clear any existing shape pointer.
-				 */
-				terrain->ImageData = NULL;
-
-				/*
-				**	Load in the appropriate object shape data.
-				*/
 				_makepath(fullname, NULL, NULL, terrain->Name(), Theaters[theater].Suffix);
+				if (terrain->ImageAllocated && terrain->ImageData != NULL) { // RA2: frees an image loaded from disk
+					delete (ShapeSet *)terrain->ImageData;
+				}
+				terrain->ImageData = NULL;
+				terrain->ImageAllocated = false;
 				terrain->ImageData = (ShapeSet const *)MFCD::Retrieve(fullname);
-
 			}
 		}
 	}
@@ -225,7 +218,7 @@ void TerrainTypeClass::Init(TheaterType theater)
  *=============================================================================================*/
 TerrainType TerrainTypeClass::From_Name(char const * name)
 {
-	TerrainType	index;
+	TerrainType index;
 
 	if (name != NULL) {
 		for (index = TERRAIN_FIRST; index < TerrainTypes.Count(); index++) {
@@ -301,7 +294,7 @@ ObjectClass * TerrainTypeClass::Create_One_Of(HouseClass *) const
  * HISTORY:                                                                                    *
  *   09/20/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-Cell const * TerrainTypeClass::Occupy_List(bool ) const
+Cell const * TerrainTypeClass::Occupy_List(bool) const
 {
 	if (Occupy != NULL) return(Occupy);
 
@@ -354,11 +347,8 @@ bool TerrainTypeClass::Read_INI(CCINIClass const & ini)
 		IsAnimated = ini.Get_Bool(Name(), "IsAnimated", IsAnimated);
 		AnimationRate = ini.Get_Int(Name(), "AnimationRate", AnimationRate);
 		AnimationProbability = ini.Get_Float(Name(), "AnimationProbability", AnimationProbability);
-
-		TemperateOccupationBits = ini.Get_Int(IniName, "TemperateOccupationBits", TemperateOccupationBits);
-		SnowOccupationBits = ini.Get_Int(IniName, "SnowOccupationBits", SnowOccupationBits);
-		YDrawFudge = ini.Get_Int(IniName, "YDrawFudge", YDrawFudge);
-		TiberiumToSpawn = ini.Get_Int(IniName, "TiberiumToSpawn", TiberiumToSpawn);
+		TemperateOccupationBits = ini.Get_Int(Name(), "TemperateOccupationBits", TemperateOccupationBits);
+		SnowOccupationBits = ini.Get_Int(Name(), "SnowOccupationBits", SnowOccupationBits);
 
 		return(true);
 	}
@@ -382,12 +372,16 @@ Coord const TerrainTypeClass::Coord_Fixup(Coord const & coord) const
 }
 
 
+
+
+
+
 /// <summary>
 /// Adds this terrain type's data to the CRC engine specified.
 /// This routine is used by the multiplayer sync checking logic to prove that every
 /// machine in the game loaded the same terrain rules.
 /// </summary>
-void TerrainTypeClass::Compute_CRC(CRCEngine &crc) const
+void TerrainTypeClass::Compute_CRC(CRCEngine & crc) const
 {
 	BASECLASS::Compute_CRC(crc);
 	crc(HeapID);
@@ -409,16 +403,8 @@ void TerrainTypeClass::Compute_CRC(CRCEngine &crc) const
 /// <returns>Returns with S_OK if the terrain type was read.</returns>
 HRESULT STDMETHODCALLTYPE TerrainTypeClass::Load(IStream * stream)
 {
-	int size = Fetch_Object_Size(false);
 	HRESULT result = BASECLASS::Load(stream);
 	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&TiberiumToSpawn, &YDrawFudge, size - offsetof(TerrainTypeClass, TiberiumToSpawn));
-			memmove(&TemperateOccupationBits, &TiberiumToSpawn, size - offsetof(TerrainTypeClass, TemperateOccupationBits));
-			TiberiumToSpawn = 0;
-			YDrawFudge = 0;
-		}
-
 		new (this) TerrainTypeClass(NoInitClass());
 
 		Fetch_Voxel_Image();
@@ -440,7 +426,6 @@ HRESULT STDMETHODCALLTYPE TerrainTypeClass::Save(IStream * stream, BOOL cleardir
 {
 	HRESULT result = BASECLASS::Save(stream, cleardirty);
 	if (SUCCEEDED(result)) {
-
 		result = S_OK;
 	}
 	return(result);
@@ -468,7 +453,7 @@ HRESULT STDMETHODCALLTYPE TerrainTypeClass::GetClassID(CLSID * retval)
 /// referred to before its own section has been reached.
 /// </summary>
 /// <returns>Returns with a pointer to the terrain type found or created.</returns>
-TerrainTypeClass * TerrainTypeClass::Find_Or_Make(const char *name)
+TerrainTypeClass * TerrainTypeClass::Find_Or_Make(const char * name)
 {
 	return(TFind_Or_Make<TerrainTypeClass>(name, TerrainTypes));
 }
@@ -491,14 +476,9 @@ RTTIType TerrainTypeClass::Fetch_RTTI(void) const
 /// </summary>
 /// <param name="oldsave">Should the older save game layout be measured?</param>
 /// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int TerrainTypeClass::Fetch_Object_Size(bool oldsave) const
+int TerrainTypeClass::Fetch_Object_Size(void) const
 {
-	int size = sizeof(*this);
-	int delta =
-		sizeof(TiberiumToSpawn) +
-		sizeof(YDrawFudge);
-
-	return(size - (oldsave ? delta : 0));
+	return(sizeof(*this));
 }
 
 
@@ -510,3 +490,4 @@ int TerrainTypeClass::Fetch_Heap_ID(void) const
 {
 	return(HeapID);
 }
+
