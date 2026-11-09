@@ -39,104 +39,15 @@
 
 #include <math.h>
 
-// SYNTHETIC: GAMEMD 0x005B47A0 SYMBOL
-// _$E9
-
 namespace OwnerDraw {
 char * __fastcall WideToCharString(char * dest, wchar_t const * src, int count);
 }
-
-extern double __cdecl FUN_004CAC40(double);
-extern double __cdecl FUN_004CAD50(double);
-extern double __cdecl FUN_004CADE0(double);
-extern const double DAT_007E1708;
-extern const double DAT_007E1710;
-extern const double DAT_007E1718;
-extern const double DAT_007E1720;
-extern const double DAT_007E1728;
-extern const double DAT_007E1730;
-extern const double DAT_007E1738;
-extern const double DAT_007E1740;
-extern const double DAT_007EDF58;
-extern const double DAT_007EDF60;
-
-struct ShortPair {
-	unsigned short A, B;
-	ShortPair() { A = 0; B = 0; }
-};
-
-struct IntTriple {
-	int A, B, C;
-	IntTriple() { A = 0; B = 0; C = 0; }
-};
-
-// SYNTHETIC: GAMEMD 0x005B47C0 SYMBOL
-// _$E44
-double DAT_00ABF030 = FUN_004CAC40(pow(DAT_007E1710, DAT_007E1708) * 2);
-
-// SYNTHETIC: GAMEMD 0x005B47F0 SYMBOL
-// _$E47
-double DAT_00ABF080 = DAT_00ABF030 / DAT_007EDF58;
-
-// SYNTHETIC: GAMEMD 0x005B4810 SYMBOL
-// _$E50
-double DAT_00ABF068 = DAT_007E1718 / DAT_00ABF080;
-
-// SYNTHETIC: GAMEMD 0x005B4830 SYMBOL
-// _$E53
-double DAT_00ABF060 = DAT_007E1720 * DAT_007EDF60;
-
-// SYNTHETIC: GAMEMD 0x005B4850 SYMBOL
-// _$E56
-double DAT_00ABF038 = DAT_007E1728 * DAT_007EDF60;
-
-// SYNTHETIC: GAMEMD 0x005B4870 SYMBOL
-// _$E59
-double DAT_00ABF010 = DAT_007E1730 * DAT_007EDF60;
-
-// SYNTHETIC: GAMEMD 0x005B4890 SYMBOL
-// _$E62
-int DAT_00ABF088 = (int)(DAT_007E1738 * (FUN_004CAD50(DAT_00ABF010 - DAT_00ABF038) * DAT_00ABF030));
-
-// SYNTHETIC: GAMEMD 0x005B48D0 SYMBOL
-// _$E65
-double DAT_00ABF040 = FUN_004CADE0(DAT_00ABF088 * DAT_007E1740);
-
-// SYNTHETIC: GAMEMD 0x005B4900 SYMBOL
-// _$E68
-double DAT_00ABF058 = FUN_004CADE0((DAT_00ABF088 * 2) / DAT_00ABF030);
-
-// SYNTHETIC: GAMEMD 0x005B4930 SYMBOL
-// _$E71
-int DAT_00ABF07C = (int)(DAT_00ABF088 * 4 + DAT_007E1738);
-
-// SYNTHETIC: GAMEMD 0x005B4960 SYMBOL
-// _$E74
-ShortPair DAT_00ABF028;
-
-// SYNTHETIC: GAMEMD 0x005B4970 SYMBOL
-// _$E77
-IntTriple DAT_00ABF048;
-
-void __fastcall FUN_00735060(wchar_t * dest, char const * source, int limit);
-wchar_t * __fastcall FUN_00735120(char const * narrow);
+void __fastcall Char_To_Wide(wchar_t * dest, char const * source, int limit);
+wchar_t * __fastcall Narrow_To_Wide(char const * narrow); // RA2: 0x6FA180, static buffer
 wchar_t * __fastcall wcstrim(wchar_t * buffer);
-
-int DAT_00ABF070;
-int DAT_00ABF074;
-int DAT_00ABF078;
-
-// FUNCTION: GAMEMD 0x005B4990
-void FUN_005B4990(void)
-{
-	DAT_00ABF078 = 0;
-	DAT_00ABF070 = 128;
-	DAT_00ABF074 = 128;
-}
 
 BOOL CALLBACK Modem_Guest_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
-// FUNCTION: GAMEMD 0x005B49B0
 bool ModemGuest::Dialog(void)
 {
 	bool started = false;
@@ -196,7 +107,6 @@ bool ModemGuest::Dialog(void)
 	return(started);
 }
 
-// FUNCTION: GAMEMD 0x005B4B10
 BOOL CALLBACK Modem_Guest_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	int rc = OwnerDraw::Default_Dialog_Proc(window, message, wparam, lparam);
@@ -268,25 +178,25 @@ BOOL CALLBACK Modem_Guest_Dialog_Proc(HWND window, UINT message, WPARAM wparam, 
 }
 
 extern char ModemRXString[];
-extern wchar_t const DAT_00887734[];
-void __cdecl FUN_004068E0(char const *format, ...);
 
 static inline LRESULT Send_Control_Message(HWND window, UINT message, WPARAM wparam = 0, LPARAM lparam = 0)
 {
 	return SendMessageA(window, message, wparam, lparam);
 }
 
-// FUNCTION: GAMEMD 0x005B4EE0
 void ModemGuest::InitDialog(void)
 {
 	wchar_t text[1024];
-	FUN_004068E0("ModemGuest.InitDialog(enter)\n");
+
+	DebugString("ModemGuest.InitDialog(enter)\n");
+
 	HWND control = GetDlgItem(_Dialog, IDC_DROPSHIP_OK);
 	if (control) {
 		Send_Control_Message(control, EM_LIMITTEXT, 19);
-		Send_Control_Message(control, 0x4B2, 0, (LPARAM)FUN_00735120(Session.Handle));
+		Send_Control_Message(control, 0x4B2, 0, (LPARAM)Narrow_To_Wide(Session.Handle));
 	}
-	FUN_004068E0("Name: %ls\n", Session.Handle);
+	DebugString("Name: %ls\n", Session.Handle);
+
 	control = GetDlgItem(_Dialog, IDC_MODEM_YOURCOLOR);
 	if (control) {
 		Send_Control_Message(control, CB_RESETCONTENT);
@@ -312,7 +222,8 @@ void ModemGuest::InitDialog(void)
 		Session.PrefColor = Session.Color;
 		Send_Control_Message(control, CB_SETCURSEL, Session.PrefColor);
 	}
-	FUN_004068E0("Color: %d\n", Session.PrefColor);
+	DebugString("Color: %d\n", Session.PrefColor);
+
 	control = GetDlgItem(_Dialog, IDC_MODEM_YOURSIDE);
 	if (control) {
 		Send_Control_Message(control, CB_RESETCONTENT);
@@ -332,88 +243,104 @@ void ModemGuest::InitDialog(void)
 		             ((unsigned long)(unsigned short)Rule->MaxUnitCount << 16) | (unsigned short)Rule->MinUnitCount);
 		Send_Control_Message(control, 0x405, 1, Session.Options.UnitCount);
 	}
-	FUN_004068E0("UnitCount: %d\n", Session.Options.UnitCount);
+	DebugString("UnitCount: %d\n", Session.Options.UnitCount);
+
 	control = GetDlgItem(_Dialog, IDC_TECHLEVEL);
 	if (control) {
 		Send_Control_Message(control, 0x406, 1, 0xA0001);
 		Send_Control_Message(control, 0x405, 1, BuildLevel);
 	}
-	FUN_004068E0("TechLevel: %d\n", BuildLevel);
+	DebugString("TechLevel: %d\n", BuildLevel);
+
 	control = GetDlgItem(_Dialog, IDC_CREDITS);
 	if (control) {
 		Send_Control_Message(control, 0x406, 1,
 		             ((unsigned long)(unsigned short)Rule->MPMaxMoney << 16) | (unsigned short)Rule->MinMoney);
 		Send_Control_Message(control, 0x405, 1, Session.Options.Credits);
 	}
-	FUN_004068E0("Credits: %d\n", Session.Options.Credits);
+	DebugString("Credits: %d\n", Session.Options.Credits);
+
 	control = GetDlgItem(_Dialog, IDC_AIPLAYERS);
 	if (control) {
 		Send_Control_Message(control, 0x406, 1, 0x60000);
 		Send_Control_Message(control, 0x405, 1, Session.Options.AIPlayers);
 	}
-	FUN_004068E0("AIPlayers: %d\n", Session.Options.AIPlayers);
+	DebugString("AIPlayers: %d\n", Session.Options.AIPlayers);
+
 	control = GetDlgItem(_Dialog, IDC_GAME_SPEED_SLIDER);
 	if (control) {
 		Send_Control_Message(control, 0x406, 1, 0x60000);
 		Send_Control_Message(control, 0x405, 1, 6 - Session.Options.GameSpeed);
 	}
-	FUN_004068E0("Game Speed: %d\n", Session.Options.GameSpeed);
+	DebugString("Game Speed: %d\n", Session.Options.GameSpeed);
+
 	control = GetDlgItem(_Dialog, IDC_AILEVEL_SLIDER);
 	if (control) {
 		Send_Control_Message(control, 0x406, 1, 0x20000);
 		Send_Control_Message(control, 0x405, 1, Session.Options.AIDifficulty);
 	}
-	FUN_004068E0("AIDifficulty: %d\n", Session.Options.AIDifficulty);
+	DebugString("AIDifficulty: %d\n", Session.Options.AIDifficulty);
+
 	control = GetDlgItem(_Dialog, IDC_MODEM_REDEPLOY_MCV);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.MCVRedeploy == true);
 	}
-	FUN_004068E0("MCVRedeploy: %s\n", Session.Options.MCVRedeploy == true ? "ON" : "OFF");
+	DebugString("MCVRedeploy: %s\n", Session.Options.MCVRedeploy == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, IDC_MODEM_BASES);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.Bases == true);
 	}
-	FUN_004068E0("Bases: %s\n", Session.Options.Bases == true ? "ON" : "OFF");
+	DebugString("Bases: %s\n", Session.Options.Bases == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, IDC_SHORT_GAME);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.ShortGame == true);
 	}
-	FUN_004068E0("Short Game: %s\n", Session.Options.ShortGame == true ? "ON" : "OFF");
+	DebugString("Short Game: %s\n", Session.Options.ShortGame == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, 0x69A);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.SWAllowed == true);
 	}
-	FUN_004068E0("SuperWeapons: %s\n", Session.Options.SWAllowed == true ? "ON" : "OFF");
+	DebugString("SuperWeapons: %s\n", Session.Options.SWAllowed == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, 0x69D);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.BuildOffAlly == true);
 	}
-	FUN_004068E0("BuildOffAlly: %s\n", Session.Options.BuildOffAlly == true ? "ON" : "OFF");
+	DebugString("BuildOffAlly: %s\n", Session.Options.BuildOffAlly == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, IDC_MULTI_ENGINEER);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.CrapEngineers == true);
 	}
-	FUN_004068E0("Crap Engineers: %s\n", Session.Options.CrapEngineers == true ? "ON" : "OFF");
+	DebugString("Crap Engineers: %s\n", Session.Options.CrapEngineers == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, IDC_GOODIES);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.Goodies == true);
 	}
-	FUN_004068E0("Crates: %s\n", Session.Options.Goodies == true ? "ON" : "OFF");
+	DebugString("Crates: %s\n", Session.Options.Goodies == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, IDC_MODEM_FOG);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.FogOfWar == true);
 	}
-	FUN_004068E0("FogOfWar: %s\n", Session.Options.FogOfWar == true ? "ON" : "OFF");
+	DebugString("FogOfWar: %s\n", Session.Options.FogOfWar == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, IDC_BRIDGE_DESTROY);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.BridgeDestruction == true);
 	}
-	FUN_004068E0("BridgeDestroy: %s\n", Session.Options.BridgeDestruction == true ? "ON" : "OFF");
+	DebugString("BridgeDestroy: %s\n", Session.Options.BridgeDestruction == true ? "ON" : "OFF");
+
 	control = GetDlgItem(_Dialog, IDC_HARVTRUCE);
 	if (control) {
 		Send_Control_Message(control, BM_SETCHECK, Session.Options.HarvTruce == true);
 	}
-	FUN_004068E0("Harvester Truce: %s\n", Session.Options.HarvTruce == true ? "ON" : "OFF");
+	DebugString("Harvester Truce: %s\n", Session.Options.HarvTruce == true ? "ON" : "OFF");
+
 	VerNum.Init_Clipping();
 	if (MultiplayerMapPreview) {
 		delete MultiplayerMapPreview;
@@ -423,18 +350,18 @@ void ModemGuest::InitDialog(void)
 		ModemRXString[79] = 0;
 	}
 	if (strlen(ModemRXString)) {
-		FUN_00735060(text, ModemRXString, -1);
-		DrawMessage(text, -1, DAT_00887734);
+		Char_To_Wide(text, ModemRXString, -1);
+		DrawMessage(text, -1, L"");
 	}
 	ModemRXString[0] = 0;
 	NullModem.Reset_Response_Time(true);
 	Session.NetOpen = 1;
 	Clear_Vector(&Session.Players);
 	Session.Options.ScenarioDescription[0] = 0;
-	FUN_004068E0("ModemGuest.InitDialog(exit)\n");
+
+	DebugString("ModemGuest.InitDialog(exit)\n");
 }
 
-// FUNCTION: GAMEMD 0x005B56F0
 void ModemGuest::ReadDialog(void)
 {
 	DebugString("ModemGuest.ReadDialog(enter)\n");
@@ -462,7 +389,6 @@ void ModemGuest::ReadDialog(void)
 	DebugString("ModemGuest.ReadDialog(exit)\n");
 }
 
-// FUNCTION: GAMEMD 0x005B57D0
 void ModemGuest::SendCurrentMessage(void)
 {
 	wchar_t buf[256];
@@ -478,7 +404,6 @@ void ModemGuest::SendCurrentMessage(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B5960
 void ModemGuest::SetHouse(void)
 {
 	HWND handle = GetDlgItem(_Dialog, IDC_MODEM_YOURSIDE);
@@ -492,7 +417,6 @@ void ModemGuest::SetHouse(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B59B0
 void ModemGuest::SetColor(void)
 {
 	HWND handle = GetDlgItem(_Dialog, IDC_MODEM_YOURCOLOR);
@@ -514,7 +438,6 @@ void ModemGuest::SetColor(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B5A50
 void ModemGuest::SetName(bool update)
 {
 	wchar_t namebuf[21];
@@ -531,7 +454,6 @@ void ModemGuest::SetName(bool update)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B5AD0
 void ModemGuest::SetOther(const wchar_t * name, int color, int house)
 {
 	wchar_t buf[80];
@@ -559,7 +481,6 @@ void ModemGuest::SetOther(const wchar_t * name, int color, int house)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B5BC0
 void ModemGuest::SetSettings(void)
 {
 	DebugString("Settings change\n");
@@ -661,7 +582,6 @@ void ModemGuest::SetSettings(void)
 	VocClass::PlayGlobal(Rule->OptionsChanged, 1.0f, 0x2000);
 }
 
-// FUNCTION: GAMEMD 0x005B5E90
 void ModemGuest::AcceptOptions(void)
 {
 	HWND handle = GetDlgItem(_Dialog, IDOK);
@@ -675,7 +595,6 @@ void ModemGuest::AcceptOptions(void)
 	NullModem.Send_Message(&packet, 250, 1);
 }
 
-// FUNCTION: GAMEMD 0x005B5EF0
 void ModemGuest::Send(bool force)
 {
 	NullModem.Service();
@@ -698,7 +617,6 @@ void ModemGuest::Send(bool force)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B6020
 bool ModemGuest::Receive(void)
 {
 	SerialPacketType receivepacket;
@@ -784,7 +702,7 @@ bool ModemGuest::Receive(void)
 
 					Session.CommProtocol = VerNum.Version_Protocol(version);
 
-					name = FUN_00735120(receivepacket.Name);
+					name = Narrow_To_Wide(receivepacket.Name);
 					SetOther(name, receivepacket.ScenarioInfo.Color, receivepacket.ScenarioInfo.House);
 					if (SetGameOptions(&receivepacket) == true) {
 						SetSettings();
@@ -847,7 +765,7 @@ bool ModemGuest::Receive(void)
 
 			case (SERIAL_MESSAGE):
 				DebugString("Received serial message\n");
-				name = FUN_00735120(receivepacket.Name);
+				name = Narrow_To_Wide(receivepacket.Name);
 				DrawMessage(name, receivepacket.ID, receivepacket.Message.Message);
 				VocClass::PlayGlobal(Rule->IncomingMessage, 1.0f, 0x2000);
 				break;
@@ -862,7 +780,7 @@ bool ModemGuest::Receive(void)
 				TransmitTime = TickCount;
 				break;
 
-			case SERIAL_PREVIEW_MODE:
+			case (SERIAL_PREVIEW_MODE):
 				DebugString("Received SERIAL_PREVIEW_MODE packet\n");
 				ReceivePreview();
 				LastMsgTime = TickCount;
@@ -885,7 +803,6 @@ bool ModemGuest::Receive(void)
 	return(false);
 }
 
-// FUNCTION: GAMEMD 0x005B67F0
 bool ModemGuest::SetGameOptions(SerialPacketType * packet)
 {
 	if (Session.Options.Bases == (bool)packet->ScenarioInfo.IsBases &&
@@ -978,7 +895,6 @@ bool ModemGuest::SetGameOptions(SerialPacketType * packet)
 	return(true);
 }
 
-// FUNCTION: GAMEMD 0x005B6CD0
 void ModemGuest::SendGameOptions(void)
 {
 	SerialPacketType packet;
@@ -998,7 +914,6 @@ void ModemGuest::SendGameOptions(void)
 	NullModem.Send_Message(&packet, sizeof(packet), 1);
 }
 
-// FUNCTION: GAMEMD 0x005B6DA0
 void ModemGuest::SendAMessage(const wchar_t * message)
 {
 	if (message != NULL) {
@@ -1012,12 +927,11 @@ void ModemGuest::SendAMessage(const wchar_t * message)
 		NullModem.Send_Message(&packet, 250, 1);
 		NullModem.Service();
 
-		wchar_t * name = FUN_00735120(Session.Handle);
+		wchar_t * name = Narrow_To_Wide(Session.Handle);
 		DrawMessage(name, Session.PrefColor, message);
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B6EB0
 void ModemGuest::DrawMessage(const wchar_t * name, int color, const wchar_t * message)
 {
 	wchar_t buf[256];
@@ -1032,7 +946,6 @@ void ModemGuest::DrawMessage(const wchar_t * name, int color, const wchar_t * me
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B6F30
 void ModemGuest::SignOff(void)
 {
 	unsigned int starttime;
@@ -1070,7 +983,6 @@ void ModemGuest::SignOff(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x005B7090
 bool ModemGuest::StartGame(bool load_game)
 {
 	unsigned int starttime;
@@ -1086,7 +998,7 @@ bool ModemGuest::StartGame(bool load_game)
 
 	who = new NodeNameType;
 	if (who != NULL) {
-		FUN_00735060(who->Name, Session.Handle, -1);
+		Char_To_Wide(who->Name, Session.Handle, -1);
 		who->Player.House = Session.House;
 		who->Player.Color = Session.PrefColor;
 		who->Player.ProcessTime = -1;
@@ -1137,9 +1049,6 @@ bool ModemGuest::StartGame(bool load_game)
 	return(true);
 }
 
-bool __fastcall FUN_00693B70(char * name, int type, bool flag);
-
-// FUNCTION: GAMEMD 0x005B7360
 void ModemGuest::ReceivePreview(void)
 {
 	CDTimerClass<SystemTimerClass> response_timer;
@@ -1149,7 +1058,6 @@ void ModemGuest::ReceivePreview(void)
 	SerialPacketType packet;
 	memset(&packet, 0, sizeof(packet));
 	packet.Command = SERIAL_PREVIEW_ACK;
-
 	DebugString("Sending preview mode ack\n");
 	NullModem.Send_Message(&packet, sizeof(packet), 1);
 	response_timer = 10 * TIMER_SECOND;
@@ -1160,7 +1068,7 @@ void ModemGuest::ReceivePreview(void)
 
 	DebugString("Calling Get_File_From_Host to receive the file download\n");
 	char preview_name[256];
-	bool got_file = FUN_00693B70(preview_name, GAME_MODEM, false);
+	bool got_file = Get_File_From_Host(preview_name, GAME_MODEM, false);
 	if (!got_file) {
 		DebugString("got_file is false. Download failed\n");
 		return;
@@ -1174,13 +1082,11 @@ void ModemGuest::ReceivePreview(void)
 	int preview_size = ((int *)buffer)[0];
 
 	DebugString("Decompressing the preview image\n");
-
 	BufferStraw bstraw(&((int *)buffer)[1], size);
 	LZOStraw lzostraw(LZOStraw::DECOMPRESS);
 	lzostraw.Get_From(&bstraw);
 	char * preview = new char[2 * preview_size];
 	lzostraw.Get(preview, preview_size);
-
 	DebugString("Creating the new preview surface\n");
 	if (MultiplayerMapPreview) {
 		delete MultiplayerMapPreview;
@@ -1188,7 +1094,6 @@ void ModemGuest::ReceivePreview(void)
 	MultiplayerMapPreview = new MapPreviewClass;
 	MultiplayerMapPreview->Create_Preview_Surface(preview);
 	InvalidateRect(_Dialog, NULL, FALSE);
-
 	DebugString("Cleaning up the temporary decompression buffers\n");
 	delete [] preview;
 	delete [] buffer;
