@@ -220,7 +220,9 @@ fastmath,0x004BA410,0x004BAD50,tibsun,"functions compiled from src/fastmath.cpp,
 field,0x004BAD50,0x004BB160,tibsun,"functions compiled from src/field.cpp, matched, without gaps"
 unk_004BB160,0x004BB160,0x004BB350,unknown,code not assigned to a module
 findpath,0x004BB350,0x004BB3F0,tibsun,"functions compiled from src/findpath.cpp, matched, without gaps; ?Safety_Point@FootClass@@QAE?AVCell@@ABV2@0HH@Z not placed"
-unk_004BB3F0,0x004BB3F0,0x004BBF00,unknown,code not assigned to a module
+unk_004BB3F0,0x004BB3F0,0x004BB890,unknown,code not assigned to a module
+findpath2,0x004BB890,0x004BBEE0,source,"functions compiled from src/findpath2.cpp, matched, without gaps"
+unk_004BBEE0,0x004BBEE0,0x004BBF00,unknown,code not assigned to a module
 flasher,0x004BBF00,0x004BBF20,tibsun,"functions compiled from src/flasher.cpp, matched, without gaps"
 unk_004BBF20,0x004BBF20,0x004BDC20,unknown,code not assigned to a module
 unk_004BDC20,0x004BDC20,0x004BDD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
