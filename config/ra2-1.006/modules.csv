@@ -14,7 +14,8 @@ audsrc,0x00408380,0x00408530,source,"functions compiled from src/audsrc.cpp, mat
 unk_00408530,0x00408530,0x00408710,unknown,code not assigned to a module
 audstrm,0x00408710,0x00409280,source,"functions compiled from src/audstrm.cpp, matched, without gaps; five placed by the gap"
 audtimer,0x00409280,0x00409390,source,"functions compiled from src/audtimer.cpp, matched, without gaps"
-unk_00409390,0x00409390,0x0040D7D0,unknown,code not assigned to a module
+drv_dsnd,0x00409390,0x0040AC80,source,"functions compiled from src/drv_dsnd.cpp, matched, without gaps; five placed by the gap"
+unk_0040AC80,0x0040AC80,0x0040D7D0,unknown,code not assigned to a module
 unk_0040D7D0,0x0040D7D0,0x0040D810,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0040D810,0x0040D810,0x0040DB60,unknown,code not assigned to a module
 _rtti,0x0040DB60,0x0040DC70,tibsun,"functions compiled from src/_rtti.cpp, matched, without gaps; two placed by definition order; one placed by the gap"
