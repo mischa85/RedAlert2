@@ -810,15 +810,7 @@ weapon,0x00732EA0,0x00733FE0,tibsun,"functions compiled from src/weapon.cpp, mat
 unk_00733FE0,0x00733FE0,0x00734120,unknown,code not assigned to a module
 wincomm,0x00734120,0x00735610,tibsun,"functions compiled from src/wincomm.cpp, matched, without gaps"
 unk_00735610,0x00735610,0x00735690,unknown,code not assigned to a module
-unk_00735690,0x00735690,0x00735700,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00735700,0x00735700,0x00735910,unknown,code not assigned to a module
-unk_00735910,0x00735910,0x007359E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_007359E0,0x007359E0,0x00735B50,unknown,code not assigned to a module
-unk_00735B50,0x00735B50,0x00735BA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00735BA0,0x00735BA0,0x00735BC0,unknown,code not assigned to a module
-unk_00735BC0,0x00735BC0,0x00735D70,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00735D70,0x00735D70,0x00735DB0,unknown,code not assigned to a module
-unk_00735DB0,0x00735DB0,0x00736210,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+windlg,0x00735690,0x00736210,tibsun,"functions compiled from src/windlg.cpp, matched, without gaps; four placed by the gap"
 unk_00736210,0x00736210,0x00736230,unknown,code not assigned to a module
 winfix,0x00736230,0x007371B0,tibsun,"functions compiled from src/winfix.cpp, matched, without gaps; one placed by the gap"
 unk_007371B0,0x007371B0,0x00737A60,unknown,code not assigned to a module
