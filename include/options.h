@@ -52,6 +52,7 @@ class OptionsClass {
 
 		void Fixup_Palette(void) const;
 		void Set_Shuffle(bool on);
+		void Unlock_Movie(char const * name); // RA2: raises LastUnlockedSovMovie/LastUnlockedAllMovie to the movie's index
 		void Set_Repeat(bool on);
 		void Set_Score_Volume(float volume, bool feedback);
 		void Set_Sound_Volume(float volume, bool feedback);
