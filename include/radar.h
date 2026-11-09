@@ -123,6 +123,7 @@ class RadarClass: public DisplayClass
 		void Post_Load_Radar_Fixup(void);
 
 		virtual bool Map_Cell(Cell const & cell, HouseClass * house) override;
+		virtual bool RevealFogShroud(Cell const & cell, HouseClass * house, bool increase) override; // RA2
 		virtual void DisposeOfArt(void); // RA2
 		virtual Cell Click_Cell_Calc(Point2D const & point) const;
 		virtual void AI(KeyNumType & input, Point2D const & xy) override;
@@ -132,8 +133,10 @@ class RadarClass: public DisplayClass
 		virtual void Set_Local_Dimensions(Rect const & size) override;
 		virtual void Set_Tactical_Position(Coord const & coord);
 		virtual void Init_For_House(void);
+		virtual void Init_IO(void) override; // RA2
+		void Set_Buttons(bool on); // RA2
 
-		void Radar_Activate(int control);
+		void Radar_Activate(int control, bool sound); // RA2
 		void Radar_Background(Cell const & cell);
 		Point2D Coord_To_Radar_Pixel(Coord const & coord, bool clip);
 		bool Cell_On_Radar(Cell const & cell);
@@ -171,7 +174,7 @@ class RadarClass: public DisplayClass
 
 		void Radar_Cell(Cell const & cell);
 		void Resolve_Radar_Point(Point2D const & point, Cell & cell, ObjectClass *& object);
-		void Set_Radar_State(bool on);
+		void Set_Radar_State(bool on, bool sound); // RA2
 
 		void Toggle_Radar(bool on);
 		bool Is_Playing_Movie(void);
@@ -179,9 +182,10 @@ class RadarClass: public DisplayClass
 
 		void Render_Radar(void);
 		void Play_Movie(void);
+		void Update_Transmission(void); // RA2
 		void Complete_Radar_Refresh(void);
 
-		void Queue_Next_Movie(void) {RadarState = RSTATE_NEXT_MOVIE; RadarAnimFrame = RADAR_ACTIVATED_FRAME;}
+		void Queue_Next_Movie(void); // RA2
 
 		void Clear_Background_Stack(void) { BackgroundStack.Clear(); }
 

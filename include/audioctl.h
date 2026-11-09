@@ -20,4 +20,9 @@ struct AudioController
 	VocClass * EventType;
 	void ** AudioIndex;
 	unsigned Unused;
+
+	void Init(void); // RA2: 0x00405BF0
+	void Release(void); // RA2: 0x00405C10
+	void EndLooping(void); // RA2
+	void __fastcall SetEvent(AudioEvent * event, VocClass * type); // RA2
 };

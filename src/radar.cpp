@@ -103,6 +103,45 @@
 #include "voc.h"
 #include "vox.h"
 #include "vqa.h"
+#include "audplay.h" // RA2
+#include "beacon.h" // RA2
+#include "cctooltip.h" // RA2
+#include "data.h" // RA2
+#include "multiplayer.h" // RA2
+#include "scenario.h" // RA2
+#include "session.h" // RA2
+#include "stringtable.h" // RA2
+#include "tooltip.h" // RA2
+#include "_tooltip.h" // RA2
+#include "_zbuffer.h" // RA2
+#include "zbuffer.h" // RA2
+
+#define RA2_SOURCE "D:\\Ra2\\Radar.CPP"
+
+extern RGBClass TooltipColor; // RA2: the outline colour of a tooltip
+extern int MuteSWLaunches; // RA2: 0x00A3D548
+extern int SidebarWidth; // RA2: 0x007ADD80
+
+/*
+**	RA2: the tooltip colour is read as one dword and packed in the order of its bytes.
+*/
+struct TextColor {unsigned char R, G, B, A;};
+inline int Pack_Color(TextColor c) {return(DSurface::Build_Hicolor_Pixel(c.R, c.G, c.B));}
+
+/*
+**	RA2: the speech and audio helpers of the radar movie. Each is declared with its address
+**	because the modules that define them are not matched yet.
+*/
+void Add_Speech_Hold(void); // RA2: 0x00716940
+void Remove_Speech_Hold(void); // RA2: 0x00716950
+void Flush_Speech(void); // RA2: 0x007157B0
+void __fastcall Queue_Speech(int voice, int position, int priority); // RA2: 0x007158C0
+bool __fastcall Is_Speech_Finished(int voice); // RA2: 0x00716690
+void Pause_Game_Audio(void); // RA2: 0x005A0B10
+void Resume_Game_Audio(void); // RA2: 0x005A0AC0
+void __fastcall Set_Frame_Rate_Limit(int value); // RA2: 0x0053D820
+void __fastcall Hold_Scenario(int seconds); // RA2: 0x0065C1F0
+void Release_Scenario(void); // RA2: 0x0065C310
 
 
 /// <summary>
@@ -117,6 +156,23 @@ inline bool RadarTrackingStruct::Use_Head(void) const { return(Object->House == 
 RadarClass::RTacticalClass RadarClass::RadarButton;
 
 void const * RadarClass::RadarAnim  = NULL;
+
+/*
+**	RA2: the briefing (diplomacy in multiplayer) and options buttons beside the radar, with the
+**	artwork they were loaded from. The shape names are pointers that the game fills in.
+*/
+extern void * BriefingButtonShape; // RA2: 0x00AB6350
+extern void * OptionsButtonShape; // RA2: 0x00AB6318
+extern bool IsBriefingButtonShapeLoaded; // RA2: 0x00AB6369
+extern bool IsOptionsButtonShapeLoaded; // RA2: 0x00AB6368
+extern char const * BriefingButtonShapeName; // RA2: 0x007EE064
+extern char const * OptionsButtonShapeName; // RA2: 0x007EE068
+extern Rect BriefingButtonRect; // RA2: 0x00AB6468
+extern Rect OptionsButtonRect; // RA2: 0x00AB6338
+extern ShapeButtonClass BriefingButton; // RA2: 0x00AB63E8
+extern ShapeButtonClass OptionsButton; // RA2: 0x00AB6380
+extern void const * RadarFrameShape; // RA2: 0x00AC0FF0
+extern void const * RadarAnimShape; // RA2: 0x00AC1070
 
 
 /***********************************************************************************************
@@ -135,7 +191,6 @@ void const * RadarClass::RadarAnim  = NULL;
  *   12/16/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
 RadarClass::RadarClass(void) :
-	RadX(0),
 	RadY(0),
 	RadWidth(0),
 	RadHeight(0),
@@ -144,7 +199,6 @@ RadarClass::RadarClass(void) :
 	RadIWidth(0),
 	RadIHeight(0),
 	RadPWidth(0),
-	RadPHeight(0),
 	LastDrawRect(RECT_NONE),
 	RadarSurface(0),
 	BackgroundSurface(0),
@@ -163,6 +217,9 @@ RadarClass::RadarClass(void) :
 	RadarState(0),
 	RadarMode(0),
 	SuspendedRadarMode(0),
+	IsScenarioHeld(false),
+	IsMoviePlaying(false),
+	TransmissionVoice(-1),
 	DoesRadarExist(false),
 	IsToRedraw(0),
 	FullRedraw(0),
@@ -171,6 +228,7 @@ RadarClass::RadarClass(void) :
 {
 	Init_Radar();
 	PixelStack.Set_Growth_Step(500);
+	MovieSound.Init();
 }
 
 
@@ -179,7 +237,18 @@ RadarClass::RadarClass(void) :
 /// </summary>
 RadarClass::~RadarClass(void)
 {
+	MovieSound.Release(); // RA2
 	Clear_Radar();
+}
+
+
+/// <summary>
+/// Starts the next queued radar movie.
+/// </summary>
+void RadarClass::Queue_Next_Movie(void)
+{
+	RadarState = RSTATE_NEXT_MOVIE;
+	RadarAnimFrame = RADAR_ACTIVATED_FRAME;
 }
 
 
@@ -203,23 +272,20 @@ RadarClass::~RadarClass(void)
 void RadarClass::One_Time(void)
 {
 	DebugString("RadarClass::One_Time()\n");
-	RadX				 = 0;
-	RadY				 = 8 * 2/*RESFACTOR*/;
-	RadWidth			 = SidebarSurface->Get_Width();
-	RadHeight			 = 70 * 2/*RESFACTOR*/;
-	RadOffX				 = 15;
-	RadOffY				 = 12;
-	RadPWidth			 = 70 * 2/*RESFACTOR*/;
-	RadPHeight			 = 54 * 2/*RESFACTOR*/;
-	RadIWidth			 = 70 * 2/*RESFACTOR*/;
-	RadIHeight			 = 54 * 2/*RESFACTOR*/;
+	RadX = 0;
+	RadY = 16; // RA2
+	RadWidth = 48; // RA2
+	RadIHeight = 140; // RA2
+	RadPWidth = 108; // RA2
+	RadOffY = 140; // RA2
+	RadIWidth = 108; // RA2
+	RadOffX = 49; // RA2
 
 	BASECLASS::One_Time();
 
-	RadarButton.X		= RadX + SidebarRect.X;
-	RadarButton.Y 		= RadY;
-	RadarButton.Width 	= RadWidth;
-	RadarButton.Height 	= RadHeight;
+	RadarButton.Y = RadOffX; // RA2
+	RadarButton.Width = RadIHeight;
+	RadarButton.Height = RadPWidth;
 	RadarButton.Set_Flags(GadgetClass::FlagEnum(GadgetClass::FlagEnum::LEFTPRESS |
 														GadgetClass::FlagEnum::LEFTHELD |
 														GadgetClass::FlagEnum::LEFTRELEASE |
@@ -227,6 +293,25 @@ void RadarClass::One_Time(void)
 														GadgetClass::FlagEnum::RIGHTPRESS |
 														GadgetClass::FlagEnum::RIGHTRELEASE |
 														GadgetClass::FlagEnum::RIGHTUP));
+	TransmissionVoice = Vox_From_Name("EVA_IncomingTransmission"); // RA2
+}
+
+
+/// <summary>
+/// Frees the artwork of the two buttons beside the radar.
+/// </summary>
+void RadarClass::DisposeOfArt(void) // RA2
+{
+	if (IsBriefingButtonShapeLoaded) {
+		delete BriefingButtonShape;
+		IsBriefingButtonShapeLoaded = false;
+	}
+	BriefingButtonShape = NULL;
+	if (IsOptionsButtonShapeLoaded) {
+		delete OptionsButtonShape;
+		IsOptionsButtonShapeLoaded = false;
+	}
+	OptionsButtonShape = NULL;
 }
 
 
@@ -252,6 +337,8 @@ void RadarClass::Init_Clear(void)
 
 	RadarState 				= RSTATE_INACTIVE;
 	RadarMode 				= RMODE_UNAVAILABLE;
+	IsMoviePlaying 			= false; // RA2
+	IsScenarioHeld 			= false; // RA2
 	RadarAnimFrame 			= 0;
 	DoesRadarExist 			= false;
 	IsToRedraw 				= true;
@@ -263,14 +350,83 @@ void RadarClass::Init_Clear(void)
 
 
 /// <summary>
+/// Adds or removes the two buttons beside the radar.
+/// </summary>
+void RadarClass::Set_Buttons(bool on) // RA2
+{
+	if (on) {
+		Add_A_Button(BriefingButton);
+		Add_A_Button(OptionsButton);
+	} else {
+		Remove_A_Button(BriefingButton);
+		Remove_A_Button(OptionsButton);
+	}
+}
+
+
+/// <summary>
 /// Handles the radar initialization required for the player's house.
-/// This routine fetches the radar frame artwork, which is drawn from whichever mix files the
-/// player's side has mounted.
+/// This routine loads the artwork of the two buttons beside the radar and places them.
 /// </summary>
 void RadarClass::Init_For_House(void)
 {
 	DebugString("RadarClass::Init_For_House()\n");
-	RadarAnim = MFCD::Retrieve("RADAR.SHP");
+	DisposeOfArt();
+
+	if (Scen->IsGDI) { // RA2
+		RadHeight = (SidebarWidth - 144) / 2 + 4;
+		BriefingButtonRect.X = RadX + 11;
+		BriefingButtonRect.Y = RadY + 4;
+		OptionsButtonRect.X = RadX + 83;
+	} else {
+		RadHeight = (SidebarWidth - 145) / 2 + 5;
+		BriefingButtonRect.X = RadX + 14;
+		BriefingButtonRect.Y = RadY + 5;
+		OptionsButtonRect.X = RadX + 86;
+	}
+	OptionsButtonRect.Y = BriefingButtonRect.Y;
+	RadarButton.X = RadHeight;
+
+	BriefingButtonShape = Load_Alloc_Data(BriefingButtonShapeName, IsBriefingButtonShapeLoaded);
+	OptionsButtonShape = Load_Alloc_Data(OptionsButtonShapeName, IsOptionsButtonShapeLoaded);
+	BriefingButtonRect.Width = ((short *)BriefingButtonShape)[1];
+	BriefingButtonRect.Height = ((short *)BriefingButtonShape)[2];
+	OptionsButtonRect.Width = ((short *)OptionsButtonShape)[1];
+	OptionsButtonRect.Height = ((short *)OptionsButtonShape)[2];
+	RadarAnim = RadarAnimShape;
+
+	RadPHeight = Pack_Color(*(TextColor *)&TooltipColor);
+}
+
+
+/// <summary>
+/// Sets up the two buttons beside the radar.
+/// </summary>
+void RadarClass::Init_IO(void) // RA2
+{
+	BASECLASS::Init_IO();
+
+	if (!Debug_Map) {
+		BriefingButton.ID = 242;
+		BriefingButton.DrawOnSidebar = true;
+		BriefingButton.ShapeDrawer = SidebarDrawer;
+		BriefingButton.IsOn = false;
+		BriefingButton.IsToggleType = 0;
+		BriefingButton.Set_Flags(5);
+		BriefingButton.Set_Position(BriefingButtonRect.X, BriefingButtonRect.Y);
+		BriefingButton.Set_Shape((ShapeSet const *)BriefingButtonShape, 0, 0);
+		BriefingButton.Flag_To_Redraw();
+
+		OptionsButton.ID = 243;
+		OptionsButton.DrawOnSidebar = true;
+		OptionsButton.ShapeDrawer = SidebarDrawer;
+		OptionsButton.IsOn = false;
+		OptionsButton.IsToggleType = 0;
+		OptionsButton.Set_Flags(5);
+		OptionsButton.Set_Position(OptionsButtonRect.X, OptionsButtonRect.Y);
+		OptionsButton.Set_Shape((ShapeSet const *)OptionsButtonShape, 0, 0);
+		OptionsButton.Flag_To_Redraw();
+	}
 }
 
 
@@ -293,7 +449,7 @@ void RadarClass::Init_For_House(void)
  *=============================================================================================*/
 void RadarClass::Draw_It(bool forced)
 {
-	BASECLASS::Draw_It(forced);
+	bool timer_fired = false;
 
 	if (Debug_Map) {
 		FullRedraw = false;
@@ -304,32 +460,43 @@ void RadarClass::Draw_It(bool forced)
 	FullRedraw = FullRedraw == true || forced == true;
 	IsToRedraw = IsToRedraw == true || FullRedraw == true;
 
-	if (RadarState != RSTATE_ACTIVE) {
+	if (IsToRedraw) {
+		ShapeSet const * frame_shape = (ShapeSet const *)RadarFrameShape;
+		Draw_Shape(*SidebarSurface, *SidebarDrawer, frame_shape, 0, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
+		BriefingButton.Draw_Me(true);
+		OptionsButton.Draw_Me(true);
+	}
 
+	if (RadarState != RSTATE_ACTIVE) {
 		if (RadarState != RSTATE_INACTIVE) {
 			if (!RadarAnimTimer) {
 				RadarAnimTimer = 4;
-				IsToRedraw = true;
+				timer_fired = true;
 
 				if (RadarState == RSTATE_DEACTIVATING) {
-					RadarAnimFrame--;
-					if (RadarAnimFrame == 0) {
+					if (--RadarAnimFrame <= 0) {
 						RadarState = RSTATE_INACTIVE;
+						MovieSound.EndLooping();
+						RadarAnimFrame = 0;
 					}
 				} else {
-					RadarAnimFrame++;
-					if (RadarAnimFrame == MAX_RADAR_FRAMES) {
+					if (++RadarAnimFrame >= 32) {
+						MovieSound.EndLooping();
 						RadarState = RSTATE_ACTIVE;
 						FullRedraw = true;
+						RadarAnimFrame = 32;
 					}
 				}
 			}
 		}
 
-		if (IsToRedraw == true) {
-			IsToRedraw = (FullRedraw == true);
-			Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, RadarAnimFrame, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
-			LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
+		if (RadarState != RSTATE_ACTIVE) {
+			if (IsToRedraw == true || timer_fired) {
+				if (RadarAnimFrame >= 0 && RadarAnimFrame < ((short *)RadarAnim)[3]) {
+					Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, RadarAnimFrame, Point2D(RadX, RadWidth), SidebarSurface->Get_Rect());
+					LastDrawRect = Rect(RadX, RadWidth, SidebarWidth, 110);
+				}
+			}
 		}
 	}
 
@@ -342,39 +509,51 @@ void RadarClass::Draw_It(bool forced)
 				break;
 
 			case RMODE_PLAYER_NAMES:
-				if (IsToRedraw == true) {
+				if (IsToRedraw) {
+					bool full = FullRedraw;
 					IsToRedraw = false;
-					if (FullRedraw) {
-						Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, MAX_RADAR_FRAMES, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
+					if (full) {
+						Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 32, Point2D(RadX, RadWidth), SidebarSurface->Get_Rect());
 						Draw_Names();
-						LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
+						LastDrawRect = Rect(RadX, RadWidth, SidebarWidth, 110);
 					} else {
 						Draw_Names();
-						LastDrawRect = Rect(RadX + RadOffX, RadY + RadOffY, RadPWidth, RadPHeight);
+						LastDrawRect = Rect(RadHeight, RadOffX, RadIHeight, RadPWidth);
 					}
 				}
-			break;
+				break;
 
 			case RMODE_MOVIE:
 				Play_Movie();
 				break;
 
+			case RMODE_4:
+				break;
+
 			default:
-				if (IsToRedraw == true) {
+				if (IsToRedraw) {
 					IsToRedraw = false;
-					Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 0, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
-					LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
+					Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 0, Point2D(RadX, RadWidth), SidebarSurface->Get_Rect());
+					LastDrawRect = Rect(RadX, RadWidth, SidebarWidth, 110);
 				}
 				break;
 		}
 	}
 
-	if (FullRedraw == true) {
+	if (FullRedraw) {
 		FullRedraw = false;
-		Map.Repair.Draw_Me(true);
-		Map.Power.Draw_Me(true);
 		Map.Upgrade.Draw_Me(true);
-		Map.Waypoint.Draw_Me(true);
+		Map.Repair.Draw_Me(true);
+	}
+
+	if (BriefingButton.IsDrawn) {
+		LastDrawRect = Union(LastDrawRect, BriefingButtonRect);
+		Map.IsToBlitSidebar = true;
+	}
+
+	if (OptionsButton.IsDrawn) {
+		LastDrawRect = Union(LastDrawRect, OptionsButtonRect);
+		Map.IsToBlitSidebar = true;
 	}
 }
 
@@ -444,6 +623,18 @@ bool RadarClass::Map_Cell(Cell const & cell, HouseClass * house)
 }
 
 
+/// <summary>
+/// Hands the cell to the base class unchanged.
+/// </summary>
+bool RadarClass::RevealFogShroud(Cell const & cell, HouseClass * house, bool increase) // RA2
+{
+	if (BASECLASS::RevealFogShroud(cell, house, increase)) {
+		return(true);
+	}
+	return(false);
+}
+
+
 /***********************************************************************************************
  * RadarClass::AI -- Processes radar input (non-tactical).                                     *
  *                                                                                             *
@@ -469,10 +660,40 @@ void RadarClass::AI(KeyNumType & input, Point2D const & xy)
 {
 	BASECLASS::AI(input, xy);
 
-	if (IngameVQ.Count() > 0 && RadarMode != RMODE_MOVIE && !Is_Speaking()) {
-		Speak(VOX_INCOMING_TRANSMISSION, true);
+	int offset = Options.IsSidebarOnRight ? TacticalRect.Width : 0; // RA2
+
+	Rect r1 = BriefingButtonRect;
+	r1.X += offset;
+	if (r1.Is_Point_Within(xy)) {
+		Map.Override_Mouse_Shape(MOUSE_NORMAL, false);
+	}
+
+	Rect r2 = OptionsButtonRect;
+	r2.X += offset;
+	if (r2.Is_Point_Within(xy)) {
+		Map.Override_Mouse_Shape(MOUSE_NORMAL, false);
+	}
+
+	if (input == 0x80F2) {
+		if (Session.Type != GAME_NORMAL && !((Session.Type == GAME_IPX || Session.Type == GAME_INTERNET) && Session.MPGameMode && Session.MPGameMode->vt_entry_08() && Session.MPGameMode->vt_entry_04())) {
+			SpecialDialog = (SpecialDialogType)8;
+		} else {
+			SpecialDialog = (SpecialDialogType)9;
+		}
+	} else if (input == 0x80F3) {
+		SpecialDialog = (SpecialDialogType)1;
+	}
+
+	if (IngameVQ.Count() > 0 && RadarMode != RMODE_MOVIE && RadarMode != RMODE_4) {
 		SuspendedRadarMode = RadarMode;
-		Radar_Activate(3);
+		Radar_Activate(RMODE_4, false);
+		TransmissionState = 0;
+	}
+
+	if (RadarMode == RMODE_4) {
+		Update_Transmission();
+	} else {
+		Remove_Speech_Hold();
 	}
 }
 
@@ -542,7 +763,7 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 	Cell			cell(0,0);                  // cell num click happened over
 	bool			shadow;                     // is the cell in shadow or not
 	ObjectClass * object = NULL;                // what object is in the cell
-	ActionType 	action = ACTION_NONE;           // Action possible with currently selected object.
+	ActionType 	action;                         // Action possible with currently selected object.
 
 	Map.Resolve_Radar_Point(click, cell, object);
 	if (cell != CELL_NONE) {
@@ -551,14 +772,31 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 		shadow	= (Map.Is_Shrouded(coord) && MainWindow);
 
 		/*
-		**	If there is a currently selected object, then the action to perform if
-		**	the left mouse button were clicked must be determined.
+		**	If a super weapon is being aimed or there is a currently selected object, then the
+		**	action to perform if the left mouse button were clicked must be determined.
 		*/
-		if (CurrentObject.Count()) {
-			if (object) {
-				action = Best_Selected_Object()->What_Action(object);
+		bool multi_missile = Map.IsTargettingMode == SUPER_MULTI_MISSILE; // RA2
+		bool iron_curtain = Map.IsTargettingMode == SUPER_IRON_CURTAIN;
+		bool lightning_storm = Map.IsTargettingMode == SUPER_LIGHTNING_STORM;
+		bool para_drop = Map.IsTargettingMode == SUPER_PARA_DROP;
+		bool amer_para_drop = Map.IsTargettingMode == SUPER_AMER_PARA_DROP;
+		bool right = (flags & RIGHTUP) != 0;
+		if (!right) {
+		if (CurrentObject.Count() || multi_missile || iron_curtain || lightning_storm || para_drop || amer_para_drop) {
+			if (multi_missile) {
+				action = ACTION_NUKE_BOMB;
+			} else if (iron_curtain) {
+				action = ACTION_IRON_CURTAIN;
+			} else if (lightning_storm) {
+				action = ACTION_LIGHTNING_STORM;
+			} else if (para_drop) {
+				action = ACTION_PARA_DROP;
+			} else if (amer_para_drop) {
+				action = (ActionType)65; // RA2: the American paradrop
+			} else if (object) {
+				action = Best_Selected_Object(NULL, object)->What_Action(object);
 			} else {
-				action = Best_Selected_Object()->What_Action(cell);
+				action = Best_Selected_Object(&cell, NULL)->What_Action(cell);
 			}
 
 			/*
@@ -568,11 +806,17 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 			switch (action) {
 				case ACTION_MOVE:
 				case ACTION_NOMOVE:
-				case ACTION_ATTACK:
 				case ACTION_ENTER:
+				case ACTION_ATTACK:
+				case ACTION_HARVEST:
 				case ACTION_CAPTURE:
 				case ACTION_SABOTAGE:
-				case ACTION_HARVEST:
+				case ACTION_NUKE_BOMB:
+				case ACTION_GUARD_AREA:
+				case ACTION_IRON_CURTAIN:
+				case ACTION_LIGHTNING_STORM:
+				case ACTION_PARA_DROP:
+				case 65:
 					break;
 
 				default:
@@ -580,18 +824,17 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 					object = NULL;
 					break;
 			}
-		}
 
-		if (action != ACTION_NONE) {
+			if (action != ACTION_NONE) {
 
-			/*
-			**	When the mouse buttons aren't pressed, only the mouse cursor shape is processed.
-			**	The shape changes depending on what object the mouse is currently over and what
-			**	object is currently selected.
-			*/
-			if (flags & LEFTUP) {
-				Map.Mouse_Left_Up(cell, shadow, object, action, true);
-			}
+				/*
+				**	When the mouse buttons aren't pressed, only the mouse cursor shape is processed.
+				**	The shape changes depending on what object the mouse is currently over and what
+				**	object is currently selected.
+				*/
+				if (flags & LEFTUP) {
+					Map.Mouse_Left_Up(cell, shadow, object, action, true);
+				}
 
 				/*
 				**	Normal actions occur when the mouse button is released. The press event is
@@ -600,65 +843,67 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 				if (flags & LEFTRELEASE && !drag_select_aborted) {
 					Map.Mouse_Left_Release(Coord(cell), cell, object, action, true);
 				}
-
-			if (flags & RIGHTRELEASE) {
-				Map.Mouse_Right_Release(Point2D(0,0));
+				goto finish_input;
 			}
-
-		} else {
+		}
 
 			Map.Set_Default_Mouse(MOUSE_NORMAL, true);
+		}
 
-			if (flags & LEFTPRESS) {
+		if ((flags & LEFTPRESS) || (flags & RIGHTPRESS)) {
 
-				if (cell.X != 0 || cell.Y != 0) {
+			if (cell.X != 0 || cell.Y != 0) {
 
-					/*
-					 * The tactical map is isometric, so the click is kept on the playable
-					 * area by clamping the diagonal coordinates rather than X and Y directly:
-					 * (cell.X - cell.Y) is the horizontal screen axis (side_edge) and
-					 * (cell.X + cell.Y) is the vertical axis (top_edge/bottom_edge). Each
-					 * limit is the play area pulled in by half the tactical view, so the view
-					 * stays on the map.
-					 */
-					int side_edge = Map.PlayRect.Width - (TacticalRect.Width / ISO_TILE_PIXEL_W + 2) / 2 - 1;
-					int half_view_height = TacticalRect.Height / (2 * ISO_TILE_PIXEL_H);
-					int top_edge = half_view_height + Map.PlayRect.Width + 1;
-					int bottom_edge = 2 * Map.PlayRect.Height - half_view_height + Map.PlayRect.Width - 1;
+				/*
+				 * The tactical map is isometric, so the click is kept on the playable
+				 * area by clamping the diagonal coordinates rather than X and Y directly:
+				 * (cell.X - cell.Y) is the horizontal screen axis (side_edge) and
+				 * (cell.X + cell.Y) is the vertical axis (top_edge/bottom_edge). Each
+				 * limit is the play area pulled in by half the tactical view, so the view
+				 * stays on the map.
+				 */
+				int side_edge = Map.PlayRect.Width - (TacticalRect.Width / ISO_TILE_PIXEL_W + 2) / 2 - 1;
+				int half_view_height = TacticalRect.Height / (2 * ISO_TILE_PIXEL_H);
+				int top_edge = half_view_height + Map.PlayRect.Width + 1;
+				int bottom_edge = 2 * Map.PlayRect.Height - half_view_height + Map.PlayRect.Width - 1;
 
-					int adjust;
+				int adjust;
 
-					if ((cell.Y - cell.X) > side_edge) {
-						adjust = (cell.Y - cell.X) - side_edge;
-						cell.Y -= adjust;
-						cell.X += adjust;
-					}
+				if ((cell.Y - cell.X) > side_edge) {
+					adjust = (cell.Y - cell.X) - side_edge;
+					cell.Y -= adjust;
+					cell.X += adjust;
+				}
 
-					if ((cell.X - cell.Y) > side_edge - 1) {
-						adjust = (cell.X - cell.Y) - side_edge + 1;
-						cell.Y += adjust;
-						cell.X -= adjust;
-					}
+				if ((cell.X - cell.Y) > side_edge - 1) {
+					adjust = (cell.X - cell.Y) - side_edge + 1;
+					cell.Y += adjust;
+					cell.X -= adjust;
+				}
 
-					if ((cell.X + cell.Y) < top_edge) {
-						adjust = top_edge - cell.Y - cell.X;
-						cell.X += adjust;
-						cell.Y += adjust;
-					}
+				if ((cell.X + cell.Y) < top_edge) {
+					adjust = top_edge - cell.Y - cell.X;
+					cell.X += adjust;
+					cell.Y += adjust;
+				}
 
-					if ((cell.X + cell.Y) > bottom_edge) {
-						adjust = (cell.X + cell.Y) - bottom_edge;
-						cell.X -= adjust;
-						cell.Y -= adjust;
-					}
+				int sum = cell.X + cell.Y;
+				if (sum > bottom_edge) {
+					adjust = sum - bottom_edge;
+					cell.X -= adjust;
+					cell.Y -= adjust;
+				}
 
-					Coord coord = Map[cell].Cell_Coord();
-					Map.Set_Tactical_Position(coord);
-					Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
+				Coord coord = Map[cell].Cell_Coord();
+				TacticalMap->Set_Tactical_Position(coord); // RA2
+				Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
+				if (DepthBuffer) {
+					DepthBuffer->Set_Scroll(ZBUFFER_MAX); // RA2
 				}
 			}
 		}
 	}
+finish_input:
 	GadgetClass::Action(0, key);
 	return(true);
 }
@@ -748,14 +993,14 @@ bool RadarClass::Cell_On_Radar(Cell const & cell)
 void RadarClass::Draw_Names(void)
 {
 	int c_idx;
-	HousesType house;
+	int house;
 	HouseClass * ptr;
 	int y;
-	char txt[40];
-	HousesType h;
+	wchar_t txt[40];
+	int h;
 	int kills;
 	ColorScheme * color;
-	TextPrintType style;
+	int style;
 
 	/*
 	**	Do nothing if the sidebar isn't there
@@ -764,18 +1009,18 @@ void RadarClass::Draw_Names(void)
 		return;
 	}
 
-	Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 40, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
+	Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 32, Point2D(RadX, RadWidth), SidebarSurface->Get_Rect());
 
-	y = RadY + RadOffY+(2);
+	y = RadOffX + 2;
 
-	Fancy_Text_Print(TXT_NAME_COLON, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX, y), Fetch_Scheme_By_Name(DEFAULT_GADGET_SCHEME), TBLACK, TextPrintType(TPF_EFNT | TPF_NOSHADOW));
-	Fancy_Text_Print(TXT_KILLS_COLON, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX + RadIWidth - 2, y), Fetch_Scheme_By_Name(DEFAULT_GADGET_SCHEME), TBLACK, TextPrintType(TPF_RIGHT | TPF_EFNT | TPF_NOSHADOW));
-	y += 6+1;
+	Fancy_Text_Print(StringTable::LoadString("TXT_NAME_COLON", NULL, RA2_SOURCE, 1217), *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadHeight, y), Fetch_Scheme_By_Name("Grey", 1), 0, TextPrintType(0x19));
+	Fancy_Text_Print(StringTable::LoadString("TXT_KILLS_COLON", NULL, RA2_SOURCE, 1219), *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadOffY + RadHeight - 2, y), Fetch_Scheme_By_Name("Grey", 1), 0, TextPrintType(0x219));
+	y += 7;
 
-	SidebarSurface->Draw_Line(Point2D(RadX + RadOffX, y), Point2D(RadX + RadOffX + RadIWidth - 1, y), SidebarDrawer->Convert_Pixel(LTGREY));
-	y += 2*2/*RESFACTOR*/;
+	SidebarSurface->Draw_Line(Point2D(RadHeight, y), Point2D(RadOffY + RadHeight - 1, y), SidebarDrawer->Convert_Pixel(14));
+	y += 4;
 
-	for (house = HOUSE_FIRST; house < Houses.Count(); house++) {
+	for (house = 0; house < Houses.Count(); house++) {
 		ptr = Houses[house];
 
 		if (!ptr || !ptr->Class->IsMultiplay) continue;
@@ -786,42 +1031,41 @@ void RadarClass::Draw_Names(void)
 		c_idx = ptr->Scheme;
 
 		if (ptr->IsDefeated) {
-			color = Fetch_Scheme_By_Name(DEFAULT_GADGET_SCHEME);
-			style = TextPrintType(TPF_EFNT | TPF_NOSHADOW);
+			color = Fetch_Scheme_By_Name("Grey", 1);
+			style = 0x19;
 		} else {
 			color = ColorSchemes[c_idx];
-			style = TextPrintType(TPF_EFNT | TPF_USE_GRAD_PAL | TPF_NOSHADOW);
+			style = 0x4019;
 		}
 
 		/*
 		**	Initialize our message
 		*/
 		txt[0] = 0;
-		sprintf(txt, "%s", (char const *)ptr->IniName);
+		swprintf(txt, L"%s", ptr->UIName);
 
-		if (strlen(txt) == 0) {
-			strcpy(txt,"________");
+		if (wcslen(txt) == 0) {
+			wcscpy(txt, L"________");
 		}
 
 		/*
 		**	Print the player name, and the # of kills
 		*/
-		if (strlen(txt) > 18) {
+		if (wcslen(txt) > 18) {
 			txt[18] = '.';
-			txt[19] = '\0';
+			txt[19] = 0;
 		}
-		Fancy_Text_Print(txt, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX, y), color, TBLACK, style);
+		Fancy_Text_Print(txt, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadHeight, y), color, 0, TextPrintType(style));
 
 		kills = 0;
-		for (h = HOUSE_FIRST; h < ARRAY_SIZE(ptr->UnitsKilled); h++) {
+		for (h = 0; h < 20; h++) {
 			kills += ptr->UnitsKilled[h];
 			kills += ptr->BuildingsKilled[h];
 		}
-		sprintf(txt, "%2d", kills);
-		Fancy_Text_Print(txt, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadX + RadOffX + RadIWidth - 2, y), color, TBLACK, TextPrintType(style | TPF_RIGHT));
+		swprintf(txt, L"%2d", kills);
+		Fancy_Text_Print(txt, *SidebarSurface, SidebarSurface->Get_Rect(), Point2D(RadOffY + RadHeight - 2, y), color, 0, TextPrintType(style | 0x200));
 
-		y += 8+1;
-
+		y += 9;
 	}
 }
 
@@ -834,8 +1078,42 @@ void RadarClass::Draw_Names(void)
 void RadarClass::Reposition_Sidebar(void)
 {
 	BASECLASS::Reposition_Sidebar();
-	RadarButton.Set_Position(RadX + (Options.IsSidebarOnRight ? TacticalRect.Width : 0), RadY);
+
+	int offset = Options.IsSidebarOnRight ? TacticalRect.Width : 0; // RA2
+
+	BriefingButton.DrawOffsetX = -offset;
+	BriefingButton.Set_Position(BriefingButtonRect.X + offset, BriefingButtonRect.Y);
+	BriefingButton.Flag_To_Redraw();
+
+	OptionsButton.DrawOffsetX = -offset;
+	OptionsButton.Set_Position(OptionsButtonRect.X + offset, OptionsButtonRect.Y);
+	OptionsButton.Flag_To_Redraw();
+
+	RadarButton.Set_Position(RadHeight + offset, RadOffX);
 	RadarButton.Flag_To_Redraw();
+
+	ToolTip tip;
+	tip.ID = 242;
+	tip.Text = (int)"Tip:BriefingButton";
+	if (Session.Type != GAME_NORMAL) {
+		tip.Text = (int)"Tip:DiplomacyButton";
+	}
+	tip.Region.X = BriefingButton.X;
+	tip.Region.Y = BriefingButton.Y;
+	tip.Region.Width = BriefingButton.Width;
+	tip.Region.Height = BriefingButton.Height;
+	ToolTips->Remove(242);
+	ToolTips->Add(&tip);
+
+	tip.ID = 243;
+	tip.Text = (int)"Tip:OptionsButton";
+	tip.Region.X = OptionsButton.X;
+	tip.Region.Y = OptionsButton.Y;
+	tip.Region.Width = OptionsButton.Width;
+	tip.Region.Height = OptionsButton.Height;
+	ToolTips->Remove(243);
+	ToolTips->Add(&tip);
+
 	FullRedraw = true;
 }
 
@@ -930,12 +1208,12 @@ void RadarClass::Compute_Radar_Image(void)
 	RadarRect.Width = BackgroundSurface->Get_Width();
 	RadarRect.Height = BackgroundSurface->Get_Height();
 
-	RadarRect.X = RadX + RadOffX;
+	RadarRect.X = RadHeight;
 	if (RadarRect.Width < 140) {
 		RadarRect.X += (140 - RadarRect.Width) / 2;
 	}
 
-	RadarRect.Y = RadY + RadOffY;
+	RadarRect.Y = RadOffX;
 	if (RadarRect.Height < 108) {
 		RadarRect.Y += (108 - RadarRect.Height) / 2;
 	}
@@ -964,137 +1242,77 @@ void RadarClass::Compute_Radar_Image(void)
 /// widened to cover the entire map.</param>
 /// <param name="fill_in">Should the background colors be gathered from the map first?</param>
 /// <returns>Returns with the region of the radar surface that was rewritten.</returns>
+static inline void Radar_Pixel_Bounds(Rect const &rect, float zoom, int width, int height,
+                                     int &left, int &right, int &top, int &bottom)
+{
+	left = (int)(rect.X * zoom);
+	right = MIN((int)((rect.X + rect.Width) * zoom) + 1, width);
+	top = (int)(rect.Y * zoom);
+	bottom = MIN((int)((rect.Y + rect.Height) * zoom) + 1, height);
+}
+
 Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, bool fill_in)
 {
 	if (fill_in && !update_rect.Is_Valid()) {
-
-		/*
-		 * If we need to fill in the colors and the update rect is invalid, fill in the entire map.
-		 */
 		update_rect = cell_rect;
 	}
-
 	if (BackgroundColors == NULL) {
-
-		/*
-		 * Allocate and initialize the background color array.
-		 */
 		BackgroundColors = new RGBClass[cell_rect.Height * cell_rect.Width];
-		memset(BackgroundColors, 0, cell_rect.Height * cell_rect.Width * sizeof(RGBClass));	/// Redundant; the array elements are already cleared by their constructor.
+		memset(BackgroundColors, 0, cell_rect.Height * cell_rect.Width * sizeof(RGBClass));
 		RadarCellWidth = cell_rect.Width;
 		RadarCellHeight = cell_rect.Height;
 	}
-
 	if (fill_in) {
-
-		/*
-		 * Fill in the background colors for the specified update rectangle.
-		 */
 		Fill_In_Background(cell_rect, update_rect);
 	}
 
-	int rect1_width = cell_rect.Width;
+	int cell_width = cell_rect.Width;
 	float zoom_scale = ZoomFactor;
 	int surface_width;
 	int surface_height;
-
 	if (BackgroundSurface == NULL) {
-
-		/*
-		 * If the drawing surface does not exist, calculate zoom and surface size.
-		 */
-		zoom_scale = 140 / (float)rect1_width;
+		zoom_scale = 140 / (float)cell_width;
 		float scaled_height = cell_rect.Height * zoom_scale;
 		if (scaled_height < 108) {
-
-			/*
-			 * Height fits within limit.
-			 */
 			surface_width = 140;
 			surface_height = scaled_height;
 		} else {
-
-			/*
-			 * Otherwise scale to fit height and adjust width.
-			 */
 			zoom_scale = 108 / (float)cell_rect.Height;
-			float scaled_width = rect1_width * zoom_scale;
+			float scaled_width = cell_width * zoom_scale;
 			surface_width = scaled_width;
 			surface_height = 108;
 		}
 		ZoomFactor = zoom_scale;
-
-		/*
-		 * Create the radar drawing surface with calculated dimensions.
-		 */
 		BackgroundSurface = new BSurface(surface_width, surface_height, 2);
 		BackgroundSurface->Fill(TBLACK);
 	} else {
-
-		/*
-		 * If surface already exists, use its current dimensions.
-		 */
 		surface_width = BackgroundSurface->Get_Width();
 		surface_height = BackgroundSurface->Get_Height();
 	}
 
-	/*
-	 * Compute scaling ratios from cell space to surface space.
-	 */
 	float pixels_per_cell_x = (float)cell_rect.Width / (float)surface_width;
 	float pixels_per_cell_y = (float)cell_rect.Height / (float)surface_height;
 	float inv_area = 1.0 / (pixels_per_cell_x * pixels_per_cell_y);
-
 	unsigned short *data = (unsigned short *)BackgroundSurface->Lock();
-
-	/*
-	 * Calculate the pixel rectangle on the surface corresponding to the update rectangle.
-	 */
-	int surf_left = (int)(update_rect.X * zoom_scale);
-	int surf_right = (int)((update_rect.X + update_rect.Width) * zoom_scale);
-	surf_right = min(surf_right + 1, surface_width);
-
-	int surf_top = (int)(update_rect.Y * zoom_scale);
-	int surf_bottom = (int)((update_rect.Y + update_rect.Height) * zoom_scale);
-	surf_bottom = min(surf_bottom + 1, surface_height);
-
+	int surf_left, surf_right, surf_top, surf_bottom;
+	Radar_Pixel_Bounds(update_rect, zoom_scale, surface_width, surface_height, surf_left, surf_right, surf_top, surf_bottom);
 	float src_x = surf_left / zoom_scale;
 	float src_y = surf_top / zoom_scale;
-
 	if (surf_top < surf_bottom) {
-
-		unsigned short *row_data = data + surf_left + surface_width * surf_top;
 		for (int surfy = surf_top; surfy < surf_bottom; ++surfy) {
-
-			/*
-			 * Compute vertical source range for this surface row.
-			 */
 			int src_y_min = MIN(RadarCellHeight, (int)src_y);
 			float src_y_end = src_y + pixels_per_cell_y;
 			int src_y_max = MIN(RadarCellHeight, (int)src_y_end + 1);
-
 			if (surf_left < surf_right) {
-
-				unsigned short *pixel_data = row_data;
-
+				unsigned short *pixel_data = data + surf_left + surface_width * surfy;
 				for (int surfx = surf_left; surfx < surf_right; ++surfx) {
-
-					/*
-					 * Accumulate RGB values for the surface pixel.
-					 */
 					float accum_r = 0.0f;
 					float accum_g = 0.0f;
 					float accum_b = 0.0f;
-
 					int src_x_min = MIN(RadarCellWidth, (int)src_x);
 					float src_x_end = src_x + pixels_per_cell_x;
 					int src_x_max = MIN(RadarCellWidth, (int)src_x_end + 1);
-
 					for (int srcy = src_y_min; srcy < src_y_max; ++srcy) {
-
-						/*
-						 * Compute vertical weighting for partial pixels.
-						 */
 						float y_weight;
 						if (src_y_max - src_y_min <= 1) {
 							y_weight = pixels_per_cell_y;
@@ -1105,14 +1323,8 @@ Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, 
 						} else {
 							y_weight = 1.0f;
 						}
-
-						int idx = src_x_min + srcy * rect1_width;
-
+						int idx = src_x_min + srcy * cell_width;
 						for (int srcx = src_x_min; srcx < src_x_max; ++srcx, ++idx) {
-
-							/*
-							 * Compute horizontal weighting for partial pixels.
-							 */
 							float x_weight;
 							if (src_x_max - src_x_min <= 1) {
 								x_weight = pixels_per_cell_x;
@@ -1123,12 +1335,7 @@ Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, 
 							} else {
 								x_weight = 1.0f;
 							}
-
 							float weight = x_weight * y_weight * inv_area;
-
-							/*
-							 * Add weighted contribution of the source cell color.
-							 */
 							if (idx < RadarCellHeight * RadarCellWidth) {
 								RGBClass &color = BackgroundColors[idx];
 								accum_r += (float)color.Get_Red() * weight;
@@ -1137,36 +1344,26 @@ Rect RadarClass::Compute_Background(Rect const & cell_rect, Rect & update_rect, 
 							}
 						}
 					}
-
-					/*
-					 * Clamp final color values to 0-255 and write to surface.
-					 */
-					*pixel_data++ = DSurface::Build_Hicolor_Pixel(MIN(255, (int)(accum_r + 0.5)), MIN(255, (int)(accum_g + 0.5)), MIN(255, (int)(accum_b + 0.5)));
+					*pixel_data++ = DSurface::Build_Hicolor_Pixel(
+						MIN(255, (int)(accum_r + 0.5)),
+						MIN(255, (int)(accum_g + 0.5)),
+						MIN(255, (int)(accum_b + 0.5)));
 					src_x = src_x_end;
 				}
 			}
-
 			src_x = surf_left / zoom_scale;
 			src_y = src_y_end;
-			row_data += surface_width;
 		}
 	}
 
 	BackgroundSurface->Unlock();
-
-	/*
-	 * Initialize pixel redraw flags if not already done.
-	 */
 	int pixel_count = (surface_width * surface_height) / 8 + 1;
 	if (PixelFlags == NULL) {
 		PixelFlags = new unsigned char[pixel_count];
 		memset(PixelFlags, 0, pixel_count);
 	}
-
-	/*
-	 * Return the rectangle of the surface that was updated.
-	 */
-	return(Rect(surf_left, surf_top, surf_right - surf_left, surf_bottom - surf_top));
+	Rect result(surf_left, surf_top, surf_right - surf_left, surf_bottom - surf_top);
+	return result;
 }
 
 
@@ -1306,14 +1503,15 @@ void RadarClass::Plot_Radar_Background(void)
 			Rect update_rect = Cell_Radar_Rect(cell);
 
 			int x = update_rect.X;
-			update_rect = Intersect(update_rect, Rect(0, 0, RadarCellWidth, RadarCellHeight));
+			Rect bounds(0, 0, RadarCellWidth, RadarCellHeight);
+			update_rect = Intersect(update_rect, bounds);
 
 			if (update_rect.Is_Valid()) {
 				RGBClass low(0, 0, 0);
 				RGBClass high(0, 0, 0);
 
 				CellClass * cptr = &Map[cell];
-				int idx = update_rect.X + update_rect.Y * RadarCellWidth;
+				int idx = update_rect.X + RadarCellWidth * update_rect.Y;
 				cptr->Cell_Color(low, high);
 
 				if (x == 0 && update_rect.Width == 1) {
@@ -1387,10 +1585,12 @@ void RadarClass::Radar_Track(TechnoClass * techno, Point2D point)
 /// <param name="point">The radar pixel the object was being tracked at.</param>
 void RadarClass::Radar_Untrack(TechnoClass * techno, Point2D point)
 {
-	RadarTrackingStruct track;
-	track.Object = techno;
-	track.Position = point;
-	if (RadarTrackingTable->Remove_Object(track, techno)) {
+	RADAR_HASH_TABLE::BucketType * bucket = &RadarTrackingTable->Buckets[RadarTrackingStruct(techno, point.X, point.Y).Hash()];
+	RADAR_HASH_TABLE::ObjectType track;
+	track.Key.Position = point;
+	track.Key.Object = techno;
+	track.Value = techno;
+	if (bucket->Delete(track)) {
 		Radar_Pixel(point);
 		IsToRedraw = true;
 	}
@@ -1519,7 +1719,8 @@ void RadarClass::Post_Load_Radar_Fixup(void)
 	}
 	if (RadarMode == RMODE_MOVIE) {
 		RadarState = RSTATE_MOVIE_DONE;
-		Radar_Activate(SuspendedRadarMode);
+		Radar_Activate(SuspendedRadarMode, false);
+		Set_Frame_Rate_Limit(Rule->DetailMinFrameRateNormal);
 	}
 }
 
@@ -1550,60 +1751,53 @@ void RadarClass::Post_Load_Radar_Fixup(void)
  *=============================================================================================*/
 void RadarClass::Plot_Radar_Pixel(Point2D const & point)
 {
-	if (PlayerPtr != NULL && RadarSurface->Get_Rect().Is_Point_Within(point)) {
-
-		Coord coord = Radar_Pixel_To_Cell(point);
-		coord.Z = Map.Get_Height_GL(coord);
-		bool shadow	= (MainWindow && Map.Is_Shrouded(coord));
-
-		RadarTrackingStruct track;
-		track.Position = point;
-		track.Object = 0;
-
-		TechnoClass *tech = NULL;
-
-		RADAR_HASH_TABLE::BucketType &bucket = RadarTrackingTable->Buckets[track.Hash()];
-		int count = bucket.Count();
-		RADAR_HASH_TABLE::ObjectType *ptr = &bucket[0];
-
-		for (int index = 0; index < count; index++) {
-			TechnoClass *candidate = ptr[index].Key.Object;
-			if (ptr[index].Key == track) {
-				tech = candidate;
-				break;
-			}
-		}
-
-		if (tech != NULL) {
-			HouseClass *house = tech->House;
-
-			if (tech->RTTI == RTTI_INFANTRY) {
-				InfantryClass *inf = ((InfantryClass *)tech);
-				if (inf->Class->IsDisguised) {
-					house = (HouseClass *)PlayerPtr;
-				}
-			}
-
-			int color = DSurface::Build_Hicolor_Pixel(house->RemapColorRGB.Get_Red(), house->RemapColorRGB.Get_Green(), house->RemapColorRGB.Get_Blue());
-
-			int v = tech->RadarFlashTimer;
-			if (v > 0 && (v - 1) / Rule->FlashFrameTime % 2 == 1 && tech->House == PlayerPtr) {
-				RadarSurface->Put_Pixel(point, ~color);
-			} else {
-				RadarSurface->Put_Pixel(point, color);
-			}
-
-		} else {
-
-			if (!shadow) {
-				RadarSurface->Put_Pixel(point, BackgroundSurface->Get_Pixel(point));
-			} else {
-				RadarSurface->Put_Pixel(point, 0);
-			}
-		}
-
-		LastDrawRect = Union(LastDrawRect, Rect(point, 1, 1) + RadarRect.Top_Left());
+	if (PlayerPtr == NULL || !RadarSurface->Get_Rect().Is_Point_Within(point)) {
+		return;
 	}
+
+	Coord coord = Radar_Pixel_To_Cell(point);
+	coord.Z = Map.Get_Height_GL(coord);
+	bool shadow = MainWindow && Map.Is_Shrouded(coord);
+	bool fog = MainWindow && Map.Is_Under_Fog(coord); // RA2
+
+	int hash = (point.X - 5 * point.Y) & 0xFF;
+	RADAR_HASH_TABLE::BucketType & bucket = RadarTrackingTable->Buckets[hash];
+	int count = bucket.Count();
+	RADAR_HASH_TABLE::ObjectType * entries = &bucket[0];
+	TechnoClass * techno = NULL;
+	for (int index = 0; index < count; ++index) {
+		RadarTrackingStruct & track = entries[index].Key;
+		TechnoClass * candidate = track.Object;
+		if (track.Position != point) continue;
+		if (shadow && !candidate->House->Is_Player_Control()) continue;
+		if (candidate->Techno_Type_Class()->IsStealthy && !PlayerPtr->Is_Ally(candidate)) continue;
+
+		techno = candidate;
+		break;
+	}
+
+	if (techno != NULL) {
+		HouseClass * house = techno->House;
+		if (techno->IsDisguised()) {
+			house = techno->GetDisguiseHouse(false);
+		}
+		int color = house ? DSurface::Build_Hicolor_Pixel(house->RemapColorRGB) : Fetch_Scheme_By_Name("LightGrey", 1)->Bright;
+		int flash = techno->RadarFlashTimer;
+		if (flash > 0 && (flash - 1) / Rule->FlashFrameTime % 2 == 1 && techno->House == PlayerPtr) {
+			RadarSurface->Put_Pixel(point, ~color);
+		} else {
+			RadarSurface->Put_Pixel(point, color);
+		}
+	} else if (fog) {
+		RGBClass rgb = DSurface::Deconstruct_Hicolor_Pixel(BackgroundSurface->Get_Pixel(point));
+		RadarSurface->Put_Pixel(point, DSurface::Build_Hicolor_Pixel(rgb.Get_Red() / 2, rgb.Get_Green() / 2, rgb.Get_Blue() / 2));
+	} else if (!shadow) {
+		RadarSurface->Put_Pixel(point, BackgroundSurface->Get_Pixel(point));
+	} else {
+		RadarSurface->Put_Pixel(point, 0);
+	}
+
+	LastDrawRect = Union(LastDrawRect, Rect(point, 1, 1) + RadarRect.Top_Left());
 }
 
 
@@ -1639,10 +1833,11 @@ void RadarClass::Render_Tracked_Objects(void)
 
 				ColorScheme *scheme = ColorSchemes[tech->House->Scheme];
 
-				if (tech->RTTI == RTTI_INFANTRY) {
-					InfantryClass *inf = (InfantryClass *)tech;
-					if (inf->Class->IsDisguised) {
-						scheme = ColorSchemes[PlayerPtr->Scheme];
+				if (tech->IsDisguised()) { // RA2
+					if (tech->GetDisguiseHouse(false) != NULL) {
+						scheme = ColorSchemes[tech->GetDisguiseHouse(false)->Scheme];
+					} else {
+						scheme = Fetch_Scheme_By_Name("LightGrey", 1);
 					}
 				}
 
@@ -1831,16 +2026,19 @@ void RadarClass::Radar_Cell(Cell const & cell)
 void RadarClass::Resolve_Radar_Point(Point2D const & point, Cell & cell, ObjectClass *& object)
 {
 	Point2D pt = point - RadarRect.TopLeft;
-
 	RadarTrackingStruct track;
-	track.Object = NULL;
 	track.Position = pt;
 
-	/*
-	 * The lookup key carries no object, so Get matches on position alone (via the
-	 * non-const, position-only RadarTrackingStruct::operator==).
-	 */
-	RadarTrackingTable->Get(track, (TechnoClass *&)object);
+	RADAR_HASH_TABLE::BucketType & bucket = RadarTrackingTable->Buckets[track.Hash()];
+	int count = bucket.Count();
+	object = NULL;
+	for (int index = count - 1; index >= 0; --index) {
+		RadarTrackingStruct entry = bucket[index].Key;
+		if (entry == track) {
+			object = entry.Object;
+			break;
+		}
+	}
 
 	if (object != NULL) {
 		cell = object->Destination_Coord();
@@ -1868,6 +2066,8 @@ HRESULT RadarClass::Load(IStream * stream)
 		if (FAILED(result)) {
 			return(result);
 		}
+
+		MovieSound.Init();
 
 		new (&PixelStack) FOUNDATION_LIST;
 
@@ -1900,6 +2100,24 @@ HRESULT RadarClass::Load(IStream * stream)
 			new (&Foundation[i]) FOUNDATION_LIST;
 		}
 
+		result = stream->Read(&RadarMode, sizeof(RadarMode), NULL);
+		if (FAILED(result)) {
+			return(result);
+		}
+		result = stream->Read(&RadarState, sizeof(RadarState), NULL);
+		if (FAILED(result)) {
+			return(result);
+		}
+		result = stream->Read(&SuspendedRadarMode, sizeof(SuspendedRadarMode), NULL);
+		if (FAILED(result)) {
+			return(result);
+		}
+		result = stream->Read(&TransmissionState, sizeof(TransmissionState), NULL);
+		if (FAILED(result)) {
+			return(result);
+		}
+
+		MovieSound.Init();
 		result = S_OK;
 	}
 	return(result);
@@ -1913,7 +2131,7 @@ HRESULT RadarClass::Load(IStream * stream)
 /// </summary>
 /// <returns>Returns with S_OK if the radar was written, otherwise the failing stream
 /// result.</returns>
-HRESULT RadarClass::Save(IStream *stream)
+HRESULT RadarClass::Save(IStream * stream)
 {
 	int i;
 
@@ -1945,7 +2163,20 @@ HRESULT RadarClass::Save(IStream *stream)
 			}
 		}
 
-		result = S_OK;
+		result = stream->Write(&RadarMode, sizeof(RadarMode), NULL);
+		if (FAILED(result)) {
+			return(result);
+		}
+		result = stream->Write(&RadarState, sizeof(RadarState), NULL);
+		if (FAILED(result)) {
+			return(result);
+		}
+		result = stream->Write(&SuspendedRadarMode, sizeof(SuspendedRadarMode), NULL);
+		if (FAILED(result)) {
+			return(result);
+		}
+		result = stream->Write(&TransmissionState, sizeof(TransmissionState), NULL);
+		return(SUCCEEDED(result) ? S_OK : result);
 	}
 	return(result);
 }
@@ -1958,19 +2189,26 @@ HRESULT RadarClass::Save(IStream *stream)
 /// the way.
 /// </summary>
 /// <param name="on">Should the radar display be brought up?</param>
-void RadarClass::Set_Radar_State(bool on)
+void RadarClass::Set_Radar_State(bool on, bool sound)
 {
 	if (on == true) {
 		if (RadarState == RSTATE_INACTIVE || RadarState == RSTATE_DEACTIVATING) {
 			RadarState = RSTATE_ACTIVATING;
-			Sound_Effect(Rule->RadarOn);
+			MovieSound.EndLooping();
+			if (sound) {
+				VocClass::PlayGlobal(Rule->RadarOn, 1.0f, 0x2000);
+			}
 			DebugString("Radar: ACTIVATING\n");
 		}
 	} else {
+		MovieSound.EndLooping();
 		RadarState = RSTATE_DEACTIVATING;
-		Sound_Effect(Rule->RadarOff);
+		if (sound) {
+			VocClass::PlayGlobal(Rule->RadarOff, 1.0f, 0x2000);
+		}
 		DebugString("Radar: DEACTIVING\n");
 	}
+	RadarAnimFrame = RadarAnimFrame;
 }
 
 
@@ -2014,42 +2252,39 @@ bool RadarClass::Is_Radar_Active(void)
  * HISTORY:                                                                                    *
  *   12/11/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void RadarClass::Radar_Activate(int control)
+void RadarClass::Radar_Activate(int control, bool sound)
 {
+	if (Session.Type != GAME_NORMAL && PlayerPtr->IsDefeated && MuteSWLaunches) {
+		control = 1;
+	}
 	if (RadarMode == control) {
 		return;
 	}
-
-	if (RadarMode == RMODE_MOVIE && RadarState != RSTATE_MOVIE_DONE) {
-		SuspendedRadarMode = control;
-		return;
+	if (RadarMode == RMODE_MOVIE || (RadarMode == RMODE_4 && control != RMODE_MOVIE)) {
+		if (RadarState != RSTATE_MOVIE_DONE) {
+			SuspendedRadarMode = control;
+			return;
+		}
 	}
-
 	switch (control) {
-
-		/*
-		**	Turn the radar map off properly.
-		*/
 		case 0:
-			Set_Radar_State(false);
+			Set_Radar_State(false, RadarMode == RMODE_TACTICAL);
 			break;
-
 		case 1:
-			if ((RadarState == RSTATE_ACTIVE || RadarState == RSTATE_MOVIE_DONE) && DoesRadarExist == true) {
+			if ((RadarState == RSTATE_ACTIVE || RadarState == RSTATE_MOVIE_DONE) && Is_Radar_Existing() == true) {
 				Queue_Next_Movie();
 				break;
 			}
-
-			Set_Radar_State(DoesRadarExist);
+			Set_Radar_State(Is_Radar_Existing(), sound);
 			break;
-
+		case 4:
+			break;
 		default:
 			if (RadarState == RSTATE_ACTIVE || RadarState == RSTATE_MOVIE_DONE) {
 				Queue_Next_Movie();
 				break;
 			}
-
-			Set_Radar_State(true);
+			Set_Radar_State(true, false);
 			break;
 	}
 	RadarMode = control;
@@ -2096,15 +2331,13 @@ bool RadarClass::Is_Radar_Existing(void)
 void RadarClass::Toggle_Radar(bool on)
 {
 	if (DoesRadarExist != on) {
-
 		DoesRadarExist = on;
 		char const * txt = on ? "on" : "off";
 		DebugString("Radar: TacticalMap availability is %s\n", txt);
-
 		if (RadarMode == RMODE_TACTICAL) {
-			Set_Radar_State(on);
+			Set_Radar_State(on, true);
 		} else {
-			Radar_Activate(1);
+			Radar_Activate(1, true);
 		}
 	}
 }
@@ -2181,7 +2414,7 @@ void RadarClass::Render_Radar(void)
 		OldRadarViewRect = RadarViewRect;
 	}
 
-	if (IsToRedraw || OldRadarViewRect != RadarViewRect || !No_Radar_Events_Submitted() || PixelStack.Count() > 0 || BackgroundStack.Count() > 0) {
+	if (IsToRedraw || OldRadarViewRect != RadarViewRect || !No_Radar_Events_Submitted() || PixelStack.Count() > 0 || BackgroundStack.Count() > 0 || BeaconManager.Is_Flashing()) {
 		if (is_tactical) {
 			IsToRedraw = false;
 		}
@@ -2237,6 +2470,7 @@ void RadarClass::Render_Radar(void)
 		PixelStack.Clear();
 
 		RadarEventClass::Draw_Events();
+		BeaconManager.Draw_On_Radar(RadarSurface, RadarSurface->Get_Rect()); // RA2
 
 		if (is_tactical) {
 			if (FullRedraw) {
@@ -2248,10 +2482,9 @@ void RadarClass::Render_Radar(void)
 				SidebarSurface->Blit_From(LastDrawRect, *RadarSurface, LastDrawRect - RadarRect.TopLeft);
 			}
 
-			SidebarSurface->Draw_Rect(RadarViewRect, DSurface::Build_Hicolor_Pixel(255, 255, 255));
-			Rect r = RadarRect;
-			Rect rr = Rect(r.X - 1, r.Y - 1, r.Width + 2, r.Height + 2);
-			SidebarSurface->Draw_Rect(rr, DSurface::Build_Hicolor_Pixel(255, 255, 255));
+			SidebarSurface->Draw_Rect(RadarViewRect, RadPHeight); // RA2: the tooltip colour, packed by Init_For_House
+			Rect rr = Rect(RadarRect.X - 1, RadarRect.Y - 1, RadarRect.Width + 2, RadarRect.Height + 2);
+			SidebarSurface->Draw_Rect(rr, RadPHeight);
 		}
 
 		if (moved) {
@@ -2273,6 +2506,46 @@ void RadarClass::Render_Radar(void)
 
 
 /// <summary>
+/// Steps the incoming transmission that introduces a radar movie.
+/// The EVA announcement plays first. Once it is done, and the other sound has faded, the
+/// radar switches over to movie mode.
+/// </summary>
+void RadarClass::Update_Transmission(void) // RA2
+{
+	switch (TransmissionState) {
+		case 0:
+			Flush_Speech();
+			Queue_Speech(TransmissionVoice, 0, 3);
+			Add_Speech_Hold();
+			TransmissionState = 1;
+			break;
+
+		case 1:
+			if (Is_Speech_Finished(TransmissionVoice)) {
+				if (IngameVQ.Count()) {
+					AudioStreamerFadeOutAllStreams();
+				}
+				TransmissionState = 2;
+			}
+			break;
+
+		case 2:
+			if (IngameVQ.Count() == 0 || AudioStreamerAllFaded()) {
+				if (IngameVQ.Count()) {
+					Remove_Speech_Hold();
+					Pause_Game_Audio();
+				}
+				Radar_Activate(RMODE_MOVIE, false);
+				MovieSound.EndLooping();
+				MovieSound.SetEvent((AudioEvent *)VocClass::PlayGlobal(Rule->MovieOn, 1.0f, 0x2000), NULL);
+				Set_Frame_Rate_Limit(Rule->DetailMinFrameRateMovie);
+			}
+			break;
+	}
+}
+
+
+/// <summary>
 /// Handles the movie playing in the radar pane.
 /// This routine ducks the game volume for the duration, advances the current in-game VQA by
 /// one frame, and moves on to the next queued movie. Once the queue drains, the volume is
@@ -2282,55 +2555,74 @@ void RadarClass::Render_Radar(void)
 /// mode.</remarks>
 void RadarClass::Play_Movie(void)
 {
-	static int prev_volume = 0;
-	static bool needs_volume_adjustment = true;
+	MovieHandle * movie = NULL;
+	bool hold = false;
+	bool has = IngameVQ.Count() > 0;
+	bool finished;
 
-	VQHandle * handle = NULL;
-
-	if (needs_volume_adjustment == true && !Is_Speaking()) {
-		prev_volume = Audio.Adjust_Volume_All(50);
-		needs_volume_adjustment = false;
+	if (!IsMoviePlaying && has) {
+		Is_Speaking();
 	}
 
-	if (FullRedraw == true) {
-		Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, MAX_RADAR_FRAMES, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
-		LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
+	if (FullRedraw == true && !IsMoviePlaying) {
+		Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 32, Point2D(RadX, RadWidth), SidebarSurface->Get_Rect());
+		LastDrawRect = Rect(RadX, RadWidth, SidebarWidth, 110);
 		DebugString("Radar: Movie full redrawn\n");
 	}
 
-	if (!needs_volume_adjustment && IngameVQ.Count() > 0) {
-		handle = IngameVQ[0];
-		if (handle != NULL && handle->IsInitialized == true) {
-			if (!handle->VQA->Is_Paused()) {
-				if (Movie_Advance_Frame(handle, needs_volume_adjustment) == true) {
-					LastDrawRect = Rect(RadX, RadY, RadWidth, RadHeight);
-				}
-			} else {
-				DebugString("Radar: Movie paused\n");
+	if (has) {
+		if (IngameVQ.Count() > 0 && (movie = IngameVQ[0]) != NULL) {
+			if (movie->AdvanceFrame() == true) {
+				LastDrawRect = Rect(RadX, RadWidth, SidebarWidth, 110);
 			}
+			finished = movie->FramesLeft();
+			hold = movie->State;
 		} else {
-			needs_volume_adjustment = true;
+			finished = true;
 		}
+	} else {
+		finished = false;
 	}
 
-	if (handle && needs_volume_adjustment == true) {
-		Movie_Destroy(handle);
-		IngameVQ.Delete(handle);
-		delete handle;
-
-		if (IngameVQ.Count() == 0) {
-			DebugString("Radar: Movie done.\n");
-			Audio.Set_Volume_All(prev_volume);
-			RadarState = RSTATE_MOVIE_DONE;
-			Radar_Activate(SuspendedRadarMode);
-		} else {
+	if (finished == true) {
+		if (movie != NULL) {
+			IngameVQ.Delete(movie);
+			delete movie;
+		}
+		has = IngameVQ.Count() != 0;
+		if (has) {
 			DebugString("Radar: Next movie.\n");
+			MovieSound.EndLooping();
+			MovieSound.SetEvent((AudioEvent *)VocClass::PlayGlobal(Rule->MovieOn, 1.0f, 0x2000), NULL);
 			RadarState = RSTATE_NEXT_MOVIE;
-			RadarAnimFrame = 25;
-			needs_volume_adjustment = false;
+			RadarAnimFrame = RADAR_ACTIVATED_FRAME;
 		}
 	}
+
 	IsToRedraw = false;
+
+	if (!has) {
+		DebugString("Radar: Movie done.\n");
+		RadarState = RSTATE_MOVIE_DONE;
+		Radar_Activate(SuspendedRadarMode, false);
+		Resume_Game_Audio();
+		hold = has;
+		MovieSound.EndLooping();
+		MovieSound.SetEvent((AudioEvent *)VocClass::PlayGlobal(Rule->MovieOff, 1.0f, 0x2000), NULL);
+		Set_Frame_Rate_Limit(Rule->DetailMinFrameRateNormal);
+		IsToRedraw = true;
+	}
+
+	IsMoviePlaying = !finished;
+	if (IsScenarioHeld != hold) {
+		if (hold) {
+			Hold_Scenario(0);
+			IsScenarioHeld = true;
+		} else {
+			Release_Scenario();
+			IsScenarioHeld = false;
+		}
+	}
 }
 
 

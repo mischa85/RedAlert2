@@ -298,6 +298,7 @@ class MapClass: public GScreenClass
 		 */
 		bool Is_Shrouded(Coord const & coord);
 		bool Is_Fogged(Coord const & coord);
+		bool Is_Under_Fog(Coord const & coord); // RA2: 0x00568280
 		void Init_Fog_System(void);
 		void Deinit_Fog_System(void);
 		void Reveal_Nearby_Technos(CellClass * cptr, HouseClass * house, bool onradar);
