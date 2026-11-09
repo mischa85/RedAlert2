@@ -5,7 +5,8 @@ unk_00401940,0x00401940,0x004019E0,unknown,code not assigned to a module
 audcache,0x004019E0,0x00402040,source,"functions compiled from src/audcache.cpp, matched, without gaps; two placed by the gap"
 audchanl,0x00402040,0x00402860,source,"functions compiled from src/audchanl.cpp, matched, without gaps"
 auddev,0x00402860,0x00403CE0,source,"functions compiled from src/auddev.cpp, matched, without gaps; six placed by the gap"
-unk_00403CE0,0x00403CE0,0x00407030,unknown,code not assigned to a module
+unk_00403CE0,0x00403CE0,0x00406AD0,unknown,code not assigned to a module
+audio,0x00406AD0,0x00407030,source,"functions compiled from src/audio.cpp, matched, without gaps; six placed by the gap"
 audlevel,0x00407030,0x004071F0,source,"functions compiled from src/audlevel.cpp, matched, without gaps"
 audlists,0x004071F0,0x00407400,source,"functions compiled from src/audlists.cpp, matched, without gaps; three placed by the gap"
 audmpool,0x00407400,0x00407480,source,"functions compiled from src/audmpool.cpp, matched, without gaps; one placed by the gap"
