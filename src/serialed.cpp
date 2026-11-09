@@ -13,14 +13,12 @@
 #include "modemreg.h"
 #include "msgbox.h"
 #include "nullmgr.h"
-#include "geometry.h"
 #include "ownrdraw.h"
 #include "trim.h"
 #include "winfix.h"
 #include "stringtable.h"
 
 #include <math.h>
-
 
 #undef Edit_SetText
 #undef Edit_GetText
@@ -37,8 +35,6 @@
 #define ListBox_FindString(h, i, s) ((int)SendMessage((h), 0x4c4, (i), (LPARAM)(s)))
 #define ComboBox_GetLBText(h, i, s) ((int)SendMessage((h), 0x4bd, (i), (LPARAM)(s)))
 
-// SYNTHETIC: GAMEMD 0x006954C0 SYMBOL
-// _$E9
 static inline int ComboBox_AddString(HWND h, const void *s) { return (int)SendMessage(h, 0x4c2, 0, (LPARAM)s); }
 #define ComboBox_FindString(h, i, s) ((int)SendMessage((h), 0x4b8, (i), (LPARAM)(s)))
 static inline int ComboBox_AddStringA(HWND h, const void *s) { return (int)SendMessage(h, 0x4bc, 0, (LPARAM)s); }
@@ -52,34 +48,6 @@ static wchar_t const *baudname[] = {
 	L"115200",
 };
 BOOL CALLBACK Com_Settings_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
-// SYNTHETIC: GAMEMD 0x006954E0 SYMBOL
-// _$E33
-// SYNTHETIC: GAMEMD 0x00695510 SYMBOL
-// _$E36
-// SYNTHETIC: GAMEMD 0x00695530 SYMBOL
-// _$E39
-// SYNTHETIC: GAMEMD 0x00695550 SYMBOL
-// _$E42
-// SYNTHETIC: GAMEMD 0x00695570 SYMBOL
-// _$E45
-// SYNTHETIC: GAMEMD 0x00695590 SYMBOL
-// _$E48
-// SYNTHETIC: GAMEMD 0x006955B0 SYMBOL
-// _$E51
-// SYNTHETIC: GAMEMD 0x006955F0 SYMBOL
-// _$E54
-// SYNTHETIC: GAMEMD 0x00695620 SYMBOL
-// _$E57
-// SYNTHETIC: GAMEMD 0x00695650 SYMBOL
-// _$E60
-// SYNTHETIC: GAMEMD 0x00695680 SYMBOL
-// _$E63
-// SYNTHETIC: GAMEMD 0x00695690 SYMBOL
-// _$E66
-// SYNTHETIC: GAMEMD 0x006956B0 SYMBOL
-// _$E69
-
-// FUNCTION: GAMEMD 0x006956D0
 bool SerialEdit::Dialog(SerialSettingsType *settings)
 {
 	RC = -1;
@@ -251,7 +219,6 @@ BOOL SerialEdit::Handle_Message(HWND window, UINT message, WPARAM wparam, LPARAM
 	return(0);
 }
 
-// FUNCTION: GAMEMD 0x00695760
 BOOL CALLBACK Com_Settings_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam)
 {
 	int rc;
@@ -265,7 +232,6 @@ BOOL CALLBACK Com_Settings_Dialog_Proc(HWND window, UINT message, WPARAM wparam,
 	return(SerialEdit::Handle_Message(window, message, wparam, lparam));
 }
 
-// FUNCTION: GAMEMD 0x00695BC0
 bool SerialEdit::Save(void)
 {
 	char * temp;
@@ -401,7 +367,6 @@ bool SerialEdit::Save(void)
 	return(false);
 }
 
-// FUNCTION: GAMEMD 0x00695FD0
 void SerialEdit::Init(SerialSettingsType *settings)
 {
 	memcpy( &TempSettings, settings, sizeof(SerialSettingsType) );
@@ -445,7 +410,6 @@ void SerialEdit::Init(SerialSettingsType *settings)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00696200
 void SerialEdit::Build_Port_Listbox(void)
 {
 	static const char *portname[] = {
@@ -543,7 +507,6 @@ void SerialEdit::Build_Port_Listbox(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x006964C0
 void SerialEdit::Build_Baud_Rate_Listbox(void)
 {
 	int i;
@@ -591,7 +554,6 @@ void SerialEdit::Build_Baud_Rate_Listbox(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00696590
 void SerialEdit::Build_Call_Wait_Listbox(void)
 {
 	int index;
@@ -609,7 +571,6 @@ void SerialEdit::Build_Call_Wait_Listbox(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00696610
 void SerialEdit::Build_Init_String_Listbox(void)
 {
 	HWND handle = GetDlgItem(_Dialog, IDC_SERIAL_INITLIST);
@@ -631,7 +592,6 @@ void SerialEdit::Build_Init_String_Listbox(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x006966D0
 void SerialEdit::Set_Dial_Method(void)
 {
 	HWND handle;
@@ -647,7 +607,6 @@ void SerialEdit::Set_Dial_Method(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00696740
 void SerialEdit::Set_String(int id)
 {
 	HWND handle = GetDlgItem(_Dialog, id);
@@ -666,7 +625,6 @@ void SerialEdit::Set_String(int id)
 	}
 }
 
-// FUNCTION: GAMEMD 0x006967B0
 void SerialEdit::Set_Port(void)
 {
 	int index;
@@ -732,7 +690,6 @@ void SerialEdit::Set_Port(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00696950
 void SerialEdit::Set_Init_String(void)
 {
 	HWND handle = GetDlgItem(_Dialog, IDC_SERIAL_CALLWAITING_EDIT);
@@ -747,7 +704,6 @@ void SerialEdit::Set_Init_String(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x006969C0
 void SerialEdit::Set_Custom_Port(int id, int port, char *str)
 {
 	int item;
@@ -770,7 +726,6 @@ void SerialEdit::Set_Custom_Port(int id, int port, char *str)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00696AE0
 void SerialEdit::Add_Init_String(void)
 {
 	int initstr_index;
@@ -801,7 +756,6 @@ void SerialEdit::Add_Init_String(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00696C40
 void SerialEdit::Delete_Init_String(void)
 {
 	int initstr_index;
