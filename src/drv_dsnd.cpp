@@ -6,8 +6,9 @@
 #include <stdlib.h>
 #include <string.h>
 #include "auddsnd.h"
+#include "dbgprint.h"
 
-namespace Game { extern HWND hWnd; }
+extern HWND MainWindow;
 
 #define vAUD_DRV_MAX_CHANNELS 100
 #define vAUD_DRV_POLL_INTERVAL (SECONDS(1) / 30)
@@ -99,7 +100,7 @@ struct AudioThread
 	DWORD id;
 };
 
-static AudioThread thread;
+static AudioThread driverThread;
 static AudioLock drv_ref;
 static CRITICAL_SECTION thread_access;
 static int thread_created;
@@ -243,7 +244,7 @@ static int AUD_create_pcm_buffer(AUD_DRV_CHAN * ci, AudioFormat * format)
 	desc.dwFlags = (DSBCAPS_CTRLVOLUME | DSBCAPS_CTRLPAN | DSBCAPS_CTRLFREQUENCY | DSBCAPS_LOCSOFTWARE);
 	ci->frame_bytes = ((pcmwf.nAvgBytesPerSec * (vAUD_DRV_POLL_INTERVAL / 10)) / (TIMER_HZ / 10)) * vAUD_DRV_OVER_SAMPLE;
 	ci->frame_bytes = ((ci->frame_bytes + 1024 - 1) / 1024) * 1024;
-	FUN_004068E0("Sound frame size = %d bytes\n", ci->frame_bytes);
+	DebugString("Sound frame size = %d bytes\n", ci->frame_bytes);
 	desc.dwBufferBytes = vAUD_DRV_FRAMES * ci->frame_bytes;
 	desc.lpwfxFormat = (LPWAVEFORMATEX)&pcmwf;
 	if (AUD_sound_object->CreateSoundBuffer(&desc, &ci->dsbuf, NULL) != DS_OK) {
@@ -251,7 +252,7 @@ static int AUD_create_pcm_buffer(AUD_DRV_CHAN * ci, AudioFormat * format)
 		return ERROR_CODE_FAIL;
 	}
 	ci->buf_size = desc.dwBufferBytes;
-	FUN_004068E0("Sound buffer size = %d bytes\n", ci->buf_size);
+	DebugString("Sound buffer size = %d bytes\n", ci->buf_size);
 	return vNO_ERROR;
 }
 
@@ -298,15 +299,15 @@ retry:
 	if ((retval = ci->dsbuf->Lock(pos, transfer, (void **)dst, bytes1, (void **)dst2, bytes2, 0)) != DS_OK) {
 		if (retval = DSERR_BUFFERLOST) {
 			if (!AUD_restore_buffer(ci)) {
-				FUN_004068E0("Failed to restore buffer\n");
+				DebugString("Failed to restore buffer\n");
 				return FALSE;
 			}
-			FUN_004068E0("Restored buffer\n");
+			DebugString("Restored buffer\n");
 			if (retry_count--) {
 				goto retry;
 			}
 		}
-		FUN_004068E0("Failed to lock buffer\n");
+		DebugString("Failed to lock buffer\n");
 		return FALSE;
 	}
 	return TRUE;
@@ -343,25 +344,25 @@ static int __fastcall audioLoad(AudioSystem * system)
 	if (result != DS_OK) {
 		return ERROR_CODE_FAIL;
 	}
-	result = AUD_sound_object->SetCooperativeLevel(Game::hWnd, DSSCL_PRIORITY);
+	result = AUD_sound_object->SetCooperativeLevel(MainWindow, DSSCL_PRIORITY);
 	system->numUnits = 1;
 	if (!thread_created) {
 		drv_ref.count = 0;
-		thread.quit = 0;
-		thread.leaving = 0;
-		thread.running = 0;
-		thread.interval = vAUD_DRV_POLL_INTERVAL;
-		thread.count = 0;
-		if (!(thread.handle = CreateThread(NULL, 4 * 1024, (LPTHREAD_START_ROUTINE)AUD_service_thread, &thread, 0, &thread.id))) {
+		driverThread.quit = 0;
+		driverThread.leaving = 0;
+		driverThread.running = 0;
+		driverThread.interval = vAUD_DRV_POLL_INTERVAL;
+		driverThread.count = 0;
+		if (!(driverThread.handle = CreateThread(NULL, 4 * 1024, (LPTHREAD_START_ROUTINE)AUD_service_thread, &driverThread, 0, &driverThread.id))) {
 			return ERROR_CODE_FAIL;
 		}
 		drv_ref.count++;
 		thread_created = 1;
-		if (!SetThreadPriority(thread.handle, THREAD_PRIORITY_TIME_CRITICAL)) {
+		if (!SetThreadPriority(driverThread.handle, THREAD_PRIORITY_TIME_CRITICAL)) {
 			char buffer[1024];
 
 			FormatMessage(FORMAT_MESSAGE_FROM_SYSTEM, NULL, GetLastError(), 0, buffer, sizeof(buffer), NULL);
-			FUN_004068E0("Unable to change the priority of the Audio Thread - %s\n", buffer);
+			DebugString("Unable to change the priority of the Audio Thread - %s\n", buffer);
 			return 0;
 		}
 	} else {
@@ -470,7 +471,7 @@ static int __fastcall AUD_fill_buffer(AUD_DRV_CHAN * ci, int total_bytes)
 		}
 		locked = TRUE;
 		if ((lpos2 != NULL) || (lbytes1 != bytes) || (lbytes2 != 0)) {
-			FUN_004068E0("Buffer management out by %d bytes\n", lbytes2);
+			DebugString("Buffer management out by %d bytes\n", lbytes2);
 			goto done;
 		}
 		dst = lpos1;
@@ -718,11 +719,11 @@ static void __fastcall audioUnload(AudioSystem *)
 			drv_ref.count = 0;
 		}
 		if (!drv_ref.count) {
-			thread.quit = TRUE;
-			while (!thread.leaving) {
+			driverThread.quit = TRUE;
+			while (!driverThread.leaving) {
 			}
-			WaitForSingleObject(thread.handle, SECONDS(5));
-			CloseHandle(thread.handle);
+			WaitForSingleObject(driverThread.handle, SECONDS(5));
+			CloseHandle(driverThread.handle);
 			thread_created = 0;
 		}
 	}
@@ -739,7 +740,7 @@ static int __fastcall audioOpen(AudioDevice * dev)
 	AudioServiceSetInterval(&dev->mixerUpdate, vAUD_DRV_POLL_INTERVAL);
 	AudioServiceSetMustServiceInterval(&dev->mixerUpdate, vAUD_DRV_POLL_INTERVAL * vAUD_DRV_OVER_SAMPLE * vAUD_DRV_FRAMES);
 	AudioServiceSetResetInterval(&dev->mixerUpdate, vAUD_DRV_POLL_INTERVAL * vAUD_DRV_OVER_SAMPLE * vAUD_DRV_FRAMES * 3);
-	thread.data = dev;
+	driverThread.data = dev;
 	AUD_set_wave_format(&pcmwf, &dev->DefaultFormat);
 	memset(&dsbdesc, 0, sizeof(DSBUFFERDESC));
 	dsbdesc.dwSize = sizeof(DSBUFFERDESC);
@@ -750,7 +751,7 @@ static int __fastcall audioOpen(AudioDevice * dev)
 		return ERROR_CODE_FAIL;
 	}
 	if (AUD_primary_buffer->SetFormat(&pcmwf) != DS_OK) {
-		FUN_004068E0("Unable to set the desired primary format\n");
+		DebugString("Unable to set the desired primary format\n");
 	}
 	{
 		DSCAPS caps = { 0 };
@@ -769,7 +770,7 @@ static int __fastcall audioOpen(AudioDevice * dev)
 static void __fastcall audioClose(AudioDevice *)
 {
 	EnterCriticalSection(&thread_access);
-	thread.data = NULL;
+	driverThread.data = NULL;
 	LeaveCriticalSection(&thread_access);
 	if (AUD_primary_buffer) {
 		AUD_primary_buffer->Stop();
@@ -835,19 +836,19 @@ static int __fastcall audioStart(AudioChannel * chan)
 		format = &chan->Device->DefaultFormat;
 	}
 	if (AUD_create_pcm_buffer(ci, format) != vNO_ERROR) {
-		FUN_004068E0("Failed to create playback buffer\n");
+		DebugString("Failed to create playback buffer\n");
 		return ERROR_CODE_FAIL;
 	}
 	AUD_init_buffer(ci);
 	AUD_new_buffer_src(ci);
 	AUD_set_buffer_src(ci);
 	if (!AUD_fill_buffer(ci, ci->buf_size)) {
-		FUN_004068E0("Failed to prefill buffer\n");
+		DebugString("Failed to prefill buffer\n");
 		return ERROR_CODE_FAIL;
 	}
 	audioUpdate(chan);
 	if (ci->dsbuf->Play(0, 0, DSBPLAY_LOOPING) != DS_OK) {
-		FUN_004068E0("Failed to start playback\n");
+		DebugString("Failed to start playback\n");
 		return ERROR_CODE_FAIL;
 	}
 	return vNO_ERROR;
@@ -977,7 +978,7 @@ void __fastcall AudioSetPrimaryFormat(int rate, int bits, int channels)
 // FUNCTION: GAMEMD 0x0040A850
 void AudioSetDeviceFormat(void)
 {
-	AudioDevice * dev = FUN_00407010();
+	AudioDevice * dev = AudioGetDevice();
 
 	if (AUD_primary_buffer && dev) {
 		WAVEFORMATEX wf;
@@ -1038,23 +1039,23 @@ void AudioRegainFocus(void)
 void __fastcall AUD_service_attribs(AudioDevice * dev)
 {
 	if (dev) {
-		AudioAttribsUpdate(DAT_0087E744);
-		AudioAttribsUpdate(DAT_0087E748);
-		AudioAttribsUpdate(DAT_0087E740);
-		AudioAttribsUpdate(DAT_0087E73C);
-		AudioAttribsUpdate(DAT_0087E754);
-		AudioAttribsUpdate(DAT_0087E758);
-		AudioAttribsUpdate(DAT_0087E750);
-		AudioAttribsUpdate(DAT_0087E74C);
+		AudioAttribsUpdate(AudioScoreAttribs);
+		AudioAttribsUpdate(AudioSoundAttribs);
+		AudioAttribsUpdate(AudioVoiceAttribs);
+		AudioAttribsUpdate(AudioMasterAttribs);
+		AudioAttribsUpdate(AudioFadeAttribs);
+		AudioAttribsUpdate(AudioGroupAttribs1);
+		AudioAttribsUpdate(AudioGroupAttribs2);
+		AudioAttribsUpdate(AudioCompAttribs);
 		AudioDeviceService(dev);
-		AudioAttribsUsed(DAT_0087E748);
-		AudioAttribsUsed(DAT_0087E744);
-		AudioAttribsUsed(DAT_0087E740);
-		AudioAttribsUsed(DAT_0087E73C);
-		AudioAttribsUsed(DAT_0087E754);
-		AudioAttribsUsed(DAT_0087E758);
-		AudioAttribsUsed(DAT_0087E750);
-		AudioAttribsUsed(DAT_0087E74C);
+		AudioAttribsUsed(AudioSoundAttribs);
+		AudioAttribsUsed(AudioScoreAttribs);
+		AudioAttribsUsed(AudioVoiceAttribs);
+		AudioAttribsUsed(AudioMasterAttribs);
+		AudioAttribsUsed(AudioFadeAttribs);
+		AudioAttribsUsed(AudioGroupAttribs1);
+		AudioAttribsUsed(AudioGroupAttribs2);
+		AudioAttribsUsed(AudioCompAttribs);
 	}
 }
 
