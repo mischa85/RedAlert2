@@ -211,7 +211,9 @@ unk_004B3580,0x004B3580,0x004B3670,unknown,code not assigned to a module
 unk_004B3670,0x004B3670,0x004B3690,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004B3690,0x004B3690,0x004B4860,unknown,code not assigned to a module
 emember,0x004B4860,0x004B4970,tibsun,"functions compiled from src/emember.cpp, matched, without gaps"
-unk_004B4970,0x004B4970,0x004B5A70,unknown,code not assigned to a module
+unk_004B4970,0x004B4970,0x004B4C00,unknown,code not assigned to a module
+empulse,0x004B4C00,0x004B5410,tibsun,"functions compiled from src/empulse.cpp, matched, without gaps; five placed by the gap"
+unk_004B5410,0x004B5410,0x004B5A70,unknown,code not assigned to a module
 enviro,0x004B5A70,0x004B5C90,tibsun,"functions compiled from src/enviro.cpp, matched, without gaps; one placed by the gap"
 unk_004B5C90,0x004B5C90,0x004B8970,unknown,code not assigned to a module
 expand,0x004B8970,0x004B89C0,tibsun,"functions compiled from src/expand.cpp, matched, without gaps; ?Expansion_Dialog@@YI_NXZ not placed"
