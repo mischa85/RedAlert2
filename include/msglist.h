@@ -121,8 +121,8 @@ class MessageListClass {
 		void Init (int x, int y, int max_msg, int maxchars, int height,
 			int edit_x, int edit_y, bool overflow_on, int over_start,
 			int over_end, int width = 640);
-		TextLabelClass * Add_Message (char const * name, int id, char const * txt,
-			int color, TextPrintType style, int timeout);
+		TextLabelClass * Add_Message (wchar_t const * name, int id, wchar_t const * txt, // RA2: wide strings and one more argument
+			int color, TextPrintType style, int timeout, bool singleplayer);
 		int Concat_Message (char const * name, int id, char const * txt, int timeout);
 
 		//.....................................................................
