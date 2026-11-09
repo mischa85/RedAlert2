@@ -5,25 +5,23 @@
 
 #include "always.h"
 #include "ahandle.h"
+#include "geozero.h"
 #include <ctype.h>
 #include <math.h>
 #include "dsaudio.h"
 #include "assert.h"
-#include "globals.h"
 #include "goptions.h"
-#include "geometry.h"
 #include "dbgprint.h"
 #include "gametime.h"
-#include "vqaplayp.h"
+#include "vqalib/vqaplayp.h"
+extern GameOptionsClass Options; // RA2: without globals.h
+
 #ifndef DSBCAPS_GETCURRENTPOSITION2
 #define DSBCAPS_GETCURRENTPOSITION2	0x00010000
 #endif
 
-// SYNTHETIC: GAMEMD 0x00411680 SYMBOL
-// _$E2
-
-LPDIRECTSOUND FUN_0040A7A0(void);
-int FUN_00407000(void);
+void * GetDirectSoundObject(void); // RA2: 0x0040A6C0
+int __fastcall AudioDeviceAvailable(void); // RA2: 0x00406F30
 
 
 Ahandle _handles[Ahandle::MAX_HANDLES];
@@ -147,7 +145,6 @@ inline BOOL Move_HMI_Audio_Block_To_Direct_Sound_Buffer(VQAHandleP *vqap)
 	return(TRUE);
 }
 
-// FUNCTION: GAMEMD 0x004116A0
 unsigned long __cdecl Timer_Callback_Audio_Handler(VQAHandle *vqa)
 {
 	VQAHandleP    *vqap = (VQAHandleP *)vqa;
@@ -184,7 +181,6 @@ unsigned long __cdecl Timer_Callback_Audio_Handler(VQAHandle *vqa)
 	return(handle->TickCount);
 }
 
-// FUNCTION: GAMEMD 0x00411820
 long __cdecl Stream_Audio_Handler(VQAHandle *vqa, long action, void *buffer, long nbytes)
 {
 	VQAHandleP *vqap = (VQAHandleP *)vqa;
@@ -232,16 +228,15 @@ long __cdecl Stream_Audio_Handler(VQAHandle *vqa, long action, void *buffer, lon
 	return(error);
 }
 
-// FUNCTION: GAMEMD 0x00411B20
 long __cdecl Open_Audio_Handler(VQAHandleP *vqap, AhandleInitParams *params, long b)
 {
 	DSCAPS dscaps;
-	LPDIRECTSOUND sound = FUN_0040A7A0();
+	LPDIRECTSOUND sound = (LPDIRECTSOUND)GetDirectSoundObject();
 
 	DebugString("Opening VQ audio handler\n");
 	DebugString("Current thread ID is %08x\n", GetCurrentThreadId());
 
-	if (!FUN_00407000()) {
+	if (!AudioDeviceAvailable()) {
 		return(VQAERR_AUDIO);
 	}
 
@@ -307,7 +302,6 @@ long __cdecl Open_Audio_Handler(VQAHandleP *vqap, AhandleInitParams *params, lon
 	return(VQAERR_AUDIO);
 }
 
-// FUNCTION: GAMEMD 0x00411CE0
 long __cdecl Close_Audio_Handler(VQAHandleP *vqap)
 {
 	DebugString("Closing VQ audio handler\n");
@@ -338,7 +332,6 @@ long __cdecl Close_Audio_Handler(VQAHandleP *vqap)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x00411DF0
 long __cdecl Start_Audio_Handler(VQAHandleP *vqap)
 {
 	VQAConfig *config = &vqap->Config;
@@ -371,7 +364,7 @@ long __cdecl Start_Audio_Handler(VQAHandleP *vqap)
 	audio->DsBuffFormat.nBlockAlign		= (short) ((audio->DsBuffFormat.wBitsPerSample/8) * audio->DsBuffFormat.nChannels);
 	audio->DsBuffFormat.nAvgBytesPerSec	= audio->DsBuffFormat.nSamplesPerSec * audio->DsBuffFormat.nBlockAlign;
 
-	FUN_0040A7A0()->CreateSoundBuffer (&audio->BufferDesc , &audio->SecondaryBufferPtr , NULL);
+	((LPDIRECTSOUND)GetDirectSoundObject())->CreateSoundBuffer (&audio->BufferDesc , &audio->SecondaryBufferPtr , NULL);
 
 	if (audio->SecondaryBufferPtr == NULL) {
 		LeaveCriticalSection(&audio->CriticalSection);
@@ -403,7 +396,6 @@ inline void Update_Volume(Ahandle *audio)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00412000
 long __cdecl Load_Audio_Handler(VQAHandleP *vqap, void *buffer, long nbytes)
 {
 	Ahandle *handle = &_handles[vqap->AudioHandleIndex];
@@ -431,7 +423,6 @@ long __cdecl Load_Audio_Handler(VQAHandleP *vqap, void *buffer, long nbytes)
 	return(VQAERR_AUDIO);
 }
 
-// FUNCTION: GAMEMD 0x00412230
 long __cdecl Pause_Audio_Handler(VQAHandleP *vqap)
 {
 	Ahandle *handle = &_handles[vqap->AudioHandleIndex];
@@ -448,7 +439,6 @@ long __cdecl Pause_Audio_Handler(VQAHandleP *vqap)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x00412280
 long __cdecl Play_Audio_Handler(VQAHandleP *vqap)
 {
 	Ahandle *handle = &_handles[vqap->AudioHandleIndex];
@@ -474,7 +464,6 @@ long __cdecl Play_Audio_Handler(VQAHandleP *vqap)
 	return(rc);
 }
 
-// FUNCTION: GAMEMD 0x00412320
 long __cdecl Stop_Audio_Handler(VQAHandleP *vqap)
 {
 	Ahandle *handle = &_handles[vqap->AudioHandleIndex];
@@ -495,7 +484,6 @@ long __cdecl Stop_Audio_Handler(VQAHandleP *vqap)
 	return(VQAERR_NONE);
 }
 
-// FUNCTION: GAMEMD 0x004123A0
 void CALLBACK AudioCallback ( UINT uTimerID, UINT, DWORD dwUser, DWORD, DWORD )
 {
 	Ahandle  	*audio;
@@ -574,13 +562,11 @@ void CALLBACK AudioCallback ( UINT uTimerID, UINT, DWORD dwUser, DWORD, DWORD )
 	InterlockedDecrement(&audio->SuspendAudioCallback);
 }
 
-// FUNCTION: GAMEMD 0x00412540
 unsigned long __cdecl Simple_Timer_Callback_Audio_Handler(VQAHandle *vqa)
 {
 	return(Get_Game_Time_50());
 }
 
-// FUNCTION: GAMEMD 0x00412550
 void Pause_All_Audio_Handler(void)
 {
 	for (int i = 0; i < Ahandle::MAX_HANDLES; i++) {
@@ -596,7 +582,6 @@ void Pause_All_Audio_Handler(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x004125A0
 void Resume_All_Audio_Handler(void)
 {
 	for (int i = 0; i < Ahandle::MAX_HANDLES; i++) {
@@ -611,39 +596,14 @@ void Resume_All_Audio_Handler(void)
 		}
 	}
 }
-// FUNCTION: GAMEMD 0x004125F0
 long __cdecl Lock_Audio_Handler(void)
 {
 
 	return(1);
 }
 
-// FUNCTION: GAMEMD 0x00412600
 long __cdecl Unlock_Audio_Handler(void)
 {
 
 	return(1);
-}
-
-
-// FUNCTION: GAMEMD 0x00412610
-int ahtoi(const char *str)
-{
-	int integer = 0;
-	while (str) {
-		if (!isxdigit(*str)) {
-			break;
-		}
-		char ch = *str;
-
-		integer *= 16;
-		str++;
-
-		if (ch >= '0' && ch <= '9') {
-			integer += ch - '0';
-		} else {
-			integer += toupper(ch) - ('A' - 10);
-		}
-	}
-	return(integer);
 }
