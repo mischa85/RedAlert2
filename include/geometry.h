@@ -3,6 +3,7 @@
 // Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
 // Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 #pragma once
+#define RA2_GEOMETRY_H
 
 #include "coord.h"
 
@@ -29,4 +30,3 @@ const int BRIDGE_LEPTON_HEIGHT = (int)((LEVEL_LEPTON_H * BRIDGE_CELL_HEIGHT) + 0
 
 const Cell CELL_NONE(0, 0);
 const Coord COORD_NONE(0, 0, 0);
-const Coord CELL_CENTER_COORD(CELL_LEPTON_W / 2, CELL_LEPTON_H / 2, 0);
