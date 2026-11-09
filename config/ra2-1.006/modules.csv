@@ -469,8 +469,8 @@ motlib,0x0059EB60,0x0059EDE0,tibsun,"functions compiled from src/motlib.cpp, wit
 unk_0059EDE0,0x0059EDE0,0x0059F1D0,unknown,code not assigned to a module
 unk_0059F1D0,0x0059F1D0,0x0059F250,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0059F250,0x0059F250,0x005A0250,unknown,code not assigned to a module
-unk_005A0250,0x005A0250,0x005A02B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005A02B0,0x005A02B0,0x005A0E30,unknown,code not assigned to a module
+movie,0x005A0250,0x005A0B50,tibsun,"functions compiled from src/movie.cpp, matched, without gaps"
+unk_005A0B50,0x005A0B50,0x005A0E30,unknown,code not assigned to a module
 unk_005A0E30,0x005A0E30,0x005A0EC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005A0EC0,0x005A0EC0,0x005A14D0,unknown,code not assigned to a module
 unk_005A14D0,0x005A14D0,0x005A1620,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
