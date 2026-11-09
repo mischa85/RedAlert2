@@ -24,7 +24,9 @@ unk_0040F3C0,0x0040F3C0,0x0040FF10,unknown,code not assigned to a module
 abstract,0x0040FF10,0x00410340,tibsun,"functions compiled from src/abstract.cpp, matched, without gaps; 17 placed by the gap"
 unk_00410340,0x00410340,0x00410A60,unknown,code not assigned to a module
 abuffer,0x00410A60,0x00411270,tibsun,"functions compiled from src/abuffer.cpp, without gaps; matched except ?Pan@ABuffer@@QAEXHHG@Z; five placed by alphabetical order"
-unk_00411270,0x00411270,0x00412390,unknown,code not assigned to a module
+unk_00411270,0x00411270,0x00411420,unknown,code not assigned to a module
+ahandle,0x00411420,0x00412370,tibsun,"functions compiled from src/ahandle.cpp, matched, without gaps; one placed by the gap; ?Lock_Audio_Handler@@YAJXZ not placed; ?Unlock_Audio_Handler@@YAJXZ not placed"
+unk_00412370,0x00412370,0x00412390,unknown,code not assigned to a module
 ahtoi,0x00412390,0x004123E0,tibsun,"functions compiled from src/ahtoi.cpp, matched, without gaps"
 unk_004123E0,0x004123E0,0x0041BC90,unknown,code not assigned to a module
 airctype,0x0041BC90,0x0041C2E0,tibsun,"functions compiled from src/airctype.cpp, matched, without gaps; 11 placed by the gap"
