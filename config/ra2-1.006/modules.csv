@@ -334,9 +334,9 @@ unk_00523F90,0x00523F90,0x005241B0,unknown,code not assigned to a module
 ipxgconn,0x005241B0,0x00524DD0,tibsun,"functions compiled from src/ipxgconn.cpp, matched, without gaps; three placed by the gap"
 unk_00524DD0,0x00524DD0,0x00527A80,unknown,code not assigned to a module
 isotile,0x00527A80,0x00528260,tibsun,"functions compiled from src/isotile.cpp, matched, without gaps; five placed by the gap"
-unk_00528260,0x00528260,0x00529550,unknown,code not assigned to a module
-unk_00529550,0x00529550,0x00529590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00529590,0x00529590,0x0052EE00,unknown,code not assigned to a module
+unk_00528260,0x00528260,0x00528EE0,unknown,code not assigned to a module
+isotype,0x00528EE0,0x0052E660,tibsun,"functions compiled from src/isotype.cpp, without gaps; matched except ?Draw_Tile@IsometricTileTypeClass@@QBEXPAVLightConvertClass@@HAAVSurface@@HHV?$TRect@H@@HH_NH333H@Z and ?Preview_Tile@IsometricTileTypeClass@@QAEPAGHH@Z; six placed by the gap"
+unk_0052E660,0x0052E660,0x0052EE00,unknown,code not assigned to a module
 jshell,0x0052EE00,0x0052EF70,tibsun,"functions compiled from src/jshell.cpp, matched, without gaps"
 unk_0052EF70,0x0052EF70,0x00532290,unknown,code not assigned to a module
 unk_00532290,0x00532290,0x005322C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
