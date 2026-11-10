@@ -78,8 +78,8 @@ ConvertClass *Build_Light_Converter(HSVClass & hsv, const PaletteClass & base, c
 
 	*remapped = base;
 
-	double cos_step = DEG_TO_RAD(14.0 / 3.0);
-	double sin_step = DEG_TO_RAD(8.0 / 3.0);
+	double cos_step = 14.0 * M_PI / (180.0 * 3.0); // RA2: folds to the exe's value
+	double sin_step = 8.0 * M_PI / (180.0 * 3.0); // RA2
 
 	for (int i = 0; i < 16; i++) {
 		double cosval = DEG_TO_RAD(20) + (i * cos_step);
@@ -118,8 +118,8 @@ ConvertClass *Build_Converter(HSVClass & hsv, const PaletteClass & base, const P
 
 	PaletteClass pal = base;
 
-	double cos_step = DEG_TO_RAD(14.0 / 3.0);
-	double sin_step = DEG_TO_RAD(8.0 / 3.0);
+	double cos_step = 14.0 * M_PI / (180.0 * 3.0); // RA2: folds to the exe's value
+	double sin_step = 8.0 * M_PI / (180.0 * 3.0); // RA2
 
 	for (int i = 0; i < 16; i++) {
 		double cosval = DEG_TO_RAD(20) + (i * cos_step);
