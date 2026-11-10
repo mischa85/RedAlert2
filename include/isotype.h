@@ -571,6 +571,7 @@ class IsometricTileTypeClass : public ObjectTypeClass
 		 * open ground in patches to break up the terrain.
 		 */
 		static IsometricTileType Rocks;
+		static IsometricTileType WaterBridge; // RA2: the water bridge tile set, read from [General] WaterBridge
 
 		/*
 		 * This is the solid crystal ground tile, the piece a cell shows when crystal

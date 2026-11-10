@@ -4,6 +4,7 @@
  * SPDX-License-Identifier: GPL-3.0-or-later
  * Copyright 2025 Electronic Arts Inc.
  * Copyright 2026 OpenTS contributors
+ * Copyright 2026 ra2-decomp contributors
  *
  * Contains material derived from Electronic Arts source code.
  * Modified by OpenTS contributors, 2026.
@@ -50,8 +51,8 @@
 #include "zbuffer.h"
 
 enum {
-	ISO_WIDTH = 48,
-	ISO_HEIGHT = 24,
+	ISO_WIDTH = 60, // RA2: RA2's iso tiles are 60 pixels wide
+	ISO_HEIGHT = 30, // RA2: and 30 high
 	ISO_DRAW_WIDTH = ISO_WIDTH,
 	ISO_DRAW_HEIGHT = ISO_HEIGHT-1,
 };
@@ -208,6 +209,7 @@ IsometricTileType IsometricTileTypeClass::WaterCliffs;
 IsometricTileType IsometricTileTypeClass::PavedRoadSlopes;
 IsometricTileType IsometricTileTypeClass::DirtRoadSlopes;
 IsometricTileType IsometricTileTypeClass::Rocks;
+IsometricTileType IsometricTileTypeClass::WaterBridge; // RA2: the water bridge tile set
 IsometricTileType IsometricTileTypeClass::CrystalTile;
 IsometricTileType IsometricTileTypeClass::ClearToCrystalLat;
 IsometricTileType IsometricTileTypeClass::CrystalCliff;
@@ -317,12 +319,6 @@ IsometricTileTypeClass::~IsometricTileTypeClass(void)
 		NextTileTypeInSet = NULL;
 		delete next;
 	}
-
-	if (ImageData != NULL && IsFileLoaded) {
-		delete [] (unsigned char *)ImageData;
-	}
-
-	ImageData = NULL;
 
 	IsometricTileTypes.Delete(this);
 	AbstractTypePtrTracker.Delete(this);
@@ -598,7 +594,11 @@ LightConvertClass * IsometricTileTypeClass::Find_Or_Make_Drawer(int r, int g, in
 		}
 	}
 
-	drawer = new LightConvertClass(IsoTilePalette, GamePalette, *VisibleSurface, r, g, b, TileDrawers.Count() != 0);
+	int levels = 53; // RA2: 53 light levels by default
+	if (r + g + b < 2000) { // RA2: 27 when the light is dark (r + g + b below 2000)
+		levels = 27; // RA2: 27 levels
+	}
+	drawer = new LightConvertClass(IsoTilePalette, GamePalette, *VisibleSurface, r, g, b, TileDrawers.Count() != 0, NULL, levels); // RA2: the level count is passed
 	TileDrawers.Add(drawer);
 
 	return(drawer);
@@ -639,7 +639,7 @@ void IsometricTileTypeClass::Init_Drawers(void)
 		i--;
 	}
 
-	TileDrawers.Add(new LightConvertClass(IsoTilePalette, GamePalette, *VisibleSurface));
+	TileDrawers.Add(new LightConvertClass(IsoTilePalette, GamePalette, *VisibleSurface, 1000, 1000, 1000, false, NULL, 53)); // RA2: full light, 53 levels
 
 	BlubCell.Drawer = NULL;
 	BlubCell.Init_Drawer();
@@ -667,7 +667,6 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 {
 	int i;
 	int j;
-	int k;
 
 	CCINIClass ini;
 	IsometricTileTypeClass * tile = NULL;
@@ -762,14 +761,10 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 	IsometricTileType _HeightBase = (IsometricTileType)ini.Get_Int("General", "HeightBase", ISOTILE_INVALID);
 	IsometricTileType _BlackTile = (IsometricTileType)ini.Get_Int("General", "BlackTile", ISOTILE_INVALID);
 	IsometricTileType _BridgeSet = (IsometricTileType)ini.Get_Int("General", "BridgeSet", ISOTILE_INVALID);
-	IsometricTileType _TrainBridgeSet = (IsometricTileType)ini.Get_Int("General", "TrainBridgeSet", ISOTILE_INVALID);
+	IsometricTileType _TrainBridgeSet = (IsometricTileType)ini.Get_Int("General", "WoodBridgeSet", ISOTILE_INVALID); // RA2: the train bridge set is read from WoodBridgeSet
 	IsometricTileType _CliffSet = (IsometricTileType)ini.Get_Int("General", "CliffSet", ISOTILE_INVALID);
 	IsometricTileType _ShorePieces = (IsometricTileType)ini.Get_Int("General", "ShorePieces", ISOTILE_INVALID);
 	IsometricTileType _WaterSet = (IsometricTileType)ini.Get_Int("General", "WaterSet", ISOTILE_INVALID);
-	IsometricTileType _Ice1Set = (IsometricTileType)ini.Get_Int("General", "Ice1Set", ISOTILE_INVALID);
-	IsometricTileType _Ice2Set = (IsometricTileType)ini.Get_Int("General", "Ice2Set", ISOTILE_INVALID);
-	IsometricTileType _Ice3Set = (IsometricTileType)ini.Get_Int("General", "Ice3Set", ISOTILE_INVALID);
-	IsometricTileType _IceShoreSet = (IsometricTileType)ini.Get_Int("General", "IceShoreSet", ISOTILE_INVALID);
 	IsometricTileType _SlopeSetPieces = (IsometricTileType)ini.Get_Int("General", "SlopeSetPieces", ISOTILE_INVALID);
 	IsometricTileType _SlopeSetPieces2 = (IsometricTileType)ini.Get_Int("General", "SlopeSetPieces2", ISOTILE_INVALID);
 	IsometricTileType _MonorailSlopes = (IsometricTileType)ini.Get_Int("General", "MonorailSlopes", ISOTILE_INVALID);
@@ -795,13 +790,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 	IsometricTileType _PavedRoadSlopes = (IsometricTileType)ini.Get_Int("General", "PavedRoadSlopes", ISOTILE_INVALID);
 	IsometricTileType _DirtRoadSlopes = (IsometricTileType)ini.Get_Int("General", "DirtRoadSlopes", ISOTILE_INVALID);
 	IsometricTileType _Rocks = (IsometricTileType)ini.Get_Int("General", "Rocks", ISOTILE_INVALID);
-	IsometricTileType _CrystalTile = (IsometricTileType)ini.Get_Int("General", "CrystalTile", ISOTILE_INVALID);
-	IsometricTileType _ClearToCrystalLat = (IsometricTileType)ini.Get_Int("General", "ClearToCrystalLat", ISOTILE_INVALID);
-	IsometricTileType _CrystalCliff = (IsometricTileType)ini.Get_Int("General", "CrystalCliff", ISOTILE_INVALID);
-	IsometricTileType _SwampTile = (IsometricTileType)ini.Get_Int("General", "SwampTile", ISOTILE_INVALID);
-	IsometricTileType _WaterToSwampLat = (IsometricTileType)ini.Get_Int("General", "WaterToSwampLat", ISOTILE_INVALID);
-	IsometricTileType _BlueMoldTile = (IsometricTileType)ini.Get_Int("General", "BlueMoldTile", ISOTILE_INVALID);
-	IsometricTileType _ClearToBlueMoldLat = (IsometricTileType)ini.Get_Int("General", "ClearToBlueMoldLat", ISOTILE_INVALID);
+	IsometricTileType _WaterBridge = (IsometricTileType)ini.Get_Int("General", "WaterBridge", ISOTILE_INVALID); // RA2: a WaterBridge set; no ice, crystal, swamp or blue mold sets
 
 	RampStart = ISOTILE_INVALID;
 	RampSmooth = ISOTILE_INVALID;
@@ -823,10 +812,6 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 	CliffSet = ISOTILE_INVALID;
 	ShorePieces = ISOTILE_INVALID;
 	WaterSet = ISOTILE_INVALID;
-	Ice1Set = ISOTILE_INVALID;
-	Ice2Set = ISOTILE_INVALID;
-	Ice3Set = ISOTILE_INVALID;
-	IceShoreSet = ISOTILE_INVALID;
 	SlopeSetPieces = ISOTILE_INVALID;
 	SlopeSetPieces2 = ISOTILE_INVALID;
 	MonorailSlopes = ISOTILE_INVALID;
@@ -852,13 +837,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 	PavedRoadSlopes = ISOTILE_INVALID;
 	DirtRoadSlopes = ISOTILE_INVALID;
 	Rocks = ISOTILE_INVALID;
-	CrystalTile = ISOTILE_INVALID;
-	ClearToCrystalLat = ISOTILE_INVALID;
-	CrystalCliff = ISOTILE_INVALID;
-	SwampTile = ISOTILE_INVALID;
-	WaterToSwampLat = ISOTILE_INVALID;
-	BlueMoldTile = ISOTILE_INVALID;
-	ClearToBlueMoldLat = ISOTILE_INVALID;
+	WaterBridge = ISOTILE_INVALID; // RA2: WaterBridge reset
 
 	BridgeTopLeft1 = (IsometricTileType)ini.Get_Int("General", "BridgeTopLeft1", ISOTILE_INVALID);
 	BridgeTopLeft2 = (IsometricTileType)ini.Get_Int("General", "BridgeTopLeft2", ISOTILE_INVALID);
@@ -902,10 +881,6 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 		if (setid == _CliffSet) CliffSet = (IsometricTileType)heapid;
 		if (setid == _ShorePieces) ShorePieces = (IsometricTileType)heapid;
 		if (setid == _WaterSet) WaterSet = (IsometricTileType)heapid;
-		if (setid == _Ice1Set) Ice1Set = (IsometricTileType)heapid;
-		if (setid == _Ice2Set) Ice2Set = (IsometricTileType)heapid;
-		if (setid == _Ice3Set) Ice3Set = (IsometricTileType)heapid;
-		if (setid == _IceShoreSet) IceShoreSet = (IsometricTileType)heapid;
 		if (setid == _SlopeSetPieces) SlopeSetPieces = (IsometricTileType)heapid;
 		if (setid == _SlopeSetPieces2) SlopeSetPieces2 = (IsometricTileType)heapid;
 		if (setid == _MonorailSlopes) MonorailSlopes = (IsometricTileType)heapid;
@@ -931,13 +906,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 		if (setid == _PavedRoadSlopes) PavedRoadSlopes = (IsometricTileType)heapid;
 		if (setid == _DirtRoadSlopes) DirtRoadSlopes = (IsometricTileType)heapid;
 		if (setid == _Rocks) Rocks = (IsometricTileType)heapid;
-		if (setid == _CrystalTile) CrystalTile = (IsometricTileType)heapid;
-		if (setid == _ClearToCrystalLat) ClearToCrystalLat = (IsometricTileType)heapid;
-		if (setid == _CrystalCliff) CrystalCliff = (IsometricTileType)heapid;
-		if (setid == _SwampTile) SwampTile = (IsometricTileType)heapid;
-		if (setid == _WaterToSwampLat) WaterToSwampLat = (IsometricTileType)heapid;
-		if (setid == _BlueMoldTile) BlueMoldTile = (IsometricTileType)heapid;
-		if (setid == _ClearToBlueMoldLat) ClearToBlueMoldLat = (IsometricTileType)heapid;
+		if (setid == _WaterBridge) WaterBridge = (IsometricTileType)heapid; // RA2: WaterBridge resolved by set id
 
 		char section[64];
 		sprintf(section, "TileSet%04d", setid);
@@ -993,7 +962,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 
 			do {
 				char letter_suffix[2];
-				char suffix[12];
+				char suffix[10]; // RA2: a 10-character suffix buffer
 				char tile_name[128];
 				char given_name[128];
 
@@ -1010,7 +979,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 				strcat(tile_name, suffix);
 				sprintf(given_name, "%.28s %02d", set_name, i + 1);
 
-				int uninitialized_value = 0x00000003;
+				int uninitialized_value = -9; // RA2: the value the original passed (an uninitialized local)
 
 				if (tile_count == 0) {
 					tile = new IsometricTileTypeClass((IsometricTileType)heapid++, uninitialized_value, 0, tile_name, false);
@@ -1024,6 +993,7 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 					tile->IsAllowTiberium = _AllowTiberium;
 					tile->IsRequiredForRMG = _RequiredForRMG;
 					tile->ImageData = NULL;
+					tile->ImageAllocated = false; // RA2: a tile loaded from a mix file owns no image
 					tile->ToSnowTheater = _ToSnowTheater;
 					tile->ToTemperateTheater = _ToTemperateTheater;
 					if (is_shadow_caster && shadow_tiles) {
@@ -1063,8 +1033,8 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 				char file_path[512];
 				_makepath(file_path, NULL, NULL, tile_name, Theaters[theater].Suffix);
 
+				found_image = false; // RA2: cleared before the mix lookup
 				mixfile_set = NULL;
-				found_image = false;
 
 				if (from_ccfile) {
 					CCFileClass file(file_path);
@@ -1079,10 +1049,10 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 					}
 				}
 				if (!found_image && _NonMarbleMadness) {
-					if (theater == THEATER_TEMPERATE) {
-						_makepath(file_path, NULL, NULL, tile_name, ".MMT");
+					if (theater != THEATER_NONE) { // RA2: every theater but none uses its own extension
+						_makepath(file_path, NULL, NULL, tile_name, Theaters[theater].MMExtension); // RA2: Theaters[].MMExtension, not a fixed .MMT/.MMS
 					} else {
-						_makepath(file_path, NULL, NULL, tile_name, ".MMS");
+						_makepath(file_path, NULL, NULL, tile_name, ".MMT");
 					}
 					if (from_ccfile) {
 						CCFileClass file(file_path);
@@ -1169,34 +1139,6 @@ void IsometricTileTypeClass::Read_Control_File(TheaterType theater, bool from_cc
 			isotype->NonMarbleMadness = (IsometricTileType)(TileSetIDLookup[isotype->NonMarbleMadness] + offset);
 		}
 	}
-
-	/// Remap ice tiles to water
-	if (theater != THEATER_TEMPERATE && theater == THEATER_SNOW) {
-		if (Ice1Set != ISOTILE_INVALID) {
-			for (k = ICE_EDGE; k < ICE1_COUNT; k++) {
-				IsoTileRecord * record = ((IsoTileSet *)IsometricTileTypes[Ice1Set + k]->Get_Image_Data())->Tiles[0];
-				if (record) {
-					record->TileType = 9;
-				}
-			}
-		}
-		if (Ice2Set != ISOTILE_INVALID) {
-			for (k = ICE_EDGE; k < ICE2_COUNT; k++) {
-				IsoTileRecord * record = (IsoTileRecord *)((IsoTileSet *)(IsometricTileTypes[Ice2Set + k])->Get_Image_Data())->Tiles[0];
-				if (record) {
-					record->TileType = 9;
-				}
-			}
-		}
-		if (Ice3Set != ISOTILE_INVALID) {
-			for (k = ICE_EDGE; k < ICE3_COUNT; k++) {
-				IsoTileRecord * record = (IsoTileRecord *)((IsoTileSet *)(IsometricTileTypes[Ice3Set + k])->Get_Image_Data())->Tiles[0];
-				if (record) {
-					record->TileType = 9;
-				}
-			}
-		}
-	}
 }
 
 
@@ -1263,6 +1205,7 @@ void IsometricTileTypeClass::Load_Tiles(bool skipiteration, bool isrand)
 					if (ptr->ImageData != NULL) {
 						delete [] (unsigned char *)ptr->ImageData;
 						ptr->ImageData = NULL;
+						ptr->ImageAllocated = false; // RA2: no image owned
 					}
 				} else {
 					if (ptr->ImageData == NULL) {
@@ -1297,10 +1240,11 @@ int IsometricTileTypeClass::Load_Tile_Data(void)
 	ImageData = data;
 	file.Read(data, size);
 
+	ImageAllocated = true; // RA2: the image is owned
 	IsoTileSet * tileset = (IsoTileSet *)ImageData;
 
-	Height = ((unsigned char)tileset->Map_Height());
-	Width = ((unsigned char)tileset->Map_Width());
+	Width = *((unsigned char *)ImageData); // RA2: width from the image header
+	Height = *((unsigned char *)ImageData + 4); // RA2: height from the image header's fifth byte
 
 	/// Fixup pointers to point to actual memory
 	for (int i = 0; i < (Width * Height); i++) {
@@ -1311,6 +1255,8 @@ int IsometricTileTypeClass::Load_Tile_Data(void)
 			 * Only fix up pointers that have not been converted already. The file
 			 * has just been read fresh, so none of them ever have been.
 			 */
+			// Only fix up pointers that have not been converted already. The file
+			// has just been read fresh, so none of them ever have been.
 			if ((void *)tileset->Tiles[i] < ptr) {
 				tileset->Tiles[i] = (IsoTileRecord *)(ptr + (unsigned int)tileset->Tiles[i]);
 			}
@@ -1452,8 +1398,8 @@ void IsometricTileTypeClass::Draw_Shadow_Caster(int index, Surface * surf, Point
 			frame = ShadowCasterSlopeInfo[caster_index].Frame;
 
 			if (frame != 0) {
-				x = (ISO_TILE_PIXEL_W / 2) + ShadowCasterSlopeInfo[caster_index].XOffset;
-				y = (ISO_TILE_PIXEL_H / 2) + ShadowCasterSlopeInfo[caster_index].YOffset;
+				x = ShadowCasterSlopeInfo[caster_index].XOffset + 30; // RA2: fixed 60x30 tiles
+				y = ShadowCasterSlopeInfo[caster_index].YOffset + 15; // RA2: half of 30
 				can_draw = true;
 			}
 		}
@@ -1461,28 +1407,26 @@ void IsometricTileTypeClass::Draw_Shadow_Caster(int index, Surface * surf, Point
 
 		for (int i = 0; i < ARRAY_SIZE(ShadowCasterTiles); i++) {
 			caster_index = tiletype - ShadowCasterTiles[i];
-
-			if (caster_index >= 0 && caster_index < ARRAY_SIZE(ShadowCasterCliffInfo)) {
-				if (index == ShadowCasterCliffInfo[caster_index].Index) {
-					frame = ShadowCasterCliffInfo[caster_index].Frame;
-
-					if (frame != 0) {
-						x = (ISO_TILE_PIXEL_W / 2) + ShadowCasterCliffInfo[caster_index].XOffset;
-						y = (ISO_TILE_PIXEL_H / 2) + ShadowCasterCliffInfo[caster_index].YOffset;
-						can_draw = true;
-					}
-				}
-				break;
-			}
-			if (i == 4) {
-				can_draw = false;
-				break;
+			if (caster_index >= 0 && caster_index < ARRAY_SIZE(ShadowCasterCliffInfo)) break; // RA2: the cliff entry ends the search
+			if (i == 4) return; // RA2: returns when there is none
+		}
+		if (index == ShadowCasterCliffInfo[caster_index].Index) { // RA2: the cliff entry checked after the loop
+			frame = ShadowCasterCliffInfo[caster_index].Frame; // RA2: its frame
+			if (frame != 0) { // RA2: drawn only with a frame
+				x = ShadowCasterCliffInfo[caster_index].XOffset + 30; // RA2: fixed 60x30 tiles
+				y = ShadowCasterCliffInfo[caster_index].YOffset + 15; // RA2: half of 30
+				can_draw = true; // RA2: and drawable
 			}
 		}
 	}
 
 	if (can_draw) {
-		point = Point2D((TacticalRect.X + x + point.X) - cliprect.X, (TacticalRect.Y + y + point.Y) - cliprect.Y);
+		point.X += x; // RA2: the point offset member by member:
+		point.Y += y; // RA2: by y,
+		point.X += TacticalRect.X; // RA2: by the tactical X,
+		point.Y += TacticalRect.Y; // RA2: and Y,
+		point.X -= cliprect.X; // RA2: less the clip X,
+		point.Y -= cliprect.Y; // RA2: and the clip Y
 		Draw_Shape(
 			*surf,
 			*TileDrawers[0],
@@ -1665,7 +1609,7 @@ void __cdecl Iso_Blit_Asm2(IsoBlitState *state);
 void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, Surface & surface, int x, int y, Rect cliprect, int height, int brightness, bool use_z, int cell_variation, bool fill, bool depth_only, bool fog, signed int fog_color) const
 {
 	static int const _iso_row_bases[ISO_HEIGHT] = {
-		0, 4, 12, 24, 40, 60, 84, 112, 144, 180, 220, 264, 312, 356, 396, 432, 464, 492, 516, 536, 552, 564, 572, 576
+		0, 4, 12, 24, 40, 60, 84, 112, 144, 180, 220, 264, 312, 364, 420, 480, 536, 588, 636, 680, 720, 756, 788, 816, 840, 860, 876, 888, 896, 900 // RA2: row offsets of the 60x30 tile mask
 	};
 
 	/// The table is spelled with literal 0x20 (space) and 0xDB (box) characters, written as
@@ -1673,31 +1617,37 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 	#define __ "\x20"
 	#define XX "\xDB"
 
-	static const unsigned char _tilemask[] = {
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __
-		__ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __
-		__ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __
-		XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
-		__ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __
-		__ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __
-		__ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
-		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+	static const unsigned char _tilemask[] = { // RA2: the 60x30 tile mask
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __
+		__ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __
+		__ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __
+		XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX
+		__ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __
+		__ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __
+		__ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ XX XX XX XX __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
+		__ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __ __
 	};
 
 	#undef __
@@ -1711,27 +1661,22 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 		 * If a random variation was requested, walk the tile-set list to the
 		 * requested variation and draw that tile instead of this one.
 		 */
-		while (true) {
-			IsoDrawData.HalfbrightMask = DSurface::Get_Halfbright_Mask();
-			if (cell_variation == 0) {
-				break;
-			}
-			int num = tileptr->NumTileTypesInSet;
+		IsoDrawData.HalfbrightMask = DSurface::Get_Halfbright_Mask(); // RA2: the halfbright mask once
+		if (cell_variation != 0) { // RA2: a variation draws the variant instead
+			int num = NumTileTypesInSet; // RA2: this tile's own set size
 			if (cell_variation > num - 1) {
 				cell_variation %= num;
 			}
-			if (cell_variation == 0) {
-				break;
+			if (cell_variation != 0) { // RA2: still a variation
+				IsometricTileTypeClass const * next = this; // RA2: walk from this tile
+				do { // RA2: through the set
+					next = next->NextTileTypeInSet; // RA2: to the variant
+				} while (--cell_variation != 0); // RA2: cell_variation steps
+				if (next != this) { // RA2: a different tile draws itself
+					next->Draw_Tile(drawer, subtile, surface, x, y, cliprect, height, brightness, use_z, 0, fill, depth_only, fog, fog_color); // RA2: with variation 0
+					return; // RA2: and the caller returns
+				}
 			}
-			IsometricTileTypeClass const * next = tileptr;
-			do {
-				next = next->NextTileTypeInSet;
-			} while (--cell_variation != 0);
-			if (next == tileptr) {
-				break;
-			}
-			cell_variation = 0;
-			tileptr = next;
 		}
 		Point2D work(x, y);
 		bool clipped_out = false;
@@ -1820,6 +1765,7 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 				int spanw = ISO_DRAW_WIDTH;
 				int spanh = ISO_DRAW_HEIGHT;
 				const IsoTileRecord * record = set->Fetch_Record_Pointer(subtile);
+				if (record != NULL) { // RA2: a missing record is skipped
 
 				IsoDrawData.SpanWidth = spanw;
 				IsoDrawData.SpanHeight = spanh;
@@ -2332,7 +2278,7 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 						bool extra_ok = true;
 
 						if (ex < cliprect.X) {
-							IsoDrawData.SpanWidth = ex - cliprect.X + record->ExtraWidth;
+							IsoDrawData.SpanWidth += ex - cliprect.X; // RA2: added to the span width
 							IsoDrawData.ClipLeft = cliprect.X - ex;
 							ex = cliprect.X;
 							if (IsoDrawData.SpanWidth <= 0) {
@@ -2340,7 +2286,7 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 							}
 						}
 						if (extra_ok && ey < cliprect.Y) {
-							IsoDrawData.SpanHeight = ey - cliprect.Y + IsoDrawData.SpanHeight;
+							IsoDrawData.SpanHeight += ey - cliprect.Y; // RA2: added to the span height
 							IsoDrawData.ClipTop = cliprect.Y - ey;
 							ey = cliprect.Y;
 							if (IsoDrawData.SpanHeight <= 0) {
@@ -2476,6 +2422,7 @@ void IsometricTileTypeClass::Draw_Tile(LightConvertClass * drawer, int subtile, 
 						}
 					}
 				}
+			}
 			}
 		}
 		AlphaLightingRemapInit.Deinit(aremap);
@@ -2926,21 +2873,3 @@ void IsometricTileTypeClass::Build_Preview_Tiles(void)
 	}
 }
 
-
-/// <summary>
-/// Picks one of the three ice tile sets at random.
-/// This routine is used when ice is laid down so that a frozen stretch of map does not
-/// end up paved with a single monotonous pattern.
-/// </summary>
-/// <returns>Returns with the tile set that was picked.</returns>
-IsometricTileType Pick_Ice_Tile_Set(void)
-{
-	int r = Scen->RandomNumber(0,2);
-	if (r == 0) {
-		return(IsometricTileTypeClass::Ice1Set);
-	}
-	if (r == 1) {
-		return(IsometricTileTypeClass::Ice2Set);
-	}
-	return(IsometricTileTypeClass::Ice3Set);
-}
