@@ -235,7 +235,7 @@ unk_004BDC20,0x004BDC20,0x004BDD10,tibsun,matched functions of one source file o
 unk_004BDD10,0x004BDD10,0x004CEDF0,unknown,code not assigned to a module
 fuse,0x004CEDF0,0x004CEFA0,tibsun,"functions compiled from src/fuse.cpp, matched, without gaps"
 unk_004CEFA0,0x004CEFA0,0x004CEFC0,unknown,code not assigned to a module
-gadget,0x004CEFC0,0x004CF6A0,tibsun,"functions compiled from src/gadget.cpp, without gaps; matched except ?Extract_Gadget_At@GadgetClass@@QAEPAV1@HH@Z; six placed by the gap"
+gadget,0x004CEFC0,0x004CF6A0,tibsun,"functions compiled from src/gadget.cpp, matched, without gaps; six placed by the gap"
 unk_004CF6A0,0x004CF6A0,0x004D0040,unknown,code not assigned to a module
 gametime,0x004D0040,0x004D00D0,tibsun,"functions compiled from src/gametime.cpp, matched, without gaps; _$E2 not placed"
 unk_004D00D0,0x004D00D0,0x004D00F0,unknown,code not assigned to a module
