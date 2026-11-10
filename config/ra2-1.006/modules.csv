@@ -448,13 +448,9 @@ unk_0058B400,0x0058B400,0x0058B420,unknown,code not assigned to a module
 unk_0058B420,0x0058B420,0x0058DA10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0058DA10,0x0058DA10,0x0058FDE0,unknown,code not assigned to a module
 matrix3d,0x0058FDE0,0x005914E0,tibsun,"functions compiled from src/matrix3d.cpp, matched, without gaps"
-unk_005914E0,0x005914E0,0x00591760,unknown,code not assigned to a module
-unk_00591760,0x00591760,0x005917C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005917C0,0x005917C0,0x00591840,unknown,code not assigned to a module
-unk_00591840,0x00591840,0x00591860,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00591860,0x00591860,0x00591900,unknown,code not assigned to a module
-unk_00591900,0x00591900,0x00591950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00591950,0x00591950,0x00593530,unknown,code not assigned to a module
+unk_005914E0,0x005914E0,0x005916D0,unknown,code not assigned to a module
+mech,0x005916D0,0x00593210,tibsun,"functions compiled from src/mech.cpp, without gaps; matched except ?Movement_AI@MechLocomotionClass@@AAEX_N@Z; six placed by the gap; ?Mark_All_Occupation_Bits@MechLocomotionClass@@UAGXH@Z not placed; ?Is_Moving_Here@MechLocomotionClass@@UAGEUCoordStruct@@@Z not placed"
+unk_00593210,0x00593210,0x00593530,unknown,code not assigned to a module
 milsectmr,0x00593530,0x00593680,tibsun,"functions compiled from src/milsectmr.cpp, matched, without gaps"
 unk_00593680,0x00593680,0x00594500,unknown,code not assigned to a module
 mission,0x00594500,0x005950F0,tibsun,"functions compiled from src/mission.cpp, matched, without gaps; 27 placed by the gap"
