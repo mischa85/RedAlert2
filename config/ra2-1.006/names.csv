@@ -2628,10 +2628,12 @@ address,symbol,evidence
 0x00663690,?Build_Light_Converter@@YIPAVConvertClass@@AAVHSVClass@@ABVPaletteClass@@1PAV3@ABVSurface@@HHHHPA_N@Z,"compiled from src/scheme.cpp, matched"
 0x006637E0,?Build_Converter@@YIPAVConvertClass@@AAVHSVClass@@ABVPaletteClass@@1ABVSurface@@PAV3@@Z,"compiled from src/scheme.cpp, matched"
 0x00663930,??0ColorScheme@@QAE@XZ,"compiled from src/scheme.cpp, matched"
+0x006639F0,??0ColorScheme@@QAE@PBDAAVHSVClass@@ABVPaletteClass@@2H_N@Z,"compiled from src/scheme.cpp, matched"
 0x00663B40,?Build_Light_Converters@ColorScheme@@QAEXABVPaletteClass@@0HHH@Z,"compiled from src/scheme.cpp, matched"
 0x00663BB0,??1ColorScheme@@QAE@XZ,"compiled from src/scheme.cpp, matched"
 0x00663C40,??8ColorScheme@@QAE_NABV0@@Z,"compiled from src/scheme.cpp, matched"
 0x00663C70,??9ColorScheme@@QAE_NABV0@@Z,"compiled from src/scheme.cpp, matched"
+0x00663CA0,?Find_Or_Make@ColorScheme@@SIHPBDAAVHSVClass@@ABVPaletteClass@@2H@Z,"compiled from src/scheme.cpp, matched"
 0x00663D30,?Fetch_Scheme_By_Name@@YIPAVColorScheme@@PBDH@Z,"compiled from src/scheme.cpp, matched"
 0x00663D90,?Fetch_Scheme_Index_By_Name@@YIHPBDH@Z,"compiled from src/scheme.cpp, matched"
 0x00668730,??0ScriptClass@@QAE@PAVScriptTypeClass@@@Z,"compiled from src/script.cpp, matched"
@@ -4069,7 +4071,7 @@ address,symbol,evidence
 0x0078D587,__decomp,symbol of VC6 LIBCMT.LIB util.obj
 0x0078D665,__ctrlfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
 0x0078D688,__set_statfp,symbol of VC6 LIBCMT.LIB fpctrl.obj
-0x0078D816,_strdup,"inferred: referenced by matched src/rawfile.cpp (15 references); across all matched code never at another address, and no other symbol here"
+0x0078D816,_strdup,"inferred: referenced by matched src/rawfile.cpp (16 references); across all matched code never at another address, and no other symbol here"
 0x0078D841,_open,"inferred: referenced by matched src/vqalib_dstream.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x0078D858,__sopen,symbol of VC6 LIBCMT.LIB open.obj
 0x0078DB27,__itoa,symbol of VC6 LIBCMT.LIB xtoa.obj
@@ -5808,7 +5810,7 @@ address,symbol,evidence
 0x007F1508,??_C@_08HEJL@FogOfWar?$AA@,"inferred: referenced by matched src/special.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007F158C,??_C@_0O@CCKF@TiberiumGrows?$AA@,"inferred: referenced by matched src/special.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007F1FB4,??_C@_0M@IBML@?$CFd?4?$CFd?4?$CFd?4?$CFd?$AA@,"inferred: referenced by matched src/wspudp.cpp (1 reference); across all matched code never at another address, and no other symbol here"
-0x007F264C,?_indexes@@3PA_NA,"inferred: referenced by matched src/scheme.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x007F264C,?_indexes@@3PA_NA,"inferred: referenced by matched src/scheme.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x007F2BC8,??_C@_0M@MFIC@ScriptTypes?$AA@,"inferred: referenced by matched src/script.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x007F2C70,??_C@_0BN@HBAO@Scroll?3?5Abort_Drag_Select?$CI?$CJ?6?$AA@,"inferred: referenced by matched src/scroll.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x007F3070,_baudname,"inferred: referenced by matched src/serialed.cpp (3 references); across all matched code never at another address, and no other symbol here"
@@ -6277,7 +6279,7 @@ address,symbol,evidence
 0x00839900,?Scripts@@3V?$DynamicVectorClass@PAVScriptClass@@@@A,"inferred: referenced by matched src/script.cpp (15 references); across all matched code never at another address, and no other symbol here"
 0x00839944,?TileSurface@@3PAVSurface@@A,"inferred: referenced by matched src/winstub.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x00839948,?SidebarSurface@@3PAVSurface@@A,"inferred: referenced by matched src/shapebtn.cpp (48 references); across all matched code never at another address, and no other symbol here"
-0x00839950,?VisibleSurface@@3PAVSurface@@A,"inferred: referenced by matched src/ddraw.cpp (25 references); across all matched code never at another address, and no other symbol here"
+0x00839950,?VisibleSurface@@3PAVSurface@@A,"inferred: referenced by matched src/ddraw.cpp (26 references); across all matched code never at another address, and no other symbol here"
 0x00839954,?HiddenSurface@@3PAVSurface@@A,"inferred: referenced by matched src/gscreen.cpp (30 references); across all matched code never at another address, and no other symbol here"
 0x00839958,?AlternateSurface@@3PAVSurface@@A,"inferred: referenced by matched src/overlay.cpp (34 references); across all matched code never at another address, and no other symbol here"
 0x0083995C,?LogicalSurface@@3PAVSurface@@A,"inferred: referenced by matched src/checkbox.cpp (74 references); across all matched code never at another address, and no other symbol here"
@@ -6494,7 +6496,7 @@ address,symbol,evidence
 0x00AB6841,?BlackColor@@3VRGBClass@@B,"inferred: referenced by matched src/palette.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x00AB6849,?WhiteColor@@3VRGBClass@@B,"inferred: referenced by matched src/bitfont.cpp (4 references); across all matched code never at another address, and no other symbol here"
 0x00AB6D18,?OwnerTalk@@3VOwnerTalkClass@@A,"inferred: referenced by matched src/ipxconn.cpp (2 references); across all matched code never at another address, and no other symbol here"
-0x00AB6EF8,?ColorSchemes@@3V?$DynamicVectorClass@PAVColorScheme@@@@A,"inferred: referenced by matched src/dial8.cpp (61 references); across all matched code never at another address, and no other symbol here"
+0x00AB6EF8,?ColorSchemes@@3V?$DynamicVectorClass@PAVColorScheme@@@@A,"inferred: referenced by matched src/dial8.cpp (75 references); across all matched code never at another address, and no other symbol here"
 0x00AB7048,?Counter@ScrollClass@@0V?$CDTimerClass@VSystemTimerClass@@@@A,"inferred: referenced by matched src/scroll.cpp (14 references); across all matched code never at another address, and no other symbol here"
 0x00AB96B8,?Repair@SidebarClass@@2VShapeButtonClass@@A,"inferred: referenced by matched src/radar.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00ABCC58,?Upgrade@SidebarClass@@2VShapeButtonClass@@A,"inferred: referenced by matched src/radar.cpp (1 reference); across all matched code never at another address, and no other symbol here"

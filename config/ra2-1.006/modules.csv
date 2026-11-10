@@ -624,7 +624,7 @@ unk_0065F980,0x0065F980,0x0065FBB0,tibsun,matched functions of one source file o
 unk_0065FBB0,0x0065FBB0,0x00662D60,unknown,code not assigned to a module
 unk_00662D60,0x00662D60,0x00662E00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00662E00,0x00662E00,0x00663690,unknown,code not assigned to a module
-unk_00663690,0x00663690,0x00663DF0,unknown,code not assigned to a module
+scheme,0x00663690,0x00663DF0,tibsun,"functions compiled from src/scheme.cpp, matched, without gaps"
 unk_00663DF0,0x00663DF0,0x00668730,unknown,code not assigned to a module
 script,0x00668730,0x006691A0,tibsun,"functions compiled from src/script.cpp, matched, without gaps; ten placed by the gap"
 unk_006691A0,0x006691A0,0x006695E0,unknown,code not assigned to a module
