@@ -232,7 +232,9 @@ unk_004BBEE0,0x004BBEE0,0x004BBF00,unknown,code not assigned to a module
 flasher,0x004BBF00,0x004BBF20,tibsun,"functions compiled from src/flasher.cpp, matched, without gaps"
 unk_004BBF20,0x004BBF20,0x004BDC20,unknown,code not assigned to a module
 unk_004BDC20,0x004BDC20,0x004BDD10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004BDD10,0x004BDD10,0x004CEDF0,unknown,code not assigned to a module
+unk_004BDD10,0x004BDD10,0x004BFFD0,unknown,code not assigned to a module
+fog,0x004BFFD0,0x004C2080,tibsun,"functions compiled from src/fog.cpp, without gaps; matched except ??0FoggedObjectClass@@QAE@ABVCoord@@W4OverlayType@@H@Z and ??0FoggedObjectClass@@QAE@ABVCoord@@W4SmudgeType@@H@Z and ??0FoggedObjectClass@@QAE@PAVBuildingClass@@_N@Z and ??0FoggedObjectClass@@QAE@PAVTerrainClass@@@Z and ??1FoggedObjectClass@@UAE@XZ and ?Draw_Fogged_Objects@@YIXABV?$TRect@H@@@Z and ?Load@FoggedObjectClass@@UAGJPAUIStream@@@Z; two placed by the gap; ??0FoggedObjectClass@@QAE@ABVCoord@@W4OverlayType@@H@Z to ?Draw_Fogged_Objects@@YIXABV?$TRect@H@@@Z share the room between their neighbours"
+unk_004C2080,0x004C2080,0x004CEDF0,unknown,code not assigned to a module
 fuse,0x004CEDF0,0x004CEFA0,tibsun,"functions compiled from src/fuse.cpp, matched, without gaps"
 unk_004CEFA0,0x004CEFA0,0x004CEFC0,unknown,code not assigned to a module
 gadget,0x004CEFC0,0x004CF6A0,tibsun,"functions compiled from src/gadget.cpp, matched, without gaps; six placed by the gap"
