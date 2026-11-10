@@ -68,8 +68,8 @@ unk_00431020,0x00431020,0x00431040,unknown,code not assigned to a module
 bitfont,0x00431040,0x00432200,source,"functions compiled from src/bitfont.cpp, matched, without gaps"
 unk_00432200,0x00432200,0x00432290,unknown,code not assigned to a module
 bittext,0x00432290,0x00432D20,source,"functions compiled from src/bittext.cpp, matched, without gaps"
-unk_00432D20,0x00432D20,0x004347C0,unknown,code not assigned to a module
-unk_004347C0,0x004347C0,0x00434820,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_00432D20,0x00432D20,0x00432FC0,unknown,code not assigned to a module
+blight,0x00432FC0,0x00434820,tibsun,"functions compiled from src/blight.cpp, without gaps; matched except ?AI@BuildingLightClass@@UAEXXZ; four placed by the gap"
 unk_00434820,0x00434820,0x00434940,unknown,code not assigned to a module
 blit,0x00434940,0x00435540,tibsun,"functions compiled from src/blit.cpp, matched, without gaps"
 unk_00435540,0x00435540,0x00435580,unknown,code not assigned to a module
