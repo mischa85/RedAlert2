@@ -712,7 +712,9 @@ unk_006C0CD0,0x006C0CD0,0x006D3EB0,unknown,code not assigned to a module
 unk_006D3EB0,0x006D3EB0,0x006D3ED0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006D3ED0,0x006D3ED0,0x006D7990,unknown,code not assigned to a module
 unk_006D7990,0x006D7990,0x006D79C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006D79C0,0x006D79C0,0x006E4D60,unknown,code not assigned to a module
+unk_006D79C0,0x006D79C0,0x006E3000,unknown,code not assigned to a module
+terrain,0x006E3000,0x006E4B10,tibsun,"functions compiled from src/terrain.cpp, without gaps; matched except ?Take_Damage@TerrainClass@@UAE?AW4ResultType@@AAHHPBVWarheadTypeClass@@PAVTechnoClass@@_N3@Z and ?Unlimbo@TerrainClass@@UAE_NABVCoord@@W4Dir256@@@Z; two placed by the gap; ?GetClassID@TerrainClass@@UAGJPAU_GUID@@@Z not placed; ?Is_Animating@TerrainClass@@QBE_NXZ not placed"
+unk_006E4B10,0x006E4B10,0x006E4D60,unknown,code not assigned to a module
 unk_006E4D60,0x006E4D60,0x006E5260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 terrtype,0x006E5260,0x006E5AD0,tibsun,"functions compiled from src/terrtype.cpp, matched, without gaps; five placed by the gap; ?Fetch_Heap_ID@TerrainTypeClass@@UBEHXZ not placed"
 unk_006E5AD0,0x006E5AD0,0x006E7240,unknown,code not assigned to a module
