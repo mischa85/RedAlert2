@@ -157,7 +157,7 @@ cstream,0x00494800,0x004950F0,tibsun,"functions compiled from src/cstream.cpp, m
 unk_004950F0,0x004950F0,0x00495230,unknown,code not assigned to a module
 data,0x00495230,0x004955B0,tibsun,"functions compiled from src/data.cpp, matched, without gaps; two placed by the gap"
 unk_004955B0,0x004955B0,0x004955D0,unknown,code not assigned to a module
-ddraw,0x004955D0,0x00496460,tibsun,"functions compiled from src/ddraw.cpp, without gaps; matched except ?GetVideoMemory@@YIKXZ"
+ddraw,0x004955D0,0x00496460,tibsun,"functions compiled from src/ddraw.cpp, matched, without gaps"
 unk_00496460,0x00496460,0x00496A20,unknown,code not assigned to a module
 delay,0x00496A20,0x00496D10,tibsun,"functions compiled from src/delay.cpp, matched, without gaps"
 unk_00496D10,0x00496D10,0x00496D30,unknown,code not assigned to a module

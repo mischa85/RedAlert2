@@ -1218,6 +1218,7 @@ address,size,evidence
 0x004957E0,400,"function of the Tiberian Sun reconstruction, matched"
 0x00495970,240,"function of the Tiberian Sun reconstruction, matched"
 0x00495A60,112,"function of the Tiberian Sun reconstruction, matched"
+0x00495AD0,448,"code of src/ddraw.cpp, matched"
 0x00495C90,512,"function of the Tiberian Sun reconstruction, matched"
 0x00495E90,208,"function of the Tiberian Sun reconstruction, matched"
 0x00495F60,96,"function of the Tiberian Sun reconstruction, matched"
