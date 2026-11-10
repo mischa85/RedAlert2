@@ -772,15 +772,7 @@ voxdrsys,0x00716F40,0x00717CD0,tibsun,"functions compiled from src/voxdrsys.cpp,
 unk_00717CD0,0x00717CD0,0x00717F90,unknown,code not assigned to a module
 voxel,0x00717F90,0x00719040,tibsun,"functions compiled from src/voxel.cpp, without gaps; matched except ?Init_Voxel_Matrices@@YIXXZ; _$E9, _$E12, _$E15, _$E18, _$E21, _$E24, _$E27 and _$E30 not placed; two placed by the gap"
 unk_00719040,0x00719040,0x00719060,unknown,code not assigned to a module
-unk_00719060,0x00719060,0x007190C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_007190C0,0x007190C0,0x00719860,unknown,code not assigned to a module
-unk_00719860,0x00719860,0x00719C10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00719C10,0x00719C10,0x00719F60,unknown,code not assigned to a module
-unk_00719F60,0x00719F60,0x0071A950,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0071A950,0x0071A950,0x0071B220,unknown,code not assigned to a module
-unk_0071B220,0x0071B220,0x0071BAA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0071BAA0,0x0071BAA0,0x0071BC30,unknown,code not assigned to a module
-unk_0071BC30,0x0071BC30,0x0071BD00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+voxlib,0x00719060,0x0071BD00,tibsun,"functions compiled from src/voxlib.cpp, without gaps; matched except ?Precalculate_Normal_Lookup@@YIXABVVector3@@0MH@Z; two placed by the gap"
 voxpal,0x0071BD00,0x0071C320,tibsun,"functions compiled from src/voxpal.cpp, matched, without gaps"
 unk_0071C320,0x0071C320,0x0071C590,unknown,code not assigned to a module
 vqa,0x0071C590,0x0071D790,tibsun,"functions compiled from src/vqa.cpp, matched, without gaps; two placed by the gap; ?vqanoop1@@YIHXZ not placed; ?vqanoop2@@YIXXZ not placed; ?vqanoop3@@YIXXZ not placed"
