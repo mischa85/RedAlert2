@@ -65,6 +65,10 @@ MapPreviewClass::~MapPreviewClass(void)
 /// the preview frame of the window while keeping its proportions.
 /// </summary>
 /// <param name="window">The dialog window that owns the preview frame.</param>
+// RA2: a minimum that compares the second value against the first
+static inline int Min_Ref(int a, int b) { return (b < a) ? b : a; }
+
+
 void MapPreviewClass::Blit_Preview(HWND window)
 {
 	ValidateRect(window, NULL);
@@ -75,12 +79,13 @@ void MapPreviewClass::Blit_Preview(HWND window)
 		Rect framerect(winrect.left, winrect.top, winrect.right - winrect.left, winrect.bottom - winrect.top);
 		Rect destrect;
 		Rect srcrect = SurfacePtr->Get_Rect();
-		int scale = min(1000 * framerect.Width / srcrect.Width, 1000 * framerect.Height / srcrect.Height);
+		int scale = Min_Ref(1000 * framerect.Width / srcrect.Width, 1000 * framerect.Height / srcrect.Height); // RA2: Min_Ref
 
 		destrect.X = framerect.X + framerect.Width / 2 - (scale * srcrect.Width) / 2000;
 		destrect.Y = framerect.Y + framerect.Height / 2 - (scale * srcrect.Height) / 2000;
 		destrect.Width = (scale * srcrect.Width) / 1000;
 		destrect.Height = (scale * srcrect.Height) / 1000;
+		AlternateSurface->Fill_Rect(framerect, 0); // RA2: the frame is cleared to black before the preview is blitted
 		AlternateSurface->Blit_From(destrect, *SurfacePtr, SurfacePtr->Get_Rect(), false, false);
 	}
 }
@@ -95,7 +100,7 @@ Point2D MapPreviewClass::Cell_To_Preview_Pixel(Cell cell) const
 	int x;
 	int y;
 	TacticalMap->Lepton_To_Map_Pixel(Coord(cell).X, Coord(cell).Y, x, y);
-	return(Point2D(x / ISO_TILE_PIXEL_W, y / ISO_TILE_PIXEL_H));
+	return(Point2D(x / 60, y / 30)); // RA2: the 60x30 pixel iso tile, as constants
 }
 
 
@@ -309,6 +314,7 @@ bool MapPreviewClass::Read_INI(CCINIClass const & ini)
 
 	if (SurfacePtr != NULL) {
 		delete SurfacePtr;
+		SurfacePtr = NULL; // RA2: the pointer is cleared after the delete
 	}
 
 	Rect rect = ini.Get_Rect(PREVIEW, "Size", Map.LocalRect);
