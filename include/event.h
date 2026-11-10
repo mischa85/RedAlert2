@@ -73,6 +73,7 @@ class EventClass
 			SCATTER,        // Request to scatter from current location.
 			DESTRUCT,       // Self destruct request (surrender action).
 			DEPLOY,         // MCV is to deploy at current location.
+			DETONATE,       // RA2
 			PLACE,          // Place building at location specified.
 			OPTIONS,        // Bring up options screen.
 			GAMESPEED,      // Set game speed
