@@ -56,6 +56,22 @@ Matrix3D Get_Isometric_View_Matrix(void)
 
 
 /// <summary>
+/// Sets the angle that voxel objects are lit from.
+/// This routine turns the light source about the vertical axis and derives the light and
+/// shadow vectors from it.
+/// </summary>
+/// <param name="angle">The angle of the light source.</param>
+void Set_Voxel_Light_Angle(float angle)
+{
+	Matrix3D mtx(true);
+	VoxelLightAngle = angle;
+	mtx.Rotate_Y(angle);
+	VoxelLightSource = mtx * Vector3(-0.70710599f, -0.70710599f, 0); // RA2
+	VoxelShadowLightVector = Vector3(-6 * VoxelLightSource.X, 0, 0);
+}
+
+
+/// <summary>
 /// Builds the fixed matrix tables that the voxel renderer works from.
 /// This routine prepares the orientation of every ramp type, the lighting direction and
 /// tilt vector of every facing, the isometric view transform, and the bounce matrices.
@@ -147,7 +163,7 @@ void Init_Voxel_Matrices(void)
 
 		direction_vec = direction_matrix * Vector3(1, 0, 0);
 
-		tilt_vec = Vector3::Cross_Product(direction_vec, Vector3(0, 0, 1));
+		tilt_vec = Vector3::Cross_Product(LightDirectionVectors[i], Vector3(0, 0, 1)); // RA2: indexed
 
 		Matrix3D tilt_matrix(tilt_vec, VoxelLightAngle);
 		direction_vec = tilt_matrix * direction_vec;

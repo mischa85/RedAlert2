@@ -66,7 +66,7 @@ class PowerClass : public RadarClass
 			POWER_X=5, // RA2: only for the GDI (Allied) sidebar; 0 otherwise
 			POWER_Y=69, // RA2
 			POWER_WIDTH=8, // RA2
-			POWER_PIP_HEIGHT=4,
+			POWER_PIP_HEIGHT=3, // RA2
 			POWER_PIP_EMPTY=0,
 			POWER_PIP_GREEN=1,
 			POWER_PIP_YELLOW=2,

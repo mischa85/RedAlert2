@@ -171,7 +171,8 @@ ColorScheme::ColorScheme(void) :
 /// <param name="screenpalette">The palette that the converter must remap into.</param>
 /// <param name="intensity_levels">The number of lighting levels to build the converter
 /// with.</param>
-ColorScheme::ColorScheme(const char *name, HSVClass &hsv, const PaletteClass & base, const PaletteClass & screenpalette, int intensity_levels) :
+/// <param name="add">Should the scheme join the global color scheme list?</param>
+ColorScheme::ColorScheme(const char *name, HSVClass &hsv, const PaletteClass & base, const PaletteClass & screenpalette, int intensity_levels, bool add) :
 	Name(strdup(name)),
 	HSV(hsv),
 	Converter(NULL),
@@ -190,8 +191,10 @@ ColorScheme::ColorScheme(const char *name, HSVClass &hsv, const PaletteClass & b
 {
 	Converter = (LightConvertClass *)Build_Light_Converter(HSV, base, screenpalette, &Palette, *VisibleSurface, intensity_levels, NORMAL_LIGHT, NORMAL_LIGHT, NORMAL_LIGHT, _indexes);
 
-	ColorSchemes.Add(this);
-	ID = ColorSchemes.Count();
+	if (add) {	// RA2
+		ColorSchemes.Add(this);
+		ID = ColorSchemes.Count();
+	}
 }
 
 

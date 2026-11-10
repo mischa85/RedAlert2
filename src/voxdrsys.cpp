@@ -97,11 +97,12 @@ void VoxelDrawSystem::Init_256_Array(void)
 /// <param name="blue_right">The bit position of blue within the destination pixel.</param>
 void VoxelDrawSystem::Convert_Voxel_Colors(int red_left, int red_right, int green_left, int green_right, int blue_left, int blue_right)
 {
-	for (unsigned i = 0; i < VOXEL_PALETTE_SIZE; i++) {
-		unsigned char red = VoxelRGBColors[i].Red;
-		unsigned char green = VoxelRGBColors[i].Green;
-		unsigned char blue = VoxelRGBColors[i].Blue;
-		Voxel16BitColors[i] = (((red >> red_left) << red_right) | ((green >> green_left) << green_right) | ((blue >> blue_left) << blue_right));
+	unsigned short *out = Voxel16BitColors;	// RA2: walks the green bytes
+	for (unsigned char const *green = &VoxelRGBColors[0].Green; green < &VoxelRGBColors[VOXEL_PALETTE_SIZE].Green; green += sizeof(RGBStruct)) {
+		unsigned char r = green[-1];
+		unsigned char g = green[0];
+		unsigned char b = green[1];
+		*out++ = (((r >> red_left) << red_right) | ((g >> green_left) << green_right) | ((b >> blue_left) << blue_right));
 	}
 }
 

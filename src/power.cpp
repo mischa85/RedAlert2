@@ -77,7 +77,10 @@
 */
 static inline int Power_X(void)
 {
-	return(Scen->IsGDI ? 5 : 0);
+	if (Scen->IsGDI) {	// RA2: if form
+		return(5);
+	}
+	return(0);
 }
 
 
@@ -348,7 +351,13 @@ void PowerClass::Draw_It(bool complete)
 			Map.IsToBlitSidebar = true;
 
 			int x = Power_X();
-			int y = SidebarRect.Y + POWER_Y;
+			int yoff;
+			if (Scen->IsGDI) {	// RA2: the side is read for the y offset too
+				yoff = POWER_Y;
+			} else {
+				yoff = POWER_Y;
+			}
+			int y = SidebarRect.Y + yoff;
 			Rect rect = SidebarSurface->Get_Rect();
 
 			int num = Max_Power_Height() - RedPipCount - YellowPipCount - GreenPipCount;

@@ -29,7 +29,7 @@ class ColorScheme
 {
 	public:
 		ColorScheme(void);
-		ColorScheme(char const * name, HSVClass &hsv, const PaletteClass & base, const PaletteClass & screenpalette, int intensity_levels);
+		ColorScheme(char const * name, HSVClass &hsv, const PaletteClass & base, const PaletteClass & screenpalette, int intensity_levels, bool add = true); // RA2: add
 		~ColorScheme(void);
 
 		void Build_Light_Converters(const PaletteClass & base, const PaletteClass & screenpalette, int r = 1000, int g = 1000, int b = 1000);

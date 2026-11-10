@@ -73,11 +73,4 @@ inline void Set_Voxel_Camera_Angle(float angle)
 	VoxelCameraMatrix.Make_Identity();
 }
 
-inline void Set_Voxel_Light_Angle(float angle)
-{
-	Matrix3D mtx(true);
-	VoxelLightAngle = angle;
-	mtx.Rotate_Y(angle);
-	VoxelLightSource = mtx * Vector3(-1, 0, 0);
-	VoxelShadowLightVector = Vector3(-6 * VoxelLightSource.X, 0, 0);
-}
+void Set_Voxel_Light_Angle(float angle); // RA2: out of line, in voxel.cpp
