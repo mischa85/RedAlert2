@@ -563,10 +563,8 @@ polygon,0x0061BE40,0x0061C260,tibsun,"functions compiled from src/polygon.cpp, m
 unk_0061C260,0x0061C260,0x0061C450,unknown,code not assigned to a module
 power,0x0061C450,0x0061D220,tibsun,"functions compiled from src/power.cpp, matched, without gaps; two placed by the gap"
 unk_0061D220,0x0061D220,0x0061D440,unknown,code not assigned to a module
-unk_0061D440,0x0061D440,0x0061D460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0061D460,0x0061D460,0x0061E2A0,unknown,code not assigned to a module
-unk_0061E2A0,0x0061E2A0,0x0061E490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0061E490,0x0061E490,0x00620600,unknown,code not assigned to a module
+preview,0x0061D440,0x0061EA80,tibsun,"functions compiled from src/preview.cpp, without gaps; matched except ?Create_Preview@MapPreviewClass@@QAEXXZ; ??0MapPreviewClass@@QAE@XZ not placed"
+unk_0061EA80,0x0061EA80,0x00620600,unknown,code not assigned to a module
 psystype,0x00620600,0x00620EA0,tibsun,"functions compiled from src/psystype.cpp, matched, without gaps; five placed by the gap; ?Create_And_Place@ParticleSystemTypeClass@@UBE_NABVCell@@PAVHouseClass@@@Z not placed; ?Create_One_Of@ParticleSystemTypeClass@@UBEPAVObjectClass@@PAVHouseClass@@@Z not placed"
 unk_00620EA0,0x00620EA0,0x00621120,unknown,code not assigned to a module
 ptype,0x00621120,0x00621E80,tibsun,"functions compiled from src/ptype.cpp, matched, without gaps; five placed by the gap"
