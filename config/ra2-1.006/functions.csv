@@ -2374,6 +2374,7 @@ address,size,evidence
 0x005A9BD0,32,"function of the Tiberian Sun reconstruction, matched"
 0x005A9BF0,32,"function of the Tiberian Sun reconstruction, matched"
 0x005A9C10,128,"function of the Tiberian Sun reconstruction, matched"
+0x005A9C90,80,"code of src/mpmath.cpp, matched"
 0x005A9CE0,304,"function of the Tiberian Sun reconstruction, matched"
 0x005A9E10,800,"function of the Tiberian Sun reconstruction, matched"
 0x005AA130,112,"function of the Tiberian Sun reconstruction, matched"

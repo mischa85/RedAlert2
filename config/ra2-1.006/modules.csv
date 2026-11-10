@@ -468,7 +468,7 @@ modemhst,0x00598E10,0x0059CB80,tibsun,"functions compiled from src/modemhst.cpp,
 unk_0059CB80,0x0059CB80,0x0059CBA0,unknown,code not assigned to a module
 modemreg,0x0059CBA0,0x0059D590,tibsun,"functions compiled from src/modemreg.cpp, matched, without gaps; one placed by the gap"
 unk_0059D590,0x0059D590,0x0059EB60,unknown,code not assigned to a module
-motlib,0x0059EB60,0x0059EDE0,tibsun,"functions compiled from src/motlib.cpp, without gaps; matched except ?Read_File@MotionLibrary@@QAEHAAVFileClass@@@Z; two placed by definition order"
+unk_0059EB60,0x0059EB60,0x0059EDE0,unknown,code not assigned to a module
 unk_0059EDE0,0x0059EDE0,0x0059F1D0,unknown,code not assigned to a module
 unk_0059F1D0,0x0059F1D0,0x0059F250,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0059F250,0x0059F250,0x005A0250,unknown,code not assigned to a module
@@ -480,7 +480,7 @@ mpfreeforall,0x005A70C0,0x005A71B0,source,"functions compiled from src/mpfreefor
 unk_005A71B0,0x005A71B0,0x005A73E0,unknown,code not assigned to a module
 mplayer,0x005A73E0,0x005A74B0,tibsun,"functions compiled from src/mplayer.cpp, matched, without gaps"
 unk_005A74B0,0x005A74B0,0x005A7540,unknown,code not assigned to a module
-mpmath,0x005A7540,0x005AA380,tibsun,"functions compiled from src/mpmath.cpp, without gaps; matched except ?XMP_Small_Divisors_Test@@YI_NPBIH@Z; one placed by the gap; ?XMP_Fetch_Prime_Table@@YIPBGXZ not placed; ?XMP_Is_Prime@@YI_NPBIH@Z not placed"
+mpmath,0x005A7540,0x005AA380,tibsun,"functions compiled from src/mpmath.cpp, matched, without gaps; one placed by the gap; ?XMP_Fetch_Prime_Table@@YIPBGXZ not placed; ?XMP_Is_Prime@@YI_NPBIH@Z not placed"
 unk_005AA380,0x005AA380,0x005ABDC0,unknown,code not assigned to a module
 mpsiegeteam,0x005ABDC0,0x005ABEB0,source,"functions compiled from src/mpsiegeteam.cpp, matched, without gaps; one placed by the gap; ??1MultiplayerSiegeAttackerTeam@@UAE@XZ not placed"
 unk_005ABEB0,0x005ABEB0,0x005ABF20,unknown,code not assigned to a module
