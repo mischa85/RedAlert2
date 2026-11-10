@@ -13,83 +13,16 @@
 #include "msanim.h"
 #include "msengine.h"
 #include "rect.h"
+#include "wstring.h" // RA2: the menu's names are Wstrings
 
 class GraphicMenuItem;
 class INIClass;
 class MSSfxEntry;
 template<class T> class DynamicVectorClass;
 
-class GraphicMenuString
-{
-	public:
-		GraphicMenuString(void)
-		{
-			Buffer = new char[10];
-		}
-		~GraphicMenuString(void) {}
-
-		void Set(char const * string)
-		{
-			strcpy(Buffer, string);
-		}
-
-
-		void Replace(char const * string)
-		{
-			delete [] Buffer;
-			int len = strlen(string) + 1;
-			Buffer = new char[len + 1];
-			strcpy(Buffer, string);
-		}
-
-
-		void Replace_With_Extension(char const * string, char const * ext, int extlen)
-		{
-			delete [] Buffer;
-			int len = strlen(string) + extlen;
-			Buffer = new char[len + 1];
-			strcpy(Buffer, string);
-			strcat(Buffer, ext);
-		}
-
-		void Set_With_Extension(char const *string, char const *ext)
-		{
-			strcpy(Buffer, string);
-			strcat(Buffer, ext);
-		}
-
-		void Set_Extension(char const * ext)
-		{
-			strcat(Buffer, ext);
-		}
-
-		void Release(void)
-		{
-			delete [] Buffer;
-		}
-
-		void Reserve(int len)
-		{
-			Buffer = new char[len];
-		}
-
-		char const * Peek(void)
-		{
-			return(Buffer);
-		}
-
-	private:
-		/*
-		 * Pointer to the heap block that holds the string. It is not freed when the object
-		 * is destroyed, so the owner must call the Release function before letting the
-		 * string go.
-		 */
-		char * Buffer;
-};
-
 class GraphicMenu
 {
-	friend GraphicMenu * _Graphic_Menu(INIClass const & ini, const char * name);
+	friend GraphicMenu * _Graphic_Menu(INIClass & ini, Wstring const & name); // RA2: Wstring name
 
 	typedef DynamicVectorClass<GraphicMenuItem *> ITEM_LIST;
 	typedef VectorCursor<GraphicMenuItem *, ITEM_LIST> ITEM_ITER;
@@ -99,7 +32,8 @@ class GraphicMenu
 		virtual ~GraphicMenu(void);
 
 		void Set_Animation(MSAnim * anim);
-		void Set_Theme_Name(const char * name);
+		void Set_Theme_Name(Wstring const & name); // RA2: Wstring name
+		void Set_Background_Name(Wstring const & name); // RA2: sets the background PCX name
 
 		void Add_Item(GraphicMenuItem * item);
 
@@ -121,13 +55,13 @@ class GraphicMenu
 		 * until the menu description supplies another. The shell menu takes a copy of it so
 		 * that the same backdrop can stay up after this menu has gone.
 		 */
-		GraphicMenuString BackgroundName;
+		Wstring BackgroundName; // RA2: a Wstring, not GraphicMenuString
 
 		/*
 		 * This is the name of the music theme played while the menu is up. It starts when
 		 * the menu takes control and is faded out again once the player picks something.
 		 */
-		GraphicMenuString ThemeName;
+		Wstring ThemeName; // RA2: a Wstring, not GraphicMenuString
 
 	private:
 		/*
@@ -145,4 +79,4 @@ class GraphicMenu
 };
 
 
-GraphicMenu * Do_Graphic_Menu(const char * ini, const char * name);
+GraphicMenu * Do_Graphic_Menu(Wstring const & ini, Wstring const & name); // RA2: Wstring names

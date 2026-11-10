@@ -18,12 +18,14 @@
 #include "grphmitm.h"
 #include "ini.h"
 #include "keyboard.h"
+#include "misc.h" // RA2: the Bink rect is the video mode's size
 #include "msanim.h"
 #include "ownrdraw.h"
 #include "theme.h"
+#include "wstring.h" // RA2: names and file names are Wstrings
 
 GraphicMenu * _Graphic_Menu(INIClass const & ini, const char * name);
-GraphicMenuItem * GM_Create_Item_From_INI(const char * name, INIClass const & ini, MSEngine & engine, Point2D & image_size);
+GraphicMenuItem * GM_Create_Item_From_INI(Wstring const & name, INIClass const & ini, MSEngine & engine, Point2D & image_size); // RA2: Wstring name
 
 
 /// <summary>
@@ -36,7 +38,7 @@ GraphicMenuItem * GM_Create_Item_From_INI(const char * name, INIClass const & in
 /// <param name="name">The name of the section that describes this menu.</param>
 /// <returns>Returns with a pointer to the menu built, or NULL if the file is missing or
 /// unreadable.</returns>
-GraphicMenu * Do_Graphic_Menu(const char * ini, const char * name)
+GraphicMenu * __fastcall Do_Graphic_Menu(Wstring const & ini, Wstring const & name) // RA2: __fastcall, the file and menu names as Wstrings
 {
 	CCFileClass file(ini);
 	if (!file.Is_Available()) {
@@ -58,43 +60,53 @@ GraphicMenu * Do_Graphic_Menu(const char * ini, const char * name)
 /// <param name="name">The name of the section that describes this menu.</param>
 /// <returns>Returns with a pointer to the menu built, or NULL if it could not be
 /// allocated.</returns>
-GraphicMenu * _Graphic_Menu(INIClass const & ini, const char * name)
+GraphicMenu * __fastcall _Graphic_Menu(INIClass & ini, Wstring const & name) // RA2: __fastcall, a non-const INI and a Wstring name
 {
+	if (!ini.Section_Present(name.text())) { // RA2: the section must exist
+		return(NULL); // RA2: no menu without it
+	}
 	GraphicMenu * menu = new GraphicMenu;
-	char buffer[256];
-
 	if (menu == NULL) {
 		return(NULL);
 	}
 
-	bool has_background = ini.Get_String(name, "Background", "", buffer, sizeof(buffer)) > 0;
-	menu->BackgroundName.Replace_With_Extension(buffer, ".PCX", sizeof(".PCX") - 1);
+	char entry[8]; // RA2: the entry buffer is declared first
+	Wstring buffer; // RA2: the INI string is a Wstring
+	bool has_background = ini.Get_String(name, "Background", "", buffer) > 0; // RA2: read into that Wstring
+	Wstring pcx = buffer + ".PCX"; // RA2: name + .PCX
+	menu->BackgroundName = pcx; // RA2: kept as the background name
 
 	Point2D pt(0,0);
 
 	if (has_background) {
-		strncat(buffer, ".VQA", sizeof(buffer));
+		Wstring vqa = buffer + ".VQA"; // RA2: name + .VQA
 		MSAnim * anim = NULL;
-		if (CCFileClass(buffer).Is_Available()) {
-			anim = new MSVQAnim(buffer, AlternateSurface, menu->Engine.Get_Anims(), true);
+		if (CCFileClass(vqa).Is_Available(false)) { // RA2: Is_Available(false)
+			anim = new MSVQAnim(vqa, AlternateSurface, menu->Engine.Get_Anims(), true); // RA2: the VQA by name
 		}
 		if (anim == NULL) {
-			anim = new MSPCXAnim(buffer, menu->Engine.Get_Anims(), true);
+			Wstring bik = buffer + ".BIK"; // RA2: without a VQA, name + .BIK
+			if (CCFileClass(bik).Is_Available(false)) { // RA2: Is_Available(false)
+				Rect rect(0, 0, VideoModeWidth, VideoModeHeight); // RA2: a full-screen rect
+				anim = new MSBinkAnim(bik, AlternateSurface, menu->Engine.Get_Anims(), rect, true); // RA2: a Bink animation
+			}
+		}
+		if (anim == NULL) { // RA2: the PCX only when there is neither
+			anim = new MSPCXAnim(pcx.get(), menu->Engine.Get_Anims(), true); // RA2: from the PCX name
 		}
 
 		menu->Set_Animation(anim);
 		pt = anim->Get_Rect().TopLeft;
 	}
 
-	if (ini.Get_String(name, "Theme", "", buffer, sizeof(buffer)) > 0) {
+	if (ini.Get_String(name, "Theme", "", buffer) > 0) { // RA2: read into the Wstring
 		menu->Set_Theme_Name(buffer);
 	}
 
-	char entry[8];
 	int item_max = ini.Get_Int(name, "ItemMax", 100);
 	for (int i = 0; i <= item_max; i++) {
 		sprintf(entry, "%d", i);
-		if (ini.Get_String(name, entry, "", buffer, sizeof(buffer)) > 0) {
+		if (ini.Get_String(name, entry, "", buffer) > 0) { // RA2: read into the Wstring
 			GraphicMenuItem * item = GM_Create_Item_From_INI(buffer, ini, menu->Engine, pt);
 			if (item != NULL) {
 				menu->Add_Item(item);
@@ -113,11 +125,11 @@ GraphicMenu * _Graphic_Menu(INIClass const & ini, const char * name)
 /// </summary>
 GraphicMenu::GraphicMenu(void) :
 	Engine(),
-	Items(),
-	CurrentAnim(NULL)
+	BackgroundName("Title.PCX"), // RA2: the names are initialised in the list
+	ThemeName("Intro"), // RA2: the names are initialised in the list
+	CurrentAnim(NULL), // RA2: CurrentAnim before Items
+	Items() // RA2: Items last
 {
-	BackgroundName.Set("Title.PCX");
-	ThemeName.Set("Intro");
 }
 
 
@@ -127,12 +139,12 @@ GraphicMenu::GraphicMenu(void) :
 /// </summary>
 GraphicMenu::~GraphicMenu(void)
 {
-	BackgroundName.Release();
-	ThemeName.Release();
-
 	for (ITEM_ITER iter = Items; iter; iter++) {
 		delete *iter;
 	}
+	AlternateSurface->Fill(0); // RA2: the surfaces are cleared
+	HiddenSurface->Fill(0); // RA2: the surfaces are cleared
+	VisibleSurface->Blit_From(*HiddenSurface, false, true); // RA2: and the hidden one shown when the menu goes
 }
 
 
@@ -154,6 +166,8 @@ void GraphicMenu::Set_Item_Enabled(int id, bool enabled)
 }
 
 
+
+
 /// <summary>
 /// Runs the menu until the player picks something.
 /// This routine starts the menu's theme and then takes over the mouse and keyboard,
@@ -161,14 +175,13 @@ void GraphicMenu::Set_Item_Enabled(int id, bool enabled)
 /// The chosen item performs its action before control is handed back.
 /// </summary>
 /// <returns>Returns with the identifier of the menu item the player chose.</returns>
-int GraphicMenu::Presentation(void)
+int GraphicMenu::Presentation(void) // RA2: defined here, after Set_Item_Enabled (0x004DE9E0)
 {
-	Theme.Play_Song(Theme.From_Name(ThemeName.Peek()));
+	Theme.Play_Song(Theme.From_Name(ThemeName.get())); // RA2: Wstring's text
 
-	OwnerDraw::Capture_Mouse();
-
+	AlternateSurface->Fill(0); // RA2: the mouse is not captured here
 	HiddenSurface->Fill(0);
-	AlternateSurface->Fill(0);
+	VisibleSurface->Blit_From(*HiddenSurface); // RA2: the blank screen is shown before the loop
 
 	bool done = false;
 	GraphicMenuItem * item = NULL;
@@ -182,7 +195,7 @@ int GraphicMenu::Presentation(void)
 	Engine.Restore_Anims(AlternateSurface->Get_Rect());
 	Engine.Restore_And_Advance();
 
-	while (!done) {
+	do { // RA2: a do-while loop
 		Hide_Mouse();
 		Engine.Wait_For_Focus();
 		Show_Mouse();
@@ -219,7 +232,7 @@ int GraphicMenu::Presentation(void)
 		}
 
 		Engine.Wait_Delay(1);
-	}
+	} while (!done); // RA2: tested at the end
 
 	if (item != NULL) {
 		item->Action(&Engine);
@@ -257,9 +270,9 @@ void GraphicMenu::Set_Animation(MSAnim *anim)
 /// <summary>
 /// Sets the music theme that plays while this menu is up.
 /// </summary>
-void GraphicMenu::Set_Theme_Name(const char * name)
+void GraphicMenu::Set_Theme_Name(Wstring const & name) // RA2: a Wstring name
 {
-	ThemeName.Replace(name);
+	ThemeName = name; // RA2: Wstring assignment
 }
 
 
@@ -312,3 +325,13 @@ GraphicMenuItem * GraphicMenu::Get_Item_For_Key(KeyNumType key)
 	}
 	return(NULL);
 }
+
+
+/// <summary>
+/// Sets the name of the menu's background PCX.
+/// </summary>
+void GraphicMenu::Set_Background_Name(Wstring const & name) // RA2: sets the background PCX name
+{
+	BackgroundName = name; // RA2: Wstring assignment
+}
+
