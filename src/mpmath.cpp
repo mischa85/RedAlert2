@@ -2323,8 +2323,8 @@ bool XMP_Small_Divisors_Test(const digit * candidate, int precision)
 {
 	digit quotient[MAX_UNIT_PRECISION];
 
-	for (unsigned i = 0; i < ARRAY_SIZE(primeTable); i++) {
-		if (XMP_Unsigned_Div_Int(quotient, candidate, primeTable[i], precision) == 0) return(false);
+	for (const unsigned short * ptr = primeTable; ptr < &primeTable[ARRAY_SIZE(primeTable)]; ptr++) {	// RA2
+		if (XMP_Unsigned_Div_Int(quotient, candidate, *ptr, precision) == 0) return(false);
 	}
 	return(true);
 }
@@ -2352,6 +2352,27 @@ bool XMP_Small_Divisors_Test(const digit * candidate, int precision)
  * HISTORY:                                                                                    *
  *   07/02/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+// RA2: XMP_Is_Prime runs the Fermat witnesses over a range of the prime table.
+static inline bool Fermat_Test(const digit * candidate_prime, const unsigned short * first, const unsigned short * last, int precision)
+{
+	digit term[MAX_UNIT_PRECISION];
+	XMP_Move(term, candidate_prime, precision);
+	XMP_Dec(term, precision);
+
+	for (const unsigned short * ptr = first; ptr < last; ptr++) {
+		// if ((x**(p-1)) mod p) != 1, then p is not prime
+		digit result[MAX_UNIT_PRECISION];
+
+		digit small_prime[MAX_UNIT_PRECISION];
+		XMP_Init(small_prime, *ptr, precision);
+
+		xmp_exponent_mod(result, small_prime, term, candidate_prime, precision);
+
+		if (!XMP_Test_Eq_Int(result, 1, precision)) return(false);
+	}
+	return(true);
+}
+
 bool XMP_Fermat_Test(const digit * candidate_prime, unsigned rounds, int precision)
 {
 	assert(rounds < ARRAY_SIZE(primeTable));
@@ -2565,7 +2586,7 @@ bool XMP_Is_Prime(digit const * prime, int precision)
 	**	the theorum for several rounds to ensure a high degree of
 	**	confidence.
 	*/
-	if (!XMP_Fermat_Test(prime, 2, precision)) return(false);
+	if (!Fermat_Test(prime, primeTable, &primeTable[2], precision)) return(false);	// RA2
 
 	/*
 	**	If all of the above tests have not confirmed primality nor

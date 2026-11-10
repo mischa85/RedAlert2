@@ -59,6 +59,9 @@
 #include <share.h>
 
 
+extern bool IsReadingAudioFile; // RA2: set while the streamer reads from a file
+
+
 /***********************************************************************************************
  * RawFileClass::~RawFileClass -- Default deconstructor for a file object.                     *
  *                                                                                             *
@@ -472,6 +475,7 @@ int RawFileClass::Read(void * buffer, int size)
 			buffer = (char *)buffer + bytesread;
 			size -= bytesread;
 			total += bytesread;
+			if (IsReadingAudioFile) break;	// RA2: an audio stream read gives up on an error
 			Error(GetLastError(), true, Filename);
 			continue;
 		}
@@ -481,6 +485,7 @@ int RawFileClass::Read(void * buffer, int size)
 		if (bytesread == 0) break;
 	}
 	bytesread = total;
+	IsReadingAudioFile = false;	// RA2
 
 	/*
 	**	Close the file if it was opened by this routine and return

@@ -310,8 +310,9 @@ int IPXGlobalConnClass::Receive_Packet (void * buf, int buflen,
 				ackpacket.ProductID = ProductID;
 				ackpacket.Header.ForwardMask = 0; // RA2
 				DebugString("Sending global ack packet to port %d\n", port); // RA2
+				ConnectionClass * router = PacketRouterConnection; // RA2
 				if (!Send ((char *)&ackpacket, sizeof(GlobalHeaderType),
-					address, sizeof(IPXAddressClass), this == PacketRouterConnection, port)) { // RA2: router flag and port
+					address, sizeof(IPXAddressClass), this == router, port)) { // RA2: router flag and port
 					DebugString("Failed to ack global packet\n");
 				}
 			}
