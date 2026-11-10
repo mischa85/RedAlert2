@@ -6325,7 +6325,6 @@ address,symbol,evidence
 0x0084E9A8,?BinkVolume@@3MA,"inferred: referenced by matched src/bfiofile2.cpp (5 references); across all matched code never at another address, and no other symbol here"
 0x0084E9D0,?Instance@BitText@@2PAV1@A,"inferred: referenced by matched src/cctooltip.cpp (5 references); across all matched code never at another address, and no other symbol here"
 0x0084E9E8,?Instance@BitFont@@2PAV1@A,"inferred: referenced by matched src/bittext.cpp (18 references); across all matched code never at another address, and no other symbol here"
-0x0084EC68,?BRIDGE_LEPTON_HEIGHT@@3HB,"inferred: referenced by matched src/bounce.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00850828,?_OverrideSwap@CD@@0_NA,"inferred: referenced by matched src/cd.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x00850898,?First@CDFileClass@@0PAUSearchDriveType@1@A,"inferred: referenced by matched src/cdfile.cpp (14 references); across all matched code never at another address, and no other symbol here"
 0x0085089C,?CurrentCDDrive@CDFileClass@@0HA,"inferred: referenced by matched src/cdfile.cpp (7 references); across all matched code never at another address, and no other symbol here"
