@@ -459,7 +459,8 @@ milsectmr,0x00593530,0x00593680,tibsun,"functions compiled from src/milsectmr.cp
 unk_00593680,0x00593680,0x00594500,unknown,code not assigned to a module
 mission,0x00594500,0x005950F0,tibsun,"functions compiled from src/mission.cpp, matched, without gaps; 27 placed by the gap"
 unk_005950F0,0x005950F0,0x00595190,unknown,code not assigned to a module
-mixfile,0x00595190,0x00595BC0,tibsun,"functions compiled from src/mixfile.cpp, without gaps; matched except ??0MixFileClass@@QAE@PBDPBVPKey@@@Z"
+unk_00595190,0x00595190,0x005952D0,unknown,code not assigned to a module
+mixfile,0x005952D0,0x00595BC0,tibsun,"functions compiled from src/mixfile.cpp, matched, without gaps"
 unk_00595BC0,0x00595BC0,0x00596010,unknown,code not assigned to a module
 modemgst,0x00596010,0x00598C20,tibsun,"functions compiled from src/modemgst.cpp, matched, without gaps"
 unk_00598C20,0x00598C20,0x00598E10,unknown,code not assigned to a module
