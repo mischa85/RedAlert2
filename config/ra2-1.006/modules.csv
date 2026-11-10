@@ -245,14 +245,8 @@ getcd,0x004D2940,0x004D2A10,tibsun,"functions compiled from src/getcd.cpp, match
 unk_004D2A10,0x004D2A10,0x004D2A20,unknown,code not assigned to a module
 getcpu,0x004D2A20,0x004D2A60,tibsun,"functions compiled from src/getcpu.cpp, matched, without gaps"
 unk_004D2A60,0x004D2A60,0x004DE260,unknown,code not assigned to a module
-unk_004DE260,0x004DE260,0x004DE380,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004DE380,0x004DE380,0x004DE960,unknown,code not assigned to a module
-unk_004DE960,0x004DE960,0x004DE9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004DE9E0,0x004DE9E0,0x004DED20,unknown,code not assigned to a module
-unk_004DED20,0x004DED20,0x004DED60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004DED60,0x004DED60,0x004DED70,unknown,code not assigned to a module
-unk_004DED70,0x004DED70,0x004DEEE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004DEEE0,0x004DEEE0,0x004DF350,unknown,code not assigned to a module
+grphmenu,0x004DE260,0x004DEEF0,tibsun,"functions compiled from src/grphmenu.cpp, without gaps; matched except ?_Graphic_Menu@@YIPAVGraphicMenu@@AAVINIClass@@ABVWstring@@@Z and ?Presentation@GraphicMenu@@QAEHXZ"
+unk_004DEEF0,0x004DEEF0,0x004DF350,unknown,code not assigned to a module
 grphmenu2,0x004DF350,0x004DF7B0,source,"functions compiled from src/grphmenu2.cpp, matched, without gaps"
 unk_004DF7B0,0x004DF7B0,0x004DF810,unknown,code not assigned to a module
 grphmimg,0x004DF810,0x004DFF10,tibsun,"functions compiled from src/grphmimg.cpp, matched, without gaps"
