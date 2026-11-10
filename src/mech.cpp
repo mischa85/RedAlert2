@@ -111,11 +111,10 @@ boolean STDMETHODCALLTYPE MechLocomotionClass::Process(void)
 /// <param name="to">The location to walk to.</param>
 void STDMETHODCALLTYPE MechLocomotionClass::Move_To(CoordStruct to)
 {
-	if (LinkedTo->StunDuration <= 0) {
-		Coord coord = to;
-		DestinationCoord = coord;
-		if (Map[(Coord)coord].IsUnderBridge) {
-			DestinationCoord.Z += Tactical::Pixel_To_Z_Lepton(4 * ISO_TILE_PIXEL_H / 2);
+	if (!LinkedTo->IsUnderEMP() && !LinkedTo->IsParalyzed() && !LinkedTo->IsBeingWarpedOut() && !LinkedTo->IsWarpingIn()) { // RA2: refuses while under EMP, paralysed or warping, not on StunDuration
+		DestinationCoord = to; // RA2: no local copy of the destination
+		if (Map[(Coord)to].IsUnderBridge) {
+			DestinationCoord.Z += Tactical::Pixel_To_Z_Lepton(60); // RA2: 60 pixels, 4 * 30 / 2 for RA2's 30-pixel tiles
 		}
 		IsMoving = true;
 	}
@@ -144,8 +143,6 @@ void STDMETHODCALLTYPE MechLocomotionClass::Stop_Moving(void)
 /// <param name="coord">The direction the mech should come to face.</param>
 void MechLocomotionClass::Do_Turn(DirStruct coord)
 {
-	assert(LinkedTo->IsActive);
-
 	LinkedTo->PrimaryFacing.Set_Desired(coord);
 }
 
@@ -171,7 +168,7 @@ void STDMETHODCALLTYPE MechLocomotionClass::Force_Immediate_Destination(CoordStr
 /// </summary>
 /// <param name="continue_moving">Should the routine pick a fresh step immediately when the
 /// one it chose turns out to be unusable?</param>
-void MechLocomotionClass::Movement_AI(bool continue_moving)
+void MechLocomotionClass::Movement_AI(bool continue_moving) // RA2: defined here, between Force_Immediate_Destination and Mark_Head_To
 {
 	if (LinkedTo->PrimaryFacing.Is_Rotating()) {
 		return;
@@ -724,10 +721,8 @@ boolean STDMETHODCALLTYPE MechLocomotionClass::Is_Moving_Now(void)
 /// <param name="mark">The marking operation to perform; MARK_UP releases the cell.</param>
 void STDMETHODCALLTYPE MechLocomotionClass::Mark_All_Occupation_Bits(int mark)
 {
-	if (mark == MARK_UP) {
+	if (mark == MARK_UP) { // RA2: only clears; there is no branch setting the bit
 		LinkedTo->Clear_Occupy_Bit((Coord)Head_To_Coord());
-	} else {
-		LinkedTo->Set_Occupy_Bit((Coord)Head_To_Coord());
 	}
 }
 
@@ -749,3 +744,5 @@ boolean STDMETHODCALLTYPE MechLocomotionClass::Is_Moving_Here(CoordStruct to)
 
 	return(false);
 }
+
+
