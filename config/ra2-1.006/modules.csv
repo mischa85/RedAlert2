@@ -76,8 +76,8 @@ unk_00435540,0x00435540,0x00435580,unknown,code not assigned to a module
 blowfish,0x00435580,0x00435690,tibsun,"functions compiled from src/blowfish.cpp, matched, without gaps; one placed by the gap"
 blowpipe,0x00435690,0x00435840,tibsun,"functions compiled from src/blowpipe.cpp, matched, without gaps; one placed by alphabetical order"
 blwstraw,0x00435840,0x00435970,tibsun,"functions compiled from src/blwstraw.cpp, matched, without gaps; one placed by alphabetical order"
-unk_00435970,0x00435970,0x00436DC0,unknown,code not assigned to a module
-bounce,0x00436DC0,0x004370E0,tibsun,"functions compiled from src/bounce.cpp, matched, without gaps; ?Init@BounceClass@@QAEXABVCoord@@NNNN@Z not placed; ?AI@BounceClass@@QAE?AW4BounceResultType@@XZ not placed"
+unk_00435970,0x00435970,0x00436C70,unknown,code not assigned to a module
+bounce,0x00436C70,0x004370E0,tibsun,"functions compiled from src/bounce.cpp, matched, without gaps; ?AI@BounceClass@@QAE?AW4BounceResultType@@XZ not placed"
 unk_004370E0,0x004370E0,0x00437910,unknown,code not assigned to a module
 brain,0x00437910,0x00437F60,tibsun,"functions compiled from src/brain.cpp, matched, without gaps; three placed by the gap"
 unk_00437F60,0x00437F60,0x004382C0,unknown,code not assigned to a module
