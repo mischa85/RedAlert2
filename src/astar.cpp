@@ -1613,7 +1613,7 @@ bool AStarClass::Find_Path_Hierarchical(Cell const & from, Cell const & to, MZon
 
 					double extra_score = is_cross_block ? 0.001 : 0.0;
 
-					static const float _passability_scores[PASSABLE_COUNT] = {1.0, 0.0, 0.0, 1.0, 0.0, 1.0, 1.0};
+					static const float _passability_scores[PASSABLE_COUNT] = {1.0, 0.0, 0.0, 1.0, 1.0, 0.0, 1.0, 1.0}; // RA2: PASSABLE_BEACH scores 1
 					float score = _passability_scores[passability] + best_node->Score + (double)threat + extra_score;
 
 					if ((working_ids[to_subzone] != UniqueID || costs[to_subzone] > score) && (is_coarse || coarser_final_ids[to_coarser_subzone] == UniqueID || passability == PASSABLE_CRUSH) && pass_table[passability] == TRAVERSAL_PASSABLE) {
