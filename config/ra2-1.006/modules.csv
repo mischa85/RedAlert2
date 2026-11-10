@@ -772,7 +772,7 @@ unk_00716EE0,0x00716EE0,0x00716F10,tibsun,matched functions of one source file o
 unk_00716F10,0x00716F10,0x00716F40,unknown,code not assigned to a module
 voxdrsys,0x00716F40,0x00717CD0,tibsun,"functions compiled from src/voxdrsys.cpp, matched, without gaps; four placed by the gap"
 unk_00717CD0,0x00717CD0,0x00717F90,unknown,code not assigned to a module
-unk_00717F90,0x00717F90,0x00719040,unknown,code not assigned to a module
+voxel,0x00717F90,0x00719040,tibsun,"functions compiled from src/voxel.cpp, without gaps; matched except ?Init_Voxel_Matrices@@YIXXZ; two placed by the gap"
 unk_00719040,0x00719040,0x00719060,unknown,code not assigned to a module
 voxlib,0x00719060,0x0071BD00,tibsun,"functions compiled from src/voxlib.cpp, without gaps; matched except ?Precalculate_Normal_Lookup@@YIXABVVector3@@0MH@Z; two placed by the gap"
 voxpal,0x0071BD00,0x0071C320,tibsun,"functions compiled from src/voxpal.cpp, matched, without gaps"

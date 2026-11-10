@@ -3788,6 +3788,7 @@ address,size,evidence
 0x00717C30,80,"function of the Tiberian Sun reconstruction, matched"
 0x00717C80,80,"function of the Tiberian Sun reconstruction, matched"
 0x00717F90,32,"function of the Tiberian Sun reconstruction, matched"
+0x00717FB0,176,"code of src/voxel.cpp, matched"
 0x00718D40,32,"function of the Tiberian Sun reconstruction, matched"
 0x00718D60,32,"function of the Tiberian Sun reconstruction, matched"
 0x00718D80,112,"function of the Tiberian Sun reconstruction, matched"
