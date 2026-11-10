@@ -36,10 +36,8 @@ unk_0041C2E0,0x0041C2E0,0x0041C5C0,unknown,code not assigned to a module
 aitrig,0x0041C5C0,0x0041E270,tibsun,"functions compiled from src/aitrig.cpp, matched, without gaps; five placed by the gap"
 unk_0041E270,0x0041E270,0x0041E3E0,unknown,code not assigned to a module
 alphalighting,0x0041E3E0,0x0041E600,tibsun,"functions compiled from src/alphalighting.cpp, matched, without gaps; ??0AlphaLightingRemapInitClass@@QAE@XZ not placed; ??1AlphaLightingRemapInitClass@@QAE@XZ not placed; ??1AlphaLightingRemapClass@@QAE@XZ not placed"
-unk_0041E600,0x0041E600,0x0041F0C0,unknown,code not assigned to a module
-unk_0041F0C0,0x0041F0C0,0x0041F0F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0041F0F0,0x0041F0F0,0x0041F950,unknown,code not assigned to a module
-unk_0041F950,0x0041F950,0x0041F9C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_0041E600,0x0041E600,0x0041EBE0,unknown,code not assigned to a module
+alphashp,0x0041EBE0,0x0041F9C0,tibsun,"functions compiled from src/alphashp.cpp, without gaps; matched except ?Draw_In_Area@AlphaShapeClass@@SIXABVPoint2D@@ABV?$TRect@H@@@Z and ?Draw_All@AlphaShapeClass@@SIXABV?$TRect@H@@@Z; three placed by the gap; ?Draw_In_Area@AlphaShapeClass@@SIXABVPoint2D@@ABV?$TRect@H@@@Z to ?Draw_All@AlphaShapeClass@@SIXABV?$TRect@H@@@Z share the room between their neighbours"
 unk_0041F9C0,0x0041F9C0,0x00423F90,unknown,code not assigned to a module
 animfile,0x00423F90,0x00424B90,tibsun,"functions compiled from src/animfile.cpp, matched, without gaps"
 unk_00424B90,0x00424B90,0x00426B70,unknown,code not assigned to a module
