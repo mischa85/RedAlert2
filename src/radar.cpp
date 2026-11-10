@@ -763,7 +763,6 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 	Cell			cell(0,0);                  // cell num click happened over
 	bool			shadow;                     // is the cell in shadow or not
 	ObjectClass * object = NULL;                // what object is in the cell
-	ActionType 	action;                         // Action possible with currently selected object.
 
 	Map.Resolve_Radar_Point(click, cell, object);
 	if (cell != CELL_NONE) {
@@ -775,14 +774,14 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 		**	If a super weapon is being aimed or there is a currently selected object, then the
 		**	action to perform if the left mouse button were clicked must be determined.
 		*/
+		ActionType action = ACTION_NONE; // RA2
 		bool multi_missile = Map.IsTargettingMode == SUPER_MULTI_MISSILE; // RA2
 		bool iron_curtain = Map.IsTargettingMode == SUPER_IRON_CURTAIN;
 		bool lightning_storm = Map.IsTargettingMode == SUPER_LIGHTNING_STORM;
 		bool para_drop = Map.IsTargettingMode == SUPER_PARA_DROP;
 		bool amer_para_drop = Map.IsTargettingMode == SUPER_AMER_PARA_DROP;
-		bool right = (flags & RIGHTUP) != 0;
-		if (!right) {
-		if (CurrentObject.Count() || multi_missile || iron_curtain || lightning_storm || para_drop || amer_para_drop) {
+		bool right = (flags & (RIGHTPRESS|RIGHTRELEASE)) != 0; // RA2
+		if (!right && (CurrentObject.Count() || multi_missile || iron_curtain || lightning_storm || para_drop || amer_para_drop)) {
 			if (multi_missile) {
 				action = ACTION_NUKE_BOMB;
 			} else if (iron_curtain) {
@@ -824,86 +823,84 @@ int RadarClass::RTacticalClass::Action(unsigned flags, KeyNumType & key)
 					object = NULL;
 					break;
 			}
+		}
 
-			if (action != ACTION_NONE) {
+		if (action != ACTION_NONE) {
 
-				/*
-				**	When the mouse buttons aren't pressed, only the mouse cursor shape is processed.
-				**	The shape changes depending on what object the mouse is currently over and what
-				**	object is currently selected.
-				*/
-				if (flags & LEFTUP) {
-					Map.Mouse_Left_Up(cell, shadow, object, action, true);
-				}
-
-				/*
-				**	Normal actions occur when the mouse button is released. The press event is
-				**	intercepted and possible rubber-band mode is flagged.
-				*/
-				if (flags & LEFTRELEASE && !drag_select_aborted) {
-					Map.Mouse_Left_Release(Coord(cell), cell, object, action, true);
-				}
-				goto finish_input;
+			/*
+			**	When the mouse buttons aren't pressed, only the mouse cursor shape is processed.
+			**	The shape changes depending on what object the mouse is currently over and what
+			**	object is currently selected.
+			*/
+			if (flags & LEFTUP) {
+				Map.Mouse_Left_Up(cell, shadow, object, action, true);
 			}
-		}
 
-			Map.Set_Default_Mouse(MOUSE_NORMAL, true);
-		}
+			/*
+			**	Normal actions occur when the mouse button is released. The press event is
+			**	intercepted and possible rubber-band mode is flagged.
+			*/
+			if (flags & LEFTRELEASE && !drag_select_aborted) {
+				Map.Mouse_Left_Release(Coord(cell), cell, object, action, true);
+			}
+		} else {
+			if (!right) {
+				Map.Set_Default_Mouse(MOUSE_NORMAL, true);
+			}
 
-		if ((flags & LEFTPRESS) || (flags & RIGHTPRESS)) {
+			if ((flags & LEFTPRESS) || (flags & RIGHTPRESS)) {
 
-			if (cell.X != 0 || cell.Y != 0) {
+				if (cell != Cell(0, 0)) {
 
-				/*
-				 * The tactical map is isometric, so the click is kept on the playable
-				 * area by clamping the diagonal coordinates rather than X and Y directly:
-				 * (cell.X - cell.Y) is the horizontal screen axis (side_edge) and
-				 * (cell.X + cell.Y) is the vertical axis (top_edge/bottom_edge). Each
-				 * limit is the play area pulled in by half the tactical view, so the view
-				 * stays on the map.
-				 */
-				int side_edge = Map.PlayRect.Width - (TacticalRect.Width / ISO_TILE_PIXEL_W + 2) / 2 - 1;
-				int half_view_height = TacticalRect.Height / (2 * ISO_TILE_PIXEL_H);
-				int top_edge = half_view_height + Map.PlayRect.Width + 1;
-				int bottom_edge = 2 * Map.PlayRect.Height - half_view_height + Map.PlayRect.Width - 1;
+					/*
+					 * The tactical map is isometric, so the click is kept on the playable
+					 * area by clamping the diagonal coordinates rather than X and Y directly:
+					 * (cell.X - cell.Y) is the horizontal screen axis (side_edge) and
+					 * (cell.X + cell.Y) is the vertical axis (top_edge/bottom_edge). Each
+					 * limit is the play area pulled in by half the tactical view, so the view
+					 * stays on the map.
+					 */
+					int side_edge = Map.PlayRect.Width - (TacticalRect.Width / ISO_TILE_PIXEL_W + 2) / 2 - 1;
+					int half_view_height = TacticalRect.Height / (2 * ISO_TILE_PIXEL_H);
+					int top_edge = half_view_height + Map.PlayRect.Width + 1;
+					int bottom_edge = 2 * Map.PlayRect.Height - half_view_height + Map.PlayRect.Width - 1;
 
-				int adjust;
+					int adjust;
 
-				if ((cell.Y - cell.X) > side_edge) {
-					adjust = (cell.Y - cell.X) - side_edge;
-					cell.Y -= adjust;
-					cell.X += adjust;
-				}
+					if ((cell.Y - cell.X) > side_edge) {
+						adjust = (cell.Y - cell.X) - side_edge;
+						cell.Y -= adjust;
+						cell.X += adjust;
+					}
 
-				if ((cell.X - cell.Y) > side_edge - 1) {
-					adjust = (cell.X - cell.Y) - side_edge + 1;
-					cell.Y += adjust;
-					cell.X -= adjust;
-				}
+					if ((cell.X - cell.Y) > side_edge - 1) {
+						adjust = (cell.X - cell.Y) - side_edge + 1;
+						cell.Y += adjust;
+						cell.X -= adjust;
+					}
 
-				if ((cell.X + cell.Y) < top_edge) {
-					adjust = top_edge - cell.Y - cell.X;
-					cell.X += adjust;
-					cell.Y += adjust;
-				}
+					if ((cell.X + cell.Y) < top_edge) {
+						adjust = top_edge - cell.Y - cell.X;
+						cell.X += adjust;
+						cell.Y += adjust;
+					}
 
-				int sum = cell.X + cell.Y;
-				if (sum > bottom_edge) {
-					adjust = sum - bottom_edge;
-					cell.X -= adjust;
-					cell.Y -= adjust;
-				}
+					if ((cell.X + cell.Y) > bottom_edge) {
+						adjust = (cell.X + cell.Y) - bottom_edge;
+						cell.X -= adjust;
+						cell.Y -= adjust;
+					}
 
-				Coord coord = Map[cell].Cell_Coord();
-				TacticalMap->Set_Tactical_Position(coord); // RA2
-				Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
-				if (DepthBuffer) {
-					DepthBuffer->Set_Scroll(ZBUFFER_MAX); // RA2
+					Coord coord = Map[cell].Cell_Coord();
+					TacticalMap->Set_Tactical_Position(coord); // RA2
+					Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
+					if (DepthBuffer) {
+						DepthBuffer->Set_Scroll(ZBUFFER_MAX); // RA2
+					}
 				}
 			}
 		}
 	}
-finish_input:
 	GadgetClass::Action(0, key);
 	return(true);
 }
@@ -2425,25 +2422,15 @@ void RadarClass::Render_Radar(void)
 		if (OldRadarViewRect != RadarViewRect) {
 			Point2D pt;
 			for (i = 0; i < OldRadarViewRect.Height; i++) {
-				pt.Y = i + OldRadarViewRect.Y;
-				pt.X = OldRadarViewRect.X - RadarRect.X;
-				pt.Y -= RadarRect.Y;
+				pt = Point2D(OldRadarViewRect.X, i + OldRadarViewRect.Y) - Point2D(RadarRect.X, RadarRect.Y);
 				Radar_Pixel(pt);
-				pt.X = OldRadarViewRect.X + OldRadarViewRect.Width - 1;
-				pt.Y = i + OldRadarViewRect.Y;
-				pt.X -= RadarRect.X;
-				pt.Y -= RadarRect.Y;
+				pt = Point2D(OldRadarViewRect.X + OldRadarViewRect.Width - 1, i + OldRadarViewRect.Y) - Point2D(RadarRect.X, RadarRect.Y);
 				Radar_Pixel(pt);
 			}
 			for (i = 0; i < OldRadarViewRect.Width; i++) {
-				pt.X = i + OldRadarViewRect.X;
-				pt.Y = OldRadarViewRect.Y - RadarRect.Y;
-				pt.X -= RadarRect.X;
+				pt = Point2D(i + OldRadarViewRect.X, OldRadarViewRect.Y) - Point2D(RadarRect.X, RadarRect.Y);
 				Radar_Pixel(pt);
-				pt.X = i + OldRadarViewRect.X;
-				pt.Y = OldRadarViewRect.Y + OldRadarViewRect.Height - 1;
-				pt.X -= RadarRect.X;
-				pt.Y -= RadarRect.Y;
+				pt = Point2D(i + OldRadarViewRect.X, OldRadarViewRect.Height + OldRadarViewRect.Y - 1) - Point2D(RadarRect.X, RadarRect.Y);
 				Radar_Pixel(pt);
 			}
 			moved = true;
@@ -2451,7 +2438,7 @@ void RadarClass::Render_Radar(void)
 
 		if (CellRedrawRect.Is_Valid()) {
 			RadarSurface->Blit_From(CellRedrawRect, *BackgroundSurface, CellRedrawRect);
-			LastDrawRect = Union(CellRedrawRect, LastDrawRect + RadarRect.TopLeft);
+			LastDrawRect = Union(LastDrawRect, CellRedrawRect + RadarRect.TopLeft);
 
 			for (int x = CellRedrawRect.X; x < CellRedrawRect.X + CellRedrawRect.Width; x++) {
 				for (int y = CellRedrawRect.Y; y < CellRedrawRect.Y + CellRedrawRect.Height; y++) {
@@ -2475,20 +2462,22 @@ void RadarClass::Render_Radar(void)
 		if (is_tactical) {
 			if (FullRedraw) {
 				LastDrawRect = RadarRect;
-				Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, MAX_RADAR_FRAMES, Point2D(RadX, RadY), SidebarSurface->Get_Rect());
+				Draw_Shape(*SidebarSurface, *SidebarDrawer, (ShapeSet const *)RadarAnim, 32, Point2D(RadX, RadWidth), SidebarSurface->Get_Rect()); // RA2
 			}
 
 			if (LastDrawRect.Is_Valid()) {
-				SidebarSurface->Blit_From(LastDrawRect, *RadarSurface, LastDrawRect - RadarRect.TopLeft);
+				SidebarSurface->Blit_From(LastDrawRect, *RadarSurface, LastDrawRect - Point2D(RadarRect.X, RadarRect.Y));
 			}
 
 			SidebarSurface->Draw_Rect(RadarViewRect, RadPHeight); // RA2: the tooltip colour, packed by Init_For_House
-			Rect rr = Rect(RadarRect.X - 1, RadarRect.Y - 1, RadarRect.Width + 2, RadarRect.Height + 2);
+			Rect area = RadarRect;
+			Rect rr(area.X - 1, area.Y - 1, area.Width + 2, area.Height + 2);
 			SidebarSurface->Draw_Rect(rr, RadPHeight);
 		}
 
 		if (moved) {
-			LastDrawRect = Union(RadarViewRect, Union(OldRadarViewRect, LastDrawRect));
+			Rect const & inner = Union(OldRadarViewRect, LastDrawRect);
+			LastDrawRect = Union(RadarViewRect, inner);
 		}
 
 		OldRadarViewRect = RadarViewRect;
