@@ -82,6 +82,7 @@
 #include "terrtype.h"
 #include "tracker.h"
 #include "warhead.h"
+#include "overtype.h" // RA2: Unlimbo reads OverlayTypes
 
 #include "draw.hh"
 
@@ -313,7 +314,7 @@ bool TerrainClass::Mark(MarkType mark)
 /// <param name="coord">The coordinate of the cell to clear.</param>
 void TerrainClass::Clear_Occupy_Bit(Coord const & coord)
 {
-	int bits = Scen->Theater == THEATER_TEMPERATE ? Class->TemperateOccupationBits : Class->SnowOccupationBits;
+	int bits = Scen->Theater != THEATER_SNOW ? Class->TemperateOccupationBits : Class->SnowOccupationBits; // RA2: temperate bits in every theater but snow
 
 	CellClass &cell = Map[coord.As_Cell()];
 
@@ -340,7 +341,7 @@ void TerrainClass::Clear_Occupy_Bit(Coord const & coord)
 /// <param name="coord">The coordinate of the cell to mark.</param>
 void TerrainClass::Set_Occupy_Bit(Coord const & coord)
 {
-	int bits = Scen->Theater == THEATER_TEMPERATE ? Class->TemperateOccupationBits : Class->SnowOccupationBits;
+	int bits = Scen->Theater != THEATER_SNOW ? Class->TemperateOccupationBits : Class->SnowOccupationBits; // RA2: temperate bits in every theater but snow
 
 	CellClass &cell = Map[coord.As_Cell()];
 
@@ -409,8 +410,6 @@ void TerrainClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 			cellptr.Init_Drawer();
 		}
 
-		drawpoint.Y += Class->YDrawFudge;
-		zadjust += Class->YDrawFudge / 3;
 
 		int tint;
 		ConvertClass * drawer;
@@ -425,12 +424,14 @@ void TerrainClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 		}
 
 		ShapeFlags_Type flags = ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ALPHA);
-		if (!Is_Animating()) {
+		if (Is_Animating()) { // RA2: an animating object draws with SHAPE_ZGRAD,
+			flags = ShapeFlags_Type(flags | SHAPE_ZGRAD); // RA2: added to the flags
+		} else { // RA2: a still one writes the Z buffer
 			flags = ShapeFlags_Type(flags | SHAPE_ZWRITE);
 		}
 		Draw_Shape(*LogicalSurface, *drawer, shapedata, shapenum, drawpoint, cliprect, flags, NULL, zadjust - 12, ZGRAD_90DEG, tint);
 		if (DrawShapeShadows) {
-			Draw_Shape(*LogicalSurface, *cellptr.Drawer, shapedata, shapenum + shapedata->Get_Count() / 2, drawpoint, cliprect, ShapeFlags_Type(flags|SHAPE_DARKEN), NULL, zadjust - 2);
+			Draw_Shape(*LogicalSurface, *cellptr.Drawer, shapedata, shapenum + shapedata->Get_Count() / 2, drawpoint, cliprect, ShapeFlags_Type(flags|SHAPE_DARKEN), NULL, zadjust - 3); // RA2: the shadow at zadjust - 3
 		}
 	}
 }
@@ -471,8 +472,6 @@ void TerrainClass::Editor_Draw_It(Point2D const & point, Rect const & cliprect) 
 			cellptr.Init_Drawer();
 		}
 
-		drawpoint.Y += Class->YDrawFudge;
-		zadjust += Class->YDrawFudge;
 
 		int tint;
 		ConvertClass * drawer;
@@ -642,21 +641,6 @@ void TerrainClass::AI(void)
 			Set_Stage(0);
 			Set_Rate(0);
 			Map[Get_Coord()].Spread_Tiberium(true);
-		}
-	}
-
-	if (IsOnFire) {
-		static int const _interval = 100;
-
-		if (abs(Scen->RandomNumber()) % _interval == 0) {
-			CellClass & cellptr = Map[Get_Coord()];
-			for (FacingType facing = FACING_FIRST; facing < FACING_COUNT; facing++) {
-				CellClass & adjacent = cellptr.Adjacent_Cell(facing);
-				TerrainClass * terrain = adjacent.Cell_Terrain();
-				if (terrain && !terrain->IsOnFire && Random_Double(0.0, 1.0) < Rule->TreeFlammability) {
-					terrain->Catch_Fire();
-				}
-			}
 		}
 	}
 }
@@ -846,8 +830,6 @@ void TerrainClass::Write_INI(CCINIClass & ini)
 /// <returns>bool; Was the terrain object drawn?</returns>
 bool TerrainClass::Render(Rect & cliprect, bool forced, bool extras_only) const
 {
-	assert(this != NULL);
-
 	if (Debug_Map || !MainWindow || ((forced || IsToDisplay) && IsDown && !IsInLimbo)) {
 		IsToDisplay = false;
 
@@ -933,19 +915,6 @@ HRESULT STDMETHODCALLTYPE TerrainClass::Save(IStream * stream, BOOL cleardirty)
 
 
 /// <summary>
-/// Is this terrain object animating?
-/// A terrain type flagged as animated always is, and so is any object that has begun to
-/// crumble. The draw routines consult this to decide whether the object is allowed to
-/// write into the Z buffer.
-/// </summary>
-/// <returns>bool; Is the terrain object animating?</returns>
-bool TerrainClass::Is_Animating(void) const
-{
-	return(Class->IsAnimated || IsCrumbling);
-}
-
-
-/// <summary>
 /// Adds this terrain object's state to the running checksum.
 /// The multiplayer sync checker uses this to notice when the games have drifted apart.
 /// </summary>
@@ -1012,9 +981,8 @@ bool TerrainClass::Unlimbo(Coord const & coord, Dir256 dir)
 
 		TacticalMap->Coord_To_Pixel(Render_Coord(), RenderPixelPos);
 		RenderPixelPos += Point2D(TacticalMap->TacPixelX, TacticalMap->TacPixelY);
-		RenderPixelPos.Y += Class->YDrawFudge;
 
-		if (Class->IsTiberiumSpawn) {
+		if (Map[coord].Overlay != OVERLAY_NONE && OverlayTypes[Map[coord].Overlay]->IsTiberium) { // RA2: tiberium overlay under the object, not IsTiberiumSpawn
 			Map[coord].Overlay = OVERLAY_NONE;
 			Map[coord].OverlayData = 0;
 		}
@@ -1065,7 +1033,7 @@ Rect TerrainClass::Get_Render_Rect(void)
 /// The save system uses this to know how much of the object it must write out.
 /// </summary>
 /// <returns>Returns with the byte size of the terrain object.</returns>
-int TerrainClass::Fetch_Object_Size(bool oldsave) const
+int TerrainClass::Fetch_Object_Size(void) const // RA2: takes no argument
 {
 	return(sizeof(*this));
 }
@@ -1081,6 +1049,8 @@ RTTIType TerrainClass::Fetch_RTTI(void) const
 }
 
 
+
+
 /// <summary>
 /// Fetches the class identifier for this object.
 /// This routine is part of the IPersistStream implementation. The save system records
@@ -1094,3 +1064,41 @@ HRESULT STDMETHODCALLTYPE TerrainClass::GetClassID(CLSID * retval)
 	*retval = CLSID_TerrainClass;
 	return(S_OK);
 }
+
+
+#ifdef _DEBUG
+/***********************************************************************************************
+ * TerrainClass::Debug_Dump -- Displays the status of the terrain object.                      *
+ *                                                                                             *
+ *    This debugging support routine is used to display the status of the terrain object to    *
+ *    the debug screen.                                                                        *
+ *                                                                                             *
+ * INPUT:   mono  -- The mono screen to display the status to.                                 *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   09/27/1994 JLB : Created.                                                                 *
+ *=============================================================================================*/
+void TerrainClass::Debug_Dump(MonoClass * mono) const
+{
+	BASECLASS::Debug_Dump(mono);
+}
+#endif
+
+
+
+/// <summary>
+/// Is this terrain object animating?
+/// A terrain type flagged as animated always is, and so is any object that has begun to
+/// crumble. The draw routines consult this to decide whether the object is allowed to
+/// write into the Z buffer.
+/// </summary>
+/// <returns>bool; Is the terrain object animating?</returns>
+bool TerrainClass::Is_Animating(void) const // RA2: defined last, after Fetch_RTTI
+{
+	return(Class->IsAnimated || IsCrumbling);
+}
+
