@@ -48,6 +48,29 @@
 #include "zbuffer.h"
 
 #include "draw.hh"
+#include "ftimer.h" // RA2: Draw_It reads Frame
+
+inline Vector3 Slope_Vector(Vector3 & vector, Coord const & coord, double length) // RA2: defined above Gas_Behavior_AI, its first user
+{
+	Matrix3D slope_matrix;
+	Matrix3D slope_matrix_inv = Matrix3D::Orthogonal_Inverse(
+		slope_matrix = Get_Slope_Matrix(TacticalMap->Get_Cell_Ramp(coord)));
+	Vector3 vec(vector.X, -vector.Y, vector.Z);
+	vec = slope_matrix_inv.Rotate_Vector(vec);
+	vec *= length;
+	vec.Z = -vec.Z;
+	vec = slope_matrix.Rotate_Vector(vec);
+	vector.X = vec.X;
+	vector.Y = -vec.Y;
+	vector.Z = vec.Z;
+	return(vector);
+}
+
+
+namespace Unsorted { extern bool ArmageddonMode; } // RA2: declared as RA2's code uses it
+namespace FPSCounter { extern unsigned CurrentFrameRate; } // RA2: declared as RA2's code uses it
+namespace Detail { unsigned GetMinFrameRate(void); } // RA2: declared as RA2's code uses it
+
 
 
 LEPTON ParticleClass::SmokeWindX[FACING_COUNT] = { 0, 2, 2, 1, 0, -2, -2, -2 };
@@ -104,14 +127,14 @@ ParticleClass::ParticleClass(ParticleTypeClass const * type, Coord const & origi
 		RemainingEC = Class->MaxEC + abs(random % Class->MaxEC);
 	}
 
-	Coord coord = origin;
+	Vector3 normalized; // RA2: normalized is declared first
+	Coord coord(origin.X, origin.Y, origin.Z); // RA2: coord built from origin's members
 	if (coord.Z <= Map.Get_Height_GL(origin)) {
 		coord.Z = Map.Get_Height_GL(origin);
 	}
 	PositionCoord = coord;
 
 	float length = MovementDirection.Length();
-	Vector3 normalized;
 	if (length != 0.0) {
 		normalized = MovementDirection / length;
 	} else {
@@ -120,7 +143,7 @@ ParticleClass::ParticleClass(ParticleTypeClass const * type, Coord const & origi
 	MovementDirection = normalized;
 
 	if (Class->IsNormalized) {
-		Point2D delta(origin.X - target.X, origin.Y - target.Y);
+		Coord delta(origin.X - target.X, origin.Y - target.Y, 0); // RA2: the delta is a Coord with Z 0
 
 		float abs_vx = abs(MovementDirection.X * Speed);
 		float abs_vy = abs(MovementDirection.Y * Speed);
@@ -195,6 +218,8 @@ ParticleClass::~ParticleClass(void)
 }
 
 
+
+
 /// <summary>
 /// Deflects a vector along the lie of the ground.
 /// This routine is used when a particle glances off the terrain, so that it skims
@@ -204,21 +229,6 @@ ParticleClass::~ParticleClass(void)
 /// <param name="coord">The location whose ground slope should be used.</param>
 /// <param name="length">The length to scale the deflected vector to.</param>
 /// <returns>Returns with the deflected vector.</returns>
-inline Vector3 Slope_Vector(Vector3 & vector, Coord const & coord, double length)
-{
-	Matrix3D slope_matrix;
-	Matrix3D slope_matrix_inv = Matrix3D::Orthogonal_Inverse(
-		slope_matrix = Get_Slope_Matrix(TacticalMap->Get_Cell_Ramp(coord)));
-	Vector3 vec(vector.X, -vector.Y, vector.Z);
-	vec = slope_matrix_inv.Rotate_Vector(vec);
-	vec *= length;
-	vec.Z = -vec.Z;
-	vec = slope_matrix.Rotate_Vector(vec);
-	vector.X = vec.X;
-	vector.Y = -vec.Y;
-	vector.Z = vec.Z;
-	return(vector);
-}
 
 
 /// <summary>
@@ -395,13 +405,13 @@ void ParticleClass::Railgun_Behavior_AI(void)
 void ParticleClass::Smoke_Behavior_AI(void)
 {
 	if (Frame & 1) {
-		if ((abs(Scen->RandomNumber) & 3) == 0) {
+		if ((abs(Scen->RandomNumber()) & 3) == 0) { // RA2: RandomNumber is called
 			int x = 0;
 			int y = 0;
-			if ((abs(Scen->RandomNumber) & 1) == 0) {
-				x = (int)abs(Scen->RandomNumber) % 3 - 1;
+			if ((abs(Scen->RandomNumber()) & 1) == 0) { // RA2: RandomNumber is called
+				x = (int)abs(Scen->RandomNumber()) % 3 - 1; // RA2: RandomNumber is called
 			} else {
-				y = (int)abs(Scen->RandomNumber) % 3 - 1;
+				y = (int)abs(Scen->RandomNumber()) % 3 - 1; // RA2: RandomNumber is called
 			}
 			GasDrift += Point2D(x,y);
 			if (GasDrift.X < -5) {
@@ -430,6 +440,8 @@ void ParticleClass::Smoke_Behavior_AI(void)
 		Speed = Speed - Class->Deacc;
 	}
 }
+
+
 
 
 /// <summary>
@@ -528,7 +540,7 @@ void ParticleClass::Spark_Behavior_AI(void)
 void ParticleClass::Fire_Behavior_AI(void)
 {
 	if (Speed > 0.0) {
-		double rndval = (double)(((Scen->RandomNumber % 10) - 5) / 50.0) + 1.0;
+		double rndval = (double)(((Scen->RandomNumber() % 10) - 5) / 50.0) + 1.0; // RA2: RandomNumber is called
 
 		Vector3 motion = rndval * MovementDirection;
 		FireMoveDelta = Coord(motion.X * Speed, motion.Y * Speed, motion.Z * Speed);
@@ -557,8 +569,6 @@ void ParticleClass::Fire_Behavior_AI(void)
 			bool onbridge = cellptr->IsUnderBridge && PositionCoord.Z >= LEVEL_LEPTON_H * (cellptr->Height + BRIDGE_CELL_HEIGHT);
 			ObjectClass *optr = cellptr->Cell_Occupier(onbridge);
 			while (optr != NULL) {
-				optr->PositionCoord;
-				PositionCoord;
 				int dist = Distance(optr->PositionCoord);
 				const ParticleTypeClass *ptype = Class;
 				int damage = ptype->Damage;
@@ -577,39 +587,6 @@ void ParticleClass::Fire_Behavior_AI(void)
 
 
 /// <summary>
-/// Handles the per frame logic for a web particle.
-/// The web applies its warhead to everything sharing its cell, which is how the
-/// tangling effect is delivered, and then advances its animation state.
-/// </summary>
-void ParticleClass::Web_Behavior_AI(void)
-{
-	CellClass * cptr = &Map[Get_Coord()];
-
-	if (Class->Warhead != NULL) {
-		ObjectClass * occupier = cptr->Cell_Occupier();
-		while (occupier) {
-			ObjectClass * next = occupier->Next;
-			int damage = 0;
-			occupier->Take_Damage(damage, 0, Class->Warhead);
-			occupier = next;
-		}
-	}
-
-	if (((Class->MaxEC - RemainingEC + Fetch_ID()) % int(Class->StateAIAdvance + ((unsigned)Fetch_ID() % 2))) == 0) {
-		StateAI++;
-	}
-
-	if (StateAI == Class->EndStateAI) {
-		if (Class->DeleteOnStateLimit) {
-			IsToDie = true;
-		} else {
-			StateAI = 0;
-		}
-	}
-}
-
-
-/// <summary>
 /// Handles the per frame logic for this particle.
 /// This routine dispatches to the handler that suits the particle's behavior and
 /// then ages the particle, flagging it for death once its lifetime runs out.
@@ -618,7 +595,6 @@ void ParticleClass::Behavior_AI(void)
 {
 	switch (Class->BehavesLike) {
 		case BEHAVIOR_GAS:
-		case BEHAVIOR_WEAKGAS:
 			Gas_Behavior_AI();
 			break;
 		case BEHAVIOR_SMOKE:
@@ -632,9 +608,6 @@ void ParticleClass::Behavior_AI(void)
 			break;
 		case BEHAVIOR_RAILGUN:
 			Railgun_Behavior_AI();
-			break;
-		case BEHAVIOR_WEB:
-			Web_Behavior_AI();
 			break;
 		default:
 			break;
@@ -659,8 +632,11 @@ void ParticleClass::Behavior_AI(void)
 /// <param name="cliprect">The clipping rectangle to draw within.</param>
 void ParticleClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 {
+	if (FPSCounter::CurrentFrameRate < Detail::GetMinFrameRate() && Class->Damage == 0) { // RA2: no drawing below the minimum frame rate for a particle that does no damage
+		return; // RA2: returns before drawing
+	}
 	if (Options.DetailLevel != 0 || Class->BehavesLike != BEHAVIOR_SMOKE && Class->BehavesLike != BEHAVIOR_SPARK) {
-		if (Debug_Map || MainWindow == 0 || !Scen->Special.IsFogOfWar || !Map.Is_Fogged((Coord const &)PositionCoord)) {
+		if (Unsorted::ArmageddonMode || MainWindow == 0 || !Scen->Special.IsFogOfWar || !Map.Is_Fogged((Coord const &)PositionCoord)) { // RA2: ArmageddonMode, not Debug_Map
 
 			if (Class->BehavesLike != BEHAVIOR_SPARK && Class->BehavesLike != BEHAVIOR_RAILGUN) {
 				int height_offset = -15 - TacticalMap->Z_Lepton_To_Pixel(Height);
@@ -685,7 +661,8 @@ void ParticleClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 				pixel.Y += TacticalRect.Y;
 				if (cliprect.Is_Point_Within(pixel)) {
 					Point2D alpha_point = pixel - Point2D(0, AlphaBuffer->Get_Bounds().Y);
-					int alpha = *(unsigned short*)AlphaBuffer->Get_Buffer_Offset(alpha_point);
+					unsigned short * aptr = (unsigned short*)AlphaBuffer->Get_Buffer_Offset(alpha_point); // RA2: the alpha read through a pointer local
+					int alpha = *aptr; // RA2: read through that pointer
 					if (alpha != 0) {
 						Point2D depth_point = pixel - Point2D(0, DepthBuffer->Get_Bounds().Y);
 						int zdepth = (unsigned short)(DepthBuffer->Get_Bounds().Y + DepthBuffer->Get_Scroll_Delta(pixel.Y)) - TacticalMap->Z_Lepton_To_Pixel(PositionCoord.Z) - 50;
@@ -780,7 +757,7 @@ void ParticleClass::Gas_Motion_AI(void)
 		}
 	}
 
-	PositionCoord = coord;
+	Set_Coord(coord); // RA2: stored through Set_Coord
 }
 
 
@@ -806,7 +783,7 @@ void ParticleClass::Fire_Motion_AI(void)
 		}
 	}
 
-	PositionCoord = coord;
+	Set_Coord(coord); // RA2: stored through Set_Coord
 }
 
 
@@ -820,16 +797,13 @@ void ParticleClass::Motion_AI(void)
 {
 	switch (Class->BehavesLike)
 	{
-		case PSYS_BEHAVIOR_GAS:
-			Gas_Motion_AI();
-			break;
-		case PSYS_BEHAVIOR_SMOKE:
+		case BEHAVIOR_GAS: // RA2: BEHAVIOR_ values
 			Smoke_Motion_AI();
 			break;
-		case PSYS_BEHAVIOR_WEAKGAS:
-			Smoke_Motion_AI();
+		case BEHAVIOR_SMOKE: // RA2: smoke moves like gas
+			Gas_Motion_AI(); // RA2: Gas_Motion_AI for gas and smoke
 			break;
-		case PSYS_BEHAVIOR_FIRE:
+		case BEHAVIOR_FIRE: // RA2: BEHAVIOR_ values
 			Fire_Motion_AI();
 			break;
 		default:
@@ -938,14 +912,12 @@ int ParticleClass::Shape_Number(void) const
 	Point2D fire_end;
 	FacingType face;
 
-	switch (Class->BehavesLike) {
-		case BEHAVIOR_GAS:
-			return(StateAI);
-
-		case BEHAVIOR_SMOKE:
-			return(StateAI);
-
-		case BEHAVIOR_FIRE:
+	int behavior = Class->BehavesLike; // RA2: range tests and gotos, not a switch
+	if (behavior >= BEHAVIOR_GAS) { // RA2: gas to smoke
+		if (behavior <= BEHAVIOR_SMOKE) { // RA2: gas to smoke
+			goto state;
+		}
+		if (behavior == BEHAVIOR_FIRE) { // RA2: fire
 			TacticalMap->Coord_To_Pixel(FireOrigin, fire_start);
 			TacticalMap->Coord_To_Pixel(FireTarget, fire_end);
 			face = Facing_Between_Points(fire_start, fire_end);
@@ -953,7 +925,7 @@ int ParticleClass::Shape_Number(void) const
 				return(StateAI + 2 * Class->EndStateAI);
 			}
 			if (face == FACING_S || face == FACING_N) {
-				return(StateAI);
+				goto state; // RA2: jumps to the shared return
 			}
 			if (face == FACING_NE || face == FACING_SW) {
 				return(StateAI + Class->EndStateAI);
@@ -961,22 +933,12 @@ int ParticleClass::Shape_Number(void) const
 			if (face == FACING_SE || face == FACING_NW) {
 				return(StateAI + 3 * Class->EndStateAI);
 			}
-			break;
-
-		case BEHAVIOR_SPARK:
-			break;
-
-		case BEHAVIOR_RAILGUN:
-			break;
-
-		case BEHAVIOR_WEB:
-			return(StateAI);
-
-		case BEHAVIOR_WEAKGAS:
-			return(StateAI);
+		}
 	}
 
 	return(0);
+state: // RA2: the one return
+	return(StateAI); // RA2: the one return
 }
 
 
@@ -1001,7 +963,7 @@ HRESULT STDMETHODCALLTYPE ParticleClass::GetClassID(CLSID * retval)
 /// object to stream out.
 /// </summary>
 /// <returns>Returns with the byte size of this particle.</returns>
-int ParticleClass::Fetch_Object_Size(bool oldsave) const
+int ParticleClass::Fetch_Object_Size(void) const // RA2: takes no argument
 {
 	return(sizeof(*this));
 }
@@ -1025,3 +987,37 @@ ObjectTypeClass const * ParticleClass::Class_Of(void) const
 {
 	return(Class);
 }
+
+
+/// <summary>
+/// Handles the per frame logic for a web particle.
+/// The web applies its warhead to everything sharing its cell, which is how the
+/// tangling effect is delivered, and then advances its animation state.
+/// </summary>
+void ParticleClass::Web_Behavior_AI(void) // RA2: RA2's Behavior_AI never calls it; defined last
+{
+	CellClass * cptr = &Map[Get_Coord()];
+
+	if (Class->Warhead != NULL) {
+		ObjectClass * occupier = cptr->Cell_Occupier();
+		while (occupier) {
+			ObjectClass * next = occupier->Next;
+			int damage = 0;
+			occupier->Take_Damage(damage, 0, Class->Warhead);
+			occupier = next;
+		}
+	}
+
+	if (((Class->MaxEC - RemainingEC + Fetch_ID()) % int(Class->StateAIAdvance + ((unsigned)Fetch_ID() % 2))) == 0) {
+		StateAI++;
+	}
+
+	if (StateAI == Class->EndStateAI) {
+		if (Class->DeleteOnStateLimit) {
+			IsToDie = true;
+		} else {
+			StateAI = 0;
+		}
+	}
+}
+
