@@ -20,11 +20,10 @@ void __cdecl UnVQ2_C0_4x4_TRANS(unsigned char * codebook, unsigned char * pointe
 	uint16_t * src = (uint16_t *)pointers;
 	uint8_t * dst = (uint8_t *)buffer;
 	uint32_t blocks = 0;
-	uint8_t * row_base = (uint8_t *)buffer;
-	uint32_t total = numrows * blocksperrow;
-	int r;
 	uint32_t count;
-	uint32_t pairs;
+	int r;
+	uint8_t * row_base = (uint8_t *)buffer;
+	uint32_t total = blocksperrow * numrows;
 
 	if (total > 0u) {
 
@@ -136,10 +135,9 @@ void __cdecl UnVQ2_C0_4x4_TRANS(unsigned char * codebook, unsigned char * pointe
 									dst -= 4u * count;
 									dst += bufwidth;
 								}
-
-								src += 1;
 								dst += 4u * count;
 								dst -= 4u * bufwidth;
+								src += 1;
 								blocks += count;
 							}
 
@@ -149,7 +147,7 @@ void __cdecl UnVQ2_C0_4x4_TRANS(unsigned char * codebook, unsigned char * pointe
 					} else {
 						count = word & 0xFFFu;
 						src += 1;
-						for (pairs = count >> 1; pairs != 0u; pairs--) {
+						for (uint32_t pairs = 0; pairs < (count >> 1); ++pairs) {
 							uint16_t word2 = *src;
 							uint8_t hi = (uint8_t)(word2 >> 8);
 
