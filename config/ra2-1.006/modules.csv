@@ -65,7 +65,7 @@ bfiofile,0x0042F200,0x0042FDF0,tibsun,"functions compiled from src/bfiofile.cpp,
 unk_0042FDF0,0x0042FDF0,0x0042FE70,unknown,code not assigned to a module
 bfiofile2,0x0042FE70,0x00431020,source,"functions compiled from src/bfiofile2.cpp, matched, without gaps; two placed by the gap"
 unk_00431020,0x00431020,0x00431040,unknown,code not assigned to a module
-bitfont,0x00431040,0x00432200,source,"functions compiled from src/bitfont.cpp, without gaps; matched except ?Load_Data@BitFont@@SIPAUInternalData@1@PBD@Z"
+bitfont,0x00431040,0x00432200,source,"functions compiled from src/bitfont.cpp, matched, without gaps"
 unk_00432200,0x00432200,0x00432290,unknown,code not assigned to a module
 bittext,0x00432290,0x00432D20,source,"functions compiled from src/bittext.cpp, matched, without gaps"
 unk_00432D20,0x00432D20,0x004347C0,unknown,code not assigned to a module

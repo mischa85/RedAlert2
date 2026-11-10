@@ -518,7 +518,7 @@ address,symbol,evidence
 0x00430F30,?Bit_Unstuff_String@@YIIPAEPAGI@Z,"compiled from src/bfiofile2.cpp, matched"
 0x00431040,??0BitFont@@QAE@PBD@Z,"compiled from src/bitfont.cpp, matched"
 0x00431100,??1BitFont@@UAE@XZ,"compiled from src/bitfont.cpp, matched"
-0x00431150,?Load_Data@BitFont@@SIPAUInternalData@1@PBD@Z,"inferred: referenced by matched src/bitfont.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x00431150,?Load_Data@BitFont@@SIPAUInternalData@1@PBD@Z,"compiled from src/bitfont.cpp, matched"
 0x004313C0,?Destroy@InternalData@BitFont@@QAEXXZ,"compiled from src/bitfont.cpp, matched"
 0x004313F0,?Load@BitFont@@QAE_NPBD@Z,"compiled from src/bitfont.cpp, matched"
 0x00431430,?Set_Color@BitFont@@QAEGG@Z,"compiled from src/bitfont.cpp, matched"

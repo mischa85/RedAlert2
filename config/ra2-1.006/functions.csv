@@ -558,7 +558,7 @@ address,size,evidence
 0x00430F30,240,"code of src/bfiofile2.cpp, matched"
 0x00431040,192,"code of src/bitfont.cpp, matched"
 0x00431100,80,"code of src/bitfont.cpp, matched"
-0x00431150,,"inferred: target of the call at 0x00431093 in matched src/bitfont.cpp; size not known"
+0x00431150,624,"code of src/bitfont.cpp, matched"
 0x004313C0,48,"code of src/bitfont.cpp, matched"
 0x004313F0,64,"code of src/bitfont.cpp, matched"
 0x00431430,16,"code of src/bitfont.cpp, matched: too short for the match rule"
