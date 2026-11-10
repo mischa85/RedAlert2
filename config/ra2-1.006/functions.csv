@@ -4301,6 +4301,7 @@ address,size,evidence
 0x0077D0C0,944,"code of src/vqalib_unvq.cpp, matched"
 0x0077D470,320,"code of src/vqalib_unvq.cpp, matched"
 0x0077D5B0,912,"code of src/vqalib_unvq.cpp, matched"
+0x0077D940,1104,"code of src/vqalib_unvqtran.cpp, matched"
 0x0077DD90,1040,"code of src/vqalib_unvq.cpp, matched"
 0x0077E1A0,1040,"code of src/vqalib_unvq.cpp, matched"
 0x0077E5B0,1072,"code of src/vqalib_unvq.cpp, matched"

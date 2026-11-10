@@ -3763,6 +3763,7 @@ address,symbol,evidence
 0x0077D0C0,?UnVQ2_C4_4x4@@YAXPAE00KKK@Z,"compiled from src/vqalib_unvq.cpp, matched"
 0x0077D470,?UnVQ1_C4_4x2@@YAXPAE00KKK@Z,"compiled from src/vqalib_unvq.cpp, matched"
 0x0077D5B0,?UnVQ2_C4_4x2@@YAXPAE00KKK@Z,"compiled from src/vqalib_unvq.cpp, matched"
+0x0077D940,?UnVQ2_C0_4x4_TRANS@@YAXPAE00KKK@Z,"compiled from src/vqalib_unvqtran.cpp, matched"
 0x0077DD90,?UnVQ2_C0_4x4_KEY@@YAXPAE00KKK@Z,"compiled from src/vqalib_unvq.cpp, matched"
 0x0077E1A0,?UnVQ2_C0_4x4_TRANS_HALF@@YAXPAE00KKK@Z,"compiled from src/vqalib_unvq.cpp, matched"
 0x0077E5B0,?UnVQ2_C0_4x2_TRANS@@YAXPAE00KKK@Z,"compiled from src/vqalib_unvq.cpp, matched"
