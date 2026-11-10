@@ -33,8 +33,20 @@
 #include "tracker.h"
 #include "vector.h"
 #include "wave.h"
+#include "ftimer.h" // RA2: Fire_AI reads Frame
+
+
 
 extern short SineTable[];
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void _Add_System(ParticleSystemClass * system) // RA2: systems are added through this helper
+{
+	ParticleSystems.Add(system);
+}
 
 
 /// <summary>
@@ -204,7 +216,7 @@ ParticleClass * ParticleSystemClass::Spawn_Held_Particle(Coord const & coord1, C
 /// <returns>Returns with a pointer to the particle created. Otherwise, NULL is returned.</returns>
 ParticleClass * ParticleSystemClass::Spawn_Particle(ParticleTypeClass * type, Coord const & coord)
 {
-	ParticleClass * particle = new ParticleClass(type, coord, COORD_NONE, NULL);
+	ParticleClass * particle = new ParticleClass(type, coord, COORD_NONE, this); // RA2: the particle is given this system
 	if (particle != NULL) {
 		SystemParticles.Add(particle);
 		return(particle);
@@ -239,8 +251,11 @@ ParticleClass * ParticleSystemClass::Spawn_Held_Particle_Random(Coord const & co
 	int active_count = SystemParticles.Count();
 	ParticleClass **vector = &SystemParticles[0];
 
-	int random_range = MIN(active_count, v);
-	int random_offset = abs(Scen->RandomNumber) % random_range;
+	int random_range = v; // RA2: the smaller of active_count and v, worked out by hand
+	if (active_count < random_range) { // RA2: the smaller of active_count and v, worked out by hand
+		random_range = active_count; // RA2: the smaller of active_count and v, worked out by hand
+	}
+	int random_offset = abs(Scen->RandomNumber()) % random_range; // RA2: RandomNumber is called
 
 	int source_index = active_count - 2;
 	int stop_index = active_count - random_offset - 2;
@@ -303,11 +318,12 @@ void ParticleSystemClass::Gas_AI(void)
 	for (i = SystemParticles.Count()-1; i >= 0; i--) {
 		ParticleClass *spart = SystemParticles[i];
 		if (spart->IsToDie) {
-			if (spart->Class->NextParticle != PARTICLE_NONE) {
-				Coord coord = spart->PositionCoord;
-				ParticleTypeClass *next = ParticleTypes[spart->Class->NextParticle];
+			ParticleType nt = spart->Class->NextParticle; // RA2: the next particle type in a local
+			if (nt != PARTICLE_NONE) { // RA2: tested from that local
+				Coord const & coord = spart->PositionCoord; // RA2: the position by reference
+				ParticleTypeClass *next = ParticleTypes[nt]; // RA2: the type looked up from that local
 				Coord ncoord = coord + spart->Class->NextParticleOffset;
-				ParticleClass *npart = new ParticleClass(next, ncoord);
+				ParticleClass *npart = new ParticleClass(next, ncoord, COORD_NONE, this); // RA2: the particle is given this system
 				if (npart != NULL) {
 					SystemParticles.Add(npart);
 					npart->Speed = spart->Speed;
@@ -320,6 +336,8 @@ void ParticleSystemClass::Gas_AI(void)
 		}
 	}
 }
+
+
 
 
 /// <summary>
@@ -411,6 +429,8 @@ void ParticleSystemClass::Spark_AI(void)
 		}
 	}
 }
+
+
 
 
 /// <summary>
@@ -519,6 +539,8 @@ void ParticleSystemClass::Smoke_AI(void)
 		IsMarkedForDeletion = true;
 	}
 }
+
+
 
 
 /// <summary>
@@ -699,41 +721,6 @@ void ParticleSystemClass::Fire_AI(void)
 
 
 /// <summary>
-/// Handles the per-frame logic for a web particle system.
-/// This routine drifts the system's particles along and, as each one expires,
-/// spawns the successor particle its type calls for in its place.
-/// </summary>
-void ParticleSystemClass::Web_AI(void)
-{
-	int i;
-
-	for (i = SystemParticles.Count()-1; i >= 0; i--) {
-		SystemParticles[i]->Behavior_AI();
-	}
-
-	for (i = SystemParticles.Count()-1; i >= 0; i--) {
-		ParticleClass *spart = SystemParticles[i];
-		if (spart->IsToDie) {
-			if (spart->Class->NextParticle != PARTICLE_NONE) {
-				Coord coord = spart->PositionCoord;
-				ParticleTypeClass *next = ParticleTypes[spart->Class->NextParticle];
-				Coord ncoord = coord + spart->Class->NextParticleOffset;
-				ParticleClass *npart = new ParticleClass(next, ncoord);
-				if (npart != NULL) {
-					SystemParticles.Add(npart);
-					npart->Speed = spart->Speed;
-					npart->GasDrift = spart->GasDrift;
-				}
-			}
-			spart->Delete_Me();
-		} else {
-			spart->Motion_AI();
-		}
-	}
-}
-
-
-/// <summary>
 /// Handles the per-frame logic for this particle system.
 /// This routine hands the system over to the update handler for whatever behavior
 /// its type calls for, ages the system, and retires it once its lifetime has run
@@ -748,9 +735,6 @@ void ParticleSystemClass::AI(void)
 		case PSYS_BEHAVIOR_GAS:
 			Gas_AI();
 			break;
-		case PSYS_BEHAVIOR_WEAKGAS:
-			Gas_AI();
-			break;
 		case PSYS_BEHAVIOR_FIRE:
 			Fire_AI();
 			break;
@@ -759,9 +743,6 @@ void ParticleSystemClass::AI(void)
 			break;
 		case PSYS_BEHAVIOR_RAILGUN:
 			Railgun_AI();
-			break;
-		case PSYS_BEHAVIOR_WEB:
-			Web_AI();
 			break;
 	}
 
@@ -935,12 +916,21 @@ HRESULT STDMETHODCALLTYPE ParticleSystemClass::GetClassID(CLSID * retval)
 
 
 /// <summary>
+/// Marks the particle system for deletion.
+/// </summary>
+void ParticleSystemClass::Delete_Me(void) // RA2: defined here, between GetClassID and Fetch_Object_Size (0x0060CFF0)
+{
+	IsMarkedForDeletion = true;
+}
+
+
+/// <summary>
 /// Fetches the size of this object.
 /// This routine is used by the save process to know how many bytes of this object
 /// must be written out.
 /// </summary>
 /// <returns>Returns with the number of bytes this object occupies.</returns>
-int ParticleSystemClass::Fetch_Object_Size(bool oldsave) const
+int ParticleSystemClass::Fetch_Object_Size(void) const // RA2: takes no argument
 {
 	return(sizeof(*this));
 }
@@ -964,3 +954,39 @@ ObjectTypeClass const * ParticleSystemClass::Class_Of(void) const
 {
 	return(Class);
 }
+
+
+/// <summary>
+/// Handles the per-frame logic for a web particle system.
+/// This routine drifts the system's particles along and, as each one expires,
+/// spawns the successor particle its type calls for in its place.
+/// </summary>
+void ParticleSystemClass::Web_AI(void) // RA2: RA2's AI never calls it; defined last
+{
+	int i;
+
+	for (i = SystemParticles.Count()-1; i >= 0; i--) {
+		SystemParticles[i]->Behavior_AI();
+	}
+
+	for (i = SystemParticles.Count()-1; i >= 0; i--) {
+		ParticleClass *spart = SystemParticles[i];
+		if (spart->IsToDie) {
+			if (spart->Class->NextParticle != PARTICLE_NONE) {
+				Coord coord = spart->PositionCoord;
+				ParticleTypeClass *next = ParticleTypes[spart->Class->NextParticle];
+				Coord ncoord = coord + spart->Class->NextParticleOffset;
+				ParticleClass *npart = new ParticleClass(next, ncoord);
+				if (npart != NULL) {
+					SystemParticles.Add(npart);
+					npart->Speed = spart->Speed;
+					npart->GasDrift = spart->GasDrift;
+				}
+			}
+			spart->Delete_Me();
+		} else {
+			spart->Motion_AI();
+		}
+	}
+}
+

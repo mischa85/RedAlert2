@@ -38,7 +38,7 @@ class ParticleSystemClass : public ObjectClass
 		virtual HRESULT STDMETHODCALLTYPE Load(IStream * stream) override;
 		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override;
 
-		virtual void Delete_Me(void) override { IsMarkedForDeletion = true; }
+		virtual void Delete_Me(void) override; // RA2: defined in partsys.cpp, at 0x0060CFF0
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
 
