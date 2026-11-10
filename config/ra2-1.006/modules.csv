@@ -331,7 +331,7 @@ ipxaddr,0x00523410,0x00523980,tibsun,"functions compiled from src/ipxaddr.cpp, m
 unk_00523980,0x00523980,0x00523B70,unknown,code not assigned to a module
 ipxconn,0x00523B70,0x00523F90,tibsun,"functions compiled from src/ipxconn.cpp, matched, without gaps; one placed by the gap"
 unk_00523F90,0x00523F90,0x005241B0,unknown,code not assigned to a module
-ipxgconn,0x005241B0,0x00524DD0,tibsun,"functions compiled from src/ipxgconn.cpp, without gaps; matched except ?Receive_Packet@IPXGlobalConnClass@@UAEHPAXHPAVIPXAddressClass@@G@Z; three placed by the gap"
+ipxgconn,0x005241B0,0x00524DD0,tibsun,"functions compiled from src/ipxgconn.cpp, matched, without gaps; three placed by the gap"
 unk_00524DD0,0x00524DD0,0x00527A80,unknown,code not assigned to a module
 isotile,0x00527A80,0x00528260,tibsun,"functions compiled from src/isotile.cpp, matched, without gaps; five placed by the gap"
 unk_00528260,0x00528260,0x00529550,unknown,code not assigned to a module

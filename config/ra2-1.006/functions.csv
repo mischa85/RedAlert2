@@ -1769,6 +1769,7 @@ address,size,evidence
 0x005241B0,224,"code of src/ipxgconn.cpp, matched"
 0x00524290,96,"code of src/ipxgconn.cpp, matched"
 0x005242F0,224,"code of src/ipxgconn.cpp, matched"
+0x005243D0,672,"code of src/ipxgconn.cpp, matched"
 0x00524670,144,"code of src/ipxgconn.cpp, matched"
 0x00524700,144,"code of src/ipxgconn.cpp, matched"
 0x00524790,32,"code of src/ipxgconn.cpp, matched"
