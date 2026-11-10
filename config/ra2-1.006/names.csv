@@ -1899,6 +1899,7 @@ address,symbol,evidence
 0x0059EB60,??0MotionLibrary@@QAE@XZ,"compiled from src/motlib.cpp, matched"
 0x0059EB70,??0MotionLibrary@@QAE@AAVFileClass@@@Z,"compiled from src/motlib.cpp, matched"
 0x0059EBA0,??1MotionLibrary@@QAE@XZ,"compiled from src/motlib.cpp, matched; identical code at two addresses, placed by definition order"
+0x0059EBC0,?Read_File@MotionLibrary@@QAEHAAVFileClass@@@Z,"compiled from src/motlib.cpp, matched"
 0x0059ED30,?Scale@MotionLibrary@@QAEXM@Z,"compiled from src/motlib.cpp, matched"
 0x0059EDC0,?Clear@MotionLibrary@@QAEXXZ,"compiled from src/motlib.cpp, matched; identical code at two addresses, placed by definition order"
 0x0059F060,?Set_Default_Mouse@MouseClass@@UAEXW4MouseType@@_N@Z,"inferred: referenced by matched src/radar.cpp (1 reference); across all matched code never at another address, and no other symbol here"
