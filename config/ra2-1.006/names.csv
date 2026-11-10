@@ -3725,6 +3725,7 @@ address,symbol,evidence
 0x00775C60,?Copy_To@ZBuffer@@QAEXPAVSurface@@V?$TRect@H@@@Z,"compiled from src/zbuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
 0x00775CF0,?Release_Surface@ZBuffer@@AAEXXZ,"compiled from src/zbuffer.cpp, matched"
 0x00775D00,?Set@ZBuffer@@QAEXIHG@Z,"compiled from src/zbuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
+0x00775D60,?Pan@ZBuffer@@QAEXHHG@Z,"compiled from src/zbuffer.cpp, matched; code at 2 addresses, the others matched by src/abuffer.cpp"
 0x00776160,?Fill@ZBuffer@@QAE_NG@Z,"compiled from src/zbuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
 0x007761A0,?Fill@ZBuffer@@QAE_NGV?$TRect@H@@@Z,"compiled from src/zbuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
 0x007761C0,?Update@ZBuffer@@QAEXV?$TRect@H@@@Z,"compiled from src/zbuffer.cpp, matched"

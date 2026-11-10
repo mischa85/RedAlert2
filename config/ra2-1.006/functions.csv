@@ -4246,6 +4246,7 @@ address,size,evidence
 0x00775C60,144,"code of src/zbuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
 0x00775CF0,16,"code of src/zbuffer.cpp, matched: too short for the match rule"
 0x00775D00,96,"code of src/zbuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
+0x00775D60,1024,"code of src/zbuffer.cpp, matched: its code occurs at 2 addresses; the others are matched code of src/abuffer.cpp"
 0x00776160,64,"code of src/zbuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
 0x007761A0,32,"code of src/zbuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
 0x007761C0,384,"code of src/zbuffer.cpp, matched"
