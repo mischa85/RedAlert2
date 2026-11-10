@@ -133,7 +133,7 @@ RTTIType AlphaShapeClass::Fetch_RTTI(void) const
 /// committed to the save stream.
 /// </summary>
 /// <returns>Returns with the byte size of this object.</returns>
-int AlphaShapeClass::Fetch_Object_Size(bool oldsave) const
+int AlphaShapeClass::Fetch_Object_Size(void) const // RA2: takes no argument
 {
 	return(sizeof(*this));
 }
@@ -425,3 +425,20 @@ void AlphaShapeClass::Calculate_Brightness_Table(void)
 		BrightnessTable[0][i] = brightness;
 	}
 }
+
+
+/// <summary>
+/// Draws the alpha shapes that fall across a single map tile.
+/// This routine is the per cell counterpart to Draw_All. Each shape's light is blended
+/// into the alpha buffer as usual, but only where it lands inside the diamond of the
+/// tile being drawn.
+/// </summary>
+/// <param name="point">The pixel position of the tile being drawn.</param>
+
+
+/// <summary>
+/// Draws every alpha shape into the alpha buffer.
+/// This routine is used by the tactical map to lay down the light contribution of all
+/// registered shapes in one pass, blending each shape against whatever light has already
+/// been recorded for that spot.
+/// </summary>
