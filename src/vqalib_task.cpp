@@ -1076,7 +1076,7 @@ long VQA_GetBlockInfo(VQAHandle *vqa, long & blockw, long & blockh, long & clrmo
 
 char *VQA_IDString(void)
 {
-	return("VQA playback 5.0 (Oct 30 2001 17:30:47)");
+	return("VQA playback 5.0 (Jun  6 2001 16:25:28)");
 }
 
 long User_Update(VQAHandle *vqa)
