@@ -180,11 +180,11 @@ void Destroy_Null_Connection(int id, int error)
 	txt[0] = L'\0';
 	switch (error) {
 		case 1:
-			swprintf(txt, StringTable::LoadString("TXT_CONNECTION_LOST", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 0x190c), housep->UIName);
+			swprintf(txt, StringTable::LoadString("TXT_CONNECTION_LOST", NULL, "D:\\Ra2\\NullDlg.CPP", 0x190c), housep->UIName);
 			break;
 
 		case 0:
-			swprintf(txt, StringTable::LoadString("TXT_LEFT_GAME", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 0x1910), housep->UIName);
+			swprintf(txt, StringTable::LoadString("TXT_LEFT_GAME", NULL, "D:\\Ra2\\NullDlg.CPP", 0x1910), housep->UIName);
 			break;
 
 		case -1:
@@ -210,7 +210,7 @@ void Destroy_Null_Connection(int id, int error)
 	Session.NumPlayers--;
 
 	if (Session.NumPlayers == 1) {
-		swprintf(txt, L"%s", StringTable::LoadString("TXT_JUST_YOU_AND_ME", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 0x1935));
+		swprintf(txt, L"%s", StringTable::LoadString("TXT_JUST_YOU_AND_ME", NULL, "D:\\Ra2\\NullDlg.CPP", 0x1935));
 		Session.Messages.Add_Message(NULL, 0, txt, housep->Class->Scheme, TextPrintType(0x4046), int(Rule->MessageDelay * TICKS_PER_MINUTE), false);
 		Map.Flag_To_Redraw();
 	}
@@ -228,7 +228,7 @@ bool Reconnect_Null_Modem(void)
 	SerialPacketType SendPacket;
 	SerialPacketType ReceivePacket;
 
-	HWND dialog = OwnerDraw::Custom_Message_Box(StringTable::LoadString("TXT_NULL_CONNERR_CHECK_CABLES", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 0x1959), StringTable::LoadString("TXT_CANCEL", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 0x1959), &ModemDialogIsOpen);
+	HWND dialog = OwnerDraw::Custom_Message_Box(StringTable::LoadString("TXT_NULL_CONNERR_CHECK_CABLES", NULL, "D:\\Ra2\\NullDlg.CPP", 0x1959), StringTable::LoadString("TXT_CANCEL", NULL, "D:\\Ra2\\NullDlg.CPP", 0x1959), &ModemDialogIsOpen);
 
 	if (dialog != NULL) {
 		OwnerDraw::Display_Dialog(dialog);
@@ -255,7 +255,7 @@ bool Reconnect_Null_Modem(void)
 
 				if (ReceivePacket.Command == SERIAL_CONNECT) {
 					if (ReceivePacket.ID == Session.PrefColor) {
-						WWMessageBox().Process(StringTable::LoadString("TXT_SYSTEM_NOT_RESPONDING", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 0x1982), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 0x1982), NULL, NULL);
+						WWMessageBox().Process(StringTable::LoadString("TXT_SYSTEM_NOT_RESPONDING", NULL, "D:\\Ra2\\NullDlg.CPP", 0x1982), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 0x1982), NULL, NULL);
 						retval = false;
 						process = false;
 						break;
@@ -340,7 +340,7 @@ bool Dial_Modem(SerialSettingsType *settings, bool reconnect)
 					NullModem.Remove_Modem_Echo();
 					NullModem.Print_EchoBuf();
 					NullModem.Reset_EchoBuf();
-					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6664), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6664), NULL, NULL);
+					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\Ra2\\NullDlg.CPP", 6664), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6664), NULL, NULL);
 					Session.ModemService = true;
 					return(connected);
 				}
@@ -358,14 +358,14 @@ bool Dial_Modem(SerialSettingsType *settings, bool reconnect)
 					NullModem.Remove_Modem_Echo();
 					NullModem.Print_EchoBuf();
 					NullModem.Reset_EchoBuf();
-					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6685), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6685), NULL, NULL);
+					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\Ra2\\NullDlg.CPP", 6685), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6685), NULL, NULL);
 					Session.ModemService = true;
 					return(connected);
 				}
 				break;
 
 			default:
-				WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6692), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6692), NULL, NULL);
+				WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\Ra2\\NullDlg.CPP", 6692), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6692), NULL, NULL);
 				Session.ModemService = true;
 				return(connected);
 		}
@@ -373,7 +373,7 @@ bool Dial_Modem(SerialSettingsType *settings, bool reconnect)
 		NullModem.Remove_Modem_Echo();
 		NullModem.Print_EchoBuf();
 		NullModem.Reset_EchoBuf();
-		WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_IN_INITSTRING", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6705), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6705), NULL, NULL);
+		WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_IN_INITSTRING", NULL, "D:\\Ra2\\NullDlg.CPP", 6705), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6705), NULL, NULL);
 		Session.ModemService = true;
 		return(connected);
 	}
@@ -395,31 +395,31 @@ bool Dial_Modem(SerialSettingsType *settings, bool reconnect)
 
 		case DIAL_NO_CARRIER:
 			DebugString("Dial_Modem returned 'DIAL_NO_CARRIER'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_NO_CARRIER", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6758), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6758), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_NO_CARRIER", NULL, "D:\\Ra2\\NullDlg.CPP", 6758), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6758), NULL, NULL);
 			connected = false;
 			break;
 
 		case DIAL_BUSY:
 			DebugString("Dial_Modem returned 'DIAL_BUSY'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_LINE_BUSY", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6764), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6764), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_LINE_BUSY", NULL, "D:\\Ra2\\NullDlg.CPP", 6764), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6764), NULL, NULL);
 			connected = false;
 			break;
 
 		case DIAL_ERROR:
 			DebugString("Dial_Modem returned 'DIAL_ERROR'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_NUMBER_INVALID", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6770), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6770), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_NUMBER_INVALID", NULL, "D:\\Ra2\\NullDlg.CPP", 6770), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6770), NULL, NULL);
 			connected = false;
 			break;
 
 		case DIAL_TIMEOUT:
 			DebugString("Dial_Modem returned 'DIAL_TIMEOUT'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_TIMEOUT", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6776), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6776), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_TIMEOUT", NULL, "D:\\Ra2\\NullDlg.CPP", 6776), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6776), NULL, NULL);
 			connected = false;
 			break;
 
 		case DIAL_NO_DIAL_TONE:
 			DebugString("Dial_Modem returned 'DIAL_NO_DIAL_TONE'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_NO_DIAL_TONE", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6782), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6782), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_NO_DIAL_TONE", NULL, "D:\\Ra2\\NullDlg.CPP", 6782), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6782), NULL, NULL);
 			connected = false;
 			break;
 
@@ -427,7 +427,7 @@ bool Dial_Modem(SerialSettingsType *settings, bool reconnect)
 			DebugString("Dial_Modem returned 'DIAL_CANCELLED'\n");
 			NullModem.Hangup_Modem();
 			Session.ModemService = false;
-			WWMessageBox().Process(StringTable::LoadString("TXT_DIALING_CANCELED", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6790), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6790), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_DIALING_CANCELED", NULL, "D:\\Ra2\\NullDlg.CPP", 6790), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6790), NULL, NULL);
 			connected = false;
 			break;
 	}
@@ -496,7 +496,7 @@ bool Answer_Modem(SerialSettingsType *settings, bool reconnect)
 					NullModem.Remove_Modem_Echo();
 					NullModem.Print_EchoBuf();
 					NullModem.Reset_EchoBuf();
-					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6887), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6887), NULL, NULL);
+					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\Ra2\\NullDlg.CPP", 6887), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6887), NULL, NULL);
 					Session.ModemService = true;
 					return(connected);
 				}
@@ -514,14 +514,14 @@ bool Answer_Modem(SerialSettingsType *settings, bool reconnect)
 					NullModem.Remove_Modem_Echo();
 					NullModem.Print_EchoBuf();
 					NullModem.Reset_EchoBuf();
-					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6908), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6908), NULL, NULL);
+					WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\Ra2\\NullDlg.CPP", 6908), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6908), NULL, NULL);
 					Session.ModemService = true;
 					return(connected);
 				}
 				break;
 
 			default:
-				WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6915), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6915), NULL, NULL);
+				WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_FIND_MODEM", NULL, "D:\\Ra2\\NullDlg.CPP", 6915), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6915), NULL, NULL);
 				Session.ModemService = true;
 				return(connected);
 		}
@@ -529,7 +529,7 @@ bool Answer_Modem(SerialSettingsType *settings, bool reconnect)
 		NullModem.Remove_Modem_Echo();
 		NullModem.Print_EchoBuf();
 		NullModem.Reset_EchoBuf();
-		WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_IN_INITSTRING", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6925), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6925), NULL, NULL);
+		WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_IN_INITSTRING", NULL, "D:\\Ra2\\NullDlg.CPP", 6925), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6925), NULL, NULL);
 		Session.ModemService = true;
 		return(connected);
 	}
@@ -546,25 +546,25 @@ bool Answer_Modem(SerialSettingsType *settings, bool reconnect)
 
 		case DIAL_NO_CARRIER:
 			DebugString("Answer_Modem returned 'DIAL_NO_CARRIER'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_NO_CARRIER", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6941), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6941), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_NO_CARRIER", NULL, "D:\\Ra2\\NullDlg.CPP", 6941), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6941), NULL, NULL);
 			connected = false;
 			break;
 
 		case DIAL_ERROR:
 			DebugString("Answer_Modem returned 'DIAL_ERROR'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_NUMBER_INVALID", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6947), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6947), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_NUMBER_INVALID", NULL, "D:\\Ra2\\NullDlg.CPP", 6947), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6947), NULL, NULL);
 			connected = false;
 			break;
 
 		case DIAL_TIMEOUT:
 			DebugString("Answer_Modem returned 'DIAL_TIMEOUT'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_TIMEOUT", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6953), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6953), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_ERROR_TIMEOUT", NULL, "D:\\Ra2\\NullDlg.CPP", 6953), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6953), NULL, NULL);
 			connected = false;
 			break;
 
 		case DIAL_CANCELED:
 			DebugString("Answer_Modem returned 'DIAL_CANCELLED'\n");
-			WWMessageBox().Process(StringTable::LoadString("TXT_ANSWERING_CANCELED", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6959), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\NullDlg.CPP", 6959), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_ANSWERING_CANCELED", NULL, "D:\\Ra2\\NullDlg.CPP", 6959), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\NullDlg.CPP", 6959), NULL, NULL);
 			connected = false;
 			break;
 	}

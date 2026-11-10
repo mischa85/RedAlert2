@@ -201,21 +201,21 @@ void ModemGuest::InitDialog(void)
 	if (control) {
 		Send_Control_Message(control, CB_RESETCONTENT);
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_GOLD", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x118));
+		             (LPARAM)StringTable::LoadString("TXT_GOLD", 0, "D:\\Ra2\\ModemGst.cpp", 0x118));
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_RED", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x119));
+		             (LPARAM)StringTable::LoadString("TXT_RED", 0, "D:\\Ra2\\ModemGst.cpp", 0x119));
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_BLUE", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x11A));
+		             (LPARAM)StringTable::LoadString("TXT_BLUE", 0, "D:\\Ra2\\ModemGst.cpp", 0x11A));
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_GREEN", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x11B));
+		             (LPARAM)StringTable::LoadString("TXT_GREEN", 0, "D:\\Ra2\\ModemGst.cpp", 0x11B));
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_ORANGE", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x11C));
+		             (LPARAM)StringTable::LoadString("TXT_ORANGE", 0, "D:\\Ra2\\ModemGst.cpp", 0x11C));
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_SKY_BLUE", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x11D));
+		             (LPARAM)StringTable::LoadString("TXT_SKY_BLUE", 0, "D:\\Ra2\\ModemGst.cpp", 0x11D));
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_PURPLE", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x11E));
+		             (LPARAM)StringTable::LoadString("TXT_PURPLE", 0, "D:\\Ra2\\ModemGst.cpp", 0x11E));
 		Send_Control_Message(control, 0x4C1, -1,
-		             (LPARAM)StringTable::LoadString("TXT_PINK", 0, "D:\\ra2mdpost\\ModemGst.cpp", 0x11F));
+		             (LPARAM)StringTable::LoadString("TXT_PINK", 0, "D:\\Ra2\\ModemGst.cpp", 0x11F));
 		for (int index = 0; index < 8; index++) {
 			Send_Control_Message(control, OD_SETCOLOR, index, PlayerColorTable[index]);
 		}
@@ -639,7 +639,7 @@ bool ModemGuest::Receive(void)
 
 			DebugString("Received own packet back\n");
 
-			WWMessageBox().Process(StringTable::LoadString("TXT_SYSTEM_NOT_RESPONDING", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x499), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x499), NULL, NULL);
+			WWMessageBox().Process(StringTable::LoadString("TXT_SYSTEM_NOT_RESPONDING", NULL, "D:\\Ra2\\ModemGst.cpp", 0x499), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x499), NULL, NULL);
 
 			return(true);
 		}
@@ -653,7 +653,7 @@ bool ModemGuest::Receive(void)
 					NullModem.Service();
 				}
 
-				WWMessageBox().Process(StringTable::LoadString("TXT_USER_SIGNED_OFF", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4a9), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4a9), NULL, NULL);
+				WWMessageBox().Process(StringTable::LoadString("TXT_USER_SIGNED_OFF", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4a9), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4a9), NULL, NULL);
 
 				LastMsgTime = TickCount;
 
@@ -666,13 +666,13 @@ bool ModemGuest::Receive(void)
 				version = VerNum.Clip_Version(receivepacket.ScenarioInfo.MinVersion,
 					receivepacket.ScenarioInfo.MaxVersion);
 				if (version == 0) {
-					WWMessageBox().Process(StringTable::LoadString("TXT_DESTGAME_OUTDATED", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4b9), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4b9), NULL, NULL);
+					WWMessageBox().Process(StringTable::LoadString("TXT_DESTGAME_OUTDATED", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4b9), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4b9), NULL, NULL);
 
 					LastMsgTime = TickCount;
 
 					return(true);
 				} else if (version == 0xffffffff) {
-					WWMessageBox().Process(StringTable::LoadString("TXT_YOURGAME_OUTDATED", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4bf), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4bf), NULL, NULL);
+					WWMessageBox().Process(StringTable::LoadString("TXT_YOURGAME_OUTDATED", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4bf), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4bf), NULL, NULL);
 
 					LastMsgTime = TickCount;
 
@@ -693,7 +693,7 @@ bool ModemGuest::Receive(void)
 
 					if (!ok) {
 
-						WWMessageBox().Process(StringTable::LoadString("TXT_MISMATCH", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4ee), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x4ee), NULL, NULL);
+						WWMessageBox().Process(StringTable::LoadString("TXT_MISMATCH", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4ee), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x4ee), NULL, NULL);
 
 						LastMsgTime = TickCount;
 
@@ -730,7 +730,7 @@ bool ModemGuest::Receive(void)
 						NullModem.Send_Message(&sendpacket, sizeof(sendpacket), 1);
 						Call_Back();
 						NullModem.Service();
-						WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_PLAY_WAAUGH", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x51c), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x51c), NULL, NULL);
+						WWMessageBox().Process(StringTable::LoadString("TXT_UNABLE_PLAY_WAAUGH", NULL, "D:\\Ra2\\ModemGst.cpp", 0x51c), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x51c), NULL, NULL);
 						LastMsgTime = TickCount;
 						return(true);
 					} else {
@@ -796,7 +796,7 @@ bool ModemGuest::Receive(void)
 	if (time > MsgTimeout) {
 		DebugString("Timeout! %d ticks since last incoming message\n", time);
 
-		WWMessageBox().Process(StringTable::LoadString("TXT_SYSTEM_NOT_RESPONDING", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x56f), StringTable::LoadString("TXT_OK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x56f), NULL, NULL);
+		WWMessageBox().Process(StringTable::LoadString("TXT_SYSTEM_NOT_RESPONDING", NULL, "D:\\Ra2\\ModemGst.cpp", 0x56f), StringTable::LoadString("TXT_OK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x56f), NULL, NULL);
 
 		return(true);
 	}
@@ -959,7 +959,7 @@ void ModemGuest::SignOff(void)
 	sendpacket.ID = Session.ModemType;
 	NullModem.Send_Message(&sendpacket, sizeof(sendpacket), 1);
 
-	HWND dialog = OwnerDraw::Custom_Message_Box(StringTable::LoadString("TXT_SIGNING_OFF", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x693), NULL, NULL);
+	HWND dialog = OwnerDraw::Custom_Message_Box(StringTable::LoadString("TXT_SIGNING_OFF", NULL, "D:\\Ra2\\ModemGst.cpp", 0x693), NULL, NULL);
 
 	if (dialog) {
 		OwnerDraw::Display_Dialog(dialog);
@@ -1020,7 +1020,7 @@ bool ModemGuest::StartGame(bool load_game)
 		return(false);
 	}
 
-	HWND msgbox = OwnerDraw::Custom_Message_Box(StringTable::LoadString("TXT_SENDING_GO_ACK", NULL, "D:\\ra2mdpost\\ModemGst.cpp", 0x6f3));
+	HWND msgbox = OwnerDraw::Custom_Message_Box(StringTable::LoadString("TXT_SENDING_GO_ACK", NULL, "D:\\Ra2\\ModemGst.cpp", 0x6f3));
 	if (msgbox) {
 		OwnerDraw::Display_Dialog(msgbox);
 	}

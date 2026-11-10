@@ -44,9 +44,9 @@ void __fastcall Restate_Mission(ScenarioClass * scen) // RA2: shows the mission 
 		if (found) {
 			char buffer[256];
 			ini.Get_String(section, BriefingKey, "", buffer, sizeof(buffer));
-			text = StringTable::LoadString(buffer, NULL, "D:\\ra2mdpost\\Restate.cpp", 0x87);
+			text = StringTable::LoadString(buffer, NULL, "D:\\Ra2\\Restate.cpp", 0x87);
 		} else {
-			text = StringTable::LoadString("Brief:Error", NULL, "D:\\ra2mdpost\\Restate.cpp", 0x8a);
+			text = StringTable::LoadString("Brief:Error", NULL, "D:\\Ra2\\Restate.cpp", 0x8a);
 		}
 		RestateText = text;
 

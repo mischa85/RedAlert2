@@ -38,7 +38,7 @@
 static inline int ComboBox_AddString(HWND h, const void *s) { return (int)SendMessage(h, 0x4c2, 0, (LPARAM)s); }
 #define ComboBox_FindString(h, i, s) ((int)SendMessage((h), 0x4b8, (i), (LPARAM)(s)))
 static inline int ComboBox_AddStringA(HWND h, const void *s) { return (int)SendMessage(h, 0x4bc, 0, (LPARAM)s); }
-#define LS(name, line) StringTable::LoadString(name, NULL, "D:\\ra2mdpost\\SerialEd.cpp", line)
+#define LS(name, line) StringTable::LoadString(name, NULL, "D:\\Ra2\\SerialEd.cpp", line)
 static wchar_t const *baudname[] = {
 	L"14400",
 	L"19200",
