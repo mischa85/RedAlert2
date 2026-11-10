@@ -11,7 +11,6 @@
 #define SLERP_EPSILON 1e-5
 #define SLERP_HALF_PI 1.570796326794895
 
-// FUNCTION: GAMEMD 0x00645C30
 Quaternion::Quaternion(float x, float y, float z, float w)
 {
 	X=x;
@@ -20,7 +19,6 @@ Quaternion::Quaternion(float x, float y, float z, float w)
 	W=w;
 }
 
-// FUNCTION: GAMEMD 0x00645C50
 void Quaternion::Set(float x, float y, float z, float w)
 {
 	X=x;
@@ -29,7 +27,6 @@ void Quaternion::Set(float x, float y, float z, float w)
 	W=w;
 }
 
-// FUNCTION: GAMEMD 0x00645C70
 void Quaternion::Normalize(void)
 {
 	float len2 = X * X + Y * Y + Z * Z + W * W;
@@ -42,7 +39,6 @@ void Quaternion::Normalize(void)
 	}
 }
 
-// FUNCTION: GAMEMD 0x00645CD0
 void Quaternion::Scale(float s)
 {
 	X = (float)(s * X);
@@ -51,19 +47,16 @@ void Quaternion::Scale(float s)
 	W = (float)(s * W);
 }
 
-// FUNCTION: GAMEMD 0x00645D00
 float & Quaternion::operator [](int i)
 {
 	return (&X)[i];
 }
 
-// FUNCTION: GAMEMD 0x00645D10
 const float Quaternion::operator [](int i) const
 {
 	return (&X)[i];
 }
 
-// FUNCTION: GAMEMD 0x00645D20
 Quaternion Quaternion::operator=(const Quaternion & q)
 {
 	X = q[0];
@@ -74,7 +67,28 @@ Quaternion Quaternion::operator=(const Quaternion & q)
 	return(*this);
 }
 
-// FUNCTION: GAMEMD 0x00645ED0
+Quaternion & Quaternion::Make_Closest(const Quaternion & qto) // RA2: at 0x00622290, between operator= and operator*
+{
+	Quaternion t = *this;
+	Quaternion rel1 = t * Inverse(qto);
+
+	Quaternion negthis = Quaternion(-X, -Y, -Z, -W);
+	Quaternion rel2 = negthis * Inverse(qto);
+
+	float dot1 = rel1.Length2();
+	float dot2 = rel2.Length2();
+
+	// if we are on opposite hemisphere from qto, negate ourselves
+	if (dot2 < dot1) {
+		X = -X;
+		Y = -Y;
+		Z = -Z;
+		W = -W;
+	}
+
+	return(*this);
+}
+
 Quaternion operator * (const Quaternion & a,const Quaternion & b)
 {
 	Quaternion t1;
@@ -101,19 +115,16 @@ Quaternion operator * (const Quaternion & a,const Quaternion & b)
 	return(q);
 }
 
-// FUNCTION: GAMEMD 0x00646040
 Quaternion operator / (const Quaternion & a,const Quaternion & b)
 {
 	return(a * Inverse(b));
 }
 
-// FUNCTION: GAMEMD 0x006460C0
 Quaternion Inverse(const Quaternion & q)
 {
 	return(Quaternion(-q[0],-q[1],-q[2],q[3]));
 }
 
-// FUNCTION: GAMEMD 0x00646110
 Quaternion Conjugate(const Quaternion & q)
 {
 	return(Quaternion(-q.X,-q.Y,-q.Z,q.W));
@@ -141,7 +152,6 @@ static float project_to_sphere(float radius, float x, float y)
 	return z;
 }
 
-// FUNCTION: GAMEMD 0x00646160
 Quaternion Trackball(float x0, float y0, float x1, float y1, float radius)
 {
 	Vector3 axis;
@@ -184,7 +194,6 @@ inline Vector3 Quat_Normalize(Vector3 const &vector)
 	return vector;
 }
 
-// FUNCTION: GAMEMD 0x00646480
 Quaternion Axis_To_Quat(const Vector3 &a, float phi)
 {
 	Quaternion q;
@@ -201,7 +210,6 @@ Quaternion Axis_To_Quat(const Vector3 &a, float phi)
 	return(q);
 }
 
-// FUNCTION: GAMEMD 0x00646590
 Quaternion Slerp(const Quaternion &a, const Quaternion &b, float t)
 {
 	Quaternion res;
@@ -237,7 +245,6 @@ Quaternion Slerp(const Quaternion &a, const Quaternion &b, float t)
 	return(res);
 }
 
-// FUNCTION: GAMEMD 0x00646730
 Quaternion Build_Quaternion(const Matrix3D& mat)
 {
 	const float * m = (float const *)&mat;
@@ -253,7 +260,6 @@ Quaternion Build_Quaternion(const Matrix3D& mat)
 		{ (4 * 1) + 0, (4 * 1) + 1, (4 * 1) + 2, (4 * 1) + 3 },
 		{ (4 * 2) + 0, (4 * 2) + 1, (4 * 2) + 2, (4 * 2) + 3 },
 	};
-
 
 	tr = m[tab1[0]] + m[tab1[1]] + m[tab1[2]];
 
@@ -309,7 +315,6 @@ Quaternion Build_Quaternion(const Matrix3D& mat)
 	return(q);
 }
 
-// FUNCTION: GAMEMD 0x00646980
 Matrix3D Build_Matrix3D(const Quaternion &q)
 {
 	Matrix3D m;
