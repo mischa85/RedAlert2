@@ -194,6 +194,8 @@ class TPoint3D : public TPoint2D<T> {
 		}
 
 		T Distance_To(TPoint3D<T> const & point) const {return((*this - point).Length());}
+		T Length_YZX(void) const {double y = Y; double z = Z; double x = X; return(T(fastmath::sqrt(y*y + (z*z + x*x))));} // RA2: summed y, z, x
+		T Distance_YZX(TPoint3D<T> const & point) const {return((*this - point).Length_YZX());} // RA2: BuildingLightClass::AI's distances
 		T Distance_To(TPoint2D<T> const & point) const {return(BASECLASS::Distance_To(point));}
 
 	public:

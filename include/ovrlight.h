@@ -24,6 +24,7 @@ class SpotLightClass
 		~SpotLightClass(void);
 
 		void Set_Radius(int radius) {Radius=radius;}
+		void Disable(unsigned int flags) {DisableFlags |= flags;} // RA2: ORs into the member at +0x14
 		void AI(void);
 		void Draw_It(void);
 
@@ -59,6 +60,11 @@ class SpotLightClass
 		 * small one of the same age.
 		 */
 		int Size;
+
+		/*
+		**	These flags switch the light off; any set bit keeps it dark.
+		*/
+		unsigned int DisableFlags; // RA2: the class is 24 bytes (new SpotLightClass pushes 24)
 };
 
 

@@ -1,14 +1,13 @@
-/*******************************************************************************
- *                                O P E N  T S
- *******************************************************************************
- * SPDX-License-Identifier: GPL-3.0-or-later
- * Copyright 2026 OpenTS contributors
- *
- * See LICENSE.md for applicable additional terms and warranty disclaimers.
- ******************************************************************************/
+// SPDX-License-Identifier: GPL-3.0-or-later
+// Copyright 2026 ra2-decomp contributors
+// Copyright 2025 Electronic Arts Inc.; 2026 OpenTS contributors
+// Derived from Electronic Arts source code; EA's GPL Section 7 terms apply (COPYING.md).
 
 #define INCLUDE_COM
 #include "always.h"
+#include <math.h> // RA2: Draw_It's asin
+#include "rect.h" // RA2: Draw_It's rects
+
 
 #include "blight.h"
 
@@ -34,22 +33,6 @@
 #include "wave.h"
 #include "xsurface.h"
 
-const char * LightBehaviorNames[LIGHT_BEHAVIOR_COUNT] =
-{
-	"None (Invisible)",
-	"Sweep",
-	"Circle",
-	"Follow"
-};
-
-
-/// <summary>
-/// Creates a spotlight for the specified object.
-/// The light joins the global light list and, when it has an owner, is given a sweep arc
-/// in front of that owner and set moving. Alternate lights start out sweeping the other
-/// way, so that a row of them does not swing in unison.
-/// </summary>
-/// <param name="owner">The object that this light is mounted upon. May be NULL.</param>
 BuildingLightClass::BuildingLightClass(TechnoClass * owner) :
 	BASECLASS(),
 	Speed(0),
@@ -94,7 +77,7 @@ void BuildingLightClass::Draw_It(Point2D const & point, Rect const & cliprect) c
 	if (!Behavior || Owner == NULL || Owner->RTTI != RTTI_BUILDING) return;
 
 	BuildingClass * building = (BuildingClass *)Owner;
-	if (building == NULL || !building->IsActive || !building->Is_Powered_On() || building->IsFogged) return;
+	if (building == NULL || !building->IsActive || !building->IsPowerOnline() || building->IsFogged) return; // RA2: returns early unless the building is active, powered and not fogged
 
 	if (Scen->Special.IsFogOfWar && Map.Is_Fogged(Get_Coord())) return;
 
@@ -105,11 +88,8 @@ void BuildingLightClass::Draw_It(Point2D const & point, Rect const & cliprect) c
 
 	if (planar_dist > Rule->SpotlightLocationRadius && Behavior == LIGHT_BEHAVIOR_FOLLOW) {
 		int radius = stage + 80;
-		radius &= (radius <= 0) - 1;
-		if (radius >= 89) {
-			radius = 89;
-		}
-		spotlight->Set_Radius(radius);
+		radius = (radius > 0) ? radius : 0; // RA2: radius clamped at 0
+		spotlight->Set_Radius(min(radius, 89)); // RA2: and at 89
 	} else {
 		spotlight->Set_Radius(80);
 	}
@@ -123,42 +103,42 @@ void BuildingLightClass::Draw_It(Point2D const & point, Rect const & cliprect) c
 	int distance = Distance(there);
 	int detection = Detection_Radius();
 
-	if (distance >= detection) {
-		double angle = fastmath::asin((double)detection / (double)distance);
+	if (distance < detection) return; // RA2: no draw when the target is inside the detection radius
 
-		Matrix3D mat;
-		mat.Make_Identity();
-		mat.Rotate_Z(angle);
-		Vector3 v(here.X - there.X, here.Y - there.Y, here.Z - there.Z);
-		Vector3 vec = mat * v;
-		Coord arc1 = Coord(there.X + vec.X, there.Y + vec.Y, there.Z + vec.Z);
+	double angle = fastmath::asin((double)detection / (double)distance); // RA2: the cone's half angle from the detection radius
 
-		mat.Make_Identity();
-		mat.Rotate_Z(-angle);
-		vec = mat * v;
-		Coord arc2 = Coord(there.X + vec.X, there.Y + vec.Y, there.Z + vec.Z);
+	Matrix3D mat; // RA2: the cone's two edges are the target offset rotated by +angle
+	mat.Make_Identity(); // RA2: from the identity
+	mat.Rotate_Z(angle); // RA2: by +angle
+	Vector3 v(here.X - there.X, here.Y - there.Y, here.Z - there.Z); // RA2: the offset from the caster to the target
+	Vector3 vec = mat * v; // RA2: rotated
+	Coord arc1 = Coord(there.X + vec.X, there.Y + vec.Y, there.Z + vec.Z); // RA2: the first edge's end
 
-		Point2D arc1_px;
-		Point2D arc2_px;
-		Point2D caster_px;
-		TacticalMap->Coord_To_Pixel(arc1, arc1_px);
-		TacticalMap->Coord_To_Pixel(arc2, arc2_px);
-		TacticalMap->Coord_To_Pixel(Coord(there.X, there.Y, there.Z + 430), caster_px);
+	mat.Make_Identity(); // RA2: and by -angle
+	mat.Rotate_Z(-angle); // RA2: by -angle
+	Vector3 vec2 = mat * v; // RA2: rotated
+	Coord arc2 = Coord(there.X + vec2.X, there.Y + vec2.Y, there.Z + vec2.Z); // RA2: the second edge's end
 
-		arc1_px += TacticalRect.TopLeft;
-		arc2_px += TacticalRect.TopLeft;
-		caster_px += TacticalRect.TopLeft;
-		Point2D caster_px2 = caster_px;
+	Point2D arc1_px; // RA2: screen points for the edges and the caster
+	Point2D arc2_px; // RA2: screen point of the second edge
+	Point2D caster_px; // RA2: screen point of the caster
+	TacticalMap->Coord_To_Pixel(arc1, arc1_px); // RA2: edges to pixels
+	TacticalMap->Coord_To_Pixel(arc2, arc2_px); // RA2: edges to pixels
+	TacticalMap->Coord_To_Pixel(there + Coord(0, 0, 430), caster_px); // RA2: the caster 430 leptons up
 
-		int zstart = -Tactical::Z_Lepton_To_Pixel(there.Z + 400);
-		int zend = -Tactical::Z_Lepton_To_Pixel(PositionCoord.Z + 250);
+	arc1_px += TacticalRect.TopLeft; // RA2: shifted by the tactical origin
+	arc2_px += TacticalRect.TopLeft; // RA2: shifted by the tactical origin
+	caster_px += TacticalRect.TopLeft; // RA2: shifted by the tactical origin
+	Point2D caster_px2 = caster_px; // RA2: a copy for the second line
 
-		if (Clip_Line_To_Rect(caster_px, arc1_px, TacticalRect)) {
-			LogicalSurface->Draw_Depth_Glow_Line(LogicalSurface->Get_Rect(), caster_px, arc1_px, 75 - 6 * stage, zstart, zend);
-		}
-		if (Clip_Line_To_Rect(caster_px2, arc2_px, TacticalRect)) {
-			LogicalSurface->Draw_Depth_Glow_Line(LogicalSurface->Get_Rect(), caster_px2, arc2_px, 75 - 6 * stage, zstart, zend);
-		}
+	int zstart = -Tactical::Z_Lepton_To_Pixel(there.Z + 400); // RA2: depth from 400 leptons above the caster
+	int zend = -Tactical::Z_Lepton_To_Pixel((Get_Coord() + Coord(0, 0, 250)).Z); // RA2: to 250 leptons above the light
+
+	if (Clip_Line_To_Rect(caster_px, arc1_px, TacticalRect)) { // RA2: each edge clipped,
+		LogicalSurface->Draw_Depth_Glow_Line(LogicalSurface->Get_Rect(), caster_px, arc1_px, 75 - 6 * stage, zstart, zend); // RA2: and drawn as a depth glow line
+	}
+	if (Clip_Line_To_Rect(caster_px2, arc2_px, TacticalRect)) { // RA2: each edge clipped,
+		LogicalSurface->Draw_Depth_Glow_Line(LogicalSurface->Get_Rect(), caster_px2, arc2_px, 75 - 6 * stage, zstart, zend); // RA2: and drawn as a depth glow line
 	}
 }
 
@@ -178,38 +158,11 @@ void BuildingLightClass::AI(void)
 	}
 
 	Coord coord;
+	ObjectClass * following; // RA2: the followed object
 	switch (Behavior) {
 		default:
 			coord = PositionCoord;
 			break;
-
-		case LIGHT_BEHAVIOR_FOLLOW:
-			if (Target != NULL && Target->IsActive && Target->Distance_To(Owner) < Rule->SpotlightMovementRadius) {
-				coord = Lerp(PositionCoord, Target->PositionCoord, 0.25);
-			} else {
-				Set_Behavior_Type(LIGHT_BEHAVIOR_SWEEP);
-				/// No coordinate is computed on this path, so the position below is
-				/// written back from the uninitialized local.
-			}
-			break;
-
-		case LIGHT_BEHAVIOR_CIRCLE: {
-			Coord owner_coord = Owner->PositionCoord;
-			Speed += Rule->SpotlightSpeed * 4;
-
-			if (Speed > DEG_TO_RAD(360)) {
-				Speed -= DEG_TO_RAD(360);
-			}
-
-			Matrix3D mtx;
-			mtx.Make_Identity();
-			mtx.Rotate_Z(Speed);
-
-			Vector3 v(RotationTarget.X - owner_coord.X, RotationTarget.Y - owner_coord.Y, RotationTarget.Z - owner_coord.Z);
-			Vector3 vec = mtx * v;
-			coord = Coord(owner_coord.X + vec.X, owner_coord.Y + vec.Y, owner_coord.Z + vec.Z);
-		}
-		break;
 
 		case LIGHT_BEHAVIOR_SWEEP: {
 			Speed += Acceleration;
@@ -244,16 +197,45 @@ void BuildingLightClass::AI(void)
 			coord = Coord(RotationPivot.X + vec.X, RotationPivot.Y + vec.Y, RotationPivot.Z + vec.Z);
 		}
 		break;
+		case LIGHT_BEHAVIOR_CIRCLE: { // RA2: circling: the light turns around the owner
+			Coord owner_coord = Owner->PositionCoord; // RA2: the owner's position
+			Speed += Rule->SpotlightSpeed * 4; // RA2: four times the spotlight speed
+
+			if (Speed > DEG_TO_RAD(360)) { // RA2: wrapped at 360 degrees
+				Speed -= DEG_TO_RAD(360); // RA2: wrapped at 360 degrees
+			}
+
+			Matrix3D mtx; // RA2: rotation about Z
+			mtx.Make_Identity(); // RA2: from the identity
+			mtx.Rotate_Z(Speed); // RA2: by Speed
+
+			Vector3 v(RotationTarget.X - owner_coord.X, RotationTarget.Y - owner_coord.Y, RotationTarget.Z - owner_coord.Z); // RA2: the offset from the owner
+			Vector3 vec = mtx * v; // RA2: rotated
+			coord = Coord(owner_coord.X + vec.X, owner_coord.Y + vec.Y, owner_coord.Z + vec.Z); // RA2: the new position
+		}
+		break;
+
+		case LIGHT_BEHAVIOR_FOLLOW: // RA2: after the sweep and circle cases
+			following = Target; // RA2: follows its Target
+			if (following != NULL && following->IsActive) { // RA2: while it is active
+				int dist = following->Center_Coord().Distance_YZX(Owner->Center_Coord()); // RA2: distance summed y, z, x
+				if (dist < Rule->SpotlightMovementRadius) { // RA2: within the movement radius
+					coord = Lerp(Get_Coord(), following->Get_Coord(), 0.25f); // RA2: a quarter of the way there
+					break;
+				}
+			}
+			Set_Behavior_Type(LIGHT_BEHAVIOR_SWEEP); // RA2: otherwise back to sweeping
+			break;
 	}
 
-	PositionCoord = coord;
+	Set_Coord(coord); // RA2: through the virtual
 
 	BuildingClass * owner_building = (Owner->RTTI == RTTI_BUILDING) ? (BuildingClass *)Owner : NULL;
 
 	if (Behavior == LIGHT_BEHAVIOR_SWEEP) {
-		if (owner_building != NULL && owner_building->IsActive && owner_building->Is_Powered_On() && owner_building->Tag != NULL) {
+		if (owner_building != NULL && owner_building->IsActive && owner_building->IsPowerOnline() && owner_building->Tag != NULL) { // RA2: needs an active, powered building with a tag
 			bool found = false;
-			Cell cell = PositionCell;
+			Cell cell = Get_Cell(); // RA2: the light's own cell
 			int detection = Detection_Radius() + 30;
 			HouseClass * house = Owner->House;
 
@@ -274,21 +256,13 @@ void BuildingLightClass::AI(void)
 			}
 
 			if (found) {
-				owner_building->Tag->Spring(TEVENT_ENEMY_IN_SPOTLIGHT, owner_building);
-				owner_building->Tag->Spring(TEVENT_ENEMY_IN_SPOTLIGHT_REPEATING, owner_building);
+				owner_building->Tag->Spring(TEVENT_ENEMY_IN_SPOTLIGHT, owner_building); // RA2: one event
 			}
 		}
 	}
 }
 
-
-/// <summary>
-/// Fetches the size of this object.
-/// This routine is used by the save game code to know how much of the stream this
-/// object occupies.
-/// </summary>
-/// <returns>Returns with the size of the light object in bytes.</returns>
-int BuildingLightClass::Fetch_Object_Size(bool oldsave) const
+int BuildingLightClass::Fetch_Object_Size(void) const // RA2: takes no argument
 {
 	return(sizeof(*this));
 }
@@ -414,7 +388,7 @@ void BuildingLightClass::Set_Behavior_Type(LightBehaviorType type)
 
 		for (int x = -1; x < 2; x++) {
 			for (int y = -1; y < 2; y++) {
-				ObjectClass * occupier = Map[cell + Cell(x, y)].Cell_Occupier();
+				ObjectClass * occupier = Map[Cell(TPoint2D<short>(x + cell.X, y + cell.Y))].Cell_Occupier(); // RA2: the occupier of each cell in the box
 				while (occupier != NULL) {
 					if ((occupier->RTTI == RTTI_INFANTRY || occupier->RTTI == RTTI_UNIT) && !house->Is_Ally(occupier)) {
 						int dist = occupier->Center_Coord().Distance_To(Get_Coord());
@@ -447,9 +421,8 @@ int BuildingLightClass::Detection_Radius(void) const
 	/// Not 112.0 / 15.0 -- that quotient is one ULP higher, and the difference is
 	/// visible here because the radius truncates: stages 15 and 30 would give 112
 	/// and 224 where the game gives 111 and 223.
-	static const double _scale = 7.466666666666666;
-	int radius = Sweep_Stage() * _scale;
-	radius += Rule->SpotlightRadius;
+	static const double _scale = 5.973333333333333; // RA2
+	int radius = (int)(Sweep_Stage() * _scale) + Rule->SpotlightRadius; // RA2: the sweep stage scaled by 5.9733
 	return(radius);
 }
 
@@ -529,3 +502,6 @@ bool BuildingLightClass::Unlimbo(Coord const & coord, Dir256 dir)
 	}
 	return(false);
 }
+
+
+template class TPoint3D<int>; // RA2: TPoint3D<int> instantiated here (0x00437160)
