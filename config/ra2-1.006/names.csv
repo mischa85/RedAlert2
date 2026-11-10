@@ -2123,7 +2123,7 @@ address,symbol,evidence
 0x005B2F30,?Wait_For_Anim@MSEngine@@QAEXPAVMSAnim@@I@Z,"compiled from src/msengine.cpp, matched"
 0x005B2F90,?Restore_And_Advance@MSEngine@@QAEXXZ,"compiled from src/msengine.cpp, matched"
 0x005B2FB0,?Advance@MSEngine@@QAEXPAVSurface@@@Z,"compiled from src/msengine.cpp, matched"
-0x005B3110,?Add_Update_Rect@MSEngine@@QAEXABV?$TRect@H@@@Z,"inferred: referenced by matched src/msengine.cpp (2 references); across all matched code never at another address, and no other symbol here"
+0x005B3110,?Add_Update_Rect@MSEngine@@QAEXABV?$TRect@H@@@Z,"compiled from src/msengine.cpp, matched"
 0x005B33A0,?Blit_All@MSEngine@@QAEXPAVSurface@@@Z,"compiled from src/msengine.cpp, matched"
 0x005B3490,?Blit_Rect@MSEngine@@QAEXPAVSurface@@ABV?$TRect@H@@@Z,"compiled from src/msengine.cpp, matched"
 0x005B3550,?Wait_Delay@MSEngine@@QAEXH@Z,"compiled from src/msengine.cpp, matched"

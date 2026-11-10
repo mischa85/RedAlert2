@@ -2487,7 +2487,7 @@ address,size,evidence
 0x005B2F30,96,"code of src/msengine.cpp, matched"
 0x005B2F90,32,"code of src/msengine.cpp, matched"
 0x005B2FB0,352,"code of src/msengine.cpp, matched"
-0x005B3110,,"inferred: target of the call at 0x005B308A in matched src/msengine.cpp; size not known"
+0x005B3110,656,"code of src/msengine.cpp, matched"
 0x005B33A0,240,"code of src/msengine.cpp, matched"
 0x005B3490,192,"code of src/msengine.cpp, matched"
 0x005B3550,288,"code of src/msengine.cpp, matched"
