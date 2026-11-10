@@ -573,13 +573,7 @@ ptype,0x00621120,0x00621E80,tibsun,"functions compiled from src/ptype.cpp, match
 unk_00621E80,0x00621E80,0x00622090,unknown,code not assigned to a module
 quarry,0x00622090,0x006220D0,tibsun,"functions compiled from src/quarry.cpp, matched, without gaps; ?Name_From_Quarry@@YIPBDW4QuarryType@@@Z not placed"
 unk_006220D0,0x006220D0,0x00622180,unknown,code not assigned to a module
-unk_00622180,0x00622180,0x00622230,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00622230,0x00622230,0x00622250,unknown,code not assigned to a module
-unk_00622250,0x00622250,0x00622290,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00622290,0x00622290,0x00622570,unknown,code not assigned to a module
-unk_00622570,0x00622570,0x006225F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006225F0,0x006225F0,0x006229B0,unknown,code not assigned to a module
-unk_006229B0,0x006229B0,0x00622FB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+quat,0x00622180,0x00622FB0,tibsun,"functions compiled from src/quat.cpp, without gaps; matched except ?Make_Closest@Quaternion@@QAEAAV1@ABV1@@Z; two placed by the gap; ??0Quaternion@@QAE@MMMM@Z not placed"
 unk_00622FB0,0x00622FB0,0x00626FA0,unknown,code not assigned to a module
 unk_00626FA0,0x00626FA0,0x00626FE0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00626FE0,0x00626FE0,0x00627190,unknown,code not assigned to a module
