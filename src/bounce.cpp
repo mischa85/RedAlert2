@@ -50,7 +50,7 @@ void BounceClass::Init(Coord const & coord, double elasticity, double, double mi
 	double elevation = Random_Double(1.0, 2.0) * DEG_TO_RAD(45);
 
 	launch_velocity.X = fastmath::cos(elevation) * fastmath::cos(azimuth) * launch_speed;
-	launch_velocity.Y = fastmath::cos(elevation) * fastmath::sin(azimuth) * launch_speed;
+	launch_velocity.Y = (fastmath::cos(elevation) * fastmath::sin(azimuth) * launch_speed); // RA2: parenthesized
 	launch_velocity.Z = fastmath::sin(elevation) * launch_speed;
 
 	Init(coord, elasticity, 3.0, 0.0, launch_velocity, 0.0);

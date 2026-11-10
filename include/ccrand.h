@@ -148,8 +148,7 @@ inline bool Sim_Percent_Chance(int percent)
 /// from game logic that every machine performs.</remarks>
 inline double Random_Double(double a, double b)
 {
-	int num = Scen->RandomNumber(0, INT_MAX - 1);
-	return((b - a) * (num / double(INT_MAX - 1)) + a);
+	return a + (b - a) * ((double)Random_Pick(0, INT_MAX - 1) * (1.0 / double(INT_MAX - 1))); // RA2: no return parentheses
 }
 
 /// The integer-argument spelling, used by the house AI to weigh a percentage chance. Note
