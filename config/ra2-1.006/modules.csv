@@ -447,7 +447,7 @@ unk_0058B3E0,0x0058B3E0,0x0058B400,tibsun,matched functions of one source file o
 unk_0058B400,0x0058B400,0x0058B420,unknown,code not assigned to a module
 unk_0058B420,0x0058B420,0x0058DA10,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0058DA10,0x0058DA10,0x0058FDE0,unknown,code not assigned to a module
-matrix3d,0x0058FDE0,0x005914E0,tibsun,"functions compiled from src/matrix3d.cpp, without gaps; matched except ?Pre_Rotate_Y@Matrix3D@@QAEXM@Z and ?Look_At@Matrix3D@@QAEXABVVector3@@0M@Z and ??D@YI?AVVector3@@ABVMatrix3D@@ABV0@@Z"
+matrix3d,0x0058FDE0,0x005914E0,tibsun,"functions compiled from src/matrix3d.cpp, matched, without gaps"
 unk_005914E0,0x005914E0,0x00591760,unknown,code not assigned to a module
 unk_00591760,0x00591760,0x005917C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005917C0,0x005917C0,0x00591840,unknown,code not assigned to a module
@@ -772,7 +772,7 @@ unk_00716EE0,0x00716EE0,0x00716F10,tibsun,matched functions of one source file o
 unk_00716F10,0x00716F10,0x00716F40,unknown,code not assigned to a module
 voxdrsys,0x00716F40,0x00717CD0,tibsun,"functions compiled from src/voxdrsys.cpp, matched, without gaps; four placed by the gap"
 unk_00717CD0,0x00717CD0,0x00717F90,unknown,code not assigned to a module
-voxel,0x00717F90,0x00719040,tibsun,"functions compiled from src/voxel.cpp, without gaps; matched except ?Init_Voxel_Matrices@@YIXXZ; _$E9, _$E12, _$E15, _$E18, _$E21, _$E24, _$E27 and _$E30 not placed; two placed by the gap"
+unk_00717F90,0x00717F90,0x00719040,unknown,code not assigned to a module
 unk_00719040,0x00719040,0x00719060,unknown,code not assigned to a module
 voxlib,0x00719060,0x0071BD00,tibsun,"functions compiled from src/voxlib.cpp, without gaps; matched except ?Precalculate_Normal_Lookup@@YIXABVVector3@@0MH@Z; two placed by the gap"
 voxpal,0x0071BD00,0x0071C320,tibsun,"functions compiled from src/voxpal.cpp, matched, without gaps"
