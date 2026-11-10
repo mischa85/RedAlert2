@@ -110,7 +110,7 @@ FoggedObjectClass::FoggedObjectClass(Coord const & coord, OverlayType type, int 
 
 	FoggyObjects.Add(this);
 
-	Cell cell = Get_Cell();
+	Cell cell = Position.As_Cell(); // RA2: the cell straight from Position, not through Get_Cell
 	int id = cell.As_Int() - RTTI + INT_MAX;
 	FoggedObjectIndex.Add_Index(id, this);
 }
@@ -152,7 +152,7 @@ FoggedObjectClass::FoggedObjectClass(Coord const & coord, SmudgeType type, int d
 
 	FoggyObjects.Add(this);
 
-	Cell cell = Get_Cell();
+	Cell cell = Position.As_Cell(); // RA2: the cell straight from Position, not through Get_Cell
 	int id = cell.As_Int() - RTTI + INT_MAX;
 	FoggedObjectIndex.Add_Index(id, this);
 }
@@ -243,7 +243,7 @@ FoggedObjectClass::FoggedObjectClass(TerrainClass * object) :
 
 	Records.Add(DrawRecord(object->Class, 0, 0, 0));
 
-	Cell cell = Get_Cell();
+	Cell cell = Position.As_Cell(); // RA2: the cell straight from Position, not through Get_Cell
 	int id = cell.As_Int() - RTTI + INT_MAX;
 	FoggedObjectIndex.Add_Index(id, this);
 }
@@ -259,7 +259,7 @@ FoggedObjectClass::~FoggedObjectClass(void)
 {
 	FoggyObjects.Delete(this);
 
-	Cell cell = Get_Cell();
+	Cell cell = Position.As_Cell(); // RA2: the cell straight from Position, not through Get_Cell
 	int id = cell.As_Int() - RTTI + INT_MAX;
 	FoggedObjectIndex.Remove_Index(id);
 
@@ -277,7 +277,9 @@ FoggedObjectClass::~FoggedObjectClass(void)
 
 	if (TacticalMap != NULL) {
 		Rect rect = BoundingRect;
-		rect -= Point2D(TacticalMap->TacPixelX, TacticalMap->TacPixelY);
+		Point2D offset(TacticalMap->TacPixelX, TacticalMap->TacPixelY); // RA2: the tactical offset as a local,
+		rect.X -= offset.X; // RA2: subtracted from X
+		rect.Y -= offset.Y; // RA2: and from Y, not with Rect's operator-=
 		TacticalMap->Register_Dirty_Area(rect);
 	}
 }
@@ -642,7 +644,7 @@ RTTIType FoggedObjectClass::Fetch_RTTI(void) const
 /// The save game system uses this to know how much of the object to write out.
 /// </summary>
 /// <returns>Returns with the size of this object in bytes.</returns>
-int FoggedObjectClass::Fetch_Object_Size(bool) const
+int FoggedObjectClass::Fetch_Object_Size(void) const // RA2: takes no argument
 {
 	return(sizeof((*this)));
 }
@@ -713,3 +715,4 @@ Cell FoggedObjectClass::Get_Cell(void)
 {
 	return(Position.As_Cell());
 }
+
