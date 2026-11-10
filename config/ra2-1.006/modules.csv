@@ -263,7 +263,7 @@ grphmsct,0x004E0310,0x004E0630,tibsun,"functions compiled from src/grphmsct.cpp,
 unk_004E0630,0x004E0630,0x004E08D0,unknown,code not assigned to a module
 gscreen,0x004E08D0,0x004E1110,tibsun,"functions compiled from src/gscreen.cpp, matched, without gaps; three placed by the gap"
 unk_004E1110,0x004E1110,0x004E12B0,unknown,code not assigned to a module
-hicolor,0x004E12B0,0x004E13F0,tibsun,"functions compiled from src/hicolor.cpp, without gaps; matched except ?rgb24_to_rgb1555@@YIXPAEHHHH@Z"
+hicolor,0x004E12B0,0x004E13F0,tibsun,"functions compiled from src/hicolor.cpp, matched, without gaps"
 unk_004E13F0,0x004E13F0,0x004E2AD0,unknown,code not assigned to a module
 unk_004E2AD0,0x004E2AD0,0x004E2AF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004E2AF0,0x004E2AF0,0x004E3640,unknown,code not assigned to a module

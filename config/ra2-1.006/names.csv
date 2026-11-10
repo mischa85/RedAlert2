@@ -1384,6 +1384,7 @@ address,symbol,evidence
 0x004E12B0,?rgb24_clamp@@YIXPAEH@Z,"compiled from src/hicolor.cpp, matched"
 0x004E12D0,?rgb32_to_rgb24_clamped@@YIXPAEH@Z,"compiled from src/hicolor.cpp, matched"
 0x004E1300,?rgb24_to_rgb555@@YIXPAEHHH@Z,"compiled from src/hicolor.cpp, matched"
+0x004E1350,?rgb24_to_rgb1555@@YIXPAEHHHH@Z,"compiled from src/hicolor.cpp, matched"
 0x004E13C0,?rgb32_to_rgb24@@YIXPAEHHH@Z,"compiled from src/hicolor.cpp, matched"
 0x004E2E40,?Assign_Handicap@HouseClass@@QAE?AW4DiffType@@W42@@Z,"inferred: referenced by matched src/enviro.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x004E5280,?Spend_Money@HouseClass@@QAEXH@Z,"inferred: referenced by matched src/factory.cpp (2 references); across all matched code never at another address, and no other symbol here"
