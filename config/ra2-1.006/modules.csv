@@ -585,7 +585,7 @@ unk_00627190,0x00627190,0x00627210,tibsun,matched functions of one source file o
 unk_00627210,0x00627210,0x0062A340,unknown,code not assigned to a module
 unk_0062A340,0x0062A340,0x0062A360,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_0062A360,0x0062A360,0x0062EDE0,unknown,code not assigned to a module
-radar,0x0062EDE0,0x006340F0,tibsun,"functions compiled from src/radar.cpp, without gaps; matched except ?Action@RTacticalClass@RadarClass@@MAEHIAAW4KeyNumType@@@Z and ?Render_Radar@RadarClass@@QAEXXZ; two placed by the gap"
+radar,0x0062EDE0,0x006340F0,tibsun,"functions compiled from src/radar.cpp, matched, without gaps; two placed by the gap"
 unk_006340F0,0x006340F0,0x00636830,unknown,code not assigned to a module
 radio,0x00636830,0x00636F90,tibsun,"functions compiled from src/radio.cpp, matched, without gaps; two placed by the gap"
 unk_00636F90,0x00636F90,0x00638310,unknown,code not assigned to a module
