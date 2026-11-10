@@ -503,17 +503,19 @@ void GadgetClass::Draw_All(bool forced)
 
 GadgetClass * GadgetClass::Extract_Gadget_At(int x, int y) // RA2: the smallest enabled gadget whose rectangle holds the point
 {
+	GadgetClass * g = this;	// RA2
 	Rect best(0, 0, ScreenWidths[2], ScreenHeights[2]);
 	GadgetClass * found = NULL;
 
-	for (GadgetClass * g = this; g != NULL; g = (GadgetClass *)g->Get_Next()) {
+	while (g != NULL) {
 		if (!g->IsDisabled) {
 			Rect rect(g->X, g->Y, g->Width, g->Height);
-			if (rect.Is_Point_Within(Point2D(x, y)) && rect.Size() <= best.Size()) {
+			if (rect.Is_Point_Within(Point2D(x, y)) && rect.Width * rect.Height <= best.Width * best.Height) {
 				best = rect;
 				found = g;
 			}
 		}
+		g = (GadgetClass *)g->Get_Next();
 	}
 	return(found);
 }

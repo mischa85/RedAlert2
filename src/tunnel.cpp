@@ -350,6 +350,15 @@ void TunnelLocomotionClass::Process_Descending(void)
 }
 
 
+/// RA2: Move_Coord through a 2D point.
+static inline Coord Tunnel_Move_Coord(Coord const & start, DirType const & dir, int distance)
+{
+	double radians = dir.As_Radian();
+	Point2D point(start.X, start.Y);
+	return(Coord((point.X + fastmath::cos(radians) * distance), (point.Y - fastmath::sin(radians) * distance), start.Z));
+}
+
+
 /// <summary>
 /// Underground travel state. The unit is below ground burrowing toward the
 /// destination. When it arrives under the destination it picks a nearby valid
@@ -391,8 +400,7 @@ void TunnelLocomotionClass::Process_Tunneling(void)
 		}
 
 	} else {
-		Coord start = coord;
-		coord = Move_Coord(start, TVelocity2D<int>(DestinationCoord.X - coord.X, DestinationCoord.Y - coord.Y).Get_Yaw(), 19); // RA2
+		coord = Tunnel_Move_Coord(coord, TVelocity2D<int>(DestinationCoord.X - coord.X, DestinationCoord.Y - coord.Y).Get_Yaw(), 19); // RA2
 	}
 
 	LinkedTo->PositionCoord = coord;

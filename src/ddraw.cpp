@@ -435,27 +435,27 @@ void Destroy_Direct_Draw(void)
 DWORD GetVideoMemory(void)
 {
 	HRESULT result;
+	DDCAPS video_capabilities;	// RA2
+	DDSURFACEDESC desc;
 	bool created = false;
 
 	if (DirectDrawObject == NULL) {
 		result = DirectDrawCreate(NULL, &DirectDrawObject, NULL);
-		if (result != DD_OK) {
-			Process_DD_Result(result, FALSE);
-			DirectDrawObject = NULL;
-		} else {
+		Process_DD_Result(result, FALSE);	// RA2
+		if (result == DD_OK) {
 			created = true;
+		} else {
+			DirectDrawObject = NULL;
 		}
 	}
 
 	DWORD video_memory = 0;
 	if (DirectDrawObject) {
-		DDCAPS video_capabilities;
 		video_capabilities.dwSize = sizeof (video_capabilities);
 		if (DD_OK == DirectDrawObject->GetCaps (&video_capabilities , NULL)){
 			video_memory = video_capabilities.dwVidMemTotal;
 			DebugString("DDraw returnded actual VRAM of %d bytes (%dMb)\n", video_memory, video_memory >> 20);
 
-			DDSURFACEDESC desc;
 			memset(&desc, 0, sizeof(desc));
 			desc.dwSize = sizeof(desc);
 			if (DirectDrawObject->GetDisplayMode(&desc) == 0) {

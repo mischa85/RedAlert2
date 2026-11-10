@@ -67,12 +67,12 @@ BitFont::~BitFont(void)
 struct FontHeaderType
 {
 	int Magic;
-	int Unknown_4;
-	int FontWidth;
+	int FontWidth;		// RA2: laid out like the "FoNt" header
 	int Stride;
-	int Unknown_10;
+	int FontHeight;
 	int Lines;
 	int Count;
+	int SymbolDataSize;
 };
 
 /*
@@ -111,44 +111,44 @@ BitFont::InternalData * BitFont::Load_Data(char const * filename)
 	FontRangeType * ranges;
 	unsigned index;
 	int size;
+	FontHeaderType header;	// RA2
 	CCFileClass * file = new CCFileClass(filename);
 
 	if (file != NULL) {
 		if (file->Is_Available() && file->Open(FileClass::READ)) {
 			data = new InternalData;
 			if (data != NULL) {
-				FontHeaderType header;
-				FontHeader2Type header2;
 				memset(data, 0, sizeof(InternalData));
 				data->SymbolTable = new unsigned short [0x10000];
 				if (data->SymbolTable != NULL) {
 					memset(data->SymbolTable, 0, 0x10000 * sizeof(unsigned short));
 					if (file->Read(&header, sizeof(header)) == sizeof(header)) {
 						if (header.Magic == 0x546E6F66) {
-							data->FontHeight = header.Stride;
+							data->FontHeight = header.FontHeight;
 							data->Lines = header.Lines;
 							data->Stride = header.Stride;
 							data->FontWidth = header.FontWidth;
-							data->SymbolDataSize = header2.Magic; // the dword after the 28 bytes read, as the executable reads it
+							data->SymbolDataSize = header.SymbolDataSize;
 							data->Count = header.Count;
 							if (file->Read(data->SymbolTable, 0x10000 * sizeof(unsigned short)) != 0x10000 * sizeof(unsigned short)) goto failed;
 						} else if (header.Magic == 0x744E6F46) {
 							file->Seek(0, SEEK_SET);
+							FontHeader2Type header2;
 							if (file->Read(&header2, sizeof(header2)) != sizeof(header2)) goto failed;
+							data->FontHeight = header2.FontHeight;	// RA2
 							data->Lines = header2.Lines;
 							data->Stride = header2.Stride;
-							data->SymbolDataSize = header2.SymbolDataSize;
-							data->FontHeight = header2.FontHeight;
 							data->FontWidth = header2.FontWidth;
+							data->SymbolDataSize = header2.SymbolDataSize;
 							ranges = (FontRangeType *)malloc(header2.RangeCount * sizeof(FontRangeType));
 							if (ranges == NULL) goto failed;
 							file->Seek(header2.RangeOffset, SEEK_SET);
 							if (file->Read(ranges, header2.RangeCount * sizeof(FontRangeType)) != (int)(header2.RangeCount * sizeof(FontRangeType))) goto failed;
 							data->Count = 0;
 							for (index = 0; index < (unsigned)header2.RangeCount; index++) {
-								unsigned short symbol = ranges[index].Index + 1;
-								for (int ch = ranges[index].First; ch <= ranges[index].Last; ch++) {
-									data->SymbolTable[ch] = symbol++;
+								unsigned short symbol = ranges[index].Index;	// RA2
+								for (int ch = ranges[index].First; ch <= ranges[index].Last; ch++, symbol++) {
+									data->SymbolTable[ch] = symbol + 1;
 									data->Count++;
 								}
 							}

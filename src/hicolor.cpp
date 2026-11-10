@@ -96,9 +96,9 @@ void rgb24_to_rgb1555(unsigned char *buf, int rows, int columns, int count, int 
 		}
 		src++;
 
-		*dst = PIXEL_RGB555(src[0],src[1],src[2]);
-		*dst |= accum;
+		accum |= PIXEL_RGB555(src[0],src[1],src[2]);	// RA2
 		src += 3;
+		*dst = accum;
 		dst++;
 	}
 }

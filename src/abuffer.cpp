@@ -160,78 +160,78 @@ void ABuffer::Pan(int x, int y, unsigned short value)
 	if (abs(x_delta) > BufferWidth || abs(y_delta) > BufferHeight) {
 		Fill(value);
 		ScrollOffset = ABUFFER_MAX;
+		return;	// RA2
+	}
 
-	} else {
-		target_col = current_col + x_delta;
+	target_col = current_col + x_delta;
 
-		if (x_delta != 0) {
+	if (x_delta != 0) {
 
-			/// Slide the origin along the row and fold it back into the buffer.
-			SurfaceOffset += x_delta * ABUFFER_BPP;
+		/// Slide the origin along the row and fold it back into the buffer.
+		SurfaceOffset += x_delta * ABUFFER_BPP;
 
-			unsigned int new_offset = Wrap_Underflow(SurfaceOffset + BufferStart);
-			new_offset = Wrap_Overflow(new_offset);
-			SurfaceOffset = new_offset - BufferStart;
+		unsigned int new_offset = Wrap_Underflow(SurfaceOffset + BufferStart);
+		new_offset = Wrap_Overflow(new_offset);
+		SurfaceOffset = new_offset - BufferStart;
 
-			/// Reset the columns that have just come into view, in two pieces when the
-			/// exposed strip straddles the wrap point.
-			if (x_delta < 0) {
-				if (target_col < 0) {
-					Fill(value, Rect(0, 0, current_col, BufferHeight));
-					target_col += BufferWidth;
-					Fill(value, Rect(target_col, 0, BufferWidth - target_col, BufferHeight));
-
-				} else {
-					Fill(value, Rect(target_col, 0, -x_delta, BufferHeight));
-				}
-
-			} else if (target_col >= BufferWidth) {
-				Fill(value, Rect(current_col, 0, BufferWidth - current_col, BufferHeight));
-				target_col -= BufferWidth;
-				Fill(value, Rect(0, 0, target_col, BufferHeight));
+		/// Reset the columns that have just come into view, in two pieces when the
+		/// exposed strip straddles the wrap point.
+		if (x_delta < 0) {
+			if (target_col < 0) {
+				Fill(value, Rect(0, 0, current_col, BufferHeight));
+				target_col += BufferWidth;
+				Fill(value, Rect(target_col, 0, BufferWidth - target_col, BufferHeight));
 
 			} else {
-				Fill(value, Rect(current_col, 0, x_delta, BufferHeight));
+				Fill(value, Rect(target_col, 0, -x_delta, BufferHeight));
 			}
+
+		} else if (target_col >= BufferWidth) {
+			Fill(value, Rect(current_col, 0, BufferWidth - current_col, BufferHeight));
+			target_col -= BufferWidth;
+			Fill(value, Rect(0, 0, target_col, BufferHeight));
+
+		} else {
+			Fill(value, Rect(current_col, 0, x_delta, BufferHeight));
 		}
+	}
 
-		/// The row the buffer origin currently sits on.
-		int current_row = (SurfaceOffset / ABUFFER_BPP) / BufferWidth;
+	/// The row the buffer origin currently sits on.
+	int current_row = (SurfaceOffset / ABUFFER_BPP) / BufferWidth;
 
-		if (y_delta != 0) {
-			target_row = current_row + y_delta;
+	if (y_delta != 0) {
+		target_row = current_row + y_delta;
 
-			/// The alpha buffer has no use for the scroll bias itself, but keeps it in
-			/// step with the depth buffer's.
-			ScrollOffset -= y_delta;
+		/// The alpha buffer has no use for the scroll bias itself, but keeps it in
+		/// step with the depth buffer's.
+		ScrollOffset -= y_delta;
 
-			int prev_offset = SurfaceOffset;
+		int prev_offset = SurfaceOffset;
 
-			/// Slide the origin by whole rows and fold it back into the buffer.
-			SurfaceOffset += y_delta * BufferWidth * ABUFFER_BPP;
+		/// Slide the origin by whole rows and fold it back into the buffer.
+		SurfaceOffset += y_delta * BufferWidth * ABUFFER_BPP;
 
-			unsigned int new_offset = Wrap_Underflow(SurfaceOffset + BufferStart);
-			new_offset = Wrap_Overflow(new_offset);
-			SurfaceOffset = new_offset - BufferStart;
+		unsigned int new_offset = Wrap_Underflow(SurfaceOffset + BufferStart);
+		new_offset = Wrap_Overflow(new_offset);
+		SurfaceOffset = new_offset - BufferStart;
 
-			/// Reset the rows that have just come into view, in two pieces when the
-			/// exposed strip straddles the wrap point.
-			if (y_delta < 0) {
-				if (target_row < 0) {
-					Set(BufferStart, prev_offset / ABUFFER_BPP, value);
-					Set(BufferStart + SurfaceOffset, ((BufferWidth * BufferHeight * ABUFFER_BPP) - SurfaceOffset) / ABUFFER_BPP, value);
-
-				} else {
-					Set(BufferStart + SurfaceOffset, (prev_offset - SurfaceOffset) / ABUFFER_BPP, value);
-				}
-
-			} else if (target_row >= BufferHeight) {
-				Set(BufferStart + prev_offset, ((BufferWidth * BufferHeight * ABUFFER_BPP) - prev_offset) / ABUFFER_BPP, value);
-				Set(BufferStart, SurfaceOffset / ABUFFER_BPP, value);
+		/// Reset the rows that have just come into view, in two pieces when the
+		/// exposed strip straddles the wrap point.
+		if (y_delta < 0) {
+			if (target_row < 0) {
+				Set(BufferStart, prev_offset / ABUFFER_BPP, value);
+				Set(BufferStart + SurfaceOffset, ((BufferWidth * BufferHeight * ABUFFER_BPP) - SurfaceOffset) / ABUFFER_BPP, value);
 
 			} else {
-				Set(BufferStart + prev_offset, (SurfaceOffset - prev_offset) / ABUFFER_BPP, value);
+				Set(BufferStart + SurfaceOffset, (prev_offset - SurfaceOffset) / ABUFFER_BPP, value);
 			}
+
+		} else if (target_row >= BufferHeight) {
+			Set(BufferStart + prev_offset, ((BufferWidth * BufferHeight * ABUFFER_BPP) - prev_offset) / ABUFFER_BPP, value);
+			Set(BufferStart, SurfaceOffset / ABUFFER_BPP, value);
+
+		} else {
+			Set(BufferStart + prev_offset, (SurfaceOffset - prev_offset) / ABUFFER_BPP, value);
 		}
 	}
 }

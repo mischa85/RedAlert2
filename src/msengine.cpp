@@ -279,30 +279,23 @@ void MSEngine::Add_Update_Rect(Rect const & rect)
 	int min_id = 0;
 
 	for (index = 0; index < RectCount; index++) {
-		Rect union_rect;
-
-		int i_rect_left = Rects[index].X;
-		int i_rect_width = Rects[index].Width;
-		int i_rect_right = i_rect_left + i_rect_width;
-		int i_rect_top = Rects[index].Y;
-		int i_rect_height = Rects[index].Height;
-		int i_rect_bottom = i_rect_top + i_rect_height;
+		Rect const & i_rect = Rects[index];	// RA2
+		int i_rect_left = i_rect.X;
+		int i_rect_right = i_rect_left + i_rect.Width;
+		int i_rect_top = i_rect.Y;
+		int i_rect_bottom = i_rect_top + i_rect.Height;
 
 		int union_x = MIN(rect.X, i_rect_left);
 		int union_y = MIN(rect.Y, i_rect_top);
-		int union_width = MAX(rect.X + rect.Width, i_rect_right);
-		int union_height = i_rect_bottom;
-		union_rect.Width = union_width - union_x;
-		union_height = MAX(rect.Y + rect.Height, union_height);
-		union_height -= union_y;
-		union_rect.Height = union_height;
-		union_width = union_rect.Width;
-		union_height *= union_width;
+		int rect_right = rect.X + rect.Width;
+		int union_width = rect_right > i_rect_right ? rect_right - union_x : i_rect_right - union_x;
+		int union_bottom = MAX(rect.Y + rect.Height, i_rect_bottom);
+		unsigned union_size = union_width * (union_bottom - union_y);
 
-		if ((unsigned)union_height < min_size) {
-			min_size = union_height;
+		if (union_size < min_size) {
+			min_size = union_size;
 			min_id = index;
-			min_rect.Set(union_x, union_y, union_width, union_rect.Height);
+			min_rect.Set(union_x, union_y, union_width, union_bottom - union_y);
 		}
 	}
 
