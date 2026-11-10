@@ -543,9 +543,9 @@ packet,0x00602A60,0x00602FD0,tibsun,"functions compiled from src/packet.cpp, mat
 palette,0x00602FD0,0x00603200,tibsun,"functions compiled from src/palette.cpp, matched, without gaps"
 unk_00603200,0x00603200,0x00603FA0,unknown,code not assigned to a module
 unk_00603FA0,0x00603FA0,0x00603FD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00603FD0,0x00603FD0,0x0060A5C0,unknown,code not assigned to a module
-unk_0060A5C0,0x0060A5C0,0x0060A5E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0060A5E0,0x0060A5E0,0x0060EA60,unknown,code not assigned to a module
+unk_00603FD0,0x00603FD0,0x00608440,unknown,code not assigned to a module
+particle,0x00608440,0x0060A7E0,tibsun,"functions compiled from src/particle.cpp, without gaps; matched except ?Gas_Behavior_AI@ParticleClass@@QAEXXZ and ?Railgun_Behavior_AI@ParticleClass@@QAEXXZ and ?Spark_Behavior_AI@ParticleClass@@QAEXXZ and ?Draw_It@ParticleClass@@UBEXABVPoint2D@@ABV?$TRect@H@@@Z; seven placed by the gap; ?Gas_Behavior_AI@ParticleClass@@QAEXXZ and ?Railgun_Behavior_AI@ParticleClass@@QAEXXZ placed where matched code calls them; ?Web_Behavior_AI@ParticleClass@@QAEXXZ not placed"
+unk_0060A7E0,0x0060A7E0,0x0060EA60,unknown,code not assigned to a module
 pipe,0x0060EA60,0x0060EB20,tibsun,"functions compiled from src/pipe.cpp, matched, without gaps"
 pixelfx,0x0060EB20,0x0060ED10,source,"functions compiled from src/pixelfx.cpp, matched, without gaps; ??1PixelFXClass@@UAE@XZ not placed"
 unk_0060ED10,0x0060ED10,0x0060ED40,unknown,code not assigned to a module
