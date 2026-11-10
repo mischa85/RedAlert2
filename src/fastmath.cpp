@@ -117,7 +117,7 @@ extern "C" {
 /// <returns>Returns with the square root. A negative value is treated as positive.</returns>
 double __cdecl fastmath::sqrt(double f)
 {
-	return((float)(fastmath::sqrtf(f)));
+	return (float)fastmath::sqrtf(f); // RA2: no parentheses (init_sqrt_tab codegen)
 }
 
 
@@ -475,17 +475,19 @@ float fastmath::tanf(float f)
 /// This routine also records the input step size that atan2f divides by when it
 /// indexes the table.
 /// </summary>
-void init_atan_tab(void)
+float init_atan_tab(void) // RA2: returns the ratio limit
 {
 	float size = ATAN_TABLE_SIZE;
 
 	float pi = M_PI;
-	atan_tab[ATAN_TABLE_SIZE + 1] = pi/size/pi * tan_tab[ATAN_MAX_INDEX];
+	float limit = tan_tab[ATAN_MAX_INDEX]; // RA2
+	atan_tab[ATAN_TABLE_SIZE + 1] = pi/size/pi * limit;
 	float value = 0;
 	for (int i = 0; i != ATAN_TABLE_SIZE + 1; i++) {
 		atan_tab[i] = fastmath::atan(value);
 		value += atan_tab[ATAN_TABLE_SIZE + 1];
 	}
+	return(limit);
 }
 
 

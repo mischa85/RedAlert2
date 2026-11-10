@@ -102,7 +102,7 @@ bool FacingClass::Set_Desired(DirType const & facing)
 		DesiredFacing = facing;
 
 		if (ROT.Facing > 0) {
-			RotationTimer = abs(Turn_Arc()) / ROT.Facing;
+			RotationTimer = abs((short)(DesiredFacing.Facing - StartFacing.Facing)) / ROT.Facing; // RA2: arc not via Turn_Arc
 		}
 		return(true);
 	}
@@ -198,7 +198,7 @@ bool FacingClass::Is_Rotating_CW(void) const
 bool FacingClass::Is_Rotating_CCW(void) const
 {
 	if (Is_Rotating()) {
-		return(Turn_Arc() < 0);
+		return((short)(DesiredFacing.Facing - StartFacing.Facing) < 0); // RA2: arc not via Turn_Arc
 	}
 	return(false);
 }

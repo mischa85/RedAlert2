@@ -195,9 +195,10 @@ Matrix3D::Matrix3D(const Vector3 & axis, float angle)
  *=============================================================================================*/
 void Matrix3D::Make_Identity(void)
 {
-	Row[0].Set(1,0,0,0);
-	Row[1].Set(0,1,0,0);
-	Row[2].Set(0,0,1,0);
+	// RA2: element stores, not Vector4::Set
+	Row[0].X = 1.0f; Row[0].Y = 0.0f; Row[0].Z = 0.0f; Row[0].W = 0.0f;
+	Row[1].X = 0.0f; Row[1].Y = 1.0f; Row[1].Z = 0.0f; Row[1].W = 0.0f;
+	Row[2].X = 0.0f; Row[2].Y = 0.0f; Row[2].Z = 1.0f; Row[2].W = 0.0f;
 }
 
 
@@ -235,9 +236,9 @@ void Matrix3D::Translate(float x, float y, float z)
  *=============================================================================================*/
 void Matrix3D::Translate(Vector3 const & t)
 {
-	Translate_X(t[0]);
-	Translate_Y(t[1]);
-	Translate_Z(t[2]);
+	Translate_X(t.X); // RA2: member, not operator[]
+	Translate_Y(t.Y);
+	Translate_Z(t.Z);
 }
 
 
@@ -255,9 +256,9 @@ void Matrix3D::Translate(Vector3 const & t)
  *=============================================================================================*/
 void Matrix3D::Translate_X(float x)
 {
-	Row[0].W += (float)(Row[0].X*x);
-	Row[1].W += (float)(Row[1].X*x);
-	Row[2].W += (float)(Row[2].X*x);
+	Row[0].W += Row[0].X*x; // RA2: no cast
+	Row[1].W += Row[1].X*x;
+	Row[2].W += Row[2].X*x;
 }
 
 
@@ -275,9 +276,9 @@ void Matrix3D::Translate_X(float x)
  *=============================================================================================*/
 void Matrix3D::Translate_Y(float y)
 {
-	Row[0].W += (float)(Row[0].Y*y);
-	Row[1].W += (float)(Row[1].Y*y);
-	Row[2].W += (float)(Row[2].Y*y);
+	Row[0].W += Row[0].Y*y; // RA2: no cast
+	Row[1].W += Row[1].Y*y;
+	Row[2].W += Row[2].Y*y;
 }
 
 
@@ -295,9 +296,9 @@ void Matrix3D::Translate_Y(float y)
  *=============================================================================================*/
 void Matrix3D::Translate_Z(float z)
 {
-	Row[0].W += (float)(Row[0].Z*z);
-	Row[1].W += (float)(Row[1].Z*z);
-	Row[2].W += (float)(Row[2].Z*z);
+	Row[0].W += Row[0].Z*z; // RA2: no cast
+	Row[1].W += Row[1].Z*z;
+	Row[2].W += Row[2].Z*z;
 }
 
 
@@ -520,7 +521,7 @@ void Matrix3D::Pre_Rotate_Y(float theta)
 {
 	float s = fastmath::sin(theta);
 	float c = fastmath::cos(theta);
-	float ns = -s;
+	float const & ns = -s; // RA2: bound to a reference
 
 	float m00 = Row[0].X;
 	float m01 = Row[0].Y;
@@ -1021,10 +1022,14 @@ Matrix3D operator * (const Matrix3D & a, const Matrix3D & b)
 /// <returns>Returns with the transformed point.</returns>
 Vector3 operator * (const Matrix3D & m, const Vector3 & vect)
 {
+	// RA2: rotation elements read into locals first
+	float m00 = m.Row[0].X, m01 = m.Row[0].Y, m02 = m.Row[0].Z;
+	float m10 = m.Row[1].X, m11 = m.Row[1].Y, m12 = m.Row[1].Z;
+	float m20 = m.Row[2].X, m21 = m.Row[2].Y, m22 = m.Row[2].Z;
 	Vector3 vec(
-		(m.Row[0].X * vect.X + m.Row[0].Y * vect.Y + m.Row[0].Z * vect.Z + m.Row[0].W),
-		(m.Row[1].X * vect.X + m.Row[1].Y * vect.Y + m.Row[1].Z * vect.Z + m.Row[1].W),
-		(m.Row[2].X * vect.X + m.Row[2].Y * vect.Y + m.Row[2].Z * vect.Z + m.Row[2].W)
+		(m00 * vect.X + m01 * vect.Y + m02 * vect.Z + m.Row[0].W),
+		(m10 * vect.X + m11 * vect.Y + m12 * vect.Z + m.Row[1].W),
+		(m20 * vect.X + m21 * vect.Y + m22 * vect.Z + m.Row[2].W)
 	);
 	return(vec);
 }
