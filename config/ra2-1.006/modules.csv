@@ -25,7 +25,7 @@ _warhead,0x0040F2F0,0x0040F3C0,tibsun,"functions compiled from src/_warhead.cpp,
 unk_0040F3C0,0x0040F3C0,0x0040FF10,unknown,code not assigned to a module
 abstract,0x0040FF10,0x00410340,tibsun,"functions compiled from src/abstract.cpp, matched, without gaps; 17 placed by the gap"
 unk_00410340,0x00410340,0x00410A60,unknown,code not assigned to a module
-abuffer,0x00410A60,0x00411270,tibsun,"functions compiled from src/abuffer.cpp, without gaps; matched except ?Pan@ABuffer@@QAEXHHG@Z; five placed by alphabetical order"
+abuffer,0x00410A60,0x00411270,tibsun,"functions compiled from src/abuffer.cpp, matched, without gaps; one placed by the gap"
 unk_00411270,0x00411270,0x00411420,unknown,code not assigned to a module
 ahandle,0x00411420,0x00412370,tibsun,"functions compiled from src/ahandle.cpp, matched, without gaps; one placed by the gap; ?Lock_Audio_Handler@@YAJXZ not placed; ?Unlock_Audio_Handler@@YAJXZ not placed"
 unk_00412370,0x00412370,0x00412390,unknown,code not assigned to a module

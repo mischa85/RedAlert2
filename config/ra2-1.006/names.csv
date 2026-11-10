@@ -308,6 +308,7 @@ address,symbol,evidence
 0x00410B40,?Copy_To@ABuffer@@QAEXPAVSurface@@V?$TRect@H@@@Z,"compiled from src/abuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
 0x00410BD0,?Release_Surface@ABuffer@@AAEXXZ,"compiled from src/abuffer.cpp, matched"
 0x00410BF0,?Set@ABuffer@@QAEXIHG@Z,"compiled from src/abuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
+0x00410C50,?Pan@ABuffer@@QAEXHHG@Z,"compiled from src/abuffer.cpp, matched; code at 2 addresses, placed by the gap"
 0x00411050,?Fill@ABuffer@@QAE_NG@Z,"compiled from src/abuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
 0x00411090,?Fill@ABuffer@@QAE_NGV?$TRect@H@@@Z,"compiled from src/abuffer.cpp, matched; identical code at two addresses, placed by alphabetical order"
 0x004110B0,?Update@ABuffer@@QAEXV?$TRect@H@@@Z,"compiled from src/abuffer.cpp, matched"

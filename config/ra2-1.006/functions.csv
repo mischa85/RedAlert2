@@ -319,6 +319,7 @@ address,size,evidence
 0x00410B40,144,"code of src/abuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
 0x00410BD0,32,"function of the Tiberian Sun reconstruction, matched"
 0x00410BF0,96,"code of src/abuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
+0x00410C50,1024,"code of src/abuffer.cpp, matched: its code occurs at 2 addresses; placed by the gap the other functions of the file leave"
 0x00411050,64,"code of src/abuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
 0x00411090,32,"code of src/abuffer.cpp, matched: two functions with identical code, in abuffer.cpp and zbuffer.cpp, at exactly two addresses"
 0x004110B0,384,"code of src/abuffer.cpp, matched"
