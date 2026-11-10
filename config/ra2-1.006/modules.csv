@@ -153,7 +153,7 @@ crcstraw,0x00494290,0x00494320,tibsun,"functions compiled from src/crcstraw.cpp,
 unk_00494320,0x00494320,0x00494510,unknown,code not assigned to a module
 credits,0x00494510,0x00494760,tibsun,"functions compiled from src/credits.cpp, matched, without gaps"
 cstraw,0x00494760,0x00494800,tibsun,"functions compiled from src/cstraw.cpp, matched, without gaps"
-cstream,0x00494800,0x004950F0,tibsun,"functions compiled from src/cstream.cpp, without gaps; matched except ?Write@CStreamClass@@UAGJPBXKPAK@Z"
+cstream,0x00494800,0x004950F0,tibsun,"functions compiled from src/cstream.cpp, matched, without gaps"
 unk_004950F0,0x004950F0,0x00495230,unknown,code not assigned to a module
 data,0x00495230,0x004955B0,tibsun,"functions compiled from src/data.cpp, matched, without gaps; two placed by the gap"
 unk_004955B0,0x004955B0,0x004955D0,unknown,code not assigned to a module
