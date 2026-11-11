@@ -83,9 +83,9 @@ buff,0x004382C0,0x00438470,tibsun,"functions compiled from src/buff.cpp, matched
 buffer,0x00438470,0x00438500,tibsun,"functions compiled from src/buffer.cpp, matched, without gaps"
 unk_00438500,0x00438500,0x00456030,unknown,code not assigned to a module
 unk_00456030,0x00456030,0x00457A50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00457A50,0x00457A50,0x0045D830,unknown,code not assigned to a module
-unk_0045D830,0x0045D830,0x0045D880,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0045D880,0x0045D880,0x004644E0,unknown,code not assigned to a module
+unk_00457A50,0x00457A50,0x00458160,unknown,code not assigned to a module
+builtype,0x00458160,0x0045ED20,tibsun,"functions compiled from src/builtype.cpp, without gaps; matched except ??0BuildingTypeClass@@QAE@PBD@Z and ?Fetch_Building_Normal_Image@BuildingTypeClass@@QAEXW4TheaterType@@@Z and ?Read_INI@BuildingTypeClass@@UAE_NABVCCINIClass@@@Z and ?Get_Draw_Rect@BuildingTypeClass@@QAE?AV?$TRect@H@@XZ and ?Can_Always_Undeploy@BuildingTypeClass@@QBE_NXZ; three placed by the gap; ?Can_Always_Undeploy@BuildingTypeClass@@QBE_NXZ and ?Fetch_Building_Normal_Image@BuildingTypeClass@@QAEXW4TheaterType@@@Z and ?Get_Draw_Rect@BuildingTypeClass@@QAE?AV?$TRect@H@@XZ and ?Read_INI@BuildingTypeClass@@UAE_NABVCCINIClass@@@Z placed at their function starts; ??0BuildingTypeClass@@QAE@PBD@Z not placed; ?Fetch_Heap_ID@BuildingTypeClass@@UBEHXZ not placed; inline ??0Cell@@QAE@XZ at 0x0045ECF0"
+unk_0045ED20,0x0045ED20,0x004644E0,unknown,code not assigned to a module
 bullettype,0x004644E0,0x00465180,tibsun,"functions compiled from src/bullettype.cpp, matched, without gaps; five placed by the gap"
 unk_00465180,0x00465180,0x00465450,unknown,code not assigned to a module
 campaign,0x00465450,0x00465970,tibsun,"functions compiled from src/campaign.cpp, matched, without gaps; four placed by the gap"
