@@ -272,7 +272,9 @@ unk_004EAF30,0x004EAF30,0x004ECA30,unknown,code not assigned to a module
 unk_004ECA30,0x004ECA30,0x004ECA50,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_004ECA50,0x004ECA50,0x004F0F70,unknown,code not assigned to a module
 unk_004F0F70,0x004F0F70,0x004F0FF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004F0FF0,0x004F0FF0,0x004FB8D0,unknown,code not assigned to a module
+unk_004F0FF0,0x004F0FF0,0x004F93A0,unknown,code not assigned to a module
+houstype,0x004F93A0,0x004FA430,tibsun,"functions compiled from src/houstype.cpp, without gaps; matched except ?Read_INI@HouseTypeClass@@UAE_NABVCCINIClass@@@Z and ?Load@HouseTypeClass@@UAGJPAUIStream@@@Z; four placed by the gap; ?Read_INI@HouseTypeClass@@UAE_NABVCCINIClass@@@Z placed at their function starts; ??0HouseTypeClass@@QAE@PBD@Z not placed; ??0HouseTypeClass@@QAE@ABVNoInitClass@@@Z not placed"
+unk_004FA430,0x004FA430,0x004FB8D0,unknown,code not assigned to a module
 hover,0x004FB8D0,0x004FEDD0,tibsun,"functions compiled from src/hover.cpp, without gaps; matched except ?Process@HoverLocomotionClass@@UAGEXZ and ?While_Moving@HoverLocomotionClass@@AAE?AW4MoveType@@_N@Z and ?Start_Of_Move@HoverLocomotionClass@@AAEXH@Z; four placed by the gap; ?Mark_All_Occupation_Bits@HoverLocomotionClass@@UAGXH@Z not placed; ?Is_Moving_Here@HoverLocomotionClass@@UAGEUCoordStruct@@@Z not placed"
 unk_004FEDD0,0x004FEDD0,0x004FEF70,unknown,code not assigned to a module
 hsv,0x004FEF70,0x004FF170,tibsun,"functions compiled from src/hsv.cpp, matched, without gaps; _$E3 not placed"
