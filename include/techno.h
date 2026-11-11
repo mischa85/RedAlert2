@@ -702,6 +702,17 @@ class TechnoClass :	public RadioClass,
 		virtual void Reload(void); // RA2
 		virtual void Rocking_AI(void);
 		virtual Coord GetAttackCoordinates(void) const; // RA2
+		void Draw_Action_Line(Coord start, Coord end, RGBClass color, unsigned char dashed, unsigned char shadow) const; // RA2: 0x6D0510
+		void Draw_Link_Line(Coord start, Coord end, RGBClass color) const; // RA2: 0x6D0990
+		void Draw_Shaded_Line(Coord start, Coord end, RGBClass color, bool shadow) const; // RA2: 0x6D0DC0
+		int Elevation_Bonus(void); // RA2: 0x6CD6F0
+		int FireDeathWeapon(int additional_damage); // RA2: 0x6D7E20
+		void Set_Planning_Token(PlanningTokenClass * token); // RA2: 0x6D1420
+		PlanningTokenClass * Get_Planning_Token(void); // RA2: 0x6D1430
+		bool Has_Planning_Nodes(void); // RA2: 0x6D1440
+		bool Next_Planning_Node(void); // RA2: 0x6D1470
+		bool TryNextPlanningTokenNode(void); // RA2: 0x615360
+		virtual void * GetRemapColour(void) const override; // RA2: 0x6D1480
 		virtual bool IsNotWarpingIn(void) const; // RA2
 		virtual void Draw_Action_Line(bool force, int unknown) const; // RA2: two arguments
 		virtual unsigned GetDisguiseFlags(unsigned flags) const; // RA2
@@ -775,6 +786,10 @@ class TechnoClass :	public RadioClass,
 		virtual bool Can_Player_Fire(void) const override;
 		virtual bool Can_Player_Move(void) const override;
 		virtual bool Can_Repair(void) const override;
+		virtual bool IsBeingWarpedOut(void) const override; // RA2: 0x6D6DF0
+		virtual bool IsWarpingIn(void) const override; // RA2: 0x6D6E00
+		virtual bool IsWarpingSomethingOut(void) const override; // RA2: 0x6D6E10
+		virtual bool IsNotWarping(void) const override; // RA2: 0x6D6E30
 		virtual int Value(void) const override;
 		virtual int Get_Ownable(void) const override;
 		virtual VisualType Visual_Character(bool raw = false, HouseClass const * = NULL) const override;

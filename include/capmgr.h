@@ -22,6 +22,7 @@ class CaptureManagerClass : public AbstractClass
 
 		CaptureManagerClass(void);
 		CaptureManagerClass(TechnoClass * owner, int damage, bool infinite);
+		CaptureManagerClass(TechnoClass * owner); // RA2: 0x467DB0
 		CaptureManagerClass(NoInitClass const & x);
 		virtual ~CaptureManagerClass(void) override;
 
