@@ -179,6 +179,7 @@ class Tactical : public AbstractClass
 		void Start_Rubber_Band(Point2D const & point);
 		void Modify_Rubber_Band(Point2D const & point);
 		void Select_Rubber_Band(void (*select_callback)(ObjectClass * object));
+		int Rubber_Band_Contains_Selectable(void); // RA2: 0x6AA6A0
 		void End_Rubber_Band(void);
 		void Draw_Rubber_Band(void);
 
@@ -236,9 +237,9 @@ class Tactical : public AbstractClass
 		/*
 		 * Caption text and map overlays.
 		 */
-		void Set_Caption_Text(int text_id);
+		void Set_Caption_Text(wchar_t const * text, int frame); // RA2: the text and a GRFXTXT frame, at 0x6A53F0
 		void Clear_Caption_Text(void);
-		void Draw_Screen_Text(char const * text);
+		void Draw_Screen_Text(wchar_t const * text); // RA2: wide, at 0x6A5460
 
 		void Draw_Rally_Points(bool inshroud);
 		void Draw_Waypoints(bool inshroud);

@@ -15,6 +15,7 @@
 #include "always.h"
 
 #include "tactical.h"
+#include "bitfont.h"
 
 #include "_alpha.h"
 #include "_convert.h"
@@ -69,6 +70,16 @@
 
 #include "ramp.hh"
 #include "scrspeed.hh"
+#include "bittext.h"
+
+static inline void World_To_View_Pixel(Tactical const & view, Coord const & coord, Point2D & relative); // RA2: defined after its first caller
+static inline void Set_Ground_Position(Coord & coord, Point2D const & point); // RA2: defined after its first caller
+
+namespace Unsorted { extern bool ArmageddonMode; }
+namespace Game { extern HWND hWnd; }
+namespace Game { unsigned __int64 __fastcall AudioGetTime(void); }
+namespace Game { void __fastcall UICommands_TypeSelect_7327D0(char const * name); }
+
 
 
 extern Point2D Lerp(Point2D const & a, Point2D const & b, float t);
@@ -80,7 +91,20 @@ bool PassabilityPrint = false;
 #endif
 
 
-Rect TacticalDimensions(0,0,0,0);	/// the rectangle the tactical view occupies, set by Set_View_Dimensions
+Rect TacticalDimensions(0,0,0,0);	/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Foot_Object(ObjectClass const * object)
+{
+	if (object == NULL) {
+		return(false);
+	}
+	unsigned char flag = (object->AbstractFlags >> 2) & 1;
+	return(flag != 0);
+}
+
+
+/// the rectangle the tactical view occupies, set by Set_View_Dimensions
 Tactical::Selectable Tactical::SelectableObjects[MAX_SELECTABLE_OBJECTS];
 
 
@@ -206,10 +230,10 @@ Tactical::~Tactical(void)
 Point2D Tactical::Rectangular_To_Isometric(Point2D point)
 {
 	Point2D iso;
-	iso.X = point.X * ISO_TILE_PIXEL_W / 2;
-	iso.Y = point.X * ISO_TILE_PIXEL_H / 2;
-	iso.X += point.Y * ISO_TILE_PIXEL_W / -2;
-	iso.Y += point.Y * ISO_TILE_PIXEL_H / 2;
+	iso.X = point.X * 60 / 2; // RA2: Rectangular_To_Isometric at 0x6A2740 matches only so
+	iso.Y = point.X * 30 / 2; // RA2: as above
+	iso.X += point.Y * 60 / -2; // RA2: as above
+	iso.Y += point.Y * 30 / 2; // RA2: as above
 	return(iso);
 }
 
@@ -224,8 +248,8 @@ Point2D Tactical::Rectangular_To_Isometric(Point2D point)
 Point2D Tactical::Coord_To_Pixel_Absolute(Coord const & coord)
 {
 	Point2D pixel = Rectangular_To_Isometric(Point2D(coord.X, coord.Y));
-	pixel.X /= CELL_LEPTON;
-	pixel.Y /= CELL_LEPTON;
+	pixel.X /= 256; // RA2: Coord_To_Pixel_Absolute at 0x6A2870 matches only so
+	pixel.Y /= 256; // RA2: as above
 	pixel.Y -= Z_Lepton_To_Pixel(coord.Z);
 	return(pixel);
 }
@@ -241,8 +265,8 @@ Point2D Tactical::Coord_To_Pixel_Absolute(Coord const & coord)
 Point2D Tactical::Coord_To_Pixel_Absolute(Point2D const & point)
 {
 	Point2D pixel = Rectangular_To_Isometric(point);
-	pixel /= CELL_LEPTON;
-	int lift = Z_Lepton_To_Pixel(0);
+	pixel.X /= 256; // RA2: Coord_To_Pixel_Absolute at 0x6A2870 matches only so
+	pixel.Y /= 256; // RA2: as above
 	return(pixel);
 }
 
@@ -366,16 +390,7 @@ bool Tactical::Coord_To_Pixel(Coord const & coord, Point2D & pixel)
  *=============================================================================================*/
 Coord Tactical::Pixel_To_Coord(Point2D const & pixel)
 {
-	/*
-	**	If pixel coordinate is over the tactical map, then translate it into a coordinate
-	**	value. If not, then just return with NULL.
-	*/
 	if (pixel.X < TacticalDimensions.Width && pixel.Y < TacticalDimensions.Height + TacticalDimensions.Y) {
-
-		/*
-		**	Normalize the pixel coordinates to be relative to the upper left corner
-		**	of the tactical map. The coordinates are expressed in leptons.
-		*/
 		Point2D lepton = Pixel_To_Lepton(pixel + Point2D(TacPixelX, TacPixelY));
 		return(Coord(lepton.X, lepton.Y, 0));
 	}
@@ -394,12 +409,7 @@ Coord Tactical::Pixel_To_Coord(Point2D const & pixel)
 /// lies outside the tactical view.</returns>
 Coord Tactical::Pixel_To_Coord_Absolute(Point2D const & pixel)
 {
-	/*
-	**	If pixel coordinate is over the tactical map, then translate it into a coordinate
-	**	value. If not, then just return with NULL.
-	*/
 	if (pixel.X < TacticalDimensions.Width && pixel.Y < TacticalDimensions.Height) {
-
 		Point2D lepton = Pixel_To_Lepton(pixel);
 		return(Coord(lepton.X, lepton.Y, 0));
 	}
@@ -504,7 +514,6 @@ void Tactical::Register_Dirty_Area(Rect area, bool refresh_shroud)
 	int best = 0x7FFFFFFF;
 
 	for (int i = 0; i < DirtyAreas.Count(); i++) {
-
 		Rect rect = DirtyAreas[i].Area;
 		Rect inter = Intersect(rect, area);
 		Rect whole = Union(rect, area);
@@ -527,7 +536,6 @@ void Tactical::Register_Dirty_Area(Rect area, bool refresh_shroud)
 				}
 			}
 		}
-
 	}
 
 	if (best_index == -1) {
@@ -535,12 +543,6 @@ void Tactical::Register_Dirty_Area(Rect area, bool refresh_shroud)
 	} else {
 		DirtyAreas[best_index] = DirtyAreaStruct(Union(area, DirtyAreas[best_index].Area), refresh_shroud || DirtyAreas[best_index].IsToRefreshShroud);
 	}
-}
-
-
-void Tactical_noop(int,int,int,int)
-{
-
 }
 
 
@@ -577,11 +579,10 @@ void Tactical::Wipe_Depth(bool fullredraw, int xoff, int yoff, Rect const & clip
 			coord.Z = 0;
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
-			pixel += Point2D(ISO_TILE_PIXEL_W, ISO_TILE_PIXEL_H) / -2;
-			pixel += TacticalRect.TopLeft;
+			Point2D at = TacticalRect.TopLeft + (pixel + Point2D(-30, -15)); // RA2: Wipe_Depth at 0x6A33F0 matches only so
 
 			if (MainWindow) {
-				CellRedraw[i]->Wipe_Depth(pixel, cliprect);
+				CellRedraw[i]->Wipe_Depth(at, cliprect); // RA2: as above
 			}
 		}
 	}
@@ -599,9 +600,6 @@ void Tactical::Wipe_Depth(bool fullredraw, int xoff, int yoff, Rect const & clip
 /// <param name="fullredraw">Redraw the whole view rather than just the scrolled strips?</param>
 void Tactical::Render_Tiles(Rect const & xpanrect, Rect const & ypanrect, bool fullredraw)
 {
-	/*
-	 * Either the whole view, or just the strips the pan exposed.
-	 */
 	if (fullredraw) {
 		Draw_Tiles(TacticalRect, TacticalRect);
 	} else {
@@ -613,20 +611,14 @@ void Tactical::Render_Tiles(Rect const & xpanrect, Rect const & ypanrect, bool f
 		}
 	}
 
-	/*
-	 * The cells that were flagged for redraw.
-	 */
 	if (CellRedrawCount > 0 && !fullredraw) {
 		for (int i = 0; i < CellRedrawCount; i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
 			Point2D pixel;
 			Coord_To_Pixel(coord, pixel);
-
 			Rect rect;
-			rect.X = pixel.X - ISO_TILE_PIXEL_W / 2;
-			rect.Y = pixel.Y;
-			rect.Width = ISO_TILE_PIXEL_W;
-			rect.Height = ISO_TILE_PIXEL_H;
+			(Point2D &)rect = Point2D(pixel.X - 30, pixel.Y); // RA2: Render_Tiles at 0x6A3670 matches only so
+			((Point2D *)&rect)[1] = Point2D(60, 30); // RA2: as above
 			rect.Y += TacticalRect.Y;
 
 			Rect inter = Intersect(TacticalRect, rect);
@@ -637,9 +629,6 @@ void Tactical::Render_Tiles(Rect const & xpanrect, Rect const & ypanrect, bool f
 		}
 	}
 
-	/*
-	 * The areas that were registered as dirty.
-	 */
 	if (DirtyAreas.Count() && !fullredraw) {
 		for (int j = DirtyAreas.Count() - 1; j >= 0; j--) {
 			Rect redraw = DirtyAreas[j].Area;
@@ -665,9 +654,7 @@ void Tactical::Render_Tiles(Rect const & xpanrect, Rect const & ypanrect, bool f
 /// <param name="fullredraw">Redraw the whole view rather than just the scrolled strips?</param>
 void Tactical::Render_Tile_Shadows(Rect const & xpanrect, Rect const & ypanrect, bool fullredraw)
 {
-	/*
-	 * Either the whole view, or just the strips the pan exposed.
-	 */
+	// Redraw the view or the strips exposed by panning.
 	if (fullredraw) {
 		Draw_Tile_Shadows(TacticalRect, TacticalRect);
 	} else {
@@ -679,9 +666,7 @@ void Tactical::Render_Tile_Shadows(Rect const & xpanrect, Rect const & ypanrect,
 		}
 	}
 
-	/*
-	 * The cells that were flagged for redraw.
-	 */
+	// Refresh cells flagged for redraw.
 	if (CellRedrawCount > 0 && !fullredraw) {
 		for (int i = 0; i < CellRedrawCount; i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
@@ -689,10 +674,8 @@ void Tactical::Render_Tile_Shadows(Rect const & xpanrect, Rect const & ypanrect,
 			Coord_To_Pixel(coord, pixel);
 
 			Rect rect;
-			rect.X = pixel.X - ISO_TILE_PIXEL_W / 2;
-			rect.Y = pixel.Y;
-			rect.Width = ISO_TILE_PIXEL_W;
-			rect.Height = ISO_TILE_PIXEL_H;
+			(Point2D &)rect = Point2D(pixel.X - ISO_TILE_PIXEL_W / 2, pixel.Y); // RA2: Render_Tile_Shadows at 0x6A38D0 matches only so
+			((Point2D *)&rect)[1] = Point2D(ISO_TILE_PIXEL_W, ISO_TILE_PIXEL_H); // RA2: as above
 			rect.Y += TacticalRect.Y;
 
 			Rect inter = Intersect(TacticalRect, rect);
@@ -703,9 +686,7 @@ void Tactical::Render_Tile_Shadows(Rect const & xpanrect, Rect const & ypanrect,
 		}
 	}
 
-	/*
-	 * The areas that were registered as dirty.
-	 */
+	// Refresh registered dirty areas.
 	if (DirtyAreas.Count()) {
 		for (int j = DirtyAreas.Count() - 1; j >= 0; j--) {
 			Rect redraw = DirtyAreas[j].Area;
@@ -731,9 +712,6 @@ void Tactical::Render_Tile_Shadows(Rect const & xpanrect, Rect const & ypanrect,
 /// <param name="fullredraw">Redraw the whole view rather than just the scrolled strips?</param>
 void Tactical::Render_Overlays(Rect const & xpanrect, Rect const & ypanrect, bool fullredraw)
 {
-	/*
-	 * Either the whole view, or just the strips the pan exposed.
-	 */
 	if (fullredraw) {
 		Draw_Overlays(TacticalRect);
 	} else {
@@ -745,9 +723,6 @@ void Tactical::Render_Overlays(Rect const & xpanrect, Rect const & ypanrect, boo
 		}
 	}
 
-	/*
-	 * The cells that were flagged for redraw.
-	 */
 	if (CellRedrawCount > 0 && !fullredraw) {
 		for (int i = 0; i < CellRedrawCount; i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
@@ -755,19 +730,17 @@ void Tactical::Render_Overlays(Rect const & xpanrect, Rect const & ypanrect, boo
 			Coord_To_Pixel(coord, pixel);
 
 			Rect rect;
-			rect.X = pixel.X - ISO_TILE_PIXEL_W / 2;
+			rect.X = pixel.X - 30; // RA2: Render_Overlays at 0x6A3B20 matches only so
+			rect.Width = 60; // RA2: as above
+			rect.Height = 30; // RA2: as above
 			rect.Y = pixel.Y;
-			rect.Width = ISO_TILE_PIXEL_W;
-			rect.Height = ISO_TILE_PIXEL_H;
-			rect.Y += TacticalRect.Y;
+			Rect rect2 = rect; // RA2: as above
+			rect2.Y += TacticalRect.Y; // RA2: as above
 
-			Draw_Overlays(rect);
+			Draw_Overlays(rect2); // RA2: as above
 		}
 	}
 
-	/*
-	 * The areas that were registered as dirty.
-	 */
 	if (DirtyAreas.Count()) {
 		for (int i = DirtyAreas.Count() - 1; i >= 0; i--) {
 			Rect redraw = DirtyAreas[i].Area;
@@ -783,6 +756,15 @@ void Tactical::Render_Overlays(Rect const & xpanrect, Rect const & ypanrect, boo
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline void Fogged_Rect(Rect const & r)
+{
+	::Draw_Fogged_Objects(r);
+}
+
+
+/// <summary>
 /// Renders the fogged object images that need refreshing this frame.
 /// This routine is called by Render as part of the background pass. The cells flagged for
 /// redraw and the registered dirty areas are refreshed, along with either the whole view or
@@ -793,23 +775,17 @@ void Tactical::Render_Overlays(Rect const & xpanrect, Rect const & ypanrect, boo
 /// <param name="fullredraw">Redraw the whole view rather than just the scrolled strips?</param>
 void Tactical::Render_Fogged_Objects(Rect const & xpanrect, Rect const & ypanrect, bool fullredraw)
 {
-	/*
-	 * Either the whole view, or just the strips the pan exposed.
-	 */
 	if (fullredraw) {
-		Draw_Fogged_Objects(TacticalRect);
+		::Draw_Fogged_Objects(TacticalRect); // RA2: Render_Fogged_Objects at 0x6A3D00 matches only so
 	} else {
 		if (xpanrect.Is_Valid()) {
-			Draw_Fogged_Objects(xpanrect);
+			::Draw_Fogged_Objects(xpanrect); // RA2: as above
 		}
 		if (ypanrect.Is_Valid()) {
-			Draw_Fogged_Objects(ypanrect);
+			::Draw_Fogged_Objects(ypanrect); // RA2: as above
 		}
 	}
 
-	/*
-	 * The cells that were flagged for redraw.
-	 */
 	if (CellRedrawCount > 0 && !fullredraw) {
 		for (int i = 0; i < CellRedrawCount; i++) {
 			Coord coord = Coord_Whole(Coord(CellRedraw[i]->Fetch_CellID()));
@@ -817,18 +793,17 @@ void Tactical::Render_Fogged_Objects(Rect const & xpanrect, Rect const & ypanrec
 			Coord_To_Pixel(coord, pixel);
 
 			Rect rect;
-			rect.X = pixel.X - ISO_TILE_PIXEL_W / 2;
-			rect.Y = pixel.Y + TacticalRect.Y;
-			rect.Width = ISO_TILE_PIXEL_W;
-			rect.Height = ISO_TILE_PIXEL_H;
+			rect.X = pixel.X - 30; // RA2: as above
+			rect.Width = 60; // RA2: as above
+			rect.Height = 30; // RA2: as above
+			rect.Y = pixel.Y; // RA2: as above
+			Rect rect2 = rect; // RA2: as above
+			rect2.Y += TacticalRect.Y; // RA2: as above
 
-			Draw_Fogged_Objects(rect);
+			Fogged_Rect(rect2); // RA2: as above
 		}
 	}
 
-	/*
-	 * The areas that were registered as dirty.
-	 */
 	if (DirtyAreas.Count()) {
 		for (int i = DirtyAreas.Count() - 1; i >= 0; i--) {
 			Rect redraw = DirtyAreas[i].Area;
@@ -836,7 +811,7 @@ void Tactical::Render_Fogged_Objects(Rect const & xpanrect, Rect const & ypanrec
 			redraw = Intersect(TacticalRect, redraw);
 
 			if (redraw.Is_Valid()) {
-				Draw_Fogged_Objects(redraw);
+				::Draw_Fogged_Objects(redraw); // RA2: as above
 			}
 		}
 	}
@@ -855,17 +830,13 @@ void Tactical::Render_Fogged_Objects(Rect const & xpanrect, Rect const & ypanrec
 /// <param name="fullredraw">Redraw the whole view rather than just the scrolled strips?</param>
 void Tactical::Render_Shroud(Rect const & xpanrect, Rect const & ypanrect, Rect const & cliprect, bool fullredraw)
 {
-	/*
-	 * The cells that were flagged for redraw.
-	 */
 	if (CellRedrawCount > 0 && !fullredraw) {
 		for (int i = 0; i < CellRedrawCount; i++) {
 			Coord coord = CellRedraw[i]->Cell_Coord();
 			coord.Z = 0;
-			Point2D pixel;
-			Coord_To_Pixel(coord, pixel);
-			pixel += Point2D(ISO_TILE_PIXEL_W, ISO_TILE_PIXEL_H) / -2;
-			pixel += TacticalRect.TopLeft;
+			Point2D raw; // RA2: Render_Shroud at 0x6A3EF0 matches only so
+			Coord_To_Pixel(coord, raw); // RA2: as above
+			Point2D pixel = raw - Point2D(30, 15) + TacticalRect.TopLeft; // RA2: as above
 
 			if (MainWindow) {
 				CellRedraw[i]->Draw_Shroud_And_Fog(pixel, cliprect);
@@ -876,9 +847,6 @@ void Tactical::Render_Shroud(Rect const & xpanrect, Rect const & ypanrect, Rect 
 		Draw_Shroud(TacticalRect);
 	}
 
-	/*
-	 * The strips the pan exposed. A full redraw has already covered them.
-	 */
 	if (xpanrect.Is_Valid() && !fullredraw) {
 		Draw_Shroud(xpanrect);
 	}
@@ -886,11 +854,8 @@ void Tactical::Render_Shroud(Rect const & xpanrect, Rect const & ypanrect, Rect 
 		Draw_Shroud(ypanrect);
 	}
 
-	/*
-	 * The areas that were registered as dirty.
-	 */
 	for (int i = 0; i < DirtyAreas.Count(); i++) {
-		Rect redraw = DirtyAreas[i].Area + TacticalRect.TopLeft;
+		Rect redraw = DirtyAreas[i].Area + Point2D(TacticalRect.X, TacticalRect.Y); // RA2: as above
 		Rect inter = Intersect(redraw, cliprect);
 
 		if (DirtyAreas[i].IsToRefreshShroud) {
@@ -1284,7 +1249,7 @@ void Tactical::Render(Surface & surface, bool fullredraw, int drawpass)
 		for (i = 0; i < CurrentObject.Count(); i++) {
 			ObjectClass * object = CurrentObject[i];
 			if (object->Class_Of() != NULL && object->Class_Of()->IsHasRadialIndicator) {
-				object->Draw_Radial_Indicator();
+				object->Draw_Radial_Indicator(1); // RA2: an argument (1, as 0x6AC420 passes)
 			}
 		}
 
@@ -1297,7 +1262,7 @@ void Tactical::Render(Surface & surface, bool fullredraw, int drawpass)
 			ObjectClass * object = CurrentObject[i];
 			if (object->Is_Techno() && ((TechnoClass*)object)->IsSelected) {
 				if (TechnoClass::ActionLines == true && ((TechnoClass*)object)->House->Is_Player_Control()) {
-					((TechnoClass*)object)->Draw_Action_Line();
+					((TechnoClass*)object)->Draw_Action_Line(false, 0); // RA2: two arguments (0, 0 at 0x6A45A0)
 				}
 			}
 		}
@@ -1312,19 +1277,24 @@ void Tactical::Render(Surface & surface, bool fullredraw, int drawpass)
 }
 
 
+
+
+
+
 /// <summary>
 /// Sets the caption text shown over the tactical view.
 /// The text is pulled from the string table, so the caller only has to know which message it
 /// wants displayed.
 /// </summary>
 /// <param name="text_id">The string table identifier of the caption, or -1 to clear it.</param>
-void Tactical::Set_Caption_Text(int text_id)
+void Tactical::Set_Caption_Text(wchar_t const * text, int frame) // RA2: the text itself and a GRFXTXT frame
 {
-	if (text_id == -1) {
+	if (!text) {
 		Clear_Caption_Text();
 	} else {
-		strcpy(ScreenText, Fetch_String(text_id));
+		wcscpy(ScreenText, text);
 	}
+	EndGameGraphicsFrame = frame;
 }
 
 
@@ -1333,7 +1303,8 @@ void Tactical::Set_Caption_Text(int text_id)
 /// </summary>
 void Tactical::Clear_Caption_Text(void)
 {
-	ScreenText[0] = '\0';
+	EndGameGraphicsFrame = -1; // RA2: Clear_Caption_Text at 0x6A5440 matches only so
+	ScreenText[0] = L'\0'; // RA2: as above
 }
 
 
@@ -1344,12 +1315,12 @@ void Tactical::Clear_Caption_Text(void)
 /// editor is running.
 /// </summary>
 /// <param name="text">The text to display. A NULL or empty string draws nothing.</param>
-void Tactical::Draw_Screen_Text(char const * text)
+void Tactical::Draw_Screen_Text(wchar_t const * text) // RA2: wide text
 {
 	if (Debug_Map) {
 		return;
 	}
-	if (text == NULL || !strlen(text)) {
+	if (text == NULL || !wcslen(text)) { // RA2: wide
 		return;
 	}
 	if (CompositeSurface->Is_Direct_Draw()) {
@@ -1363,7 +1334,7 @@ void Tactical::Draw_Screen_Text(char const * text)
 			SetBkMode(hdc, TRANSPARENT);
 			SetTextAlign(hdc, TA_CENTER);
 			SetTextColor(hdc, RGB(255, 255, 255));
-			TextOut(hdc, rect.X + point.X, rect.Y + point.Y, text, strlen(text));
+			TextOutW(hdc, rect.X + point.X, rect.Y + point.Y, text, wcslen(text)); // RA2: wide
 			SelectObject(hdc, h);
 			DeleteObject(font);
 			((DSurface*)CompositeSurface)->Get_DD_Surface()->ReleaseDC(hdc);
@@ -1590,6 +1561,7 @@ void Tactical::Draw_Firestorm_Wall_Placement(bool drawtrans, Cell cell)
 	}
 }
 
+
 /// <summary>
 /// Draws the placement preview for a wall connecting from the pending wall to any player-owned
 /// matching wall overlay in the four cardinal directions, up to the wall's range.
@@ -1679,11 +1651,6 @@ bool Tactical::Blit_Tiles(void)
 void Tactical::Set_View_Dimensions(Rect const & dimensions)
 {
 	TacticalDimensions = dimensions;
-
-	/*
-	**	Adjust the tactical cell if it is now in an invalid position
-	**	because of the changed dimensions.
-	*/
 	Set_Tactical_Position(DesiredTacticalCoord);
 }
 
@@ -1696,11 +1663,30 @@ void Tactical::Set_View_Dimensions(Rect const & dimensions)
 /// <param name="point">The desired view position, in absolute pixels.</param>
 void Tactical::Set_Tactical_Position(Point2D const & point)
 {
-	Point2D clamped = Clamp_Pixel_To_Tactical(point);
-	TacticalCoord = clamped;
-	DesiredTacticalCoord = clamped;
+	Point2D clamped = point; // RA2: Set_Tactical_Position at 0x6A6640 matches only so
+	Point2D result; // RA2: as above
+	if (Clamp_To_Tactical_Rect(clamped) && !Debug_Map) { // RA2: as above
+		result = clamped; // RA2: as above
+	} else {
+		result = point; // RA2: as above
+	}
+	TacticalCoord = result; // RA2: as above
+	DesiredTacticalCoord = result; // RA2: as above
 	Update_Visible_Cells();
 	IsToRedraw = true;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline Point2D Project_Isometric_Point(Point2D const & iso, Coord const & coord)
+{
+	Point2D pixel = iso;
+	pixel.X /= CELL_LEPTON;
+	pixel.Y /= CELL_LEPTON;
+	pixel.Y -= Tactical::Z_Lepton_To_Pixel(coord.Z);
+	return(pixel);
 }
 
 
@@ -1712,11 +1698,9 @@ void Tactical::Set_Tactical_Position(Point2D const & point)
 /// <param name="coord">The world coordinate to move the view to.</param>
 void Tactical::Set_Tactical_Position(Coord const & coord)
 {
-	Point2D pixel = Coord_To_Pixel_Absolute(coord);
-
-	pixel -= Point2D(TacPixelX, TacPixelY);
+	Point2D pixel; // RA2: Set_Tactical_Position at 0x6A66B0 matches only so
+	World_To_View_Pixel(*this, coord, pixel); // RA2: as above
 	pixel += Point2D(TacPixelX, TacPixelY);
-
 	Set_Tactical_Position(pixel);
 }
 
@@ -1742,20 +1726,6 @@ Point2D Tactical::Get_Relative_Tactical_Position(void)
 }
 
 
-/// <summary>
-/// Rotates a rectangular world position onto the isometric screen axes.
-/// This is the forward half of the tactical map's coordinate pipeline. No scaling and no view
-/// offset are applied, so the result comes back in whatever units it was given.
-/// </summary>
-void Tactical::Rectangular_To_Isometric(int xin, int yin, int & xout, int & yout)
-{
-	xout = xin * ISO_TILE_PIXEL_W / 2;
-	yout = xin * ISO_TILE_PIXEL_H / 2;
-	xout += yin * ISO_TILE_PIXEL_W / -2;
-	yout += yin * ISO_TILE_PIXEL_H / 2;
-}
-
-
 /*
  * Inverse of Rectangular_To_Isometric: given (xin,yin) in screen-pixel units, outputs
  * world-space rectangular coordinates, biased by -/+65536.
@@ -1768,8 +1738,8 @@ void Tactical::Rectangular_To_Isometric(int xin, int yin, int & xout, int & yout
 /// </summary>
 void Tactical::Isometric_To_Rectangular(int xin, int yin, int & xout, int & yout)
 {
-	xout = ((ISO_TILE_PIXEL_W / 2) * yin + (ISO_TILE_PIXEL_H / 2) * xin) / 576 - 65536;
-	yout = ((ISO_TILE_PIXEL_W / 2) * yin - (ISO_TILE_PIXEL_H / 2) * xin) / 576 + 65536;
+	xout = ((60 / 2) * yin + (30 / 2) * xin) / 576 - 65536; // RA2: Isometric_To_Rectangular at 0x6A6860 matches only so
+	yout = ((60 / 2) * yin - (30 / 2) * xin) / 576 + 65536; // RA2: as above
 }
 
 
@@ -1782,10 +1752,8 @@ void Tactical::Cell_To_Rectangular(int xin, int yin, int & xout, int & yout)
 {
 	int xsh = xin << 8;
 	int ysh = yin << 8;
-	int y = ((ISO_TILE_PIXEL_W / 2) * ysh - (ISO_TILE_PIXEL_H / 2) * xsh) / 576 + 65536;
-	int x = ((ISO_TILE_PIXEL_W / 2) * ysh + (ISO_TILE_PIXEL_H / 2) * xsh) / 576 - 65536;
-	xout = x;
-	yout = y;
+	xout = ((60 / 2) * ysh + (30 / 2) * xsh) / 576 - 65536; // RA2: Cell_To_Rectangular at 0x6A68C0 matches only so
+	yout = ((60 / 2) * ysh - (30 / 2) * xsh) / 576 + 65536; // RA2: as above
 }
 
 
@@ -1798,10 +1766,10 @@ void Tactical::Lepton_To_Map_Pixel(int xin, int yin, int & xout, int & yout)
 {
 	Rectangular_To_Isometric(xin, yin, xout, yout);
 
-	xout = xout / CELL_LEPTON_W;
-	yout = yout / CELL_LEPTON_H;
+	xout = xout / 256; // RA2: Lepton_To_Map_Pixel at 0x6A6920 matches only so
+	yout = yout / 256; // RA2: as above
 
-	xout += (ISO_TILE_PIXEL_W / 2) * MAP_CELL_H;
+	xout += (60 / 2) * 512; // RA2: as above
 }
 
 
@@ -1831,6 +1799,21 @@ void Tactical::Cell_To_Rectangular_Centered(int xin, int yin, int & xout, int & 
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /// <summary>
 /// Resolves a world Coord to the map cell whose rendered footprint contains it, accounting for
 /// terrain height (and bridges). Walks back along the isometric axis from a point below the cell,
@@ -1841,16 +1824,15 @@ void Tactical::Cell_To_Rectangular_Centered(int xin, int yin, int & xout, int & 
 /// <returns>The cell visually under the coord; the source cell if none is found.</returns>
 Cell Tactical::Coord_To_Cell(Coord const & coord)
 {
-	Cell cell = coord;
-	Coord center = cell.As_Coord();
+	Cell cell = coord.As_Cell(); // RA2: Coord_To_Cell at 0x6A6A50 matches only so
+	Coord center(cell); // RA2: as above
 
 	bool isbridge = Map[cell].IsBridgeSurface;
 	int baseheight = Map[cell].Height;
 
-	Coord scan = center;
-	scan.X += CELL_LEPTON_W * 6;
-	scan.Y += CELL_LEPTON_H * 6;
-	scan.Z = 0;
+	Coord origin; // RA2: as above
+	Set_Ground_Position(origin, Point2D(center.X + CELL_LEPTON_W * 6, center.Y + CELL_LEPTON_H * 6)); // RA2: as above
+	Coord scan = origin; // RA2: as above
 
 	Cell scancell = cell;
 	while (true) {
@@ -2011,9 +1993,7 @@ CellClass * Tactical::Find_Bridge_Owner_Cell(Cell const & cell)
 	Cell scan;
 	int i;
 
-	/*
-	 * Scan south along the two columns an east-west span could reach this cell from.
-	 */
+	// Scan south along the two columns an east-west span could reach this cell from.
 	scan = cell + Cell(2, 0);
 	for (i = 0; i < 5; ++i) {
 		cellptr = &Map[scan];
@@ -2032,9 +2012,7 @@ CellClass * Tactical::Find_Bridge_Owner_Cell(Cell const & cell)
 		scan.Y++;
 	}
 
-	/*
-	 * Then scan east along the two rows a north-south span could reach it from.
-	 */
+	// Then scan east along the two rows a north-south span could reach it from.
 	scan = cell + Cell(0, 2);
 	for (i = 0; i < 5; ++i) {
 		cellptr = &Map[scan];
@@ -2058,6 +2036,18 @@ CellClass * Tactical::Find_Bridge_Owner_Cell(Cell const & cell)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline void Draw_Cell_Overlay_Shadow(Tactical & view, CellClass * cellptr, Rect const & cliprect, Coord const & coord)
+{
+	Point2D pixel;
+	view.Coord_To_Pixel(coord, pixel);
+	pixel.X -= ISO_TILE_PIXEL_W / 2;
+	cellptr->Draw_Overlay_Shadow(pixel, cliprect);
+}
+
+
+/// <summary>
 /// Draws the cell overlays that fall within the given region of the view.
 /// This routine is called by Render_Overlays for each part of the tactical view that needs
 /// refreshing. The overlay graphics are laid down first and their cast shadows afterwards.
@@ -2065,23 +2055,25 @@ CellClass * Tactical::Find_Bridge_Owner_Cell(Cell const & cell)
 /// <param name="area">The region of the tactical view to draw the overlays within.</param>
 void Tactical::Draw_Overlays(Rect const & area)
 {
-	Coord lepton = Coord(Pixel_To_Lepton(Point2D(TacPixelX, TacPixelY) + area.Top_Left() - TacticalRect.Top_Left()), 0);
-	if (lepton.X < 0) lepton.X = 0;
-	if (lepton.Y < 0) lepton.Y = 0;
+	Coord lepton = Coord(Pixel_To_Lepton(area.Top_Left() + Point2D(TacPixelX, TacPixelY) - TacticalRect.Top_Left()), 0); // RA2: Draw_Overlays at 0x6A7350 matches only so
+	if (lepton.Y < 0) { // RA2: as above
+		lepton.Y = 0; // RA2: as above
+	}
+	if (lepton.X < 0) { // RA2: as above
+		lepton.X = 0; // RA2: as above
+	}
 
-	Cell origin = Map[lepton].CellID;
+	Cell base = Map[lepton].Fetch_CellID(); // RA2: as above
 
 	int ycount = area.Height / (ISO_TILE_PIXEL_H / 2) + 20;
 	int xcount = area.Width / ISO_TILE_PIXEL_W + 4;
 
 	Rect cliprect = Intersect(TacticalRect, area);
-	Cell base(origin.X - 2, origin.Y);
+	base.X -= 4; // RA2: as above
+	base.Y -= 2; // RA2: as above
 
-	/*
-	 * The overlay graphics first...
-	 */
 	int ix, iy;
-	for (iy = ycount - 1; iy >= 0; iy--) {
+	for (iy = ycount + 1; iy >= 0; iy--) { // RA2: as above
 		Cell step(iy / 2, (iy + 1) / 2);
 		Cell cell = base + step;
 
@@ -2092,20 +2084,20 @@ void Tactical::Draw_Overlays(Rect const & area)
 					Rect render = cellptr->Overlay_Render_Rect();
 					if (Intersect(cliprect, render).Is_Valid()) {
 						Point2D pixel;
-						Coord_To_Pixel(Coord_Whole(cell), pixel);
-						pixel.X += ISO_TILE_PIXEL_W / -2;
+						Coord coord = Coord_Whole(Coord(cell)); // RA2: as above
+						Coord_To_Pixel(coord, pixel); // RA2: as above
+						pixel.X -= ISO_TILE_PIXEL_W / 2; // RA2: as above
 						cellptr->Draw_Overlay(pixel, cliprect);
 					}
 				}
 			}
-			cell += Cell(1, -1);
+			++cell.X; // RA2: as above
+			--cell.Y; // RA2: as above
 		}
 	}
 
-	/*
-	 * ...and the shadows they cast over the same band afterwards.
-	 */
-	for (iy = ycount - 1; iy >= 0; iy--) {
+	// Draw shadows after all overlays in the band.
+	for (iy = ycount + 1; iy >= 0; iy--) { // RA2: as above
 		Cell step(iy / 2, (iy + 1) / 2);
 		Cell cell = base + step;
 
@@ -2115,14 +2107,15 @@ void Tactical::Draw_Overlays(Rect const & area)
 				if (cellptr->Overlay != OVERLAY_NONE) {
 					Rect shadow = cellptr->Overlay_Shadow_Render_Rect();
 					if (Intersect(cliprect, shadow).Is_Valid()) {
-						Point2D pixel;
-						Coord_To_Pixel(Coord_Whole(cell), pixel);
-						pixel.X += ISO_TILE_PIXEL_W / -2;
-						cellptr->Draw_Overlay_Shadow(pixel, cliprect);
+						Coord center(cell); // RA2: as above
+						Coord coord = Point3D(center.X / CELL_LEPTON_W * CELL_LEPTON_W, // RA2: as above
+							center.Y / CELL_LEPTON_H * CELL_LEPTON_H, center.Z); // RA2: as above
+						Draw_Cell_Overlay_Shadow(*this, cellptr, cliprect, coord); // RA2: as above
 					}
 				}
 			}
-			cell += Cell(1, -1);
+			++cell.X; // RA2: as above
+			--cell.Y; // RA2: as above
 		}
 	}
 }
@@ -2182,6 +2175,30 @@ void Tactical::Draw_Shroud(Rect const & area)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline Point2D Pixel_To_Ground_Point(Matrix3D const & matrix, Point2D const & pixel)
+{
+	Vector3 ground;
+	ground.X = pixel.X;
+	ground.Y = pixel.Y;
+	ground.Z = 0;
+	ground = matrix * ground;
+	return(Point2D(ground.X, ground.Y));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Project_Tile_Left(Tactical & view, Coord const & coord, Point2D & pixel)
+{
+	view.Coord_To_Pixel(coord, pixel);
+	pixel.X -= ISO_TILE_PIXEL_W / 2;
+}
+
+
+/// <summary>
 /// Draws the iso tiles whose visual footprint falls within the given pixel rectangle. The
 /// rectangle origin is projected back into cell space to find the start cell, then the resulting
 /// diagonal band of cells is scanned and each cell whose render rect clips against the area has
@@ -2191,13 +2208,15 @@ void Tactical::Draw_Shroud(Rect const & area)
 /// <param name="cliprect">The clip rectangle passed to each cell's Draw_It.</param>
 void Tactical::Draw_Tiles(Rect const & area, Rect const & cliprect)
 {
-	Coord lepton = Coord(Pixel_To_Lepton(Point2D(TacPixelX, TacPixelY) + area.Top_Left() - TacticalRect.Top_Left()), 0);
-	Cell origin = lepton.As_Cell();
-	Cell base(origin.X - 2, origin.Y);
+	Point2D point = Pixel_To_Ground_Point(PixelToCoordMatrix, area.Top_Left() + Point2D(TacPixelX, TacPixelY) - TacticalRect.Top_Left()); // RA2: Draw_Tiles at 0x6A7BA0 matches only so
+	Coord lepton(point.X, point.Y, 0); // RA2: as above
+	Cell origin(lepton.X / CELL_LEPTON_W, lepton.Y / CELL_LEPTON_H); // RA2: as above
+	Cell base = origin; // RA2: as above
 
 	int ycount = area.Height / (ISO_TILE_PIXEL_H / 2) + 17;
 	int xcount = area.Width / ISO_TILE_PIXEL_W + 4;
 
+	base.X -= 2; // RA2: as above
 	int ix, iy;
 	for (iy = 0; iy < ycount; iy++) {
 		Cell step(iy / 2, (iy + 1) / 2);
@@ -2208,53 +2227,11 @@ void Tactical::Draw_Tiles(Rect const & area, Rect const & cliprect)
 				CellClass * cellptr = &Map[cell];
 				Rect render = cellptr->Cell_Render_Rect();
 				Rect inter = Intersect(area, render);
-				Coord coord = Coord_Whole(Coord(cell));
-				Point2D pixel;
-				Coord_To_Pixel(coord, pixel);
-				pixel.X += ISO_TILE_PIXEL_W / -2;
+				Point2D pixel; // RA2: Draw_Tiles at 0x6A7BA0 has no Coord
+				Project_Tile_Left(*this, Coord_Whole(Coord(cell)), pixel); // RA2: as above
 				if (render.Is_Valid() && inter.Is_Valid()) {
 					cellptr->Draw_It(pixel, cliprect, 0);
 				}
-			}
-			cell += Cell(1, -1);
-		}
-	}
-}
-
-
-/// <summary>
-/// Draws the cast shadows for the iso tiles whose visual footprint falls within the given
-/// pixel rectangle. The rectangle is projected back into cell space (the start cell is
-/// computed twice; the first result is unused), and the resulting diagonal band of cells is
-/// scanned ascending so each cell's tile shadow caster is drawn into the clip rectangle.
-/// </summary>
-/// <param name="area">The pixel rectangle to draw shadows within.</param>
-/// <param name="cliprect">The clip rectangle passed to each cell's shadow caster.</param>
-void Tactical::Draw_Tile_Shadows(Rect const & area, Rect const & cliprect)
-{
-	Coord lepton = Coord(Pixel_To_Lepton(Point2D(TacPixelX, TacPixelY) + area.Top_Left() - TacticalRect.Top_Left()), 0);
-	Cell origin = lepton.As_Cell();
-	Cell base(origin.X - 2, origin.Y);
-
-	lepton = Coord(Pixel_To_Lepton(Point2D(TacPixelX, TacPixelY) + area.Top_Left() - TacticalRect.Top_Left()), 0);
-	origin = Map[lepton].CellID;
-	base = Cell(origin.X - 2, origin.Y + 3);
-
-	int ycount = area.Height / (ISO_TILE_PIXEL_H / 2) + 20;
-	int xcount = area.Width / ISO_TILE_PIXEL_W + 7;
-
-	int ix, iy;
-	for (iy = 0; iy < ycount; iy++) {
-		Cell step(iy / 2, (iy + 1) / 2);
-		Cell cell = base + step;
-
-		for (ix = xcount; ix > 0; ix--) {
-			if (Map.In_Radar(cell)) {
-				Coord coord = Coord_Whole(Coord(cell));
-				Point2D pixel;
-				Coord_To_Pixel(coord, pixel);
-				pixel.X += ISO_TILE_PIXEL_W / -2;
-				Map[cell].Draw_Shadow_Cast(pixel, cliprect);
 			}
 			cell += Cell(1, -1);
 		}
@@ -2369,6 +2346,61 @@ void Tactical::Draw_Tiles(Cell const & cell, Rect const & cliprect)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline Coord Tile_Center(Cell const & cell)
+{
+	Coord center;
+	center.X = cell.X * CELL_LEPTON_W + CELL_LEPTON_W / 2;
+	center.Y = cell.Y * CELL_LEPTON_H + CELL_LEPTON_H / 2;
+	center.Z = 0;
+	return(center);
+}
+
+
+/// <summary>
+/// Draws the cast shadows for the iso tiles whose visual footprint falls within the given
+/// pixel rectangle. The rectangle is projected back into cell space (the start cell is
+/// computed twice; the first result is unused), and the resulting diagonal band of cells is
+/// scanned ascending so each cell's tile shadow caster is drawn into the clip rectangle.
+/// </summary>
+/// <param name="area">The pixel rectangle to draw shadows within.</param>
+/// <param name="cliprect">The clip rectangle passed to each cell's shadow caster.</param>
+void Tactical::Draw_Tile_Shadows(Rect const & area, Rect const & cliprect)
+{
+	Coord lepton(Pixel_To_Lepton(area.Top_Left() + Point2D(TacPixelX, TacPixelY) - TacticalRect.Top_Left()), 0); // RA2: Draw_Tile_Shadows at 0x6A88A0 matches only so
+	Cell base = lepton.As_Cell(); // RA2: as above
+	base.X -= 2; // RA2: as above
+	Cell cell = base; // RA2: as above
+
+	lepton = Coord(Pixel_To_Lepton(area.Top_Left() + Point2D(TacPixelX, TacPixelY) - TacticalRect.Top_Left()), 0); // RA2: as above
+	base = Map[lepton].Fetch_CellID(); // RA2: as above
+	int ycount = area.Height / (ISO_TILE_PIXEL_H / 2) + 20;
+	int xcount = area.Width / ISO_TILE_PIXEL_W + 7;
+	base.X -= 2; // RA2: as above
+	base.Y += 3; // RA2: as above
+
+	int ix, iy;
+	for (iy = 0; iy < ycount; iy++) {
+		Cell step(iy / 2, (iy + 1) / 2);
+		cell = base + step; // RA2: as above
+
+		for (ix = xcount; ix > 0; ix--) {
+			if (Map.In_Radar(cell)) {
+				Coord coord = Coord_Whole(Tile_Center(cell)); // RA2: as above
+				Point2D pixel;
+				Coord_To_Pixel(coord, pixel);
+				pixel.X += ISO_TILE_PIXEL_W / -2;
+				Map[cell].Draw_Shadow_Cast(pixel, cliprect);
+			}
+			++cell.X; // RA2: as above
+			--cell.Y; // RA2: as above
+		}
+	}
+}
+
+
+/// <summary>
 /// Draws the shadows cast by the iso tiles over a region of the view.
 /// This routine differs from its sibling only in clipping the casters against the same
 /// region it scans instead of against a clip rectangle of its own.
@@ -2376,7 +2408,9 @@ void Tactical::Draw_Tiles(Cell const & cell, Rect const & cliprect)
 /// <param name="area">The area of the view to draw the tile shadows within.</param>
 void Tactical::Draw_Tile_Shadows(int, Rect const & area)
 {
-	Coord lepton = Coord(Pixel_To_Lepton(Point2D(TacPixelX, TacPixelY) + area.Top_Left() - TacticalRect.Top_Left()), 0);
+	Point2D sample = area.Top_Left() + Point2D(TacPixelX, TacPixelY) - TacticalRect.Top_Left(); // RA2: Draw_Tile_Shadows at 0x6A88A0 matches only so
+	Coord lepton; // RA2: as above
+	Set_Ground_Position(lepton, Pixel_To_Lepton(sample)); // RA2: as above
 	if (lepton.Y < 0) {
 		lepton.X -= lepton.Y;
 		lepton.Y = 0;
@@ -2386,11 +2420,11 @@ void Tactical::Draw_Tile_Shadows(int, Rect const & area)
 		lepton.X = 0;
 	}
 
-	Cell origin = Map[lepton].CellID;
-	Cell base(origin.X - 2, origin.Y + 3);
-
+	Cell base = Map[lepton].Fetch_CellID(); // RA2: as above
+	int ycount = area.Height / (ISO_TILE_PIXEL_H / 2) + 20; // RA2: as above
 	int xcount = area.Width / ISO_TILE_PIXEL_W + 7;
-	int ycount = area.Height / (ISO_TILE_PIXEL_H / 2) + 20;
+	base.X -= 2; // RA2: as above
+	base.Y += 3; // RA2: as above
 
 	int ix, iy;
 	for (iy = 0; iy < ycount; iy++) {
@@ -2400,13 +2434,25 @@ void Tactical::Draw_Tile_Shadows(int, Rect const & area)
 		for (ix = xcount; ix > 0; ix--) {
 			if (Map.In_Radar(cell)) {
 				Point2D pixel;
-				Coord_To_Pixel(Coord_Whole(cell), pixel);
+				Coord_To_Pixel(Coord_Whole(cell.As_Coord()), pixel); // RA2: as above
 				pixel.X += ISO_TILE_PIXEL_W / -2;
 				Map[cell].Draw_Shadow_Cast(pixel, area);
 			}
-			cell += Cell(1, -1);
+			++cell.X; // RA2: as above
+			--cell.Y; // RA2: as above
 		}
 	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Set_Ground_Position(Coord & coord, Point2D const & point)
+{
+	coord.X = point.X;
+	coord.Y = point.Y;
+	coord.Z = 0;
 }
 
 
@@ -2474,11 +2520,11 @@ void Tactical::Scroll_Map(FacingType facing, int distance)
 /// <returns>bool; Did the position have to be pulled back?</returns>
 bool Tactical::Clamp_To_Tactical_Rect(Point2D & pixel)
 {
-	int xmin = TacticalRect.Width / 2 - (ISO_TILE_PIXEL_W >> 1) * (Map.PlayRect.Width - 2 * Map.LocalRect.X);
-	int xmax = xmin + ISO_TILE_PIXEL_W * Map.LocalRect.Width - TacticalRect.Width;
+	int xmin = TacticalRect.Width / 2 - (60 >> 1) * (Map.PlayRect.Width - 2 * Map.LocalRect.X); // RA2: Clamp_To_Tactical_Rect at 0x6A8C80 matches only so
+	int xmax = xmin + 60 * Map.LocalRect.Width - TacticalRect.Width; // RA2: as above
 
-	int ymin = TacticalRect.Height / 2 + (ISO_TILE_PIXEL_H >> 1) * (Map.PlayRect.Width + 2 * Map.LocalRect.Y - 5);
-	int ymax = ymin + ISO_TILE_PIXEL_H * (2 * Map.LocalRect.Height + 9) / 2 - TacticalRect.Height;
+	int ymin = TacticalRect.Height / 2 + (30 >> 1) * (Map.PlayRect.Width + 2 * Map.LocalRect.Y - 5); // RA2: as above
+	int ymax = ymin + 30 * (2 * Map.LocalRect.Height + 9) / 2 - TacticalRect.Height; // RA2: as above
 
 	bool clamped = false;
 
@@ -2565,18 +2611,12 @@ int Tactical::Cell_Shadow(Cell const & cell, bool fog)
 	CellClass const * cellptr = &Map[cell];
 
 	if (fog) {
-		/*
-		**	Presume solid black if that is what is here already.
-		*/
+		// Presume solid black if that is what is here already.
 		if (!cellptr->IsFogVisible && !cellptr->IsFogMapped) value = -2;
 
-		if (cellptr->IsFogMapped /*&& !cellptr->IsFogVisible*/) {
-			/*
-			**	Build an index into the lookup table using all 8 surrounding cells.
-			**	We're mapping a revealed cell and we only care about the existence
-			**	of black cells.  Bit numbering starts at the upper-right corner and
-			**	goes around the cell clockwise, so 0x80 = directly north.
-			*/
+		if (cellptr->IsFogMapped) { // RA2: Cell_Shadow at 0x6A8D40 matches only so
+			// Index the lookup table by which of the 8 surrounding cells are black; bit 0x80 is
+			// directly north and the bits run clockwise from the upper-right corner.
 			Cell c;
 			c = cell + Cell(-1, -1);
 			if (!Map[c].IsFogMapped) index |= 0x40;
@@ -2599,18 +2639,12 @@ int Tactical::Cell_Shadow(Cell const & cell, bool fog)
 		}
 	} else {
 
-		/*
-		**	Presume solid black if that is what is here already.
-		*/
+		// Presume solid black if that is what is here already.
 		if (!cellptr->IsVisible && !cellptr->IsMapped) value = -2;
 
-		if (cellptr->IsMapped /*&& !cellptr->IsVisible*/) {
-			/*
-			**	Build an index into the lookup table using all 8 surrounding cells.
-			**	We're mapping a revealed cell and we only care about the existence
-			**	of black cells.  Bit numbering starts at the upper-right corner and
-			**	goes around the cell clockwise, so 0x80 = directly north.
-			*/
+		if (cellptr->IsMapped) { // RA2: as above
+			// Index the lookup table by which of the 8 surrounding cells are black; bit 0x80 is
+			// directly north and the bits run clockwise from the upper-right corner.
 			Cell c;
 			c = cell + Cell(-1, -1);
 			if (!Map[c].IsMapped) index |= 0x40;
@@ -2663,12 +2697,13 @@ void Tactical::Update_Visible_Cells(void)
 	TacPixelX -= TacticalDimensions.Width / 2;
 	TacPixelY -= TacticalDimensions.Height / 2;
 
-	Point2D lepton = Pixel_To_Lepton(Point2D(TacPixelX - ISO_TILE_PIXEL_W, TacPixelY - ISO_TILE_PIXEL_H));
+	Point2D lepton = Pixel_To_Lepton(Point2D(TacPixelX - 60, TacPixelY - 30)); // RA2: Update_Visible_Cells at 0x6A9170 matches only so
 
 	VisibleCellRect.X = lepton.X / CELL_LEPTON;
 	VisibleCellRect.Y = lepton.Y / CELL_LEPTON;
-	VisibleCellRect.Width = TacticalDimensions.Width / ISO_TILE_PIXEL_W + 2;
-	VisibleCellRect.Height = TacticalDimensions.Height / (ISO_TILE_PIXEL_H / 2) + 4;
+	VisibleCellRect.Width = TacticalDimensions.Width / 60 + 2; // RA2: as above
+	VisibleCellRect.Height = TacticalDimensions.Height / 15 + 4; // RA2: as above
+	do { } while (0); // RA2: as above
 }
 
 
@@ -2997,10 +3032,6 @@ void Tactical::Select_Rubber_Band(void (*select_callback)(ObjectClass * object))
 		Point2D start = RubberBandStart;
 		Point2D end = RubberBandEnd;
 
-		/*
-		**	Ensure that coordinate number one represents the upper left corner
-		**	and coordinate number two represents the lower right corner.
-		*/
 		if (start.X > end.X) {
 			swap(start.X, end.X);
 		}
@@ -3012,6 +3043,39 @@ void Tactical::Select_Rubber_Band(void (*select_callback)(ObjectClass * object))
 		RubberBandStart = Point2D(0, 0);
 	}
 }
+
+
+/// <summary>
+/// Is any active selectable object inside the rubber band?
+/// </summary>
+int Tactical::Rubber_Band_Contains_Selectable(void) // RA2: not in TibSun, at 0x6AA6A0
+{
+	Point2D start = RubberBandStart;
+	Point2D end = RubberBandEnd;
+
+	if (start.X > end.X) {
+		swap(start.X, end.X);
+	}
+	if (start.Y > end.Y) {
+		swap(start.Y, end.Y);
+	}
+
+	Rect rect(start, end.X - start.X + 1, end.Y - start.Y + 1);
+	if (rect.Is_Valid()) {
+		for (int index = 0; index < SelectableCount; index++) {
+			if (SelectableObjects[index].Object != NULL && SelectableObjects[index].Object->IsActive) {
+				Point2D pos = SelectableObjects[index].Position - Point2D(TacPixelX, TacPixelY);
+				if (rect.Is_Point_Within(pos)) {
+					return(true);
+				}
+			}
+		}
+	}
+	return(false);
+}
+
+
+
 
 
 /// <summary>
@@ -3038,10 +3102,6 @@ void Tactical::Draw_Rubber_Band(void)
 		Point2D start = RubberBandStart;
 		Point2D end = RubberBandEnd;
 
-		/*
-		**	Ensure that coordinate number one represents the upper left corner
-		**	and coordinate number two represents the lower right corner.
-		*/
 		if (end.X < start.X) {
 			swap(start.X, end.X);
 		}
@@ -3122,12 +3182,6 @@ Cell Tactical::Clamp_Cursor_To_Tactical(Cell const & cell, Cell const * list)
 }
 
 
-void Tactical::Noop(int)
-{
-
-}
-
-
 /// <summary>
 /// Fetches the object that the player has clicked on.
 /// This routine picks the closest eligible object to the pixel specified. Objects in limbo
@@ -3142,9 +3196,8 @@ ObjectClass * Tactical::Get_Selectable_Object(Point2D const & point)
 	ObjectClass * best = NULL;
 	unsigned int bestdist = -1;
 
-	Point2D pixel;
-	pixel.X = point.X + TacPixelX;
-	pixel.Y = point.Y + TacPixelY;
+	int pixelx = point.X + TacPixelX; // RA2: Get_Selectable_Object at 0x6AA990 matches only so
+	int pixely = point.Y + TacPixelY; // RA2: as above
 
 	for (int index = 0; index < SelectableCount; index++) {
 		Selectable & sel = SelectableObjects[index];
@@ -3173,7 +3226,7 @@ ObjectClass * Tactical::Get_Selectable_Object(Point2D const & point)
 			}
 
 			if (pass) {
-				Point2D pos = sel.Position - pixel;
+				Point2D pos = sel.Position - Point2D(pixelx, pixely); // RA2: as above
 				unsigned int dist = int(double(pos.X * pos.X) + double(pos.Y * pos.Y) * 0.5);
 				if (dist < bestdist && dist < 200) {
 					bestdist = dist;
@@ -3186,9 +3239,7 @@ ObjectClass * Tactical::Get_Selectable_Object(Point2D const & point)
 		return(best);
 	}
 
-	/// nothing is in selectables so get whatever is on the cell
-	Cell cell = Pixel_To_Cell(TacticalRect.Top_Left() + point);
-	return(Map[cell].Cell_Occupier());
+	return(Map[Cell(Pixel_To_Cell(TacticalRect.Top_Left() + point))].Cell_Occupier()); // RA2: as above
 }
 
 
@@ -3281,6 +3332,9 @@ void Tactical::Select_These(Rect const & rect, void (*select_callback)(ObjectCla
 	}
 	AllowVoice = true;
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -3513,8 +3567,8 @@ void Tactical::Draw_Waypoints(bool inshroud)
 				Point2D cursor(pixel.X, pixel.Y - (TacticalRect.Y + 1));
 				Draw_Shape(*LogicalSurface, *MouseDrawer, mouseshapes, frame, cursor, TacticalRect, (ShapeFlags_Type)(SHAPE_CENTER | SHAPE_WIN_REL));
 
-				static char buffer[4];
-				sprintf(buffer, "%d", index);
+				static wchar_t buffer[4]; // RA2: wide
+				swprintf(buffer, L"%d", index); // RA2: as above
 				Point2D label(pixel.X - 1, pixel.Y - (TacticalRect.Y + 1) - 25);
 				Simple_Text_Print(buffer, *LogicalSurface, TacticalRect, label, ColorSchemes[coloridx], 0, (TextPrintType)(TPF_CENTER | TPF_EFNT), 1);
 			}
@@ -3725,6 +3779,7 @@ HRESULT STDMETHODCALLTYPE Tactical::Load(IStream * stream)
 			Swizzle_Pointer(&CellRedraw[i]);
 		}
 
+		Set_Tactical_Position(TacticalCoord); // RA2: Load at 0x6AC320 matches only so
 		result = S_OK;
 	}
 	return(result);
@@ -3741,10 +3796,45 @@ HRESULT STDMETHODCALLTYPE Tactical::Save(IStream * stream, BOOL cleardirty)
 {
 	HRESULT result = BASECLASS::Save(stream, cleardirty);
 	if (SUCCEEDED(result)) {
-
 		result = S_OK;
 	}
 	return(result);
+}
+
+
+void Tactical_noop(int,int,int,int)
+{
+
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void World_To_View_Pixel(Tactical const & view, Coord const & coord, Point2D & relative)
+{
+	Point2D pixel = Tactical::Rectangular_To_Isometric(Point2D(coord.X, coord.Y));
+	relative = Project_Isometric_Point(pixel, coord);
+	relative -= Point2D(view.TacPixelX, view.TacPixelY);
+}
+
+
+/// <summary>
+/// Rotates a rectangular world position onto the isometric screen axes.
+/// This is the forward half of the tactical map's coordinate pipeline. No scaling and no view
+/// offset are applied, so the result comes back in whatever units it was given.
+/// </summary>
+void Tactical::Rectangular_To_Isometric(int xin, int yin, int & xout, int & yout)
+{
+	xout = xin * 60 / 2; // RA2: Rectangular_To_Isometric at 0x6A2740 matches only so
+	yout = xin * 30 / 2; // RA2: as above
+	xout += yin * 60 / -2; // RA2: as above
+	yout += yin * 30 / 2; // RA2: as above
+}
+
+
+void Tactical::Noop(int)
+{
 }
 
 
@@ -3758,7 +3848,8 @@ void Tactical::Draw_Radial_Indicators(void)
 	for (int i = 0; i < CurrentObject.Count(); i++) {
 		ObjectClass * obj = CurrentObject[i];
 		if (obj->Class_Of() && obj->Class_Of()->IsHasRadialIndicator) {
-			obj->Draw_Radial_Indicator();
+			obj->Draw_Radial_Indicator(1); // RA2: an argument (1, as 0x6AC420 passes)
 		}
 	}
 }
+
