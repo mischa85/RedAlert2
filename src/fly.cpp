@@ -86,6 +86,7 @@ static const int const6 = 10;
 /// </summary>
 FlyLocomotionClass::FlyLocomotionClass(void) :
 	BASECLASS(),
+	AirportBound(false), // RA2: AirportBound starts false
 	DestinationCoord(COORD_NONE),
 	HeadToCoord(COORD_NONE),
 	IsMoving(false),
@@ -100,6 +101,23 @@ FlyLocomotionClass::FlyLocomotionClass(void) :
 	Riser(0),
 	IsElevating(false)
 {
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+HRESULT STDMETHODCALLTYPE FlyLocomotionClass::Link_To_Object(void * object) // RA2: overridden (0x004BC190)
+{
+	HRESULT result = BASECLASS::Link_To_Object(object); // RA2: the base links first
+	if (result == S_OK) { // RA2: and on success
+		if (object != NULL && ((FootClass *)object)->Fetch_RTTI() == RTTI_AIRCRAFT && ((AircraftClass *)object)->Class->IsAirportBound) { // RA2: an aircraft whose type is airport bound
+			AirportBound = true; // RA2: is AirportBound
+		} else {
+			AirportBound = false; // RA2: anything else is not
+		}
+	}
+	return(result); // RA2: the base result
 }
 
 
@@ -875,7 +893,6 @@ void FlyLocomotionClass::Rotation_AI(void)
  *=============================================================================================*/
 bool FlyLocomotionClass::Process_Take_Off(void)
 {
-	bool took_off = false;
 	int height = LinkedTo->HeightAGL;
 	if (!LinkedTo->IsOnBridge && Map[(Coord const &)LinkedTo->PositionCoord].IsUnderBridge && height >= BRIDGE_LEPTON_HEIGHT) {
 		height -= BRIDGE_LEPTON_HEIGHT;
@@ -887,11 +904,8 @@ bool FlyLocomotionClass::Process_Take_Off(void)
 		landing_altitude = flyctrl->Landing_Altitude();
 	}
 
-	if (height >= FlightLevel) {
-		IsTakingOff = false;
-		IsLanding = false;
-		took_off = true;
-	}
+	IsTakingOff = false; // RA2: the take-off flags are cleared
+	IsLanding = false; // RA2: unconditionally
 
 	int relative_height = height - landing_altitude;
 	int relative_flight_level = FlightLevel - landing_altitude;
@@ -904,7 +918,16 @@ bool FlyLocomotionClass::Process_Take_Off(void)
 		TargetSpeed = 1;
 	}
 
-	return(took_off);
+	return(true); // RA2: always reports true
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline Cell Adjacent_Cell_By_Value(Cell const & cell, FacingType dir) // RA2: an adjacent cell by value
+{
+	return(cell + AdjacentCell[(int)dir & 0x07]); // RA2: the facing masked to 0-7
 }
 
 
@@ -1089,7 +1112,7 @@ int FlyLocomotionClass::Nearing_Target(bool stage_approach, CoordStruct coord)
 	Coord aim = coord;
 	BuildingClass * building = Map[Coord(coord).As_Cell()].Cell_Building();
 	if (building != NULL && !LinkedTo->TClass->IsHunterSeeker) {
-		aim = building->Docking_Coord();
+		aim = building->Docking_Coord(LinkedTo); // RA2: the docker is passed
 	}
 
 	LinkedTo->Get_Height();
@@ -1744,10 +1767,13 @@ bool FlyLocomotionClass::Is_Locked_To_Straight_Flight(void)
 	}
 
 	IFlyControlPtr flyctrl(LinkedTo);
-	if (flyctrl) {
+	if (flyctrl != NULL) { // RA2: tested against NULL
 		if (flyctrl->Is_Locked()) {
 			return(true);
 		}
 	}
 	return(false);
 }
+
+
+
