@@ -63,8 +63,8 @@ void __cdecl MMX_Brighten_Color_655(unsigned char *mul_buffer, unsigned short *c
 SpotLightClass::SpotLightClass(Coord pos, int size) :
 	Radius(0),
 	Position(pos),
-	Size(size)
-
+	Size(size), // RA2: SpotLightClass at 0x5DD590 matches only so
+	DisableFlags(0) // RA2: as above
 {
 	SpotLights.Add(this);
 }
@@ -316,3 +316,4 @@ void SpotLightClass::Draw_All(void)
 		SpotLights[i]->Draw_It();
 	}
 }
+
