@@ -158,6 +158,17 @@
 #include "wsproto.h"
 
 #include "bench.hh"
+#include "wstring.h"
+
+extern int UnlockInputFrame; // RA2: 0x00AB9174, the frame input unlocks itself at
+extern bool InputLockedBeforeHold; // RA2: 0x00AB6EF4
+void Audio_Pause_All(void); // RA2
+void Audio_Resume_All(void); // RA2
+bool Wait_For_Players_To_Load(void); // RA2: defined after Read_Scenario
+
+namespace Game { extern bool IsActive; extern HWND hWnd; bool __cdecl CallBack(void); }
+namespace CopyProtection { bool CheckProtectedData(void); }
+
 
 CDTimerClass<SystemTimerClass> ScenUnusedTimer;
 
@@ -202,9 +213,9 @@ ScenarioClass::ScenarioClass(void)
 	for (i = 0; i < ARRAY_SIZE(Waypoint); i++) {
 		Waypoint[i] = CELL_NONE;
 	}
-	strcpy(Description, "");
+	wcscpy(Description, L""); // RA2: wide
 	strcpy(ScenarioName, "");
-	strcpy(BriefingText, "");
+	wcscpy(BriefingText, L""); // RA2: wide
 	for (i = 0; i < ARRAY_SIZE(GlobalFlags); i++) {
 		GlobalFlags[i].VariableName[0] = '\0';
 		Set_Global_To(i, false);
@@ -314,9 +325,7 @@ void ScenarioClass::Reset(void)
 	AllowableUnitMaximums.Clear();
 	AllowableUnitCounts.Clear();
 
-	RequiredAddOn = ADDON_BASE_GAME;
-	SpeechSide = SIDE_NONE;
-}
+} // RA2: no SpeechSide, RequiredAddOn (not in RA2's layout)
 
 
 /***********************************************************************************************
@@ -370,10 +379,7 @@ bool Start_Scenario(char const * name, bool briefing, CampaignType campaign)
 		} else {
 			if (Session.Options.ScenarioIndex != -1) {
 				MultiMission * multi = Session.Scenarios[Session.Options.ScenarioIndex];
-				if (multi->Is_On_CD(CD::Get_Current_Disk()) == false) {
-					CD::Set_Required_Disk(multi->On_Which_CD());
-				}
-			}
+			} // RA2: no Get_Current_Disk (TibSun's use does not compile against RA2's declaration)
 		}
 
 		Session.Suspended++;
@@ -498,6 +504,80 @@ void Resume_Scenario(void)
 }
 
 
+
+
+
+
+
+
+/// <summary>
+/// RA2: holds the scenario (for seconds, when given): the sound and the mission clock stop and the input is
+/// locked, counted so that each Release_Scenario undoes one hold.
+/// </summary>
+void Hold_Scenario(int seconds) // RA2: at 0x65C1F0
+{
+	if (seconds) {
+		Scen->PauseTimer = seconds * 60;
+		if (Scen->IsGamePaused) {
+			return;
+		}
+		Scen->IsGamePaused = true;
+	}
+
+	if (Scen->Unknown_62C == 0) {
+		Audio_Pause_All();
+
+		if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
+			Scen->ElapsedTimer.Stop();
+		}
+
+		InputLockedBeforeHold = Scen->IsInputLocked;
+		if (!InputLockedBeforeHold) {
+			Map.Abort_Drag_Select();
+			if (!Get_Mouse_State()) {
+				Hide_Mouse();
+			}
+			Scen->IsInputLocked = true;
+			IgnoreInput = true;
+			Keyboard->Clear();
+			UnlockInputFrame = 0;
+		}
+	}
+	Scen->Unknown_62C++;
+}
+
+
+/// <summary>
+/// RA2: undoes one Hold_Scenario; the last one gives back the sound, the mission clock and the input (unless the
+/// input was locked before the hold).
+/// </summary>
+void Release_Scenario(void) // RA2: at 0x65C310
+{
+	if (Scen->Unknown_62C == 0) {
+		return;
+	}
+	Scen->Unknown_62C--;
+	if (Scen->Unknown_62C != 0) {
+		return;
+	}
+
+	if (!InputLockedBeforeHold) {
+		if (Scen->IsInputLocked == true) {
+			while (Get_Mouse_State()) {
+				Show_Mouse();
+			}
+		}
+		Scen->IsInputLocked = false;
+		IgnoreInput = false;
+		Keyboard->Clear();
+		UnlockInputFrame = 0;
+	}
+
+	Scen->ElapsedTimer.Start();
+	Audio_Resume_All();
+}
+
+
 /// <summary>
 /// Takes control of the game away from the player.
 /// This routine is used while a scripted sequence plays out, so that the player cannot
@@ -508,12 +588,14 @@ void Lock_Scenario_Input(void)
 {
 	Map.Abort_Drag_Select();
 
-	if (!Scen->IsInputLocked) {
+	if (!Get_Mouse_State()) { // RA2: as YR
 		Hide_Mouse();
 	}
 
 	Scen->IsInputLocked = true;
 	IgnoreInput = true;
+	Keyboard->Clear(); // RA2
+	UnlockInputFrame = 0; // RA2
 }
 
 
@@ -524,13 +606,16 @@ void Lock_Scenario_Input(void)
 /// </summary>
 void Unlock_Scenario_Input(void)
 {
-	if (Scen->IsInputLocked == true) {
-		Show_Mouse();
+	if (Scen->IsInputLocked == true) { // RA2: as YR
+		while (Get_Mouse_State()) { // RA2: as YR
+			Show_Mouse(); // RA2: Unlock_Scenario_Input at 0x65C420 matches only so
+		}
 	}
 
 	Scen->IsInputLocked = false;
 	IgnoreInput = false;
-	Keyboard->Clear();
+	Keyboard->Clear(); // RA2
+	UnlockInputFrame = 0; // RA2
 }
 
 
@@ -625,6 +710,105 @@ bool Wait_For_Players_To_Load(void)
 }
 
 
+/// <summary>
+/// Fetches the artwork to display while a scenario loads.
+/// The picture is chosen to suit the player's side and the current screen resolution, and
+/// one of the pair available is taken at random so that the loading screen is not always
+/// the same one.
+/// </summary>
+/// <param name="pos">Filled in with the position the loading text belongs at.</param>
+/// <returns>Returns with the filename of the backdrop picture to display.</returns>
+char const * Pick_Load_Background_Name(Point2D & pos)
+{
+	static char _backgrounds[12][13] = {
+		"LOAD400C.PCX",
+		"LOAD400D.PCX",
+		"LOAD400A.PCX",
+		"LOAD400B.PCX",
+		"LOAD480C.PCX",
+		"LOAD480D.PCX",
+		"LOAD480A.PCX",
+		"LOAD480B.PCX",
+		"LOAD600C.PCX",
+		"LOAD600D.PCX",
+		"LOAD600A.PCX",
+		"LOAD600B.PCX"
+	};
+
+	int player = 0;
+
+	if (Session.Type == GAME_NORMAL) {
+		if (Scen->Campaign != CAMPAIGN_NONE) {
+			CampaignClass * campaign = Campaigns[Scen->Campaign];
+			player = campaign->CDNumber;
+
+			if (player > 1) {
+				player = 0;
+				if (strstr(campaign->ScenarioName, "GDI") == 0) {
+					player = 1;
+				}
+			}
+		}
+	} else {
+		player = Session.Players[player]->Player.House;
+	}
+
+	int choice = (player << 1) + Random_Pick(0, 1);
+
+	if (VisibleRect.Width == 640) {
+		if (VisibleRect.Height == 480) {
+			if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
+				pos = Point2D(440, 189);
+			} else {
+				pos = Point2D(570, 180);
+			}
+			if (player == 1) {
+				pos += Point2D(-4, 10);
+			} else {
+				pos += Point2D(-4, 3);
+			}
+
+			return(_backgrounds[choice + 4]);
+		}
+	}
+
+	if (VisibleRect.Width >= 800 && VisibleRect.Height >= 600) {
+		if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
+			pos = Point2D(550, 236);
+		} else {
+			pos = Point2D(715, 230);
+		}
+
+		int x_adjust = (VisibleRect.Width - 800) / 2;
+		int y_adjust = (VisibleRect.Height- 600) / 2;
+
+		pos += Point2D(x_adjust, y_adjust);
+
+		if (player == 1) {
+			pos += Point2D(-4, 10);
+		} else {
+			pos += Point2D(-4, 3);
+		}
+
+		return(_backgrounds[choice + 8]);
+	}
+
+	if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
+		pos = Point2D(440, 158);
+	} else {
+		pos = Point2D(570, 155);
+	}
+
+	if (player == 1) {
+		pos += Point2D(-4, 10);
+	} else {
+		pos += Point2D(-4, 3);
+	}
+
+	return(_backgrounds[choice]);
+}
+
+
 /***********************************************************************************************
  * Read_Scenario -- Reads a scenario from disk.                                                *
  *                                                                                             *
@@ -708,8 +892,7 @@ bool Read_Scenario(char const * fname)
 				Session.Players[p]->Address.Get_Address(net, node);
 				sprintf(address, "%d.%d.%d.%d", node[0], node[1], node[2], node[3]);
 				DebugString("Adding broadcast address %s\n", address);
-				PacketTransport->Set_Broadcast_Address(address);
-			}
+			} // RA2: no Set_Broadcast_Address (TibSun's use does not compile against RA2's declaration)
 		}
 	}
 
@@ -1492,102 +1675,33 @@ bool Read_Scenario_INI(char const * fname, bool)
 }
 
 
-/// <summary>
-/// Fetches the artwork to display while a scenario loads.
-/// The picture is chosen to suit the player's side and the current screen resolution, and
-/// one of the pair available is taken at random so that the loading screen is not always
-/// the same one.
-/// </summary>
-/// <param name="pos">Filled in with the position the loading text belongs at.</param>
-/// <returns>Returns with the filename of the backdrop picture to display.</returns>
-char const * Pick_Load_Background_Name(Point2D & pos)
+/***********************************************************************************************
+ * Remove_AI_Players -- Removes the computer AI houses & their units                           *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   06/09/1995 BRR : Created.                                                                 *
+ *=============================================================================================*/
+static void Remove_AI_Players(void)
 {
-	static char _backgrounds[12][13] = {
-		"LOAD400C.PCX",
-		"LOAD400D.PCX",
-		"LOAD400A.PCX",
-		"LOAD400B.PCX",
-		"LOAD480C.PCX",
-		"LOAD480D.PCX",
-		"LOAD480A.PCX",
-		"LOAD480B.PCX",
-		"LOAD600C.PCX",
-		"LOAD600D.PCX",
-		"LOAD600A.PCX",
-		"LOAD600B.PCX"
-	};
-
-	int player = 0;
-
-	if (Session.Type == GAME_NORMAL) {
-		if (Scen->Campaign != CAMPAIGN_NONE) {
-			CampaignClass * campaign = Campaigns[Scen->Campaign];
-			player = campaign->CDNumber;
-
-			if (player > 1) {
-				player = 0;
-				if (strstr(campaign->ScenarioName, "GDI") == 0) {
-					player = 1;
-				}
+	for (int i = 0; i < Houses.Count(); i++) {
+		int aicount = 0;
+		HouseClass * housep = Houses[i];
+		if (housep->IsHuman == false && !housep->Class->IsMultiplayPassive) {
+			aicount++;
+			if (aicount > Session.Options.AIPlayers) {
+				housep->Clobber_All();
 			}
 		}
-	} else {
-		player = Session.Players[player]->Player.House;
 	}
-
-	int choice = (player << 1) + Random_Pick(0, 1);
-
-	if (VisibleRect.Width == 640) {
-		if (VisibleRect.Height == 480) {
-			if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
-				pos = Point2D(440, 189);
-			} else {
-				pos = Point2D(570, 180);
-			}
-			if (player == 1) {
-				pos += Point2D(-4, 10);
-			} else {
-				pos += Point2D(-4, 3);
-			}
-
-			return(_backgrounds[choice + 4]);
-		}
-	}
-
-	if (VisibleRect.Width >= 800 && VisibleRect.Height >= 600) {
-		if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
-			pos = Point2D(550, 236);
-		} else {
-			pos = Point2D(715, 230);
-		}
-
-		int x_adjust = (VisibleRect.Width - 800) / 2;
-		int y_adjust = (VisibleRect.Height- 600) / 2;
-
-		pos += Point2D(x_adjust, y_adjust);
-
-		if (player == 1) {
-			pos += Point2D(-4, 10);
-		} else {
-			pos += Point2D(-4, 3);
-		}
-
-		return(_backgrounds[choice + 8]);
-	}
-
-	if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
-		pos = Point2D(440, 158);
-	} else {
-		pos = Point2D(570, 155);
-	}
-
-	if (player == 1) {
-		pos += Point2D(-4, 10);
-	} else {
-		pos += Point2D(-4, 3);
-	}
-
-	return(_backgrounds[choice]);
 }
 
 
@@ -1670,6 +1784,27 @@ void Multiplayer_Last_Minute_Fixups(bool official)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline int Player_Side(void)
+{
+	int side = 0;
+	if (Session.Type == GAME_NORMAL) {
+		if (Scen->Campaign != CAMPAIGN_NONE) {
+			side = Campaigns[Scen->Campaign]->CDNumber;
+		}
+	} else {
+		int house = Session.Players[0]->Player.House;
+		if (house == -3) {
+			house = 0;
+		}
+		side = HouseTypes[house]->Side;
+	}
+	return(side);
+}
+
+
+/// <summary>
 /// Reads a scenario from the database supplied.
 /// This is the workhorse of scenario startup. Whatever scenario was in place is cleared,
 /// the theater, side, and rules are prepared, and then every object type in the game is
@@ -1706,15 +1841,8 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 
 	if (Session.Type == GAME_NORMAL) {
 		Disable_Addon(ADDON_ANY);
-		Scen->RequiredAddOn = (AddonType)ini.Get_Int(BASIC, "RequiredAddOn", ADDON_BASE_GAME);
-		Set_Required_Addon(Scen->RequiredAddOn);
-		if (!Addon_Installed(Scen->RequiredAddOn)) {
-			return(false);
-		}
-		Enable_Addon(Scen->RequiredAddOn);
-	} else {
-		Scen->RequiredAddOn = Get_Required_Addon();
-	}
+	} else { // RA2: no RequiredAddOn (not in RA2's layout)
+	} // RA2: no RequiredAddOn (not in RA2's layout)
 
 	/*
 	**
@@ -1748,11 +1876,8 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	if (Session.Type == GAME_NORMAL) {
 		ini.Get_String(BASIC, "Player", "GDI", buffer, sizeof(buffer));
 		Scen->IsGDI = strcmpi(buffer, "GDI") == 0;
-		Scen->SpeechSide = Scen->IsGDI == true ? SIDE_GDI : SIDE_NOD;
-	} else {
-		Scen->IsGDI = Session.PlayerIsGDI;
-		Scen->SpeechSide = Session.PlayerIsGDI == false ? SIDE_NOD : SIDE_GDI;
-	}
+	} else { // RA2: no SpeechSide (not in RA2's layout)
+	} // RA2: no PlayerIsGDI, SpeechSide (not in RA2's layout)
 
 	DebugString("Calling Prep_For_Side()\n");
 	if (!Prep_For_Side(Scen->IsGDI == true ? SIDE_GDI : SIDE_NOD)) {
@@ -1771,31 +1896,24 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 	**
 	*/
 	if (Session.Type == GAME_NORMAL) {
-		Scen->SpeechSide = ini.Get_Side("Basic", "SpeechSide", Scen->SpeechSide);
-	}
+	} // RA2: no SpeechSide (not in RA2's layout)
 
 	/*
 	**
 	*/
 	DebugString("Calling Prep_Speech_For_Side()\n");
-	if (!Prep_Speech_For_Side(Scen->SpeechSide)) {
-		return(false);
-	}
 
 	/*
 	**
 	*/
-	DebugString("Calling Scen->Read_Global_INI(*RuleINI);\n");
+	DebugString("Calling Scen->Read_Global_INI(*RuleINI);\n"); // RA2: no SpeechSide (not in RA2's layout)
 	Scen->Read_Global_INI(*RuleINI);
 	Call_Back();
 
 	/*
 	**
 	*/
-	DebugString("Calling Rule->Addition() with scenario overrides\n");
-	Rule->Addition(ini);
-	DebugString("Finished Rule->Addition() with scenario overrides\n");
-	Session.Update_Progress(45);
+	Session.Update_Progress(45); // RA2: no Addition (TibSun's use does not compile against RA2's declaration)
 
 	/*
 	**	Init the Scenario CRC value
@@ -1990,31 +2108,21 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 
 		if (cfile.Is_Available() == true) {
 			mini.Load(cfile, false);
-			Rule->Addition(mini);
-		}
+		} // RA2: no Addition (TibSun's use does not compile against RA2's declaration)
 
 		cfile.Close();
-		if (Scen->RequiredAddOn > ADDON_FIRST) {
-			char fname[32];
-			sprintf(fname, "MISSION%1d.INI", Scen->RequiredAddOn);
-			cfile.Set_Name(fname);
-		} else {
-			cfile.Set_Name("MISSION.INI");
-		}
 
-		if (cfile.Is_Available() == true) {
+		if (cfile.Is_Available() == true) { // RA2: no RequiredAddOn (not in RA2's layout)
 			mini.Load(cfile, false);
 
 			if (mini.Is_Present(Scen->ScenarioName, "Name")) {
-				mini.Get_String(Scen->ScenarioName, "Name", "", Scen->Description, sizeof(Scen->Description));
-			}
+			} // RA2: no Description (TibSun's use does not compile against RA2's declaration)
 
 			if (mini.Is_Present(Scen->ScenarioName, "Briefing")) {
 				mini.Get_String(Scen->ScenarioName, "Briefing", "", buffer, sizeof(buffer));
 
 				if (strlen(buffer) > 0) {
-					mini.Get_TextBlock(buffer, Scen->BriefingText, sizeof(Scen->BriefingText));
-				}
+				} // RA2: no BriefingText (TibSun's use does not compile against RA2's declaration)
 			}
 		}
 	}
@@ -2026,8 +2134,7 @@ bool Read_Scenario_INI(CCINIClass const & ini, bool is_mapgen)
 
 			if (cfile.Is_Available() == true) {
 				mini.Load(cfile, false);
-				Rule->Addition(mini);
-			}
+			} // RA2: no Addition (TibSun's use does not compile against RA2's declaration)
 		}
 	}
 
@@ -2117,12 +2224,6 @@ void Write_Scenario_INI(char const * fname, bool mplayer)
 {
 	CCINIClass ini;
 
-	/*
-	**	Preload the old scenario if it is present because there may
-	**	be some fields in the INI that are processed but not written
-	**	out. Preloading the scenario will preserve these manually
-	**	maintained entries.
-	*/
 	if (Debug_Map) {
 		if (CCFileClass(fname).Is_Available()) {
 			CCFileClass cfile(fname);
@@ -2246,8 +2347,7 @@ void Assign_Houses(void)
 		*/
 		HouseClass * housep = new HouseClass(HouseTypes[player->Player.House]);
 
-		housep->IniName = player->Name;
-		housep->IsHuman = true;
+		housep->IsHuman = true; // RA2: no IniName (TibSun's use does not compile against RA2's declaration)
 		housep->Init_Data(player->Player.Color, (HousesType)player->Player.House, Session.Options.Credits);
 
 		housep->Scheme = Session.Color_Index_To_Scheme(player->Player.Color);
@@ -2301,9 +2401,8 @@ void Assign_Houses(void)
 		housep->Init_Data(color, pref_house, Session.Options.Credits);
 		housep->Scheme = Session.Color_Index_To_Scheme(color);
 		housep->Initialize_Radar_Color();
-		housep->IniName = Fetch_String(TXT_COMPUTER);
 
-		if (Session.Type != GAME_NORMAL) {
+		if (Session.Type != GAME_NORMAL) { // RA2: no IniName (TibSun's use does not compile against RA2's declaration)
 			housep->IQ = Rule->MaxIQ;
 		}
 
@@ -2323,45 +2422,13 @@ void Assign_Houses(void)
 	special_house->Initialize_Radar_Color();
 }
 
-
-/***********************************************************************************************
- * Remove_AI_Players -- Removes the computer AI houses & their units                           *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      none.                                                                                  *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      none.                                                                                  *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/09/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-static void Remove_AI_Players(void)
-{
-	for (int i = 0; i < Houses.Count(); i++) {
-		int aicount = 0;
-		HouseClass * housep = Houses[i];
-		if (housep->IsHuman == false && !housep->Class->IsMultiplayPassive) {
-			aicount++;
-			if (aicount > Session.Options.AIPlayers) {
-				housep->Clobber_All();
-			}
-		}
-	}
-}
-
-
 /// <summary>
 /// Fetches the starting locations available to a multiplayer game.
 /// The scenario's own waypoints are preferred, but a map that does not supply enough of
 /// them for everyone playing has the shortfall made up with random spots on open ground.
 /// </summary>
-/// <param name="official">Is this one of the maps that shipped with the game?</param>
 /// <returns>Returns with the list of cells that players may be started from.</returns>
-static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official)
+DynamicVectorClass<Cell> Build_Start_Waypoint_List(void) // RA2: no official argument, at 0x65FFF0
 {
 	DynamicVectorClass<Cell> waypts;
 
@@ -2374,16 +2441,14 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official)
 		}
 	}
 
-	/*
-	**	Calculate the number of waypoints (as a minimum) that will be lifted from the
-	**	mission file. Bias this number so that only the first 4 waypoints are used
-	**	if there are 4 or fewer players. Unofficial maps will pick from all the
-	**	available waypoints.
-	*/
-	int look_for = MAX(num_waypts, Session.Players.Count() + Session.Options.AIPlayers);
-	if (!official) {
-		look_for = 8;
+	int spectators = 0;
+	for (int s = 0; s < Session.Players.Count(); s++) {
+		if (Session.Players[s]->Slot.SpectatorFlag == -1) {
+			spectators++;
+		}
 	}
+
+	int look_for = MAX(num_waypts, Session.Players.Count() - spectators + Session.Options.AIPlayers);
 
 	for (int waycount = 0; waycount < look_for; waycount++) {
 		if (Scen->Is_Valid_Waypoint(waycount)) {
@@ -2392,10 +2457,6 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official)
 		}
 	}
 
-	/*
-	**	If there are insufficient waypoints to account for all players, then randomly assign
-	**	starting points until there is enough.
-	*/
 	int deficiency = look_for - waypts.Count();
 	if (deficiency > 0) {
 		DebugString("Multiplayer start waypoint deficiency - looking for more start positions\n");
@@ -2412,6 +2473,20 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official)
 	}
 
 	return(waypts);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Base_Unit(UnitTypeClass const * type)
+{
+	for (int i = 0; i < Rule->BaseUnit.Count(); i++) {
+		if (Rule->BaseUnit[i] == type) {
+			return true;
+		}
+	}
+	return false;
 }
 
 
@@ -2436,10 +2511,13 @@ static DynamicVectorClass<Cell> Build_Start_Waypoint_List(bool official)
  * HISTORY:                                                                                    *
  *   06/09/1995 BRR : Created.                                                                 *
  *=============================================================================================*/
-static void Create_Units(bool official)
+
+
+
+void Create_Units(bool official) // RA2: YR's body, at 0x660320 (a list of base units)
 {
-	Cell centroid;			// centroid of this house's stuff
-	DynamicVectorClass <TechnoClass*> deployed_list;
+	Cell centroid;
+	DynamicVectorClass<TechnoClass *> deployed_list;
 	int unit_count = Session.Options.UnitCount;
 
 	if (Session.Options.Bases) {
@@ -2454,7 +2532,7 @@ static void Create_Units(bool official)
 	for (int u = 0; u < UnitTypes.Count(); u++) {
 		UnitTypeClass * utype = UnitTypes[u];
 		if (utype->IsAllowedToStartInMultiplayer) {
-			if (utype->Fetch_ID() != Rule->BaseUnit->Fetch_ID()) {
+			if (!Is_Base_Unit(utype)) {
 				total_cost += utype->Raw_Cost();
 				total_objs++;
 			}
@@ -2472,44 +2550,28 @@ static void Create_Units(bool official)
 	int average_cost = total_cost / total_objs;
 	int max_value = unit_count * average_cost;
 
-	/*
-	**	Build a list of the valid waypoints. This normally shouldn't be
-	**	necessary because the scenario level designer should have assigned
-	**	valid locations to the first N waypoints, but just in case, this
-	**	loop verifies that.
-	*/
-	DynamicVectorClass<Cell> waypts = Build_Start_Waypoint_List(official);
 	bool taken[16];
 	for (int index = 0; index < ARRAY_SIZE(taken); index++) {
 		taken[index] = false;
 	}
 
-	/*
-	**	Loop through all houses.  Computer-controlled houses, with Session.Options.Bases
-	**	ON, are treated as though bases are OFF (since we have no base-building
-	**	AI logic.)
-	*/
 	int numtaken = 0;
-	for (HousesType house = HOUSE_FIRST; house < Houses.Count(); house++) {
-
-		/*
-		**	Get a pointer to this house; if there is none, go to the next house
-		*/
+	for (int house = 0; house < Houses.Count(); house++) {
 		HouseClass * hptr = Houses[house];
 
 		if (hptr->Class->IsMultiplayPassive) continue;
 
-		DebugString("Generating units for house %d (%s)\n", (int)house, (char const *)hptr->Class->IniName);
+		DebugString("Generating units for house %d (%s)\n", house, (char const *)hptr->Class->IniName);
 
-		DynamicVectorClass<UnitTypeClass*> units;
-		DynamicVectorClass<InfantryTypeClass*> infantry;
+		DynamicVectorClass<UnitTypeClass *> units;
+		DynamicVectorClass<InfantryTypeClass *> infantry;
 		unsigned int mask = 1 << hptr->Class->HeapID;
 
 		for (int unit = 0; unit < UnitTypes.Count(); unit++) {
 			UnitTypeClass * utype = UnitTypes[unit];
 			if (utype->IsAllowedToStartInMultiplayer) {
 				if (utype->Level <= hptr->Control.TechLevel && (utype->Ownable & mask)) {
-					if (utype->Fetch_ID() != Rule->BaseUnit->Fetch_ID()) {
+					if (!Is_Base_Unit(utype)) {
 						units.Add(utype);
 					}
 				}
@@ -2525,88 +2587,25 @@ static void Create_Units(bool official)
 			}
 		}
 
-
-		/*
-		**	Pick the starting location for this house. The first house just picks
-		**	one of the valid locations at random. The other houses pick the furthest
-		**	wapoint from the existing houses.
-		*/
 		if (numtaken == 0) {
-			int pick = Random_Pick(0, waypts.Count() - 1);
-			centroid = waypts[pick];
-			taken[pick] = true;
 			numtaken++;
 		} else {
-
-			/*
-			**	Set all waypoints to have a score of zero in preparation for giving
-			**	a distance score to all waypoints.
-			*/
 			int score[26];
 			memset(score, '\0', sizeof(score));
 
-			/*
-			**	Scan through all waypoints and give a score as a value of the sum
-			**	of the distances from this waypoint to all taken waypoints.
-			*/
-			for (int index = 0; index < waypts.Count(); index++) {
 
-				/*
-				**	If this waypoint has not already been taken, then accumulate the
-				**	sum of the distance between this waypoint and all other taken
-				**	waypoints.
-				*/
-				if (!taken[index]) {
-					for (int trypoint = 0; trypoint < waypts.Count(); trypoint++) {
-
-						if (taken[trypoint]) {
-							score[index] += Distance(waypts[index], waypts[trypoint]);
-						}
-					}
-				}
-			}
-
-			/*
-			**	Now find the waypoint with the largest score. This waypoint is the one
-			**	that is furthest from all other taken waypoints.
-			*/
 			int best = 0;
 			int bestvalue = 0;
-			for (int searchindex = 0; searchindex < waypts.Count(); searchindex++) {
-				if (score[searchindex] > bestvalue || bestvalue == 0) {
-					bestvalue = score[searchindex];
-					best = searchindex;
-				}
-			}
 
-			/*
-			**	Assign this best position to the house.
-			*/
-			centroid = waypts[best];
 			taken[best] = true;
 			numtaken++;
 		}
 
-		/*
-		**	Assign the center of this house to the waypoint location.
-		*/
-		hptr->Center = Coord(Cell(centroid));
 
-		/*
-		**	If Bases are ON, human & computer houses are treated differently
-		*/
 		if (Session.Options.Bases) {
-
-			/*
-			**	- For a human-controlled house:
-			**	- Set 'scaleval' to 1
-			**	- Create an MCV
-			**	- Attach a flag to it for capture-the-flag mode
-			*/
-//			scaleval = 1;
-			TechnoClass * obj = new UnitClass(Rule->BaseUnit, hptr);
-			if (!obj->Unlimbo(Coord(centroid))) {
-				if (!Scan_Place_Object(obj, centroid)) {
+			TechnoClass * obj = new UnitClass(hptr->Get_First_Ownable(Rule->BaseUnit), hptr);
+			if (!obj->Unlimbo(Coord(centroid), DIR_N)) {
+				if (!Scan_Place_Object(obj, centroid, 1)) {
 					delete obj;
 					obj = NULL;
 				}
@@ -2618,48 +2617,24 @@ static void Create_Units(bool official)
 					hptr->Flag_Attach((UnitClass *)obj, true);
 				}
 			}
-		} else {
-
-			/*
-			**	If bases are OFF, set 'scaleval' to 1 & create a Mobile HQ for
-			**	capture-the-flag mode.
-			*/
-//			scaleval = 1;
-#ifdef TOFIX
-			if (Special.IsCaptureTheFlag) {
-				obj = new UnitClass(UNIT_TRUCK, house);
-				obj->Unlimbo(Coord(centroid).As_Coord());
-				hptr->FlagHome = 0;					// turn house's flag off
-				hptr->FlagLocation = 0;
-			}
-#endif
 		}
 
 		int deployed_value = 0;
 		deployed_list.Clear();
 
-		/*
-		**	Place objects; loop through all unit in this category
-		*/
 		while (deployed_value < max_value) {
-
 			TechnoTypeClass const * tech = NULL;
 
 			if (deployed_value < (max_value * 2) / 3 && units.Count() > 0) {
-				tech = units[Random_Pick(0, units.Count() - 1)];
+				tech = units[Scen->RandomNumber(0, units.Count() - 1)];
 			} else if (infantry.Count() > 0) {
-				tech = infantry[Random_Pick(0, infantry.Count() - 1)];
+				tech = infantry[Scen->RandomNumber(0, infantry.Count() - 1)];
 			}
 
-			/*
-			 * Create units (Note: Unlimbo calls Enter_Idle_Mode(), which
-			 * assigns the unit to HUNT; we must use Set_Mission() to override
-			 * this state.)
-			 */
 			ObjectClass * obj = tech->Create_One_Of(hptr);
 			TechnoClass * tobj = Dynamic_Cast<TechnoClass *>(obj);
 
-			if (!Scan_Place_Object(obj, centroid)) {
+			if (!Scan_Place_Object(obj, centroid, 4)) {
 				delete obj;
 			} else {
 				DebugString("House %s deployed object %s\n", (char const *)hptr->Class->IniName, (char const *)tech->IniName);
@@ -2671,136 +2646,12 @@ static void Create_Units(bool official)
 					tobj->Veterancy.Set_Elite(true);
 				}
 
-				if (!hptr->Is_Human_Player()) {
-					tobj->Set_Mission(MISSION_GUARD_AREA);
-				} else {
-					tobj->Set_Mission(MISSION_GUARD);
-				}
 			}
 		}
 
-		if (hptr->Is_Human_Player()) {
-			for (int depl = 0; depl < deployed_list.Count(); depl++) {
-				deployed_list[depl]->Scatter(COORD_NONE);
-			}
-		}
 		deployed_list.Clear();
 	}
-	DebugString("Finished unit generation. Random number is %d\n", Random_Pick(0, 65535));
-
-}
-
-
-/***********************************************************************************************
- * Scan_Place_Object -- places an object >near< the given cell                                 *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      obj      ptr to object to Unlimbo                                                      *
- *      cell      center of search area                                                        *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      true = object was placed; false = it wasn't                                            *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/09/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-int Scan_Place_Object(ObjectClass * obj, Cell const & cell)
-{
-	int dist;               // for object placement
-	FacingType rot;         // for object placement
-	FacingType fcounter;    // for object placement
-	int tryval;
-	Cell newcell;
-	TechnoClass * techno;
-	int skipit;
-
-	/*
-	**	First try to unlimbo the object in the given cell.
-	*/
-	if (Map.In_Radar(cell)) {
-		techno = Map[cell].Cell_Techno();
-		if (!techno || (techno->RTTI == RTTI_INFANTRY &&
-			obj->RTTI == RTTI_INFANTRY)) {
-			if (obj->Unlimbo(Coord(cell, Map.Get_Height_GL(Coord(cell))))) {
-				return(true);
-			}
-		}
-	}
-
-	/*
-	**	Loop through distances from the given center cell; skip the center cell.
-	**	For each distance, try placing the object along each rotational direction;
-	**	if none are available, try each direction with a random scatter value.
-	**	If that fails, go to the next distance.
-	**	This ensures that the closest coordinates are filled first.
-	*/
-	for (dist = 1; dist < 32; dist++) {
-
-		/*
-		**	Pick a random starting direction
-		*/
-		rot = Random_Pick(FACING_N, FACING_NW);
-
-		/*
-		**	Try all directions twice
-		*/
-		for (tryval = 0; tryval < 2; tryval++) {
-
-			/*
-			**	Loop through all directions, at this distance.
-			*/
-			for (fcounter = FACING_N; fcounter <= FACING_NW; fcounter++) {
-
-				skipit = false;
-
-				/*
-				**	Pick a coordinate along this directional axis
-				*/
-				newcell = Clip_Move(cell, rot, dist);
-
-				/*
-				**	If this is our second try at this distance, add a random scatter
-				**	to the desired cell, so our units aren't all aligned along spokes.
-				*/
-				if (tryval > 0) {
-					newcell = Clip_Scatter(newcell, 1);
-				}
-
-				/*
-				**	If, by randomly scattering, we've chosen the exact center, skip
-				**	it & try another direction.
-				*/
-				if (newcell == cell) {
-					skipit = true;
-				}
-
-				if (!skipit) {
-					/*
-					**	Only attempt to Unlimbo the object if:
-					**	- there is no techno in the cell
-					**	- the techno in the cell & the object are both infantry
-					*/
-					techno = Map[newcell].Cell_Techno();
-					if (techno == NULL || (techno->RTTI == RTTI_INFANTRY &&
-						obj->RTTI == RTTI_INFANTRY)) {
-						if (obj->Unlimbo(Coord(newcell, Map.Get_Height_GL(Coord(newcell))))) {
-							return(true);
-						}
-					}
-				}
-
-				rot++;
-				if (rot > FACING_NW) {
-					rot = FACING_N;
-				}
-			}
-		}
-	}
-
-	return(false);
+	DebugString("Finished unit generation. Random number is %d\n", Scen->RandomNumber(0, 65535));
 }
 
 
@@ -2822,30 +2673,15 @@ int Scan_Place_Object(ObjectClass * obj, Cell const & cell)
  *=============================================================================================*/
 static Cell const Clip_Scatter(Cell const & cell, int maxdist)
 {
-	int x, y;
-	int xdist;
-	int ydist;
-	int xmin, xmax;
-	int ymin, ymax;
+	int x = cell.X;
+	int y = cell.Y;
 
-	/*
-	**	Get X & Y coords of given starting cell
-	*/
-	x = cell.X;
-	y = cell.Y;
+	int xmin = Map.MapRect.X;
+	int xmax = xmin + Map.MapRect.Width - 1;
+	int ymin = Map.MapRect.Y;
+	int ymax = ymin + Map.MapRect.Height - 1;
 
-	/*
-	**	Compute our x & y limits
-	*/
-	xmin = Map.MapRect.X;
-	xmax = xmin + Map.MapRect.Width - 1;
-	ymin = Map.MapRect.Y;
-	ymax = ymin + Map.MapRect.Height - 1;
-
-	/*
-	**	Adjust the x-coordinate
-	*/
-	xdist = Random_Pick(0, maxdist);
+	int xdist = Random_Pick(0, maxdist);
 	if (Percent_Chance(50)) {
 		x += xdist;
 		if (x > xmax) {
@@ -2858,10 +2694,7 @@ static Cell const Clip_Scatter(Cell const & cell, int maxdist)
 		}
 	}
 
-	/*
-	**	Adjust the y-coordinate
-	*/
-	ydist = Random_Pick(0, maxdist);
+	int ydist = Random_Pick(0, maxdist);
 	if (Percent_Chance(50)) {
 		y += ydist;
 		if (y > ymax) {
@@ -2874,7 +2707,10 @@ static Cell const Clip_Scatter(Cell const & cell, int maxdist)
 		}
 	}
 
-	return(Cell(x, y));
+	Cell result;
+	result.X = x;
+	result.Y = y;
+	return(result);
 }
 
 
@@ -2897,27 +2733,14 @@ static Cell const Clip_Scatter(Cell const & cell, int maxdist)
  *=============================================================================================*/
 static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist)
 {
-	int x, y;
-	int xmin, xmax;
-	int ymin, ymax;
+	int x = cell.X;
+	int y = cell.Y;
 
-	/*
-	**	Get X & Y coords of given starting cell
-	*/
-	x = cell.X;
-	y = cell.Y;
+	int xmin = Map.MapRect.X;
+	int xmax = xmin + Map.MapRect.Width - 1;
+	int ymin = Map.MapRect.Y;
+	int ymax = ymin + Map.MapRect.Height - 1;
 
-	/*
-	**	Compute our x & y limits
-	*/
-	xmin = Map.MapRect.X;
-	xmax = xmin + Map.MapRect.Width - 1;
-	ymin = Map.MapRect.Y;
-	ymax = ymin + Map.MapRect.Height - 1;
-
-	/*
-	**	Adjust the x-coordinate
-	*/
 	switch (facing) {
 		case FACING_N:
 			y -= dist;
@@ -2956,9 +2779,6 @@ static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist)
 			break;
 	}
 
-	/*
-	**	Clip to the map
-	*/
 	if (x > xmax) {
 		x = xmax;
 	}
@@ -2977,6 +2797,82 @@ static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist)
 }
 
 
+/***********************************************************************************************
+ * Scan_Place_Object -- places an object >near< the given cell                                 *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *      obj      ptr to object to Unlimbo                                                      *
+ *      cell      center of search area                                                        *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *      true = object was placed; false = it wasn't                                            *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   06/09/1995 BRR : Created.                                                                 *
+ *=============================================================================================*/
+int Scan_Place_Object(ObjectClass * obj, Cell const & cell, int start)
+{
+	int dist;
+	FacingType rot;
+	FacingType fcounter;
+	int tryval;
+	Cell newcell;
+	TechnoClass * techno;
+	int skipit;
+
+	if (Map.In_Local_Radar(cell)) {
+		techno = Map[cell].Cell_Techno();
+		if (!techno || (techno->RTTI == RTTI_INFANTRY &&
+			obj->RTTI == RTTI_INFANTRY)) {
+			if (obj->Unlimbo(Coord(cell, Map.Get_Height_GL(Coord(cell))))) {
+				return(true);
+			}
+		}
+	}
+
+	for (dist = start; dist < 32; dist++) {
+		rot = Random_Pick(FACING_N, FACING_NW);
+
+		for (tryval = 0; tryval < 2; tryval++) {
+			for (fcounter = FACING_N; fcounter <= FACING_NW; fcounter++) {
+
+				skipit = false;
+
+				newcell = Clip_Move(cell, rot, dist);
+
+				if (tryval > 0) {
+					newcell = Clip_Scatter(newcell, 1);
+				}
+
+				if (newcell == cell) {
+					skipit = true;
+				}
+
+				if (Map.In_Local_Radar(newcell) && !skipit) {
+					techno = Map[newcell].Cell_Techno();
+					if (techno == NULL || (techno->RTTI == RTTI_INFANTRY &&
+						obj->RTTI == RTTI_INFANTRY)) {
+						if (obj->Unlimbo(Coord(newcell, Map.Get_Height_GL(Coord(newcell))))) {
+							return(true);
+						}
+					}
+				}
+
+				rot++;
+				if (rot > FACING_NW) {
+					rot = FACING_N;
+				}
+			}
+		}
+	}
+
+	return(false);
+}
+
+
 /// <summary>
 /// Writes the scenario object to the save game stream.
 /// The elapsed mission clock is halted across the write so that the time recorded is the
@@ -2985,7 +2881,10 @@ static Cell const Clip_Move(Cell const & cell, FacingType facing, int dist)
 void ScenarioClass::Save(IStream * stream) const
 {
 	DebugString("Scenario Save: ElapsedTimer = %ld\n", ElapsedTimer);
-	ElapsedTimer.Stop();
+	bool was_stopped = !ElapsedTimer.Is_Active(); // RA2: Save at 0x660F60 matches only so
+	if (!was_stopped) { // RA2: as above
+		ElapsedTimer.Stop(); // RA2: as above
+	}
 
 	stream->Write(this, sizeof(*this), NULL);
 
@@ -2993,7 +2892,9 @@ void ScenarioClass::Save(IStream * stream) const
 	AllowableUnitMaximums.Save(stream);
 	AllowableUnitCounts.Save(stream);
 
-	ElapsedTimer.Start();
+	if (!was_stopped) { // RA2: as above
+		ElapsedTimer.Start(); // RA2: as above
+	}
 }
 
 
@@ -3008,16 +2909,10 @@ void ScenarioClass::Load(IStream * stream)
 	ElapsedTimer.Stop();
 
 	int size = sizeof(*this);
-	int delta = sizeof(RequiredAddOn) + sizeof(SpeechSide);
 
-	stream->Read(this, (size - (IsOldSaveGame ? delta : 0)), NULL);
 
-	if (IsOldSaveGame) {
-		memmove(&SpeechSide, &RequiredAddOn, sizeof(SpeechSide) + sizeof(Stage) + sizeof(IsInputLocked) + 5 /*padding*/);
-		RequiredAddOn = ADDON_BASE_GAME;
-		memmove(&Stage, &SpeechSide, sizeof(Stage) + sizeof(IsInputLocked) + 5 /*padding*/);
-		SpeechSide = SIDE_GDI;
-	}
+	if (IsOldSaveGame) { // RA2: no RequiredAddOn, SpeechSide, delta (not in RA2's layout)
+	} // RA2: no RequiredAddOn, SpeechSide (not in RA2's layout)
 
 	new (this) ScenarioClass(NoInitClass());
 
@@ -3054,17 +2949,10 @@ void ScenarioClass::Load(IStream * stream)
 bool ScenarioClass::Set_Global_To(int global, bool value)
 {
 	if ((unsigned)global < ARRAY_SIZE(Scen->GlobalFlags)) {
-
 		bool previous = GlobalFlags[global].Value;
 		if (previous != value) {
 			GlobalFlags[global].Value = value;
 			IsGlobalChanged = true;
-
-			/*
-			**	Special case to scan through all triggers and if any are found that depend on this
-			**	global being set/cleared, then if there is an elapsed time event associated, it
-			**	will be reset at this time.
-			*/
 			TagClass::All_Timer_Global_Reset(global);
 		}
 		return(previous);
@@ -3167,17 +3055,10 @@ bool ScenarioClass::Read_Global_INI(CCINIClass const & ini)
 bool ScenarioClass::Set_Local_To(int index, bool value)
 {
 	if ((unsigned)index < ARRAY_SIZE(Scen->LocalFlags)) {
-
 		bool previous = LocalFlags[index].Value;
 		if (previous != value) {
 			LocalFlags[index].Value = value;
 			IsGlobalChanged = true;
-
-			/*
-			**	Special case to scan through all triggers and if any are found that depend on this
-			**	global being set/cleared, then if there is an elapsed time event associated, it
-			**	will be reset at this time.
-			*/
 			TagClass::All_Timer_Local_Reset(index);
 		}
 		return(previous);
@@ -3337,6 +3218,9 @@ int ScenarioClass::First_Unused_Local(void) const
 }
 
 
+
+
+
 /// <summary>
 /// Reads the scenario's parameters from an INI database.
 /// This routine picks up everything that describes the scenario itself -- the movies, the
@@ -3351,9 +3235,7 @@ bool ScenarioClass::Read_INI(CCINIClass const & ini)
 	int i;
 
 	Special.Read_INI(ini);
-	ini.Get_String(BASIC, "Name", "<none>", Description, sizeof(Description));
-	ini.Get_TextBlock("Briefing", BriefingText, sizeof(BriefingText));
-	ini.Get_String(BASIC, "NextScenario", NextScenarioName, NextScenarioName, sizeof(NextScenarioName));
+	ini.Get_String(BASIC, "NextScenario", NextScenarioName, NextScenarioName, sizeof(NextScenarioName)); // RA2: no BriefingText, Description (TibSun's use does not compile against RA2's declaration)
 	ini.Get_String(BASIC, "AltNextScenario", AltNextScenarioName, AltNextScenarioName, sizeof(AltNextScenarioName));
 	IntroMovie = ini.Get_VQType(BASIC, "Intro", IntroMovie);
 	BriefMovie = ini.Get_VQType(BASIC, "Brief", BriefMovie);
@@ -3389,9 +3271,8 @@ bool ScenarioClass::Read_INI(CCINIClass const & ini)
 	IsFreeRadar = ini.Get_Bool(BASIC, "FreeRadar", IsFreeRadar);
 	Home = ini.Get_Int(BASIC, "HomeCell", Home);
 	AltHome = ini.Get_Int(BASIC, "AltHomeCell", AltHome);
-	RequiredAddOn = (AddonType)ini.Get_Int(BASIC, "RequiredAddOn", RequiredAddOn);
 
-	ini.Get_Bool(BASIC, "CivEvac", false);
+	ini.Get_Bool(BASIC, "CivEvac", false); // RA2: no RequiredAddOn (not in RA2's layout)
 
 	for (i = 0; i < AllowableUnits.Count() - AllowableUnitMaximums.Count(); i++) {
 		AllowableUnitMaximums.Add(-1);
@@ -3459,6 +3340,18 @@ bool ScenarioClass::Read_INI(CCINIClass const & ini)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline Point2D Header_Point(CellClass & cell)
+{
+	int px;
+	int py;
+	TacticalMap->Lepton_To_Map_Pixel(cell.Center_Coord().X, cell.Center_Coord().Y, px, py);
+	return Point2D(px / 60, py / 30);
+}
+
+
+/// <summary>
 /// Writes the scenario's parameters to an INI database.
 /// This routine is used by the map editor when it saves a scenario back out.
 /// </summary>
@@ -3470,18 +3363,12 @@ bool ScenarioClass::Write_INI(CCINIClass & ini, bool mplayer) const
 
 	ini.Clear(BASIC, "CivEvac");
 
-	if (strlen(Scen->BriefingText)) {
-		ini.Put_TextBlock("Briefing", Scen->BriefingText);
-	}
 
-	Special.Write_INI(ini);
+	Special.Write_INI(ini); // RA2: no BriefingText (TibSun's use does not compile against RA2's declaration)
 
-	ini.Put_Int(BASIC, "RequiredAddOn", RequiredAddOn, ADDON_BASE_GAME);
-	ini.Put_Side(BASIC, "SpeechSide", Scen->SpeechSide);
-	ini.Put_String(BASIC, "NextScenario", NextScenarioName);
+	ini.Put_String(BASIC, "NextScenario", NextScenarioName); // RA2: no SpeechSide, RequiredAddOn (not in RA2's layout)
 	ini.Put_String(BASIC, "AltNextScenario", AltNextScenarioName);
-	ini.Put_String(BASIC, "Name", Description);
-	ini.Put_Int(BASIC, "NewINIFormat", 4);
+	ini.Put_Int(BASIC, "NewINIFormat", 4); // RA2: no Description (TibSun's use does not compile against RA2's declaration)
 	ini.Put_Int(BASIC, "CarryOverCap", CarryOverCap / 100);
 	ini.Put_Bool(BASIC, "EndOfGame", IsEndOfGame);
 	ini.Put_Bool(BASIC, "SkipScore", IsSkipScore);
@@ -3657,10 +3544,6 @@ int ScenarioClass::Get_Unique_ID(void)
 /// <remarks>Only call this routine for a waypoint that has been placed on the map.</remarks>
 Cell ScenarioClass::Get_Waypoint_Cell(WAYPOINT waypoint) const
 {
-	assert(waypoint < ARRAY_SIZE(Waypoint));
-	assert(waypoint >= 0);
-	assert(Waypoint[waypoint] != CELL_NONE);
-
 	return(Waypoint[waypoint]);
 }
 
@@ -3674,10 +3557,6 @@ Cell ScenarioClass::Get_Waypoint_Cell(WAYPOINT waypoint) const
 /// <remarks>Only call this routine for a waypoint that has been placed on the map.</remarks>
 AbstractClass * ScenarioClass::Get_Waypoint_Target(WAYPOINT waypoint) const
 {
-	assert(waypoint < ARRAY_SIZE(Waypoint));
-	assert(waypoint >= 0);
-	assert(Waypoint[waypoint] != CELL_NONE);
-
 	return(&Map[Waypoint[waypoint]]);
 }
 
@@ -3691,10 +3570,6 @@ AbstractClass * ScenarioClass::Get_Waypoint_Target(WAYPOINT waypoint) const
 /// <remarks>Only call this routine for a waypoint that has been placed on the map.</remarks>
 Coord ScenarioClass::Get_Waypoint_Coord(WAYPOINT waypoint) const
 {
-	assert(waypoint < ARRAY_SIZE(Waypoint));
-	assert(waypoint >= 0);
-	assert(Waypoint[waypoint] != CELL_NONE);
-
 	CellClass const * cell = &Map[Waypoint[waypoint]];
 	Coord coord = cell->Center_Coord();
 
@@ -3751,7 +3626,7 @@ void ScenarioClass::Read_Waypoints(CCINIClass const & ini)
 		}
 
 		if (Is_Valid_Waypoint(i)) {
-			Get_Waypoint_CellClass(i)->IsWaypoint = 1;
+			Map[Waypoint[i]].IsWaypoint = 1; // RA2: Read_Waypoints at 0x663280 matches only so
 		}
 	}
 }
@@ -3781,10 +3656,6 @@ void ScenarioClass::Write_Waypoints(CCINIClass & ini) const
 /// </summary>
 void ScenarioClass::Clear_Waypoint(WAYPOINT waypoint)
 {
-	assert(waypoint < ARRAY_SIZE(Waypoint));
-	assert(waypoint >= 0);
-	assert(Waypoint[waypoint] != CELL_NONE);
-
 	Waypoint[waypoint] = CELL_NONE;
 }
 
@@ -3794,9 +3665,6 @@ void ScenarioClass::Clear_Waypoint(WAYPOINT waypoint)
 /// </summary>
 void ScenarioClass::Set_Waypoint(WAYPOINT waypoint, Cell cell)
 {
-	assert(waypoint < ARRAY_SIZE(Waypoint));
-	assert(waypoint >= 0);
-
 	Waypoint[waypoint] = cell;
 }
 
@@ -3808,10 +3676,6 @@ void ScenarioClass::Set_Waypoint(WAYPOINT waypoint, Cell cell)
 /// <remarks>Only call this routine for a waypoint that has been placed on the map.</remarks>
 CellClass * ScenarioClass::Get_Waypoint_CellClass(WAYPOINT waypoint) const
 {
-	assert(waypoint < ARRAY_SIZE(Waypoint));
-	assert(waypoint >= 0);
-	assert(Waypoint[waypoint] != CELL_NONE);
-
 	return(&Map[Waypoint[waypoint]]);
 }
 
@@ -3831,3 +3695,4 @@ char const * ScenarioClass::First_Unused_Waypoint_Name(void) const
 	}
 	return("");
 }
+
