@@ -94,22 +94,22 @@ OverlayTypeClass::OverlayTypeClass(char const * ininame) :
 	BASECLASS(ininame),
 	HeapID(OVERLAY_NONE),
 	Land(LAND_CLEAR),
+	CellAnim(NULL), // RA2: RA2's CellAnim starts empty
 	DamageLevels(1),
 	DamagePoints(1),
 	IsWall(false),
-	IsHigh(false),
 	IsTiberium(false),
 	IsCrate(false),
 	IsCrateTrigger(false),
 	IsNoUseTileLandType(true),
 	IsVeinholeMonster(false),
 	IsVeins(false),
+	DemandLoad(false), // RA2: DemandLoad starts false
 	IsExplosive(false),
-	DemandLoad(false),
 	IsChainReaction(false),
 	IsOverrides(false),
-	CellAnim(NULL),
 	IsDrawFlat(true),
+	IsRubble(false), // RA2: IsRubble starts false (+0x284)
 	IsARock(false)
 {
 	Create_ID();
@@ -142,10 +142,6 @@ OverlayTypeClass::OverlayTypeClass(NoInitClass const & x) :
 /// </summary>
 OverlayTypeClass::~OverlayTypeClass(void)
 {
-	if (DemandLoad && ImageData != NULL) {
-		delete (ShapeSet *)ImageData;
-		ImageData = NULL;
-	}
 	Detach_This_From_All(this, true);
 	OverlayTypes.Delete(this);
 }
@@ -222,7 +218,7 @@ Cell const * OverlayTypeClass::Occupy_List(bool) const
  * HISTORY:                                                                                    *
  *   05/28/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool OverlayTypeClass::Create_And_Place(Cell const & cell, HouseClass * ) const
+bool OverlayTypeClass::Create_And_Place(Cell const & cell, HouseClass *) const // RA2: the house parameter is unused
 {
 	if (new OverlayClass((OverlayTypeClass *)this, cell)) {
 		return(true);
@@ -335,7 +331,6 @@ bool OverlayTypeClass::Read_INI(CCINIClass const & ini)
 		Land = ini.Get_LandType(IniName, "Land", Land);
 		DamagePoints = ini.Get_Int(IniName, "Strength", DamagePoints);
 		IsWall = ini.Get_Bool(IniName, "Wall", IsWall);
-		IsHigh = ini.Get_Bool(IniName, "High", IsHigh);
 		IsTiberium = ini.Get_Bool(IniName, "Tiberium", IsTiberium);
 		IsCrate = ini.Get_Bool(IniName, "Crate", IsCrate);
 		IsCrateTrigger = ini.Get_Bool(IniName, "CrateTrigger", IsCrateTrigger);
@@ -408,7 +403,6 @@ void OverlayTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(DamageLevels);
 	crc(DamagePoints);
 	crc(IsWall);
-	crc(IsHigh);
 	crc(IsTiberium);
 	crc(IsCrate);
 	crc(IsCrateTrigger);
@@ -566,3 +560,4 @@ void const * OverlayTypeClass::Get_Image_Data(void) const
 
 	return(ImageData);
 }
+
