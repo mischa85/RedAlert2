@@ -2377,44 +2377,6 @@ void BuildingClass::Init(void)
 
 
 /***********************************************************************************************
- * BuildingClass::Active_Click_With -- Handles cell selection for buildings.                   *
- *                                                                                             *
- *    This routine really only serves one purpose -- to allow targeting of the ground for      *
- *    buildings that are equipped with weapons.                                                *
- *                                                                                             *
- * INPUT:   action   -- The requested action to perform.                                       *
- *                                                                                             *
- *          cell     -- The cell location to perform the action upon.                          *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/04/1995 JLB : Created.                                                                 *
- *   10/04/1995 JLB : Handles construction yard undeploy to move logic.                        *
- *=============================================================================================*/
-bool BuildingClass::Active_Click_With(ActionType action, Cell const & cell, Cell const &, bool) // RA2: a second cell
-{
-	if (action == ACTION_ATTACK) {
-		Player_Assign_Mission(MISSION_ATTACK, &Map[cell]);
-		return(true);
-	}
-
-	if (action == ACTION_MOVE && (!Class->IsConstructionYard || House->Is_Human_Player() && Session.Type != GAME_NORMAL && Session.Options.MCVRedeploy)) {
-		if (Class->UndeploysInto != NULL) {
-			Assign_Rally_Point(cell);
-			OutList.Add(EventClass(Owner(), EventClass::SELL, TargetClass(this)));
-		}
-		return(true);
-	}
-
-
-	return(true);
-}
-
-
-/***********************************************************************************************
  * BuildingClass::Active_Click_With -- Handles clicking on the map while the building is selected.*
  *                                                                                             *
  *    This interface routine handles when the player clicks on the map while this building     *
@@ -2455,6 +2417,44 @@ bool BuildingClass::Active_Click_With(ActionType action, ObjectClass * object, b
 
 
 	return(true); // RA2: no ACTION_RALLY_TO_POINT (not in RA2's layout)
+}
+
+
+/***********************************************************************************************
+ * BuildingClass::Active_Click_With -- Handles cell selection for buildings.                   *
+ *                                                                                             *
+ *    This routine really only serves one purpose -- to allow targeting of the ground for      *
+ *    buildings that are equipped with weapons.                                                *
+ *                                                                                             *
+ * INPUT:   action   -- The requested action to perform.                                       *
+ *                                                                                             *
+ *          cell     -- The cell location to perform the action upon.                          *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/04/1995 JLB : Created.                                                                 *
+ *   10/04/1995 JLB : Handles construction yard undeploy to move logic.                        *
+ *=============================================================================================*/
+bool BuildingClass::Active_Click_With(ActionType action, Cell const & cell, Cell const &, bool) // RA2: a second cell
+{
+	if (action == ACTION_ATTACK) {
+		Player_Assign_Mission(MISSION_ATTACK, &Map[cell]);
+		return(true);
+	}
+
+	if (action == ACTION_MOVE && (!Class->IsConstructionYard || House->Is_Human_Player() && Session.Type != GAME_NORMAL && Session.Options.MCVRedeploy)) {
+		if (Class->UndeploysInto != NULL) {
+			Assign_Rally_Point(cell);
+			OutList.Add(EventClass(Owner(), EventClass::SELL, TargetClass(this)));
+		}
+		return(true);
+	}
+
+
+	return(true);
 }
 
 
@@ -3545,55 +3545,6 @@ void BuildingClass::Sell_Back(int control)
 
 
 /***********************************************************************************************
- * BuildingClass::What_Action -- Determines what action will occur.                            *
- *                                                                                             *
- *    This routine examines the cell specified and returns with the action that will be        *
- *    performed if that cell were clicked upon while the building is selected.                 *
- *                                                                                             *
- * INPUT:   cell  -- The cell to examine.                                                      *
- *                                                                                             *
- * OUTPUT:  Returns the ActionType that indicates what should occur if the mouse is clicked    *
- *          on this cell.                                                                      *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/18/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
-ActionType BuildingClass::What_Action(Cell const & cell, bool check_fog, bool disallow_force) const
-{
-	if (Class->IsInvisibleInGame) {
-		return(ACTION_NONE);
-	}
-
-	ActionType action;
-
-	if (Class->UndeploysInto != NULL && check_fog) {
-		action = BASECLASS::What_Action(cell, false, disallow_force);
-	} else {
-		action = BASECLASS::What_Action(cell, check_fog, disallow_force);
-	}
-
-
-	/* // RA2: no ACTION_RALLY_TO_POINT (not in RA2's layout)
-	**	Don't allow targeting of SAM sites, even if the CTRL key
-	**	is held down.
-	*/
-	if (action == ACTION_ATTACK && PrimaryWeapon != NULL) {
-		if (!PrimaryWeapon->Bullet->IsAntiGround) {
-			action = ACTION_NONE;
-			action = ACTION_NONE; // RA2: no IsLimpetMine (not in RA2's layout)
-		}
-		if (CurrentMission == MISSION_DECONSTRUCTION) {
-			action = ACTION_NONE;
-		}
-	}
-
-	return(action);
-}
-
-
-/***********************************************************************************************
  * BuildingClass::What_Action -- Determines action to perform if click on specified object.    *
  *                                                                                             *
  *    This routine will determine what action to perform if the mouse was clicked on the       *
@@ -3685,6 +3636,55 @@ ActionType BuildingClass::What_Action(ObjectClass const * object, bool disallow_
 					}
 				}
 			}
+		}
+	}
+
+	return(action);
+}
+
+
+/***********************************************************************************************
+ * BuildingClass::What_Action -- Determines what action will occur.                            *
+ *                                                                                             *
+ *    This routine examines the cell specified and returns with the action that will be        *
+ *    performed if that cell were clicked upon while the building is selected.                 *
+ *                                                                                             *
+ * INPUT:   cell  -- The cell to examine.                                                      *
+ *                                                                                             *
+ * OUTPUT:  Returns the ActionType that indicates what should occur if the mouse is clicked    *
+ *          on this cell.                                                                      *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   01/18/1995 JLB : Created.                                                                 *
+ *=============================================================================================*/
+ActionType BuildingClass::What_Action(Cell const & cell, bool check_fog, bool disallow_force) const
+{
+	if (Class->IsInvisibleInGame) {
+		return(ACTION_NONE);
+	}
+
+	ActionType action;
+
+	if (Class->UndeploysInto != NULL && check_fog) {
+		action = BASECLASS::What_Action(cell, false, disallow_force);
+	} else {
+		action = BASECLASS::What_Action(cell, check_fog, disallow_force);
+	}
+
+
+	/*
+	**	Don't allow targeting of SAM sites, even if the CTRL key
+	**	is held down.
+	*/
+	if (action == ACTION_ATTACK && PrimaryWeapon != NULL) { // RA2: no ACTION_RALLY_TO_POINT (not in RA2's layout)
+		if (!PrimaryWeapon->Bullet->IsAntiGround) {
+			action = ACTION_NONE;
+			action = ACTION_NONE; // RA2: no IsLimpetMine (not in RA2's layout)
+		}
+		if (CurrentMission == MISSION_DECONSTRUCTION) {
+			action = ACTION_NONE;
 		}
 	}
 
@@ -4717,11 +4717,11 @@ int BuildingClass::Do_MISSION_DECONSTRUCTION(void)
 							unit->Veterancy.Experience = Veterancy.Experience;
 
 
-							/* // RA2: no LimpetType, LimpetSpeedFactor (not in RA2's layout)
+							/*
 							**	Lift the move destination from the building and assign
 							**	it to the unit.
 							*/
-							if (arch != NULL) {
+							if (arch != NULL) { // RA2: no LimpetType, LimpetSpeedFactor (not in RA2's layout)
 								unit->Assign_Destination(arch);
 								unit->Assign_Mission(MISSION_MOVE);
 							}

@@ -1123,11 +1123,11 @@ static inline int Flat_Distance(Point2D const & a, Point2D const & b)
 void FootClass::Approach_Target(void)
 {
 
-	/* // RA2: no IsJellyfish (not in RA2's layout)
+	/*
 	**	Determine that if there is an existing target it is still legal
 	**	and within range.
 	*/
-	if (TarCom != NULL) {
+	if (TarCom != NULL) { // RA2: no IsJellyfish (not in RA2's layout)
 		int primary = What_Weapon_Should_I_Use(TarCom);
 
 		/*
@@ -1629,6 +1629,130 @@ ResultType FootClass::Take_Damage(int & damage, int distance, WarheadTypeClass c
 }
 
 
+/***********************************************************************************************
+ * FootClass::Active_Click_With -- Initiates attack or move according to target clicked on.    *
+ *                                                                                             *
+ *    At this level, the object is known to have the ability to attack or move to the          *
+ *    target specified (in theory). Perform the attack or move as indicated.                   *
+ *                                                                                             *
+ * INPUT:   target   -- The target clicked upon that will precipitate action.                  *
+ *                                                                                             *
+ * OUTPUT:  Returns with the type of action performed.                                         *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   01/06/1995 JLB : Created.                                                                 *
+ *=============================================================================================*/
+bool FootClass::Active_Click_With(ActionType action, ObjectClass * object, bool is_waypoint)
+{
+	assert(object != NULL);
+
+	switch (action) {
+		case ACTION_GUARD_AREA:
+			if (Can_Player_Fire() && Can_Player_Move()) {
+				if (((RTTI == RTTI_INFANTRY &&
+						((InfantryClass *)this)->Class->IsBomber) || Has_Ability(ABILITY_C4)) &&
+						object->RTTI == RTTI_BUILDING &&
+						!House->Is_Ally(object)) {
+
+					Player_Assign_Mission(MISSION_SABOTAGE, NULL, object);
+				} else {
+					Player_Assign_Mission(MISSION_GUARD_AREA, object);
+				}
+				return(true);
+			}
+			break;
+
+		case ACTION_SELF:
+			Player_Assign_Mission(MISSION_UNLOAD);
+			return(true);
+
+		case ACTION_ATTACK:
+			if (Can_Player_Fire()) {
+				Player_Assign_Mission(MISSION_ATTACK, object);
+				return(true);
+			}
+			break;
+
+		case ACTION_ENTER:
+			if (Can_Player_Move() && object && Dynamic_Cast<TechnoClass *>(object) /*&& !((RadioClass *)object)->In_Radio_Contact()*/) {
+				Player_Assign_Mission(MISSION_ENTER, NULL, object);
+				return(true);
+			}
+			break;
+
+		case ACTION_CAPTURE:
+			if (Can_Player_Move()) {
+				Player_Assign_Mission(MISSION_CAPTURE, NULL, object);
+				return(true);
+			}
+			break;
+
+		case ACTION_SABOTAGE:
+			if (Can_Player_Move()) {
+				Player_Assign_Mission(MISSION_SABOTAGE, NULL, object);
+				return(true);
+			}
+			break;
+
+		case ACTION_NOMOVE:
+			if (Map.Is_Shrouded(object->Center_Coord()) && !TClass->IsMoveToShroud) {
+				return(false);
+			}
+			/// intentional fallthrough
+		case ACTION_MOVE:
+			if (Can_Player_Move()) {
+
+				AbstractClass * targ = object;
+
+				Coord center = object->Center_Coord();
+				if (center.Z <= Map.Get_Height_GL(center)) {
+					center.Z = Map.Get_Height_GL(center);
+				}
+
+				if (((TClass->IsSubterranean && !Rule->IsShroudedSubteranneanMovesAllowed) || RTTI == RTTI_AIRCRAFT) && Map.Is_Shrouded(center)) return(true);
+
+				MZoneType mzone = TClass->MZone;
+				Cell cell = object->Destination_Coord().As_Cell();
+				bool in_radar = Map.In_Local_Radar(cell);
+				CellClass * cptr = &Map[Destination_Coord()];
+
+				if (mzone == MZONE_SUBTERANNEAN) mzone = MZONE_NORMAL;
+				else if (mzone == MZONE_FLYER) mzone = MZONE_INFANTRY;
+
+
+				bool ontobridge = Is_Moving_Onto_Bridge(); // RA2: no IsJumpJet, moveanywhere (not in RA2's layout)
+				Coord coord = cell.As_Coord();
+				coord.Z = Map.Get_Height_GL(coord);
+				bool shrouded = Map.Is_Shrouded(coord);
+				bool forcemove = !is_waypoint && (Keyboard->Down(Options.KeyForceMove1) || Keyboard->Down(Options.KeyForceMove2));
+
+
+				if (targ != NULL) { // RA2: no moveanywhere (not in RA2's layout)
+					Player_Assign_Mission(MISSION_MOVE, NULL, targ);
+				}
+				return(true);
+			}
+			break;
+
+		case ACTION_PATROL_WAYPOINT:
+			return(false);
+
+		case ACTION_ATTACK_SUPPORT: {
+				WeaponDataStruct const * wdata = Get_Class_Weapon_Data(0);
+				bool heals = (wdata != 0 && wdata->Weapon != 0 && wdata->Weapon->Attack < 0);
+				Player_Assign_Mission(heals ? MISSION_GUARD_AREA : MISSION_GUARD, this, NULL);
+			}
+			return(true);
+
+		default:
+			return(true);
+	}
+	return(false);
+}
+
+
 
 
 
@@ -1918,130 +2042,6 @@ bool FootClass::Active_Click_With(ActionType action, Cell const & cell, Cell con
 		}
 	}
 	return(true);
-}
-
-
-/***********************************************************************************************
- * FootClass::Active_Click_With -- Initiates attack or move according to target clicked on.    *
- *                                                                                             *
- *    At this level, the object is known to have the ability to attack or move to the          *
- *    target specified (in theory). Perform the attack or move as indicated.                   *
- *                                                                                             *
- * INPUT:   target   -- The target clicked upon that will precipitate action.                  *
- *                                                                                             *
- * OUTPUT:  Returns with the type of action performed.                                         *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/06/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool FootClass::Active_Click_With(ActionType action, ObjectClass * object, bool is_waypoint)
-{
-	assert(object != NULL);
-
-	switch (action) {
-		case ACTION_GUARD_AREA:
-			if (Can_Player_Fire() && Can_Player_Move()) {
-				if (((RTTI == RTTI_INFANTRY &&
-						((InfantryClass *)this)->Class->IsBomber) || Has_Ability(ABILITY_C4)) &&
-						object->RTTI == RTTI_BUILDING &&
-						!House->Is_Ally(object)) {
-
-					Player_Assign_Mission(MISSION_SABOTAGE, NULL, object);
-				} else {
-					Player_Assign_Mission(MISSION_GUARD_AREA, object);
-				}
-				return(true);
-			}
-			break;
-
-		case ACTION_SELF:
-			Player_Assign_Mission(MISSION_UNLOAD);
-			return(true);
-
-		case ACTION_ATTACK:
-			if (Can_Player_Fire()) {
-				Player_Assign_Mission(MISSION_ATTACK, object);
-				return(true);
-			}
-			break;
-
-		case ACTION_ENTER:
-			if (Can_Player_Move() && object && Dynamic_Cast<TechnoClass *>(object) /*&& !((RadioClass *)object)->In_Radio_Contact()*/) {
-				Player_Assign_Mission(MISSION_ENTER, NULL, object);
-				return(true);
-			}
-			break;
-
-		case ACTION_CAPTURE:
-			if (Can_Player_Move()) {
-				Player_Assign_Mission(MISSION_CAPTURE, NULL, object);
-				return(true);
-			}
-			break;
-
-		case ACTION_SABOTAGE:
-			if (Can_Player_Move()) {
-				Player_Assign_Mission(MISSION_SABOTAGE, NULL, object);
-				return(true);
-			}
-			break;
-
-		case ACTION_NOMOVE:
-			if (Map.Is_Shrouded(object->Center_Coord()) && !TClass->IsMoveToShroud) {
-				return(false);
-			}
-			/// intentional fallthrough
-		case ACTION_MOVE:
-			if (Can_Player_Move()) {
-
-				AbstractClass * targ = object;
-
-				Coord center = object->Center_Coord();
-				if (center.Z <= Map.Get_Height_GL(center)) {
-					center.Z = Map.Get_Height_GL(center);
-				}
-
-				if (((TClass->IsSubterranean && !Rule->IsShroudedSubteranneanMovesAllowed) || RTTI == RTTI_AIRCRAFT) && Map.Is_Shrouded(center)) return(true);
-
-				MZoneType mzone = TClass->MZone;
-				Cell cell = object->Destination_Coord().As_Cell();
-				bool in_radar = Map.In_Local_Radar(cell);
-				CellClass * cptr = &Map[Destination_Coord()];
-
-				if (mzone == MZONE_SUBTERANNEAN) mzone = MZONE_NORMAL;
-				else if (mzone == MZONE_FLYER) mzone = MZONE_INFANTRY;
-
-
-				bool ontobridge = Is_Moving_Onto_Bridge(); // RA2: no IsJumpJet, moveanywhere (not in RA2's layout)
-				Coord coord = cell.As_Coord();
-				coord.Z = Map.Get_Height_GL(coord);
-				bool shrouded = Map.Is_Shrouded(coord);
-				bool forcemove = !is_waypoint && (Keyboard->Down(Options.KeyForceMove1) || Keyboard->Down(Options.KeyForceMove2));
-
-
-				if (targ != NULL) { // RA2: no moveanywhere (not in RA2's layout)
-					Player_Assign_Mission(MISSION_MOVE, NULL, targ);
-				}
-				return(true);
-			}
-			break;
-
-		case ACTION_PATROL_WAYPOINT:
-			return(false);
-
-		case ACTION_ATTACK_SUPPORT: {
-				WeaponDataStruct const * wdata = Get_Class_Weapon_Data(0);
-				bool heals = (wdata != 0 && wdata->Weapon != 0 && wdata->Weapon->Attack < 0);
-				Player_Assign_Mission(heals ? MISSION_GUARD_AREA : MISSION_GUARD, this, NULL);
-			}
-			return(true);
-
-		default:
-			return(true);
-	}
-	return(false);
 }
 
 
@@ -4221,10 +4221,10 @@ void FootClass::Execute_Waypoint_Path(WaypointClass * waypoint)
 				destination_zone != adjusted_zone ||
 				is_direct_waypoint && Search.Test_Cell_Walk(adjusted_waypoint, waypoint_cell, this,
 					adjusted_cell->IsUnderBridge, waypoint_map_cell->IsUnderBridge, MZONE_NONE) > walk_distance_limit) {
-				action_succeeded = Active_Click_With(waypoint_action, waypoint_cell, waypoint_cell, true); // RA2: the header's second cell (0x4CB110 passes only the one: ret 0Ch at 0x4C61A0)
+				action_succeeded = Active_Click_With(waypoint_action, waypoint_cell, Cell(-1, -1), true); // RA2: a second cell, (-1, -1) at 0x4CB110
 				WaypointOffsetCell = Cell(0, 0);
 			} else {
-				action_succeeded = Active_Click_With(waypoint_action, adjusted_waypoint, adjusted_waypoint, true); // RA2: as above
+				action_succeeded = Active_Click_With(waypoint_action, adjusted_waypoint, Cell(-1, -1), true); // RA2: as above
 				WaypointTargetCell = adjusted_waypoint;
 			}
 		}
@@ -4681,35 +4681,6 @@ bool FootClass::Is_LZ_Clear(AbstractClass * target) const
 
 
 /// <summary>
-/// Determines what action to perform if this object is ordered onto the target.
-/// This routine adds the shroud restriction to the base class decision. A target hidden
-/// under the shroud can only be moved toward, and only if this object is allowed to travel
-/// into the shroud at all.
-/// </summary>
-/// <returns>Returns with the action to perform.</returns>
-ActionType FootClass::What_Action(ObjectClass const * target, bool disallow_force) const
-{
-	ActionType action = BASECLASS::What_Action(target, disallow_force);
-
-	Coord coord = target->Center_Coord();
-	coord.Z = Map.Get_Height_GL(coord);
-	if (Map[coord].IsUnderBridge) {
-		coord.Z += BRIDGE_LEPTON_HEIGHT;
-	}
-
-	if (Map.Is_Shrouded(coord) && action != ACTION_NONE && Session.Type == GAME_NORMAL) {
-		if (Techno_Type_Class()->IsMoveToShroud) { // RA2: What_Action at 0x4CC740 matches only so
-			action = ACTION_MOVE;
-		} else {
-			action = ACTION_NOMOVE;
-		}
-	}
-
-	return(action);
-}
-
-
-/// <summary>
 /// Determines what action to perform if this object is ordered onto the cell.
 /// This routine adds the shroud restriction to the base class decision. A shrouded cell can
 /// only be moved toward, and only if this object is allowed to travel into the shroud at
@@ -4731,6 +4702,35 @@ ActionType FootClass::What_Action(Cell const & cell, bool check_fog, bool disall
 			if (action != ACTION_PATROL_WAYPOINT) {
 				action = ACTION_MOVE;
 			}
+		} else {
+			action = ACTION_NOMOVE;
+		}
+	}
+
+	return(action);
+}
+
+
+/// <summary>
+/// Determines what action to perform if this object is ordered onto the target.
+/// This routine adds the shroud restriction to the base class decision. A target hidden
+/// under the shroud can only be moved toward, and only if this object is allowed to travel
+/// into the shroud at all.
+/// </summary>
+/// <returns>Returns with the action to perform.</returns>
+ActionType FootClass::What_Action(ObjectClass const * target, bool disallow_force) const
+{
+	ActionType action = BASECLASS::What_Action(target, disallow_force);
+
+	Coord coord = target->Center_Coord();
+	coord.Z = Map.Get_Height_GL(coord);
+	if (Map[coord].IsUnderBridge) {
+		coord.Z += BRIDGE_LEPTON_HEIGHT;
+	}
+
+	if (Map.Is_Shrouded(coord) && action != ACTION_NONE && Session.Type == GAME_NORMAL) {
+		if (Techno_Type_Class()->IsMoveToShroud) { // RA2: What_Action at 0x4CC740 matches only so
+			action = ACTION_MOVE;
 		} else {
 			action = ACTION_NOMOVE;
 		}

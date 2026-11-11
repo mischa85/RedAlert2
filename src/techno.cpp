@@ -465,7 +465,7 @@ int TechnoClass::What_Weapon_Should_I_Use(AbstractClass * target) const
 		WeaponTypeClass const * wptr = PrimaryWeapon;
 		if (wptr != NULL) {
 			if (wptr->WarheadPtr != NULL) {
-				w1 = wptr->WarheadPtr->Modifier[armor] * 1000; // RA2: no WarheadPtr, IsWebby (not in RA2's layout)
+				w1 = wptr->WarheadPtr->Modifier[armor] * 1000; // RA2: no IsWebby (not in RA2's layout)
 			}
 			if (In_Range(target, 0)) w1 *= 2;
 		}
@@ -483,7 +483,7 @@ int TechnoClass::What_Weapon_Should_I_Use(AbstractClass * target) const
 		WeaponTypeClass const * wptr = SecondaryWeapon;
 		if (wptr != NULL) {
 			if (wptr->WarheadPtr != NULL) {
-				w2 = wptr->WarheadPtr->Modifier[armor] * 1000; // RA2: no WarheadPtr, IsWebby (not in RA2's layout)
+				w2 = wptr->WarheadPtr->Modifier[armor] * 1000; // RA2: no IsWebby (not in RA2's layout)
 			}
 		}
 		if (In_Range(target, 1)) w2 *= 2;
@@ -511,7 +511,7 @@ int TechnoClass::What_Weapon_Should_I_Use(AbstractClass * target) const
 	} else {
 		if (object->Is_Foot()) {
 			InfantryClass const * inf = dynamic_cast<InfantryClass const *>(object);
-		} else { // RA2: no Class, IsWebImmune (not in RA2's layout)
+		} else { // RA2: no IsWebImmune (not in RA2's layout)
 			//is_web_target = object->As_IsometricTileClass() != NULL;
 			is_web_target = dynamic_cast<IsometricTileClass const *>(object) != NULL;
 		}
@@ -1046,7 +1046,7 @@ RadioMessageType TechnoClass::Receive_Message(RadioClass * from, RadioMessageTyp
 		*/
 		case RADIO_REPAIR:
 
-			PrimaryFacing.Set_ROT(TClass->ROT); // RA2: no LimpetType, LimpetSpeedFactor (not in RA2's layout)
+			PrimaryFacing.Set_ROT(TClass->ROT); // RA2: no LimpetSpeedFactor, LimpetType (not in RA2's layout)
 			SecondaryFacing.Set_ROT(TClass->ROT);
 
 			/*
@@ -1218,7 +1218,7 @@ void TechnoClass::Draw_Post_Render(Point2D const & point, Rect const & cliprect)
 		if (RTTI == RTTI_BUILDING) { // RA2: no core defenders
 
 			int color = WHITE;
-			if (HeightAGL < -4) { // RA2: no LimpetType, YELLOW (not in RA2's layout)
+			if (HeightAGL < -4) { // RA2: no LimpetType (not in RA2's layout)
 				color = BLACK;
 			}
 
@@ -1486,7 +1486,7 @@ void TechnoClass::Draw_Pre_Render(Point2D const & point, Rect const & cliprect) 
 {
 	if (RTTI == RTTI_BUILDING && IsSelected && RTTI != RTTI_INFANTRY) {
 		int color = WHITE;
-		if (HeightAGL < -4) { // RA2: no LimpetType, YELLOW (not in RA2's layout)
+		if (HeightAGL < -4) { // RA2: no LimpetType (not in RA2's layout)
 			color = BLACK;
 		}
 		Coord dim = TClass->Lepton_Dimensions();
@@ -1618,7 +1618,7 @@ void TechnoClass::Draw_Health_Bar(Point2D const & xpoint, Rect const & cliprect,
 			health_bar_count = 8;
 		} else {
 			if (!sensed_underground || IsSelected) {
-			} // RA2: no LogicalSurface, NormalDrawer, ObjectTypeClass and 2 more (not in RA2's layout)
+			} // RA2: no LimpetType (not in RA2's layout)
 			offset = Point2D(-15, -25);
 			health_bar_count = 17;
 		}
@@ -2254,10 +2254,10 @@ bool TechnoClass::Evaluate_Object(ThreatType method, int mask, int range, Techno
 	**	Never consider a spy to be a valid target, unless you're a dog
 	*/
 
-	/* // RA2: no InfantryTypeClass, IsDisguised, BEnd (not in RA2's layout)
+	/*
 	**	Special case so that SAM site doesn't fire on aircraft that are landed.
 	*/
-	if (PrimaryWeapon != NULL && !PrimaryWeapon->Bullet->IsAntiGround){
+	if (PrimaryWeapon != NULL && !PrimaryWeapon->Bullet->IsAntiGround){ // RA2: no IsDisguised (not in RA2's layout)
 		if (((AircraftClass *)object)->Height == 0) {
 			BEnd(BENCH_EVAL_OBJECT);
 			return(false);
@@ -2340,12 +2340,12 @@ bool TechnoClass::Evaluate_Object(ThreatType method, int mask, int range, Techno
 
 
 
-	/* // RA2: no IsWebby, RTTI, InfantryClass and 3 more (not in RA2's layout)
+	/*
 	**	If this target value is better than the previously recorded best
 	**	target value then record this target for possible return as the
 	**	best.
 	*/
-	value = Target_Threat((TechnoClass *)object, coord);
+	value = Target_Threat((TechnoClass *)object, coord); // RA2: no IsWebby, ProneStruggleTimer (not in RA2's layout)
 
 	/*
 	**	If the candidate object is owned by the designated enemy of this house, then
@@ -2726,7 +2726,7 @@ AbstractClass * TechnoClass::Greatest_Threat(ThreatType method, Coord const & co
 			for (index = 0; index < Map.Layer[LAYER_TOP].Count(); index++) {
 				TechnoClass * object = (TechnoClass *)Map.Layer[LAYER_TOP][index];
 
-			} // RA2: no RTTI, InfantryClass, Class and 5 more (not in RA2's layout)
+			} // RA2: no IsJumpJet (not in RA2's layout)
 
 			for (index = 0; index < Map.Layer[LAYER_AIR].Count(); index++) {
 				TechnoClass * object = (TechnoClass *)Map.Layer[LAYER_AIR][index];
@@ -3865,7 +3865,7 @@ int TechnoClass::Rearm_Delay(int which) const
 	if (BurstIndex < weapon->Burst) {
 		int delay = -1;
 		if (BurstIndex > 0 && BurstIndex <= 4) {
-		} // RA2: no BurstDelay, BurstIndex (not in RA2's layout)
+		} // RA2: no BurstDelay (not in RA2's layout)
 		if (delay == -1) delay = Random_Pick(3, 5);
 		return(delay);
 
@@ -4048,7 +4048,7 @@ BulletClass * TechnoClass::Fire_At(AbstractClass * target, int which)
 	}
 
 
-	if ((weapon->UseFireParticles && ParticleSystems[ATTACHED_PARTICLE_FIRE]) // RA2: no WarheadPtr, LimpetFactor, TechnoClass and 17 more (not in RA2's layout)
+	if ((weapon->UseFireParticles && ParticleSystems[ATTACHED_PARTICLE_FIRE]) // RA2: no LimpetType, LimpetFactor, LimpetSpeedFactor (not in RA2's layout)
 		|| (weapon->IsRailgun && ParticleSystems[ATTACHED_PARTICLE_RAILGUN])
 		|| (weapon->UseSparkParticles && ParticleSystems[ATTACHED_PARTICLE_SPARK])
 		|| (weapon->IsSonic && Wave)) {
@@ -4091,7 +4091,7 @@ BulletClass * TechnoClass::Fire_At(AbstractClass * target, int which)
 
 	int max_speed = weapon->MaxSpeed;
 
-	if (bullet != NULL) { // RA2: no Bullet, WarheadPtr, ProjectileRange and 1 more (not in RA2's layout)
+	if (bullet != NULL) { // RA2: no ProjectileRange (not in RA2's layout)
 		bullet->Limbo();
 
 		/*
@@ -4398,6 +4398,120 @@ bool TechnoClass::Player_Assign_Mission(MissionType order, AbstractClass * targe
 }
 
 
+
+
+/***********************************************************************************************
+ * TechnoClass::What_Action -- Determines what action to perform if object is selected.        *
+ *                                                                                             *
+ *    This routine will examine the object specified and return with the action that will      *
+ *    be performed if the mouse button were clicked over the object.                           *
+ *                                                                                             *
+ * INPUT:   object   -- The object that the mouse button might be clicked on.                  *
+ *                                                                                             *
+ * OUTPUT:  Returns with the action that will be performed if the object was clicked on.       *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   01/19/1995 JLB : Created.                                                                 *
+ *   03/21/1995 JLB : Special target control for trees.                                        *
+ *=============================================================================================*/
+ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_force) const
+{
+	if (object != NULL) {
+
+		/*
+		**	Return the ACTION_SELF flag if clicking on itself. However, if this
+		**	object cannot do anything special with itself, then just return with
+		**	the no action flag.
+		*/
+		if (object == this && CurrentObject.Count() == 1 && House->Is_Player_Control()) {
+			return(ACTION_SELF);
+		}
+
+		if (object == this && CurrentObject.Count() == 1 && House->Is_Ally(PlayerPtr) && Session.Type == GAME_NORMAL) {
+			UnitClass const * unit = dynamic_cast<UnitClass const *>(this);
+			if (unit != NULL && unit->Class->Max_Passengers() > 0 && unit->Cargo.How_Many() > 0) {
+				return(ACTION_SELF);
+			}
+			AircraftClass const * airc = dynamic_cast<AircraftClass const *>(this);
+			if (airc != NULL && airc->Passenger) {
+				return(ACTION_SELF);
+			}
+		}
+
+		bool altdown = !disallow_force && (Keyboard->Down(Options.KeyForceMove1) || Keyboard->Down(Options.KeyForceMove2));
+		bool ctrldown = !disallow_force && (Keyboard->Down(Options.KeyForceAttack1) || Keyboard->Down(Options.KeyForceAttack2));
+		bool shiftdown = !disallow_force && (Keyboard->Down(Options.KeySelect1) || Keyboard->Down(Options.KeySelect2));
+
+		/*
+		**	Special guard area mission is possible if both the control and the
+		**	alt keys are held down.
+		*/
+		if (House->Is_Player_Control() && ctrldown && altdown && Can_Player_Move()) {
+			return(ACTION_GUARD_AREA);
+		}
+
+		/*
+		**	Special override to force a move regardless of what is occupying the location.
+		*/
+		if (altdown) {
+			if (House->Is_Player_Control() && Can_Player_Move()) {
+				return(ACTION_MOVE);
+			}
+		}
+
+		/*
+		**	Override so that toggled select state can be performed while the <SHIFT> key
+		**	is held down.
+		*/
+		if (shiftdown) {
+			if (House->Is_Player_Control() && !IsALoaner) {
+				return(ACTION_TOGGLE_SELECT);
+			}
+		}
+
+		/*
+		**	If firing is possible and legal, then return this action potential.
+		*/
+		TechnoTypeClass const * ttype = TClass;
+		if (object->Not_Underground() && House->Is_Player_Control() && (ctrldown || !House->Is_Ally(object)) && (ctrldown || object->Class_Of()->IsLegalTarget || (Rule->IsTreeTarget && object->RTTI == RTTI_TERRAIN))) {
+
+			if (Is_Weapon_Equipped() ||
+					(RTTI == RTTI_INFANTRY &&
+					(/// ((InfantryTypeClass const *)ttype)->IsBomber ||
+					((InfantryTypeClass const *)ttype)->IsCapture)
+					)) {
+
+				int primary = What_Weapon_Should_I_Use((ObjectClass *)object);
+				if (Can_Player_Move() || In_Range((ObjectClass *)object, primary)) {
+					if (In_Range((ObjectClass *)object, primary) || (RTTI == RTTI_INFANTRY && ((InfantryClass *)this)->Class->IsCapture && object->RTTI == RTTI_BUILDING && ((BuildingClass *)object)->Class->IsCaptureable)) {
+						return(ACTION_ATTACK);
+					} else {
+						if (!Can_Player_Move()) {
+							return(ACTION_NONE);
+						} else {
+							return(ACTION_ATTACK);
+						}
+					}
+				}
+			}
+		}
+
+		/*
+		**	Possibly try to select the specified object, if that is warranted.
+		*/
+		if (!Is_Weapon_Equipped() || !House->Is_Player_Control() || object->Owner() == Owner()) {
+			if ((!IsALoaner || !IsOwnedByPlayer) && object->Class_Of()->IsSelectable && !object->IsSelected) {
+				return(ACTION_SELECT);
+			}
+			return(ACTION_NONE);
+		}
+	}
+	return(ACTION_NONE);
+}
+
+
 /***********************************************************************************************
  * TechnoClass::What_Action -- Determines action to perform if cell is clicked on.             *
  *                                                                                             *
@@ -4516,7 +4630,7 @@ ActionType TechnoClass::What_Action(Cell const & cell, bool check_fog, bool disa
 
 		if (Is_Move_Override()) {
 			if (altdown) {
-			} // RA2: no return(ACTION_RALLY_TO_POINT); (not in RA2's layout)
+			} // RA2: no ACTION_RALLY_TO_POINT (not in RA2's layout)
 			if (!Can_Player_Move()) {
 				return(ACTION_NONE);
 			}
@@ -4538,120 +4652,6 @@ ActionType TechnoClass::What_Action(Cell const & cell, bool check_fog, bool disa
 		return(ACTION_NOMOVE);
 	}
 
-	return(ACTION_NONE);
-}
-
-
-
-
-/***********************************************************************************************
- * TechnoClass::What_Action -- Determines what action to perform if object is selected.        *
- *                                                                                             *
- *    This routine will examine the object specified and return with the action that will      *
- *    be performed if the mouse button were clicked over the object.                           *
- *                                                                                             *
- * INPUT:   object   -- The object that the mouse button might be clicked on.                  *
- *                                                                                             *
- * OUTPUT:  Returns with the action that will be performed if the object was clicked on.       *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   01/19/1995 JLB : Created.                                                                 *
- *   03/21/1995 JLB : Special target control for trees.                                        *
- *=============================================================================================*/
-ActionType TechnoClass::What_Action(ObjectClass const * object, bool disallow_force) const
-{
-	if (object != NULL) {
-
-		/*
-		**	Return the ACTION_SELF flag if clicking on itself. However, if this
-		**	object cannot do anything special with itself, then just return with
-		**	the no action flag.
-		*/
-		if (object == this && CurrentObject.Count() == 1 && House->Is_Player_Control()) {
-			return(ACTION_SELF);
-		}
-
-		if (object == this && CurrentObject.Count() == 1 && House->Is_Ally(PlayerPtr) && Session.Type == GAME_NORMAL) {
-			UnitClass const * unit = dynamic_cast<UnitClass const *>(this);
-			if (unit != NULL && unit->Class->Max_Passengers() > 0 && unit->Cargo.How_Many() > 0) {
-				return(ACTION_SELF);
-			}
-			AircraftClass const * airc = dynamic_cast<AircraftClass const *>(this);
-			if (airc != NULL && airc->Passenger) {
-				return(ACTION_SELF);
-			}
-		}
-
-		bool altdown = !disallow_force && (Keyboard->Down(Options.KeyForceMove1) || Keyboard->Down(Options.KeyForceMove2));
-		bool ctrldown = !disallow_force && (Keyboard->Down(Options.KeyForceAttack1) || Keyboard->Down(Options.KeyForceAttack2));
-		bool shiftdown = !disallow_force && (Keyboard->Down(Options.KeySelect1) || Keyboard->Down(Options.KeySelect2));
-
-		/*
-		**	Special guard area mission is possible if both the control and the
-		**	alt keys are held down.
-		*/
-		if (House->Is_Player_Control() && ctrldown && altdown && Can_Player_Move()) {
-			return(ACTION_GUARD_AREA);
-		}
-
-		/*
-		**	Special override to force a move regardless of what is occupying the location.
-		*/
-		if (altdown) {
-			if (House->Is_Player_Control() && Can_Player_Move()) {
-				return(ACTION_MOVE);
-			}
-		}
-
-		/*
-		**	Override so that toggled select state can be performed while the <SHIFT> key
-		**	is held down.
-		*/
-		if (shiftdown) {
-			if (House->Is_Player_Control() && !IsALoaner) {
-				return(ACTION_TOGGLE_SELECT);
-			}
-		}
-
-		/*
-		**	If firing is possible and legal, then return this action potential.
-		*/
-		TechnoTypeClass const * ttype = TClass;
-		if (object->Not_Underground() && House->Is_Player_Control() && (ctrldown || !House->Is_Ally(object)) && (ctrldown || object->Class_Of()->IsLegalTarget || (Rule->IsTreeTarget && object->RTTI == RTTI_TERRAIN))) {
-
-			if (Is_Weapon_Equipped() ||
-					(RTTI == RTTI_INFANTRY &&
-					(/// ((InfantryTypeClass const *)ttype)->IsBomber ||
-					((InfantryTypeClass const *)ttype)->IsCapture)
-					)) {
-
-				int primary = What_Weapon_Should_I_Use((ObjectClass *)object);
-				if (Can_Player_Move() || In_Range((ObjectClass *)object, primary)) {
-					if (In_Range((ObjectClass *)object, primary) || (RTTI == RTTI_INFANTRY && ((InfantryClass *)this)->Class->IsCapture && object->RTTI == RTTI_BUILDING && ((BuildingClass *)object)->Class->IsCaptureable)) {
-						return(ACTION_ATTACK);
-					} else {
-						if (!Can_Player_Move()) {
-							return(ACTION_NONE);
-						} else {
-							return(ACTION_ATTACK);
-						}
-					}
-				}
-			}
-		}
-
-		/*
-		**	Possibly try to select the specified object, if that is warranted.
-		*/
-		if (!Is_Weapon_Equipped() || !House->Is_Player_Control() || object->Owner() == Owner()) {
-			if ((!IsALoaner || !IsOwnedByPlayer) && object->Class_Of()->IsSelectable && !object->IsSelected) {
-				return(ACTION_SELECT);
-			}
-			return(ACTION_NONE);
-		}
-	}
 	return(ACTION_NONE);
 }
 
@@ -4714,7 +4714,7 @@ bool TechnoClass::Can_Deploy_Now(void) const
 
 	if (unit != NULL) {
 		blocked = unit->Is_Immobilized() || unit->CurrentTube >= TUBE_FIRST;
-		if (unit->Class->Max_Passengers() > 0) { // RA2: no Class, DeploysInto, IsMobileEMP (not in RA2's layout)
+		if (unit->Class->Max_Passengers() > 0) { // RA2: no IsMobileEMP (not in RA2's layout)
 			if (unit->IsOnBridge) {
 				blocked = true;
 			}
@@ -5150,7 +5150,7 @@ ResultType TechnoClass::Take_Damage(int & damage, int distance, WarheadTypeClass
 	 * normal rate of turn for the turret and body.
 	 */
 	if (negative == true) {
-		PrimaryFacing.Set_ROT(TClass->ROT); // RA2: no LimpetType, LimpetSpeedFactor (not in RA2's layout)
+		PrimaryFacing.Set_ROT(TClass->ROT); // RA2: no LimpetSpeedFactor, LimpetType (not in RA2's layout)
 		SecondaryFacing.Set_ROT(TClass->ROT);
 	}
 
@@ -6408,7 +6408,7 @@ void TechnoClass::Techno_Draw_Object(ShapeSet const * shapefile, int shapenum, P
 		*/
 		if (RTTI == RTTI_INFANTRY) {
 			if (!IsOwnedByPlayer) {
-			} // RA2: no InfantryClass, Class, IsDisguised and 4 more (not in RA2's layout)
+			} // RA2: no IsDisguised (not in RA2's layout)
 		}
 
 		if (zgrad != ZGRAD_NONE) flags = ShapeFlags_Type(flags|SHAPE_ZGRAD);
@@ -6926,12 +6926,12 @@ InfantryTypeClass const * TechnoClass::Crew_Type(void) const
 	**	minigunner. Certain buildings, especially neutral ones, tend to have
 	**	civilians exit them instead.
 	*/
-	if (House->Class->Side != SIDE_NONE) { // RA2: no InfantryTypeClass, Rule, Crew (not in RA2's layout)
+	if (House->Class->Side != SIDE_NONE) { // RA2: no Crew, infantry (not in RA2's layout)
 		if (Is_Weapon_Equipped() && Percent_Chance(15)) {
-		} // RA2: no Rule, Technician (not in RA2's layout)
+		} // RA2: no infantry (not in RA2's layout)
 	} else {
-	} // RA2: no Rule, Technician (not in RA2's layout)
-} // RA2: no return(infantry); (not in RA2's layout)
+	} // RA2: no infantry (not in RA2's layout)
+} // RA2: no infantry (not in RA2's layout)
 
 
 /***********************************************************************************************
@@ -8298,7 +8298,7 @@ void TechnoClass::Look(bool incremental, bool dontmap)
 
 		if (sight_range) {
 			HouseClass * house = House;
-			Map.Sight_From(PositionCoord, sight_range, house, incremental, dontmap); // RA2: no PlayerPtr, HeapID, LimpetType (not in RA2's layout)
+			Map.Sight_From(PositionCoord, sight_range, house, incremental, dontmap); // RA2: no LimpetType (not in RA2's layout)
 		}
 	}
 }
@@ -8546,7 +8546,7 @@ HRESULT STDMETHODCALLTYPE TechnoClass::Load(IStream * stream)
 	HRESULT result = BASECLASS::Load(stream);
 	if (SUCCEEDED(result)) {
 		if (IsOldSaveGame) {
-		} // RA2: no LimpetSpeedFactor, LimpetType, TechnoClass (not in RA2's layout)
+		} // RA2: no LimpetSpeedFactor, LimpetType (not in RA2's layout)
 
 		Swizzle_Pointer(&House);
 
