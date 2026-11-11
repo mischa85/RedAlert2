@@ -49,6 +49,12 @@ void const * ObjectTypeClass::TalkBubbleShapes = 0;
 DynamicVectorClass<ObjectTypeClass *> ObjectTypeClass::ObjectTypes;
 
 
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool _Add_Type(DynamicVectorClass<ObjectTypeClass *> & v, ObjectTypeClass * p) { return v.Add(p); }
+
+
 /***********************************************************************************************
  * ObjectTypeClass::ObjectTypeClass -- Normal constructor for object type class objects.       *
  *                                                                                             *
@@ -112,6 +118,7 @@ ObjectTypeClass::ObjectTypeClass(NoInitClass const & x) :
 	Voxel(x),
 	AuxVoxel(x),
 	AuxVoxel2(x),
+	LineTrailColor(x), // RA2: the line trail colour is restored too
 	ImageData(NULL)
 {
 
@@ -302,13 +309,10 @@ Cell const * ObjectTypeClass::Occupy_List(bool) const
  * HISTORY:                                                                                    *
  *   11/01/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void ObjectTypeClass::One_Time(void)
-{
-	SelectShapes = MFCD::Retrieve("SELECT.SHP");
-	PipShapes = MFCD::Retrieve("PIPS.SHP");
-	Pip2Shapes = MFCD::Retrieve("PIPS2.SHP");
-	TalkBubbleShapes = MFCD::Retrieve("TALKBUBL.SHP");
-}
+
+
+
+
 
 
 /***********************************************************************************************
@@ -339,33 +343,40 @@ void ObjectTypeClass::One_Time(void)
 BuildingClass * ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool needsnopower, bool legal, HouseClass * house) const
 {
 	BuildingClass * freebuilding = NULL;
-	BuildingClass * anybuilding = NULL;
 	int ownable = Get_Ownable();
 
-	for (int index = 0; index < Buildings.Count(); index++) {
-		BuildingClass * building = Buildings[index];
-		assert(building != NULL);
+	int count = house->Buildings.Count(); // RA2: the house's buildings walked by index
+	for (int index = 0; index < count; index++) { // RA2: by index
+		BuildingClass * building = house->Buildings[index]; // RA2: each building
 
 		if (!building->IsInLimbo &&
-			building->House == house &&
 			building->Class->ToBuild == RTTI &&
 			(!needsnopower || building->IsOn) &&
 			building->Mission != MISSION_DECONSTRUCTION && building->MissionQueue != MISSION_DECONSTRUCTION &&
 			(!legal || building->House->Can_Build(this, true, true) > 0) &&
-			(building->Class->Get_Ownable() & ownable) &&
-			(building->Class != Rule->BuildConst[0] || (1L << building->ActLike) & ownable)) {
+			(building->Class->Get_Ownable() & ownable)) { // RA2: ownable by this type's owners
 
 			/*
 			**	HACK ALERT: Helipads can build aircraft and airstrips can build
 			**	fixed wing craft only.
 			*/
-			if (intheory || !building->In_Radio_Contact() || RTTI != RTTI_AIRCRAFTTYPE) {
-				if (building->IsLeader) return(building);
-				freebuilding = building;
+			if (!intheory && building->HasAnyLink() && RTTI == RTTI_AIRCRAFTTYPE) { // RA2: an aircraft looks for a linked factory
+				if (RTTI == RTTI_AIRCRAFTTYPE && building->HasFreeLink()) { // RA2: with a free dock
+					if (building->IsLeader) return(building); // RA2: the leader first
+					freebuilding = building; // RA2: else any free one
+				}
 			} else {
-				AircraftTypeClass * air = (AircraftTypeClass *)this;
-				if (air->RTTI == RTTI_AIRCRAFTTYPE) {
-					anybuilding = building;
+				if (RTTI == RTTI_UNITTYPE && ((TechnoTypeClass const *)this)->Naval) { // RA2: a naval unit needs a naval factory
+					if (building->Class->Naval) { // RA2: naval factory
+						if (building->IsLeader) return(building); // RA2: the leader first
+						goto leader; // RA2: else as a leader candidate
+					}
+				} else {
+					if (!building->Class->Naval) { // RA2: a land unit needs a land factory
+						leader: // RA2: leader candidate
+						if (building->IsLeader) return(building); // RA2: the leader first
+						freebuilding = building; // RA2: else any one
+					}
 				}
 			}
 		}
@@ -374,9 +385,17 @@ BuildingClass * ObjectTypeClass::Who_Can_Build_Me(bool intheory, bool needsnopow
 	if (freebuilding != NULL) {
 		return(freebuilding);
 	}
-
-	return(anybuilding);
+	return(NULL); // RA2: none
 }
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -541,51 +560,43 @@ void ObjectTypeClass::Fetch_Aux_Voxel_Image(void)
 	char buffer[256];
 	char name[260];
 
-	if (RTTI == RTTI_UNITTYPE) {
-		UnitTypeClass *utype = (UnitTypeClass *)this;
+	if (RTTI == RTTI_UNITTYPE && Get_Image_Data() != NULL && ((TechnoTypeClass *)this)->IsTurretEquipped) { // RA2: a turreted unit's turret voxel
+		sprintf(buffer, "%sTUR", (char const *)GraphicName); // RA2: NAMETUR
+		_makepath(name, NULL, NULL, buffer, ".VXL"); // RA2: its VXL
+		CCFileClass tvxl(name); // RA2: opened
 
-		if (utype->Get_Image_Data() != NULL && utype->IsTurretEquipped) {
-			sprintf(buffer, "%sTUR", (const char *)utype->GraphicName);
-			_makepath(name, 0, 0, buffer, ".VXL");
-			CCFileClass tvxl(name);
+		if (tvxl.Is_Available()) { // RA2: if present
+			delete AuxVoxel.VoxLib; // RA2: replaces the aux voxel
+			AuxVoxel.VoxLib = new VoxelLibrary(tvxl); // RA2: loaded
 
-			if (tvxl.Is_Available()) {
-				delete utype->AuxVoxel.VoxLib;
-				utype->AuxVoxel.VoxLib = new VoxelLibrary(tvxl);
+			if (AuxVoxel.VoxLib != NULL && !AuxVoxel.VoxLib->Load_Failed()) { // RA2: with its motion
+				sprintf(buffer, "%sTUR", (char const *)GraphicName); // RA2: NAMETUR
+				_makepath(name, NULL, NULL, buffer, ".HVA"); // RA2: its HVA
+				CCFileClass thva(name); // RA2: opened
 
-				if (utype->AuxVoxel.VoxLib && !utype->AuxVoxel.VoxLib->Load_Failed()) {
+				delete AuxVoxel.MotLib; // RA2: replaces the motion library
+				AuxVoxel.MotLib = new MotionLibrary(thva); // RA2: loaded
+				AuxVoxel.MotLib->Scale(AuxVoxel.VoxLib->Get_Layer_Info(0, 0).Scale); // RA2: scaled to the voxel
+			}
+		}
 
-					sprintf(buffer, "%sTUR", (const char *)utype->GraphicName);
-					_makepath(name, 0, 0, buffer, ".HVA");
-					CCFileClass thva(name);
+		sprintf(buffer, "%sBARL", (char const *)GraphicName); // RA2: and the barrel voxel
+		_makepath(name, NULL, NULL, buffer, ".VXL"); // RA2: NAMEBARL
+		CCFileClass bvxl(name); // RA2: its VXL
 
 					//if (thva.Is_Available()) {
-						delete utype->AuxVoxel.MotLib;
-						utype->AuxVoxel.MotLib = new MotionLibrary(thva);
-						utype->AuxVoxel.MotLib->Scale(utype->AuxVoxel.VoxLib->Get_Layer_Info(0, 0).Scale);
-					//}
-				}
-			}
-			sprintf(buffer, "%sBARL", (const char *)utype->GraphicName);
-			_makepath(name, 0, 0, buffer, ".VXL");
-			CCFileClass bvxl(name);
+		if (bvxl.Is_Available()) { // RA2: if present
+			delete AuxVoxel2.VoxLib; // RA2: replaces the second aux voxel
+			AuxVoxel2.VoxLib = new VoxelLibrary(bvxl); // RA2: loaded
 
-			if (bvxl.Is_Available()) {
-				delete utype->AuxVoxel2.VoxLib;
-				utype->AuxVoxel2.VoxLib = new VoxelLibrary(bvxl);
+			if (AuxVoxel2.VoxLib != NULL && !AuxVoxel2.VoxLib->Load_Failed()) { // RA2: with its motion
+				sprintf(buffer, "%sBARL", (char const *)GraphicName); // RA2: NAMEBARL
+				_makepath(name, NULL, NULL, buffer, ".HVA"); // RA2: its HVA
+				CCFileClass bhva(name); // RA2: opened
 
-				if (utype->AuxVoxel2.VoxLib && !utype->AuxVoxel2.VoxLib->Load_Failed()) {
-
-					sprintf(buffer, "%sBARL", (const char *)utype->GraphicName);
-					_makepath(name, 0, 0, buffer, ".HVA");
-					CCFileClass bhva(name);
-
-					//if (bhva.Is_Available()) {
-						delete utype->AuxVoxel2.MotLib;
-						utype->AuxVoxel2.MotLib = new MotionLibrary(bhva);
-						utype->AuxVoxel2.MotLib->Scale(utype->AuxVoxel2.VoxLib->Get_Layer_Info(0, 0).Scale);
-					//}
-				}
+				delete AuxVoxel2.MotLib; // RA2: replaces the motion library
+				AuxVoxel2.MotLib = new MotionLibrary(bhva); // RA2: loaded
+				AuxVoxel2.MotLib->Scale(AuxVoxel2.VoxLib->Get_Layer_Info(0, 0).Scale); // RA2: scaled to the voxel
 			}
 		}
 	}
@@ -709,32 +720,28 @@ bool ObjectTypeClass::Read_INI(CCINIClass const & ini)
 /// that do not follow the convention are left untouched.
 /// </summary>
 /// <param name="name">The artwork name to adjust in place.</param>
-void ObjectTypeClass::Theater_Naming_Convention(char * name, TheaterType theater) const
+void Theater_Name_Fixup(char * name, TheaterType theater) // RA2: not in TibSun, at 0x005D7BD0
 {
-	char prefix[4];
-
 	if (theater != THEATER_NONE) {
-		strncpy(prefix, name, 2);
-		prefix[2] = 0;
-		if (stricmp(prefix, "ga") == 0 ||
-			stricmp(prefix, "na") == 0 ||
-			stricmp(prefix, "gt") == 0 ||
-			stricmp(prefix, "nt") == 0 ||
-			stricmp(prefix, "ca") == 0 ||
-			stricmp(prefix, "ct") == 0)
-		{
-			switch (theater) {
-				case THEATER_TEMPERATE:
-					name[1] = 'T';
-					break;
-				case THEATER_SNOW:
-					name[1] = 'A';
-					break;
-				default:
-					break;
+		char first = name[0];
+		char second = name[1];
+		if (first >= 'A' && first <= 'Z') first += 32;
+		if (second >= 'A' && second <= 'Z') second += 32;
+		if (first == 'g' || first == 'n' || first == 'c' || first == 'y') {
+			if (second == 'a' || second == 't') {
+				name[1] = Theaters[theater].Letter[0];
 			}
 		}
 	}
+}
+
+
+/// <summary>
+/// Puts the generic theater letter into an art name.
+/// </summary>
+void Generic_Theater_Name(char * name) // RA2: not in TibSun, at 0x005D7C20
+{
+	name[1] = 'G';
 }
 
 
@@ -873,3 +880,64 @@ void ObjectTypeClass::Clear_Voxel_Indexes(void)
 
 	VoxelStaticBuffer.Reset();
 }
+
+
+/***********************************************************************************************
+ * ObjectTypeClass::One_Time -- Handles one time processing for object types.                  *
+ *                                                                                             *
+ *    This routine is used to handle the once per game processing required for object types.   *
+ *    This consists of loading any data and initializing any data tables the game requires.    *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   This routine goes to disk.                                                      *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   11/01/1994 JLB : Created.                                                                 *
+ *=============================================================================================*/
+void ObjectTypeClass::One_Time(void) // RA2: defined here
+{
+	SelectShapes = MFCD::Retrieve("SELECT.SHP");
+	PipShapes = MFCD::Retrieve("PIPS.SHP");
+	Pip2Shapes = MFCD::Retrieve("PIPS2.SHP");
+	TalkBubbleShapes = MFCD::Retrieve("TALKBUBL.SHP");
+}
+
+
+/// <summary>
+/// Converts an artwork name to the current theater's spelling.
+/// This routine handles the new theater naming convention, where the second letter of a
+/// structure's artwork name selects the temperate or the snow version of the art. Names
+/// that do not follow the convention are left untouched.
+/// </summary>
+/// <param name="name">The artwork name to adjust in place.</param>
+void ObjectTypeClass::Theater_Naming_Convention(char * name, TheaterType theater) const // RA2: defined here
+{
+	char prefix[4];
+
+	if (theater != THEATER_NONE) {
+		strncpy(prefix, name, 2);
+		prefix[2] = 0;
+		if (stricmp(prefix, "ga") == 0 ||
+			stricmp(prefix, "na") == 0 ||
+			stricmp(prefix, "gt") == 0 ||
+			stricmp(prefix, "nt") == 0 ||
+			stricmp(prefix, "ca") == 0 ||
+			stricmp(prefix, "ct") == 0)
+		{
+			switch (theater) {
+				case THEATER_TEMPERATE:
+					name[1] = 'T';
+					break;
+				case THEATER_SNOW:
+					name[1] = 'A';
+					break;
+				default:
+					break;
+			}
+		}
+	}
+}
+
