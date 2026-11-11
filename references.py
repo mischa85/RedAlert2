@@ -41,7 +41,7 @@ ROOT = os.path.dirname(os.path.abspath(__file__))
 REL32, DIR32 = 0x14, 0x06
 COMDAT_NO_DUPLICATES = 1
 # Symbols the compiler makes for each object on its own (docs/NAMES.md).
-PER_OBJECT = re.compile(r"^(_\$E|__real@|_\?)")
+PER_OBJECT = re.compile(r"^(_\$E|__real@|_\?|\?CELL_LEPTON_DIAG@@3NB$)")  # CELL_LEPTON_DIAG: every module computes its own copy (geometry.h)
 EVIDENCE = re.compile(r"referenced by matched src/(\S+?)\.cpp \((\d+) references?\)")
 
 

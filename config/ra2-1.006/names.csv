@@ -7809,7 +7809,6 @@ address,symbol,evidence
 0x00AC0D30,?NeuronPtrTracker@@3V?$DynamicVectorClass@PAVAbstractClass@@@@A,"inferred: referenced by matched src/tracker.cpp (3 references); across all matched code never at another address, and no other symbol here"
 0x00AC0D48,?TriggerPtrTracker@@3V?$DynamicVectorClass@PAVAbstractClass@@@@A,"inferred: referenced by matched src/trigger.cpp (33 references); across all matched code never at another address, and no other symbol here"
 0x00AC0D60,?ObjectPtrTracker@@3V?$DynamicVectorClass@PAVAbstractClass@@@@A,"inferred: referenced by matched src/factory.cpp (66 references); across all matched code never at another address, and no other symbol here"
-0x00AC0F18,?CELL_LEPTON_DIAG@@3NB,"inferred: referenced by matched src/tunnel.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00AC0FF0,?RadarFrameShape@@3PBXB,"inferred: referenced by matched src/radar.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x00AC1028,?TooltipColor@@3VRGBClass@@A,"inferred: referenced by matched src/cctooltip.cpp (6 references); across all matched code never at another address, and no other symbol here"
 0x00AC1070,?RadarAnimShape@@3PBXB,"inferred: referenced by matched src/radar.cpp (1 reference); across all matched code never at another address, and no other symbol here"
