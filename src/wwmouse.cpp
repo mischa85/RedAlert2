@@ -81,6 +81,71 @@ static WWMouseClass * _MousePtr = NULL;
 bool AllowNegativeY = false;
 
 
+static HANDLE MouseMutex = NULL; // RA2: a global, not a member
+
+
+
+
+
+
+/***********************************************************************************************
+ * WWMouseClass::~WWMouseClass -- Destructor for mouse handler object.                         *
+ *                                                                                             *
+ *    This will remove the mouse handler object from being processed. It returns the mouse     *
+ *    back to O/S control.                                                                     *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   03/10/1997 JLB : Created.                                                                 *
+ *=============================================================================================*/
+WWMouseClass::~WWMouseClass(void) // RA2: defined here
+{
+	if (TimerHandle != NULL) {
+		timeKillEvent(TimerHandle);
+		_MousePtr = NULL;
+	}
+	CloseHandle(MouseMutex);
+
+	if (Background != NULL) {
+		delete Background;
+		Background = NULL;
+	}
+
+	if (Alternate != NULL) {
+		delete Alternate;
+		Alternate = NULL;
+	}
+
+	if (SidebarAlternate != NULL) {
+		delete SidebarAlternate;
+		SidebarAlternate = NULL;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /***********************************************************************************************
  * Callback_Process_Mouse -- Mouse O/S callback function.                                      *
  *                                                                                             *
@@ -123,8 +188,7 @@ void CALLBACK Callback_Process_Mouse( UINT, UINT, DWORD, DWORD, DWORD  )
  *   03/10/1997 JLB : Created.                                                                 *
  *=============================================================================================*/
 WWMouseClass::WWMouseClass(Surface * surfaceptr, HWND window) :
-	MouseMutex(NULL),
-	MouseState(-1),
+	MouseState(-1), // RA2: no MouseMutex (not in RA2's layout)
 	IsCaptured(false),
 	MouseX(0),
 	MouseY(0),
@@ -151,46 +215,6 @@ WWMouseClass::WWMouseClass(Surface * surfaceptr, HWND window) :
 	Calc_Confining_Rect();
 	MouseXHot = ConfiningRect.X + (ConfiningRect.Width/2);
 	MouseYHot = ConfiningRect.Y + (ConfiningRect.Height/2);
-}
-
-
-/***********************************************************************************************
- * WWMouseClass::~WWMouseClass -- Destructor for mouse handler object.                         *
- *                                                                                             *
- *    This will remove the mouse handler object from being processed. It returns the mouse     *
- *    back to O/S control.                                                                     *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/10/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
-WWMouseClass::~WWMouseClass(void)
-{
-	if (TimerHandle != NULL) {
-		timeKillEvent(TimerHandle);
-		_MousePtr = NULL;
-	}
-	CloseHandle(MouseMutex);
-
-	if (Background != NULL) {
-		delete Background;
-		Background = NULL;
-	}
-
-	if (Alternate != NULL) {
-		delete Alternate;
-		Alternate = NULL;
-	}
-
-	if (SidebarAlternate != NULL) {
-		delete SidebarAlternate;
-		SidebarAlternate = NULL;
-	}
 }
 
 
@@ -1053,3 +1077,4 @@ void WWMouseClass::Unblock_Mouse(void)
 {
 	ReleaseMutex(MouseMutex);
 }
+
