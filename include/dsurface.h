@@ -52,6 +52,7 @@ enum DSurfaceColorMode {
 */
 class DSurface : public XSurface
 {
+	friend bool Restore_Surface(DSurface const * surface); // RA2: the inline restore helper reads the surface
 		typedef XSurface BASECLASS;
 
 	public:
@@ -100,6 +101,8 @@ class DSurface : public XSurface
 		virtual bool Draw_Depth_Shaded_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, unsigned color, int start_depth, int end_depth, bool write_depth = false) override;
 		virtual bool Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, int glow_strength, int start_depth, int end_depth, bool write_depth = false) override;
 		virtual bool Draw_Depth_Antialiased_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, RGBClass & color, int start_depth, int end_depth, bool write_depth, bool blend_red, bool blend_green, bool blend_blue, float intensity) override;
+		virtual bool Draw_RGB_Multiplying_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, RGBClass const & color, float intensity, int start_depth, int end_depth) override; // RA2: 0x4ADE00
+		bool Draw_Trail_Line(Rect const & cliprect, Point2D & startpoint, Point2D & endpoint, RGBClass & color, int alpha, int start_height, int end_height); // RA2: 0x4AE9C0
 
 		virtual int Draw_Masked_Dashed_Line(Point2D const & startpoint, Point2D const & endpoint, unsigned color, bool pattern[], int offset, bool draw_on_zero_alpha) override;
 		virtual bool Draw_Masked_Line(Point2D const & startpoint, Point2D const & endpoint, unsigned color, bool draw_on_zero_alpha) override;
@@ -110,6 +113,7 @@ class DSurface : public XSurface
 		*/
 		virtual void * Lock(Point2D point = Point2D(0, 0)) const override;
 		virtual bool Unlock(void) const override;
+		bool Is_Lost(void) const; // RA2: at 0x004AAEE0, between Unlock and Restore_Check
 		virtual bool Can_Lock(int x = 0, int y = 0) const override;
 
 		/*

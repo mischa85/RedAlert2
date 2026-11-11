@@ -56,6 +56,10 @@
 #include "swap.h"
 
 #include <math.h>
+#include <d3d.h> // RA2: the 3D device query
+
+namespace DirectDrawWrap { extern bool DoSmth; extern LPDIRECTDRAW lpDD; }
+
 
 extern bool WindowedMode;
 extern bool GameInFocus;
@@ -106,6 +110,22 @@ extern int PrimaryColorMode;
  * WARNINGS:   The surface pixel format is the same as that of the visible display mode. It    *
  *             is important to construct surfaces using this routine, only AFTER the display   *
  *             mode has been set.                                                              *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   02/07/1997 JLB : Created.                                                                 *
+ *=============================================================================================*/
+
+
+/***********************************************************************************************
+ * DSurface::~DSurface -- Destructor for a direct draw surface object.                         *
+ *                                                                                             *
+ *    This will destruct (make invalid) the direct draw surface.                               *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
  *                                                                                             *
  * HISTORY:                                                                                    *
  *   02/07/1997 JLB : Created.                                                                 *
@@ -449,6 +469,31 @@ DSurface::DSurface(LPDIRECTDRAWSURFACE surfaceptr) :
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+inline bool Restore_Surface(DSurface const * surface)
+{
+	if (!WindowedMode && !GameInFocus) {
+		return(false);
+	}
+
+	if (surface->SurfacePtr != NULL && surface->SurfacePtr->IsLost() == DDERR_SURFACELOST) {
+		if (surface->SurfacePtr->Restore() != DD_OK || surface->SurfacePtr->IsLost() != DD_OK) return(false);
+		int oldlockcount = surface->LockCount;
+		if (surface->LockCount > 0) {
+			surface->LockCount = 0;
+			surface->Lock();
+			surface->LockCount++;
+			surface->Unlock();
+			surface->LockCount = oldlockcount;
+		}
+	}
+
+	return(true);
+}
+
+
 /***********************************************************************************************
  * DSurface::GetDC -- Get the windows device context from our surface                          *
  *                                                                                             *
@@ -466,12 +511,13 @@ HDC DSurface::GetDC(void)
 	HDC hdc = NULL;
 	HRESULT hr;
 
-	hr = SurfacePtr->GetDC(&hdc);
-	// GetDC() locks the surface internally, so we need to reflect that here
-	if (hr == DD_OK) {
-		LockCount++;
-	}else{
-		hdc = NULL;
+	if (!Is_Locked()) { // RA2: GetDC at 0x4AABF0 matches only so
+		hr = SurfacePtr->GetDC(&hdc); // RA2: as above
+		if (hr == DD_OK) { // RA2: as above
+			LockCount++; // RA2: as above
+		} else {
+			hdc = NULL; // RA2: as above
+		}
 	}
 
 	return(hdc);
@@ -572,7 +618,7 @@ int DSurface::Stride(void) const
  *=============================================================================================*/
 void * DSurface::Lock(Point2D point) const
 {
-	if (!Restore_Check()) return(NULL);
+	if (!Restore_Surface(this)) return(NULL); // RA2: Lock at 0x4AAC80 matches only so
 	if (point.X < 0 || point.Y < 0) return(NULL);
 
 	if (LockCount == 0) {
@@ -642,7 +688,7 @@ bool DSurface::Can_Blit(void) const
  *=============================================================================================*/
 bool DSurface::Unlock(void) const
 {
-	Restore_Check();
+	Restore_Surface(this); // RA2: Unlock at 0x4AAE40 matches only so
 	if (LockCount > 0) {
 		BASECLASS::Unlock();
 		if (LockCount == 0) {
@@ -652,6 +698,15 @@ bool DSurface::Unlock(void) const
 		return(true);
 	}
 	return(false);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool DSurface::Is_Lost(void) const // RA2: not in TibSun, at 0x004AAEE0
+{
+	return(SurfacePtr != NULL && SurfacePtr->IsLost() == DDERR_SURFACELOST);
 }
 
 
@@ -672,24 +727,8 @@ bool DSurface::Unlock(void) const
  *=============================================================================================*/
 bool DSurface::Restore_Check(void) const
 {
-	if (!WindowedMode && !GameInFocus) {
-		return(false);
-	}
-
-	if (SurfacePtr != NULL && SurfacePtr->IsLost() == DDERR_SURFACELOST) {
-		if (SurfacePtr->Restore() != DD_OK || SurfacePtr->IsLost() != DD_OK) return(false);
-		int oldlockcount = LockCount;
-		if (LockCount > 0) {
-			LockCount = 0;
-			Lock();
-			LockCount++;
-			Unlock();
-			LockCount = oldlockcount;
-		}
-	}
-
-	return(true);
-}
+	return(Restore_Surface(this)); // RA2: Restore_Check at 0x4AAF00 matches only so
+} // RA2: Restore_Check at 0x4AAF00 has no SurfacePtr, IsLost, Restore and 3 more
 
 
 /***********************************************************************************************
@@ -775,8 +814,7 @@ bool DSurface::Blit_From(Rect const & dcliprect, Rect const & destrect, Surface 
 		sourcerect.Height == destrect.Height) {
 		use_xsurface = true;
 	}
-
-	if (Restore_Check() == false) {
+	if (Restore_Surface(this) == false) { // RA2: Blit_From at 0x4AAFD0 matches only so
 		return(false);
 	}
 
@@ -788,7 +826,7 @@ bool DSurface::Blit_From(Rect const & dcliprect, Rect const & destrect, Surface 
 
 	Rect drect = destrect;
 	Rect srect = sourcerect;
-	Rect swindow = Intersect(scliprect, ssource.Get_Rect());
+	Rect swindow(Intersect(scliprect, ssource.Get_Rect())); // RA2: as above
 	Rect dwindow = Intersect(dcliprect, Get_Rect());
 	if (Blit_Clip(drect, dwindow, srect, swindow)) {
 		RECT xdestrect;
@@ -926,6 +964,7 @@ bool DSurface::Fill_Rect_Trans(Rect const & xcliprect, const RGBClass & color, u
 	/*
 	**	Ensure that the clipping rectangle is legal.
 	*/
+	
 	Rect cliprect = Intersect(Get_Rect(), xcliprect);
 
 	if (!cliprect.Is_Valid()) {
@@ -1160,10 +1199,10 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 	*/
 	start = Bias_To(startpoint, rect);
 	end = Bias_To(endpoint, rect);
+	int z2 = end_depth; // RA2: Draw_Depth_Glow_Line at 0x4ABBA0 matches only so
 	int z1 = start_depth;
-	int z2 = end_depth;
 
-	/*
+	/* // RA2: Draw_Depth_Glow_Line at 0x4ABBA0 has no int z2 = end_depth;
 	 * Sort the endpoints left-to-right, carrying the depth values with them.
 	 */
 	if (start.X > end.X) {
@@ -1189,10 +1228,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 	 * Re-interpolate the far depth value if the far endpoint was clipped.
 	 */
 	if (end.X != origend.X || end.Y != origend.Y) {
-		Point2D clipped = Point2D(px, py) - end;
-		Point2D full = Point2D(px, py) - origend;
-		int fulllen = full.Length();
-		unsigned int amount = abs((int)((double)clipped.Length() / (double)fulllen * (double)(z1 - z2)));
+		unsigned int amount = abs((int)((double)Distance(Point2D(px, py), end) / (double)Distance(Point2D(px, py), origend) * (double)(z1 - z2))); // RA2: as above
 		if (z1 < z2) {
 			zend = z1 + amount;
 		} else {
@@ -1207,8 +1243,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 		Point2D clipped_point(start.X - origend.X, start.Y - origend.Y);
 		int clipped = clipped_point.Length();
 		Point2D full_point(px - origend.X, py - origend.Y);
-		int full = full_point.Length();
-		unsigned int amount = abs((int)((double)clipped / (double)full * (double)(z1 - z2)));
+		unsigned int amount = abs((int)((double)clipped / (double)full_point.Length() * (double)(z1 - z2))); // RA2: as above
 		if (z2 > z1) {
 			zstart = z2 - amount;
 		} else {
@@ -1272,19 +1307,13 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 
 				if ((unsigned short)z < *zbuffer) {
 					RGBClass rgb = Deconstruct_Hicolor_Pixel(*(unsigned short *)((char *)buffer + offset));
-					int blue = ((glow_strength * rgb.Get_Blue()) >> 8) + rgb.Get_Blue();
-					int red = ((glow_strength * rgb.Get_Red()) >> 8) + rgb.Get_Red();
-					int green = ((glow_strength * rgb.Get_Green()) >> 8) + rgb.Get_Green();
-					if (blue > 255) {
-						blue = 255;
-					}
-					if (green > 255) {
-						green = 255;
-					}
-					if (red > 255) {
-						red = 255;
-					}
-					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Build_Hicolor_Pixel(red, green, blue);
+					int red = rgb.Get_Red(); // RA2: as above
+					int green = rgb.Get_Green(); // RA2: as above
+					red += (glow_strength * red) >> 8; // RA2: as above
+					green += (glow_strength * green) >> 8; // RA2: as above
+					int blue = rgb.Get_Blue(); // RA2: as above
+					blue += (glow_strength * blue) >> 8; // RA2: as above
+					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Build_Hicolor_Pixel((red > 255) ? 255 : red, (green > 255) ? 255 : green, (blue > 255) ? 255 : blue);
 					if (write_depth) {
 						*zbuffer = (unsigned short)z;
 					}
@@ -1295,7 +1324,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 					xdelta -= dz2;
 					zbuffer += zwidth;
 					if (zwidth > 0) {
-						zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+						zbuffer = Blit_Wrap_Z_Buffer(zbuffer); // RA2: as above
 					} else {
 						zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
 					}
@@ -1305,7 +1334,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 				if (ydelta > 0) {
 					zbuffer++;
 					offset += 2;
-					zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+					zbuffer = Blit_Wrap_Z_Buffer(zbuffer); // RA2: as above
 					ydelta -= dz2;
 				}
 
@@ -1328,19 +1357,13 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 
 				if ((unsigned short)z < *zbuffer) {
 					RGBClass rgb = Deconstruct_Hicolor_Pixel(*((unsigned short *)buffer + offset));
-					int blue = ((glow_strength * rgb.Get_Blue()) >> 8) + rgb.Get_Blue();
-					int red = ((glow_strength * rgb.Get_Red()) >> 8) + rgb.Get_Red();
-					int green = ((glow_strength * rgb.Get_Green()) >> 8) + rgb.Get_Green();
-					if (blue > 255) {
-						blue = 255;
-					}
-					if (green > 255) {
-						green = 255;
-					}
-					if (red > 255) {
-						red = 255;
-					}
-					*((unsigned short *)buffer + offset) = (unsigned short)Build_Hicolor_Pixel(red, green, blue);
+					int red = rgb.Get_Red(); // RA2: as above
+					int green = rgb.Get_Green(); // RA2: as above
+					red += (glow_strength * red) >> 8; // RA2: as above
+					green += (glow_strength * green) >> 8; // RA2: as above
+					int blue = rgb.Get_Blue(); // RA2: as above
+					blue += (glow_strength * blue) >> 8; // RA2: as above
+					*((unsigned short *)buffer + offset) = (unsigned short)Build_Hicolor_Pixel((red > 255) ? 255 : red, (green > 255) ? 255 : green, (blue > 255) ? 255 : blue);
 					if (write_depth) {
 						*zbuffer = (unsigned short)z;
 					}
@@ -1351,7 +1374,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 					ydelta -= dx2;
 					zbuffer += zwidth;
 					if (zwidth > 0) {
-						zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+						zbuffer = Blit_Wrap_Z_Buffer(zbuffer); // RA2: as above
 					} else {
 						zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
 					}
@@ -1366,7 +1389,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 				zbuffer++;
 				ydelta += dy2;
 				zdelta += dz2;
-				zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+				zbuffer = Blit_Wrap_Z_Buffer(zbuffer); // RA2: as above
 
 			} while (++offset < xcount);
 		}
@@ -1383,19 +1406,13 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 
 				if ((unsigned short)z < *zbuffer) {
 					RGBClass rgb = Deconstruct_Hicolor_Pixel(*(unsigned short *)((char *)buffer + offset));
-					int blue = ((glow_strength * rgb.Get_Blue()) >> 8) + rgb.Get_Blue();
-					int red = ((glow_strength * rgb.Get_Red()) >> 8) + rgb.Get_Red();
-					int green = ((glow_strength * rgb.Get_Green()) >> 8) + rgb.Get_Green();
-					if (blue > 255) {
-						blue = 255;
-					}
-					if (green > 255) {
-						green = 255;
-					}
-					if (red > 255) {
-						red = 255;
-					}
-					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Build_Hicolor_Pixel(red, green, blue);
+					int red = rgb.Get_Red(); // RA2: as above
+					int green = rgb.Get_Green(); // RA2: as above
+					red += (glow_strength * red) >> 8; // RA2: as above
+					green += (glow_strength * green) >> 8; // RA2: as above
+					int blue = rgb.Get_Blue(); // RA2: as above
+					blue += (glow_strength * blue) >> 8; // RA2: as above
+					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Build_Hicolor_Pixel((red > 255) ? 255 : red, (green > 255) ? 255 : green, (blue > 255) ? 255 : blue);
 					if (write_depth) {
 						*zbuffer = (unsigned short)z;
 					}
@@ -1404,7 +1421,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 				if (xdelta > 0) {
 					zbuffer++;
 					offset += 2;
-					zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+					zbuffer = Blit_Wrap_Z_Buffer(zbuffer); // RA2: as above
 					xdelta -= dy2;
 				}
 
@@ -1418,7 +1435,7 @@ bool DSurface::Draw_Depth_Glow_Line(Rect const & cliprect, Point2D const & start
 				buffer = (unsigned char *)buffer + pitch;
 				zbuffer += zwidth;
 				if (zwidth > 0) {
-					zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+					zbuffer = Blit_Wrap_Z_Buffer(zbuffer); // RA2: as above
 				} else {
 					zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
 				}
@@ -2033,6 +2050,575 @@ bool DSurface::Draw_Depth_Antialiased_Line(Rect const & cliprect, Point2D const 
 	return(false);
 }
 
+int __fastcall Brighten_Hicolor_Pixel(RGBClass const * rgb, int red_add, int green_add, int blue_add); // RA2: 0x4AE8D0, defined below
+
+bool DSurface::Draw_RGB_Multiplying_Line(Rect const & cliprect, Point2D const & startpoint, Point2D const & endpoint, RGBClass const & color, float intensity, int start_depth, int end_depth) // RA2: not in TibSun, at 0x4ADE00 (YR's DrawRGBMultiplyingLine)
+{
+	int r = (int)(color.Get_Red() * intensity);
+	int g = (int)(color.Get_Green() * intensity);
+	int b = (int)(color.Get_Blue() * intensity);
+
+	Point2D start;
+	Point2D end;
+
+	if (r >= 8 || g >= 8 || b >= 8) {
+
+	Rect clipped_rect = Intersect(cliprect, Get_Rect());
+	if (clipped_rect.Width != 0 || clipped_rect.Height != 0) {
+
+	start = Bias_To(startpoint, clipped_rect);
+	end = Bias_To(endpoint, clipped_rect);
+
+	int z2 = end_depth;
+	int z1 = start_depth;
+	if (start.X > end.X) {
+		swap(start, end);
+		z1 = end_depth;
+		z2 = start_depth;
+	}
+
+	Point2D unclipped = end;
+	int px = start.X;
+	int py = start.Y;
+
+	if (Clip_Line_To_Rect(start, end, clipped_rect)) {
+
+	int zend = z2;
+	int zstart = z1;
+
+	if (end.X != unclipped.X || end.Y != unclipped.Y) {
+		Point2D clipped_point;
+		clipped_point.X = px - end.X;
+		double clipped_dx = (double)clipped_point.X;
+		clipped_point.Y = py - end.Y;
+		int clipped = (int)(int)fastmath::sqrt((double)clipped_point.Y * (double)clipped_point.Y + clipped_dx * clipped_dx);
+		Point2D full_point;
+		full_point.X = px - unclipped.X;
+		double full_dx = (double)full_point.X;
+		full_point.Y = py - unclipped.Y;
+		int amount = abs((int)(int)((double)clipped
+			/ (double)(int)(int)fastmath::sqrt((double)full_point.Y * (double)full_point.Y + full_dx * full_dx)
+			* (double)(z1 - z2)));
+		if (z1 < z2) {
+			zend = z1 + amount;
+		} else {
+			zend = z1 - amount;
+		}
+	}
+
+	if (start.X != px || start.Y != py) {
+		Point2D clipped_point;
+		clipped_point.X = start.X - unclipped.X;
+		double clipped_dx = (double)clipped_point.X;
+		clipped_point.Y = start.Y - unclipped.Y;
+		int clipped = (int)(int)fastmath::sqrt((double)clipped_point.Y * (double)clipped_point.Y + clipped_dx * clipped_dx);
+		Point2D full_point;
+		full_point.X = px - unclipped.X;
+		double full_dx = (double)full_point.X;
+		full_point.Y = py - unclipped.Y;
+		int amount = abs((int)(int)((double)clipped
+			/ (double)(int)(int)fastmath::sqrt((double)full_point.Y * (double)full_point.Y + full_dx * full_dx)
+			* (double)(z1 - z2)));
+		if (z2 > z1) {
+			zstart = z2 - amount;
+		} else {
+			zstart = z2 + amount;
+		}
+	}
+
+	Bytes_Per_Pixel();
+	void * buffer = Lock(start);
+
+	if (DepthBuffer != NULL) {
+
+	Point2D point = start;
+	point.Y -= DepthBuffer->Get_Bounds().Y;
+	unsigned short * zbuffer = (unsigned short *)DepthBuffer->Get_Buffer_Offset(point);
+	point = start;
+	point.Y -= AlphaBuffer->Get_Bounds().Y;
+	unsigned short * abuffer = (unsigned short *)AlphaBuffer->Get_Buffer_Offset(point);
+
+	int start_y = start.Y;
+	int zwrap = -1;
+	ZBuffer * depth_buffer = DepthBuffer;
+	unsigned short z = (unsigned short)(zstart + (short)(depth_buffer->Get_Bounds().Y + depth_buffer->Get_Scroll()) - start_y - clipped_rect.Y);
+	int zwidth = depth_buffer->Get_Buffer_Width();
+
+	if (buffer != NULL) {
+
+	int dx = end.X - start.X;
+	int dy = end.Y - start.Y;
+	int dz = zend - zstart;
+
+	int pitch = Stride();
+	if (dy < 0) {
+		pitch = -pitch;
+		zwidth = -zwidth;
+		zwrap = 1;
+	}
+
+	int zstep = 1;
+	int abs_dy = abs(dy);
+	if (dz < 0) {
+		zstep = -1;
+	}
+
+	RGBClass rgb;
+	int abs_dz = abs(dz);
+	int dx2 = 2 * dx;
+	int dy2 = 2 * abs_dy;
+	int dz2 = 2 * abs_dz;
+
+	if (abs_dz > dx && abs_dz > abs_dy) {
+
+		int xdelta = dy2 - abs_dz;
+		int ydelta = dx2 - abs_dz;
+		if (abs_dz > 0) {
+			int offset = 0;
+			for (int i = abs_dz; i != 0; i--) {
+
+				int alpha = *abuffer;
+				if (z < *zbuffer) {
+					rgb = Deconstruct_Hicolor_Pixel(*(unsigned short *)((char *)buffer + offset));
+					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Brighten_Hicolor_Pixel(&rgb, (alpha * r) >> 7, (alpha * g) >> 7, (alpha * b) >> 7);
+				}
+
+				if (xdelta > 0) {
+					buffer = (unsigned char *)buffer + pitch;
+					xdelta -= dz2;
+					zbuffer += zwidth;
+					if (zwidth > 0) {
+						zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+					} else {
+						zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
+					}
+					abuffer += zwidth;
+					if (zwidth > 0) {
+						abuffer = (unsigned short *)AlphaBuffer->Wrap_Overflow((unsigned int)abuffer);
+					} else {
+						abuffer = (unsigned short *)AlphaBuffer->Wrap_Underflow((unsigned int)abuffer);
+					}
+					z += zwrap;
+				}
+
+				if (ydelta > 0) {
+					zbuffer++;
+					offset += 2;
+					zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+					ydelta -= dz2;
+				}
+
+				z += zstep;
+				ydelta += dx2;
+				xdelta += dy2;
+			}
+		}
+	} else if (dx > abs_dy) {
+
+		int ydelta = dy2 - dx;
+		int zdelta = dz2 - dx;
+		int i = 0;
+		if (dx > 0) {
+			for (; i < dx; i++) {
+
+				int alpha = *abuffer;
+				if (z < *zbuffer) {
+					rgb = Deconstruct_Hicolor_Pixel(*((unsigned short *)buffer + i));
+					*((unsigned short *)buffer + i) = (unsigned short)Brighten_Hicolor_Pixel(&rgb, (alpha * r) >> 7, (alpha * g) >> 7, (alpha * b) >> 7);
+				}
+
+				if (ydelta > 0) {
+					buffer = (unsigned char *)buffer + pitch;
+					ydelta -= 2 * dx;
+					zbuffer += zwidth;
+					if (zwidth > 0) {
+						zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+					} else {
+						zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
+					}
+					abuffer += zwidth;
+					if (zwidth > 0) {
+						abuffer = (unsigned short *)AlphaBuffer->Wrap_Overflow((unsigned int)abuffer);
+					} else {
+						abuffer = (unsigned short *)AlphaBuffer->Wrap_Underflow((unsigned int)abuffer);
+					}
+					z += zwrap;
+				}
+
+				if (zdelta > 0) {
+					z += zstep;
+					zdelta -= 2 * dx;
+				}
+
+				zbuffer++;
+				ydelta += dy2;
+				zdelta += dz2;
+				zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+			}
+		}
+	} else {
+
+		int xdelta = dx2 - abs_dy;
+		int zdelta = 2 * abs_dz - abs_dy;
+		if (abs_dy > 0) {
+			int offset = 0;
+			for (int i = abs_dy; i != 0; i--) {
+
+				int alpha = *abuffer;
+				if (z < *zbuffer) {
+					rgb = Deconstruct_Hicolor_Pixel(*(unsigned short *)((char *)buffer + offset));
+					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Brighten_Hicolor_Pixel(&rgb, (alpha * r) >> 7, (alpha * g) >> 7, (alpha * b) >> 7);
+				}
+
+				if (xdelta > 0) {
+					zbuffer++;
+					offset += 2;
+					zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+					xdelta -= dy2;
+				}
+
+				if (zdelta > 0) {
+					z += zstep;
+					zdelta -= dy2;
+				}
+
+				xdelta += dx2;
+				zdelta += dz2;
+				buffer = (unsigned char *)buffer + pitch;
+
+				zbuffer += zwidth;
+				if (zwidth > 0) {
+					zbuffer = (unsigned short *)DepthBuffer->Wrap_Overflow((unsigned int)zbuffer);
+				} else {
+					zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
+				}
+				abuffer += zwidth;
+				if (zwidth > 0) {
+					abuffer = (unsigned short *)AlphaBuffer->Wrap_Overflow((unsigned int)abuffer);
+				} else {
+					abuffer = (unsigned short *)AlphaBuffer->Wrap_Underflow((unsigned int)abuffer);
+				}
+				z += zwrap;
+
+			}
+		}
+	}
+
+	Unlock();
+	return(true);
+
+	}
+	}
+	}
+	}
+	}
+
+	return(false);
+}
+
+
+
+
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int __fastcall Brighten_Hicolor_Pixel(RGBClass const * rgb, int red_add, int green_add, int blue_add) // RA2: not in TibSun, at 0x004AE8D0
+{
+	int red = rgb->Get_Red() + red_add;
+	int green = rgb->Get_Green() + green_add;
+	int blue = rgb->Get_Blue() + blue_add;
+	int excess = 0;
+	int full = 0;
+
+	if (red >= 255) {
+		full = 1;
+		excess = red - 255;
+	}
+	if (green >= 255) {
+		full++;
+		excess += green - 255;
+	}
+	if (blue >= 255) {
+		full++;
+		excess += blue - 255;
+	}
+	if (full != 0 && full < 3) {
+		if (full == 1) {
+			excess >>= 1;
+		}
+		if (red < 255) red += excess;
+		if (green < 255) green += excess;
+		if (blue < 255) blue += excess;
+	}
+	if (blue > 255) blue = 255;
+	if (green > 255) green = 255;
+	if (red > 255) red = 255;
+	return(DSurface::Build_Hicolor_Pixel(red, green, blue));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int Alpha_Hicolor_Pixel(RGBClass const & rgb, int v, int inv_alpha, int red, int green, int blue)
+{
+	return(DSurface::Build_Hicolor_Pixel(((((rgb.Get_Red() * inv_alpha) >> 8) + red) * v) >> 7, ((((rgb.Get_Green() * inv_alpha) >> 8) + green) * v) >> 7, ((((rgb.Get_Blue() * inv_alpha) >> 8) + blue) * v) >> 7));
+}
+
+
+bool DSurface::Draw_Trail_Line(Rect const & cliprect, Point2D & startpoint, Point2D & endpoint, RGBClass & color, int alpha, int start_height, int end_height) // RA2: not in TibSun, at 0x4AE9C0
+{
+	Point2D start;
+	Point2D end;
+
+	if (alpha >= 8) {
+
+	Rect rect = Intersect(cliprect, Get_Rect());
+	if (rect.Width != 0 || rect.Height != 0) {
+
+	start = Bias_To(startpoint, rect);
+	end = Bias_To(endpoint, rect);
+
+	int z2 = end_height;
+	int z1 = start_height;
+	if (start.X > end.X) {
+		swap(start, end);
+		z1 = end_height;
+		z2 = start_height;
+	}
+
+	Point2D origend = end;
+	int px = start.X;
+	int py = start.Y;
+
+	if (Clip_Line_To_Rect(start, end, rect)) {
+
+	int zend = z2;
+	int zstart = z1;
+
+	if (end.X != origend.X || end.Y != origend.Y) {
+		int amount = abs((int)((double)Distance(Point2D(px, py), end) / (double)Distance(Point2D(px, py), origend) * (double)(z1 - z2)));
+		if (z1 < z2) {
+			zend = z1 + amount;
+		} else {
+			zend = z1 - amount;
+		}
+	}
+
+	if (start.X != px || start.Y != py) {
+		int amount = abs((int)((double)Distance(start, origend) / (double)Distance(Point2D(px, py), origend) * (double)(z1 - z2)));
+		if (z2 > z1) {
+			zstart = z2 - amount;
+		} else {
+			zstart = z2 + amount;
+		}
+	}
+
+	Bytes_Per_Pixel();
+	void * buffer = Lock(start);
+
+	if (DepthBuffer != NULL) {
+
+	Point2D point = start;
+	point.Y -= DepthBuffer->Get_Bounds().Y;
+	unsigned short * zbuffer = (unsigned short *)DepthBuffer->Get_Buffer_Offset(point);
+	point = start;
+	point.Y -= AlphaBuffer->Get_Bounds().Y;
+	unsigned short * abuffer = (unsigned short *)AlphaBuffer->Get_Buffer_Offset(point);
+
+	int start_y = start.Y;
+	int zwrap = -1;
+	ZBuffer * depth_buffer = DepthBuffer;
+	unsigned short z = (unsigned short)(zstart + (short)(depth_buffer->Get_Bounds().Y + depth_buffer->Get_Scroll()) - start_y - rect.Y);
+	int zwidth = DepthBuffer->Get_Buffer_Width();
+
+	if (buffer != NULL) {
+
+	int red = (color.Get_Red() * alpha) >> 8;
+	int green = (color.Get_Green() * alpha) >> 8;
+	int blue = (color.Get_Blue() * alpha) >> 8;
+	int inv_alpha = 256 - alpha;
+
+	int dx = end.X - start.X;
+	int dy = end.Y - start.Y;
+	int dz = zend - zstart;
+
+	int pitch = Stride();
+	if (dy < 0) {
+		pitch = -pitch;
+		zwidth = -zwidth;
+		zwrap = 1;
+	}
+
+	int abs_dy = abs(dy);
+	int zstep = 1;
+	if (dz < 0) {
+		zstep = -1;
+	}
+
+	int abs_dz = abs(dz);
+	int dx2 = 2 * dx;
+	int dy2 = 2 * abs_dy;
+	int dz2 = 2 * abs_dz;
+
+	if (abs_dz > dx && abs_dz > abs_dy) {
+
+		int xdelta = dy2 - abs_dz;
+		int ydelta = dx2 - abs_dz;
+		if (abs_dz > 0) {
+			int offset = 0;
+			for (int i = abs_dz; i != 0; i--) {
+
+				int v = *abuffer;
+				if (z < *zbuffer && v != 0) {
+					RGBClass rgb = Deconstruct_Hicolor_Pixel(*(unsigned short *)((char *)buffer + offset));
+					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Alpha_Hicolor_Pixel(rgb, v, inv_alpha, red, green, blue);
+				}
+
+				if (xdelta > 0) {
+					buffer = (unsigned char *)buffer + pitch;
+					xdelta -= dz2;
+					zbuffer += zwidth;
+					if (zwidth > 0) {
+						zbuffer = Blit_Wrap_Z_Buffer(zbuffer);
+					} else {
+						zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
+					}
+					abuffer += zwidth;
+					if (zwidth > 0) {
+						abuffer = Blit_Wrap_A_Buffer(abuffer);
+					} else {
+						abuffer = (unsigned short *)AlphaBuffer->Wrap_Underflow((unsigned int)abuffer);
+					}
+					z += zwrap;
+				}
+
+				if (ydelta > 0) {
+					zbuffer++;
+					offset += 2;
+					zbuffer = Blit_Wrap_Z_Buffer(zbuffer);
+					abuffer++;
+					abuffer = Blit_Wrap_A_Buffer(abuffer);
+					ydelta -= dz2;
+				}
+
+				z += zstep;
+				ydelta += dx2;
+				xdelta += dy2;
+			}
+		}
+	} else if (dx > abs_dy) {
+
+		int ydelta = dy2 - dx;
+		int zdelta = dz2 - dx;
+		int i = 0;
+		if (dx > 0) {
+			for (; i < dx; i++) {
+
+				int v = *abuffer;
+				if (z < *zbuffer && v != 0) {
+					RGBClass rgb = Deconstruct_Hicolor_Pixel(*((unsigned short *)buffer + i));
+					*((unsigned short *)buffer + i) = (unsigned short)Alpha_Hicolor_Pixel(rgb, v, inv_alpha, red, green, blue);
+				}
+
+				if (ydelta > 0) {
+					buffer = (unsigned char *)buffer + pitch;
+					ydelta -= 2 * dx;
+					zbuffer += zwidth;
+					if (zwidth > 0) {
+						zbuffer = Blit_Wrap_Z_Buffer(zbuffer);
+					} else {
+						zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
+					}
+					z += zwrap;
+					abuffer += zwidth;
+					if (zwidth > 0) {
+						abuffer = Blit_Wrap_A_Buffer(abuffer);
+					} else {
+						abuffer = (unsigned short *)AlphaBuffer->Wrap_Underflow((unsigned int)abuffer);
+					}
+				}
+
+				if (zdelta > 0) {
+					z += zstep;
+					zdelta -= 2 * dx;
+				}
+
+				zbuffer++;
+				ydelta += dy2;
+				zdelta += dz2;
+				zbuffer = Blit_Wrap_Z_Buffer(zbuffer);
+				abuffer++;
+				abuffer = Blit_Wrap_A_Buffer(abuffer);
+			}
+		}
+	} else {
+
+		int xdelta = dx2 - abs_dy;
+		int zdelta = dz2 - abs_dy;
+		if (abs_dy > 0) {
+			int offset = 0;
+			for (int i = abs_dy; i != 0; i--) {
+
+				int v = *abuffer;
+				if (z < *zbuffer && v != 0) {
+					RGBClass rgb = Deconstruct_Hicolor_Pixel(*(unsigned short *)((char *)buffer + offset));
+					*(unsigned short *)((char *)buffer + offset) = (unsigned short)Alpha_Hicolor_Pixel(rgb, v, inv_alpha, red, green, blue);
+				}
+
+				if (xdelta > 0) {
+					zbuffer++;
+					offset += 2;
+					zbuffer = Blit_Wrap_Z_Buffer(zbuffer);
+					abuffer++;
+					abuffer = Blit_Wrap_A_Buffer(abuffer);
+					xdelta -= dy2;
+				}
+
+				if (zdelta > 0) {
+					z += zstep;
+					zdelta -= dy2;
+				}
+
+				xdelta += dx2;
+				zdelta += dz2;
+				buffer = (unsigned char *)buffer + pitch;
+
+				zbuffer += zwidth;
+				if (zwidth > 0) {
+					zbuffer = Blit_Wrap_Z_Buffer(zbuffer);
+				} else {
+					zbuffer = (unsigned short *)DepthBuffer->Wrap_Underflow((unsigned int)zbuffer);
+				}
+				z += zwrap;
+				abuffer += zwidth;
+				if (zwidth > 0) {
+					abuffer = Blit_Wrap_A_Buffer(abuffer);
+				} else {
+					abuffer = (unsigned short *)AlphaBuffer->Wrap_Underflow((unsigned int)abuffer);
+				}
+			}
+		}
+	}
+
+	Unlock();
+	return(true);
+
+	}
+	}
+	}
+	}
+	}
+
+	return(false);
+}
+
+
+
+
 
 /// <summary>
 /// Blends one hicolor pixel into another.
@@ -2048,11 +2634,11 @@ unsigned short DSurface::Blend_Pixel(unsigned short src_color, unsigned short ds
 {
 	switch (level) {
 		case 100:
-			return(src_color);
+			goto done; // RA2: Blend_Pixel at 0x4AF550 matches only so
 		case 75:
 			return(((src_color / 4) & DSurface::QuarterbrightMask) * 4);
 		case 50:
-			return(((src_color / 2) & DSurface::HalfbrightMask) + ((dst_color / 2) & DSurface::HalfbrightMask));
+			return(((src_color / 2) & HalfbrightMask) + ((dst_color / 2) & HalfbrightMask)); // RA2: as above
 		case 25:
 			return(((src_color / 4) & DSurface::QuarterbrightMask) * 4);
 		case 0:
@@ -2060,6 +2646,7 @@ unsigned short DSurface::Blend_Pixel(unsigned short src_color, unsigned short ds
 		default:
 			break;
 	}
+done: // RA2: as above
 	return(src_color);
 }
 
@@ -2107,8 +2694,7 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 				 * Simplest of the blits, straight horizontal line.
 				 */
 				for (int i = 0; i <= end.X - start.X; i++) {
-					RGBClass gradient_color((NoInitClass()));
-					gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+					RGBClass gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position); // RA2: Draw_Ping_Pong_Gradient_Line at 0x4AF650 matches only so
 
 					*((unsigned short *)buffer + i) = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 
@@ -2130,8 +2716,7 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 				 */
 				int dy = abs(end.Y - start.Y);
 				for (int i = 0; i <= dy; i++) {
-					RGBClass gradient_color((NoInitClass()));
-					gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+					RGBClass gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position); // RA2: as above
 
 					*(unsigned short *)buffer = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 
@@ -2175,8 +2760,7 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 					 * Plot low line.
 					 */
 					for (int i = 0; i <= dx; i++) {
-						RGBClass gradient_color((NoInitClass()));
-						gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+						RGBClass gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position); // RA2: as above
 
 						*((unsigned short *)buffer + i) = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 
@@ -2209,8 +2793,7 @@ bool DSurface::Draw_Ping_Pong_Gradient_Line(Rect const & cliprect, Point2D const
 					 * Plot high line.
 					 */
 					for (int i = 0; i <= dy; i++) {
-						RGBClass gradient_color((NoInitClass()));
-						gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position);
+						RGBClass gradient_color = RGBClass(NoInitClass()).Lerp(start_color, end_color, gradient_position); // RA2: as above
 
 						*((unsigned short *)buffer + k) = (unsigned short)DSurface::Build_Hicolor_Pixel(gradient_color);
 
@@ -3245,3 +3828,37 @@ bool DSurface::Draw_Masked_Line(Point2D const & startpoint, Point2D const & endp
 
 	return(false);
 }
+
+
+
+
+
+struct DeviceDesc : D3DDEVICEDESC {
+	DWORD dx6_fields[12];
+};
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Clear_Desc(DeviceDesc * desc)
+{
+	memset(desc, 0, sizeof(DeviceDesc));
+	desc->dwSize = sizeof(DeviceDesc);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
