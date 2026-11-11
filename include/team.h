@@ -369,11 +369,19 @@ class TeamClass : public AbstractClass
 		void TMission_LOAD_TRUCK(TeamMissionClass * mission, bool);
 		void TMission_ATTACK_BUILDING_WITH_PROPERTY(TeamMissionClass * mission, bool);
 		void TMission_MOVETO_BUILDING_WITH_PROPERTY(TeamMissionClass * mission, bool);
+		void TMission_MOVETO_FRIENDLY_BUILDING_WITH_PROPERTY(TeamMissionClass * mission, bool first_time); // RA2: 0x6BC980
 		void TMission_SCOUT(TeamMissionClass * mission, bool);
 		void TMission_SUCCESS(TeamMissionClass * mission, bool);
 		void TMission_FLASH(TeamMissionClass * mission, bool);
 		void TMission_PLAY_ANIM(TeamMissionClass * mission, bool);
 		void TMission_TALK_BUBBLE(TeamMissionClass * mission, bool);
+		void TMission_MOVE_TO_ENEMY_APPROACH(TeamMissionClass * mission, bool first_time); // RA2: 0x6BDAA0
+		void TMission_MOVE_TO_BASE_FRONT(TeamMissionClass * mission, bool first_time); // RA2: 0x6BDDB0
+		void TMission_IRON_CURTAIN(TeamMissionClass * mission, bool); // RA2: 0x6BE010
+		void TMission_CHRONO_BUILDING(TeamMissionClass * mission, bool); // RA2: 0x6BE1C0
+		void TMission_CHRONO_ATTACK(TeamMissionClass * mission, bool); // RA2: 0x6BE440
+		int Stray_Distance(void); // RA2: 0x6BE6A0
+		bool Has_Ammo(void) const; // RA2: 0x6BE6E0
 
 		/*
 		 * Keeping the members moving and fighting together.

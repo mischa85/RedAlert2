@@ -118,9 +118,29 @@
 
 #include "target.hh"
 #include "tube.hh"
+#include "super.h" // RA2: the seven RA2 functions
+#include "dbgprint.h" // RA2: the seven RA2 functions
+#include "suprtype.h" // RA2: the super weapon missions
+static inline void Find_Gathering_Cell(Coord const & base, DirType dir, FootClass const * leader, Cell & cell); // RA2: defined after its first caller
+static inline void _Fire_Super(HouseClass * house, SuperClass * super, Cell const & cell); // RA2: defined after its first caller
+ThreatType __fastcall Quarry_To_Threat(int quarry); // RA2: 0x6220E0, a script quarry as a threat type
+
+BuildingClass * __fastcall Pick_Own_Building_With_Property(BuildingTypeClass * type, HouseClass * house, FootClass * unit, TargetPropertyType prop, bool only_enemy); // RA2: 0x6BD240
+
+static inline bool _Conscript(TeamClass * team, FootClass * unit); // RA2: defined after its first caller
 
 
 BuildingClass *Pick_Building_With_Property(BuildingTypeClass *type, HouseClass *house, FootClass *unit, TargetPropertyType prop, bool only_enemy);
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int _Coord_Distance(Coord const & a, Coord const & b)
+{
+	Coord t = a - b;
+	return(t.Length());
+}
 
 
 /***********************************************************************************************
@@ -142,24 +162,8 @@ BuildingClass *Pick_Building_With_Property(BuildingTypeClass *type, HouseClass *
  *=============================================================================================*/
 static inline bool _Is_It_Breathing(FootClass const * object)
 {
-	/*
-	**	If the object is not present or appears to be dead, then it
-	**	certainly isn't an active member of the team.
-	*/
 	if (object == NULL || !object->IsActive || object->Strength == 0) return(false);
-
-	/*
-	**	If the object is in limbo, then it isn't an active team member either. However, if the
-	**	scenario init flag is on, then it is probably a reinforcement issue or scenario
-	**	creation situation. In such a case, the members are considered active because they need to
-	**	be given special orders and treatment.
-	*/
 	if (!ScenarioInit && object->IsInLimbo) return(false);
-
-	/*
-	**	Nothing eliminated this object from being considered an active member of the team (i.e.,
-	**	"breathing"), then return that it is ok.
-	*/
 	return(true);
 }
 
@@ -184,68 +188,10 @@ static inline bool _Is_It_Breathing(FootClass const * object)
  *=============================================================================================*/
 static inline bool _Is_It_Playing(FootClass const * object)
 {
-	/*
-	**	If the object is not active, then it certainly can be a participating member of the
-	**	team.
-	*/
 	if (!_Is_It_Breathing(object)) return(false);
-
-	/*
-	**	Only members that have been "Initiated" are considered "playing" participants of the
-	**	team. This results in the team members that are racing to regroup with the team (i.e.,
-	**	not initiated), will continue to catch up to the team even while the initiated team members
-	**	carry out their team specific orders.
-	*/
 	if (!object->IsInitiated && object->RTTI != RTTI_AIRCRAFT) return(false);
-
-	/*
-	**	If it reaches this point, then nothing appears to disqualify the specified object from
-	**	being considered an active playing member of the team. In this case, return that
-	**	information.
-	*/
 	return(true);
 }
-
-
-#ifdef _DEBUG
-/***********************************************************************************************
- * TeamClass::Debug_Dump -- Displays debug information about the team.                         *
- *                                                                                             *
- *    This routine will display information about the team. This is useful for debugging       *
- *    purposes.                                                                                *
- *                                                                                             *
- * INPUT:   mono  -- Pointer to the monochrome screen that the debugging information will      *
- *                   be displayed on.                                                          *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/11/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-void TeamClass::Debug_Dump(MonoClass * mono) const
-{
-	mono->Set_Cursor(1, 20);mono->Printf("%8.8s", (char const *)Class->IniName);
-	mono->Set_Cursor(10, 20);mono->Printf("%3d", Total);
-	mono->Set_Cursor(17, 20);mono->Printf("%3d", Quantity[Class->ID]);
-//	if (CurrentMission != -1) {
-//		mono->Set_Cursor(1, 22);
-//		mono->Printf("%-29s", Class->MissionList[CurrentMission].Description(CurrentMission));
-//	}
-//	mono->Set_Cursor(40, 20);mono->Printf("%-10s", FormationName[Formation]);
-	mono->Set_Cursor(22, 20);mono->Printf("%08X", Zone);
-	mono->Set_Cursor(31, 20);mono->Printf("%08X", Target);
-
-	mono->Fill_Attrib(53, 20, 12, 1, IsUnderStrength ? MonoClass::INVERSE : MonoClass::NORMAL);
-	mono->Fill_Attrib(53, 21, 12, 1, IsFullStrength ? MonoClass::INVERSE : MonoClass::NORMAL);
-	mono->Fill_Attrib(53, 22, 12, 1, IsHasBeen ? MonoClass::INVERSE : MonoClass::NORMAL);
-
-	mono->Fill_Attrib(66, 20, 12, 1, IsMoving ? MonoClass::INVERSE : MonoClass::NORMAL);
-	mono->Fill_Attrib(66, 21, 12, 1, IsForcedActive ? MonoClass::INVERSE : MonoClass::NORMAL);
-	mono->Fill_Attrib(66, 22, 12, 1, IsReforming ? MonoClass::INVERSE : MonoClass::NORMAL);
-}
-#endif
 
 
 /***********************************************************************************************
@@ -369,12 +315,6 @@ TeamClass::~TeamClass(void)
 			Remove(Member);
 		}
 		Class->Number--;
-
-		/*
-		**	When the team dies, any trigger associated with it, dies as well. This will only occur
-		**	if there are no other objects linked to this trigger. Only player reinforcement
-		**	members that broke off of the team earlier will have this occur.
-		*/
 		if (Tag != NULL) {
 			if (Tag->AttachCount == 0) {
 				Tag->Mark_To_Delete();
@@ -411,36 +351,16 @@ TeamClass::~TeamClass(void)
 void TeamClass::Assign_Mission_Target(AbstractClass * new_target)
 {
 	if (new_target != MissionTarget) {
-		/*
-		**	First go through and find anyone who is currently targeting
-		**	the old mission target and clear their Tarcom.
-		*/
 		FootClass * unit = Member;
 		if (MissionTarget != NULL) {
 			while (unit != NULL) {
 				bool tar = (unit->TarCom == MissionTarget);
 				bool nav = (unit->NavCom == MissionTarget);
 				if (tar || nav) {
-
-					/*
-					**	If the unit was doing something related to the team mission
-					**	then we kick him into guard mode so that he is easy to change
-					**	missions for.
-					*/
-					unit->Assign_Mission(MISSION_GUARD);
-
-					/*
-					**	If the unit's tarcom is set to the old mission target, then
-					**	clear it, so that it will be reset by whatever happens next.
-					*/
+					unit->QueueMission(MISSION_GUARD, false); // RA2: Assign_Mission_Target at 0x6B79E0 matches only so
 					if (nav) {
 						unit->Assign_Destination(NULL);
 					}
-
-					/*
-					**	If the unit's navcom is set to the old mission target, then
-					**	clear it, so that it will be reset by whatever happens next.
-					*/
 					if (tar) {
 						unit->Assign_Target(NULL);
 					}
@@ -450,12 +370,6 @@ void TeamClass::Assign_Mission_Target(AbstractClass * new_target)
 		}
 	}
 
-	/*
-	**	If there is not currently an override on the current mission target
-	**	then assign both MissionTarget and Target to the new target.  If
-	**	there is an override, allow the team to keep fighting the override but
-	**	make sure they pick up on the new mission when they are ready.
-	*/
 	if (Target == MissionTarget || Target == NULL) {
 		MissionTarget = Target = new_target;
 	} else {
@@ -475,6 +389,48 @@ void TeamClass::Assign_Mission_Target(AbstractClass * new_target)
 		}
 	}
 }
+
+
+#ifdef _DEBUG
+/***********************************************************************************************
+ * TeamClass::Debug_Dump -- Displays debug information about the team.                         *
+ *                                                                                             *
+ *    This routine will display information about the team. This is useful for debugging       *
+ *    purposes.                                                                                *
+ *                                                                                             *
+ * INPUT:   mono  -- Pointer to the monochrome screen that the debugging information will      *
+ *                   be displayed on.                                                          *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   03/11/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+void TeamClass::Debug_Dump(MonoClass * mono) const
+{
+	mono->Set_Cursor(1, 20);mono->Printf("%8.8s", (char const *)Class->IniName);
+	mono->Set_Cursor(10, 20);mono->Printf("%3d", Total);
+	mono->Set_Cursor(17, 20);mono->Printf("%3d", Quantity[Class->ID]);
+//	if (CurrentMission != -1) {
+//		mono->Set_Cursor(1, 22);
+//		mono->Printf("%-29s", Class->MissionList[CurrentMission].Description(CurrentMission));
+//	}
+//	mono->Set_Cursor(40, 20);mono->Printf("%-10s", FormationName[Formation]);
+	mono->Set_Cursor(22, 20);mono->Printf("%08X", Zone);
+	mono->Set_Cursor(31, 20);mono->Printf("%08X", Target);
+
+	mono->Fill_Attrib(53, 20, 12, 1, IsUnderStrength ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(53, 21, 12, 1, IsFullStrength ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(53, 22, 12, 1, IsHasBeen ? MonoClass::INVERSE : MonoClass::NORMAL);
+
+	mono->Fill_Attrib(66, 20, 12, 1, IsMoving ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(66, 21, 12, 1, IsForcedActive ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(66, 22, 12, 1, IsReforming ? MonoClass::INVERSE : MonoClass::NORMAL);
+}
+#endif
+
 
 
 /***********************************************************************************************
@@ -720,7 +676,6 @@ void TeamClass::Flag_Into_Action(void)
 
 	Script->Stop_Script();
 	IsNextMission = true;
-//	IsForcedActive = false;
 }
 
 
@@ -736,21 +691,21 @@ void TeamClass::Regroup(void)
 	Script->Stop_Script();
 	if (Total > 0) {
 		Calc_Center(Zone, ClosestMember);
+		if (Zone == NULL) { // RA2: Regroup at 0x6B88B0 matches only so
+			if (ClosestMember == NULL) { // RA2: as above
+				return; // RA2: as above
+			}
+			Zone = ClosestMember; // RA2: as above
+		}
 
-		/*
-		**	When a team is badly damaged and needs to regroup it should
-		**	pick a friendly building to go and regroup at.  Its first preference
-		**	should be somewhere near repair factory.  If it cannot find a repair
-		**	factory then it should pick another structure that is friendly to
-		**	its side.
-		*/
 		Cell dest = Zone->Center_Coord().As_Cell();
-		int max	= 0x7FFFFFFF;
+		int max = 0x7FFFFFFF; // RA2: as above
 
-		for (int index = 0; index < Buildings.Count(); index++) {
-			BuildingClass * b = Buildings[index];
+		int count = House->Buildings.Count(); // RA2: as above
+		for (int index = 0; index < count; index++) { // RA2: as above
+			BuildingClass * b = House->Buildings[index]; // RA2: as above
 
-			if (b != NULL && !b->IsInLimbo && b->House == House && b->PrimaryWeapon == NULL) {
+			if (b != NULL && !b->IsInLimbo && b->PrimaryWeapon == NULL) { // RA2: as above
 				Cell cell = b->Center_Coord().As_Cell();
 				int dist = b->Distance(Zone->Center_Coord()) * (Map.Cell_Threat(cell, *House) + 1);
 
@@ -758,7 +713,9 @@ void TeamClass::Regroup(void)
 					dist /= 2;
 				}
 				if (dist < max) {
-					cell = Fetch_A_Leader()->Safety_Point(Zone->Center_Coord().As_Cell(), cell, 2, 4);
+					Cell zone_cell = Zone->Center_Coord().As_Cell(); // RA2: as above
+					FootClass * leader = Fetch_A_Leader(); // RA2: as above
+					cell = leader->Safety_Point(zone_cell, cell, 2, 4); // RA2: as above
 					if (cell != CELL_NONE) {
 						max = dist;
 						dest = cell;
@@ -767,7 +724,6 @@ void TeamClass::Regroup(void)
 			}
 		}
 
-		// Should calculate a regroup location.
 		Target = &Map[dest];
 		Coordinate_Move();
 	} else {
@@ -796,10 +752,6 @@ bool TeamClass::Recalc_Strength(void)
 			IsHasBeen = true;
 		}
 
-		/*
-		**	Reinforceable teams will revert (or snap out of) the under strength
-		**	mode when the members transition the magic 1/3 strength threshold.
-		*/
 		if (Class->IsReinforcable) {
 			if (desired > 2) {
 				IsUnderStrength = (Total <= desired / 3);
@@ -807,13 +759,6 @@ bool TeamClass::Recalc_Strength(void)
 				IsUnderStrength = (Total < desired);
 			}
 		} else {
-
-			/*
-			**	Teams that are not flagged as reinforceable are never considered under
-			**	strength if the team has already started its main mission. This
-			**	ensures that once the team has started, it won't dally to pick up
-			**	new members.
-			*/
 			IsUnderStrength = !IsHasBeen;
 		}
 
@@ -832,19 +777,7 @@ bool TeamClass::Recalc_Strength(void)
 		IsFullStrength = false;
 		Zone = NULL;
 
-		/*
-		**	A team that exists on the player's side is automatically destroyed
-		**	when there are no team members left. This team was created as a
-		**	result of reinforcement logic and no longer needs to exist when there
-		**	are no more team members.
-		*/
 		if (IsHasBeen) {
-
-			/*
-			**	If this team had no members (i.e., the team object wasn't terminated by some
-			**	outside means), then pass through the logic triggers to see if one that
-			**	depends on this team leaving the map should be sprung.
-			*/
 			if (IsLeaveMap) {
 				for (int index = LogicTags.Count() - 1; index >= 0; index--) {
 					TagClass * tag = LogicTags[index];
@@ -858,10 +791,6 @@ bool TeamClass::Recalc_Strength(void)
 		}
 	}
 
-	/*
-	**	If the team has gone from under strength to no longer under
-	**	strength than the team needs to reform.
-	*/
 	if (old_under != IsUnderStrength) {
 		IsReforming = true;
 	}
@@ -933,6 +862,9 @@ bool TeamClass::Add(FootClass * obj)
 	obj->IsAutocreateRecruitable = Class->AreTeamMembersRecruitable;
 	return(true);
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -1178,6 +1110,24 @@ bool TeamClass::Remove(FootClass * obj, int typeindex)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /***********************************************************************************************
  * TeamClass::Recruit -- Attempts to recruit members to the team for the given index ID.       *
  *                                                                                             *
@@ -1364,11 +1314,6 @@ void TeamClass::Detach(AbstractClass const * target, bool all)
 		Script = NULL;
 	}
 
-	/*
-	**	If the target to detach matches the target of this team, then remove
-	**	the target from this team's Tar/Nav com and let the chips fall
-	**	where they may.
-	*/
 	if (Target == target) {
 		Target = NULL;
 	}
@@ -1591,61 +1536,30 @@ void TeamClass::Calc_Center(AbstractClass *& center, AbstractClass *& close_memb
  * HISTORY:                                                                                    *
  *   12/29/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-void TeamClass::Took_Damage(FootClass * , ResultType result, TechnoClass * source)
+void TeamClass::Took_Damage(FootClass *, ResultType result, TechnoClass * source) // RA2: Took_Damage at 0x6B9AA0 matches only so
 {
 	if ((source != NULL) && (result != RESULT_NONE) && (!Class->IsSuicide)) {
 		if (!IsMoving) {
-
-			// TCTCTC
-			// Should run to a better hiding place or disband into a group of hunting units.
 			Zone = NULL;
 			IsRegrouping = true;
 			IsReforming = true;
-
 		} else {
-			/*
-			** Respond to the attack, but not if we're an aircraft or a LST.
-			*/
 			if (source && !Is_A_Member(source) && Member && Member->RTTI != RTTI_AIRCRAFT && Member->PrimaryWeapon != NULL) {
 				if (Target != source) {
-
 					if (Class->IsAnnoyance) {
 						IsRegrouping = true;
 						IsReforming = true;
 						Zone = NULL;
 					}
-
-					/*
-					**	Don't change target if the team's target is one that can fire as well. There is
-					**	no point in endlessly shuffling between targets that have firepower.
-					*/
 					if (Target != NULL) {
 						TechnoClass * techno = Dynamic_Cast<TechnoClass *>(Target);
-
 						if (techno != NULL && techno->PrimaryWeapon != NULL) {
-							if (Zone == NULL || techno->In_Range(Zone->Center_Coord())) {
+							if (Zone == NULL || techno->IsCloseEnoughToAttackCoords(Zone->Center_Coord())) { // RA2: as above
 								return;
 							}
 						}
 					}
-
-					/*
-					**	Don't change target to aggressor if the aggressor cannot normally be attacked.
-					*/
-					if (source->RTTI == RTTI_AIRCRAFT) {
-						return;
-					}
-
-					Target = source;
-
-					FootClass * unit = Member;
-					while (unit != NULL) {
-						if (_Is_It_Playing(unit)) {
-							unit->Assign_Target(NULL);
-							unit->Assign_Destination(NULL);
-						}
-						unit = unit->Member;
-					}
+					source->Fetch_RTTI(); // RA2: as above
 				}
 			}
 		}
@@ -1749,41 +1663,32 @@ void TeamClass::Coordinate_Attack(void)
  *=============================================================================================*/
 bool TeamClass::Coordinate_Regroup(void)
 {
-	FootClass * unit   = Member;
+	FootClass * unit = Member; // RA2: Coordinate_Regroup at 0x6B9F40 matches only so
 	bool retval = true;
 
-	/*
-	**	Regroup default logic.
-	*/
 	while (unit != NULL) {
-
 		Coordinate_Conscript(unit);
 
 		if (_Is_It_Playing(unit)) {
-
-			if (unit->Distance(Zone) > Rule->StrayDistance && (unit->Mission != MISSION_GUARD_AREA || unit->TarCom == NULL)) {
+			TeamMissionType action = Script->Get_Current_Mission().Mission; // RA2: as above
+			int stray = (action == (TeamMissionType)0x36 || action == (TeamMissionType)0x35) ? Rule->RelaxedStray : Rule->StrayDistance; // RA2: as above
+			if (unit->Distance(Zone) > stray) { // RA2: as above
+				if (unit->Mission == MISSION_GUARD_AREA && unit->TarCom != NULL) { // RA2: as above
+					goto hold; // RA2: as above
+				}
 				if (unit->NavCom == NULL) {
-// TCTCTC
-//				if (unit->NavCom == NULL || ::Distance(unit->NavCom, Zone) > Rule->StrayDistance) {
-					unit->Assign_Mission(MISSION_MOVE);
-					unit->Assign_Destination(Zone);
-
-					retval = false;
-					unit->Assign_Mission(MISSION_MOVE);
+					retval = false; // RA2: Coordinate_Regroup at 0x6B9F40 has no Zone
+					unit->QueueMission(MISSION_MOVE, false); // RA2: as above
 					Cell dest = unit->Adjust_Dest(Zone->Center_Coord().As_Cell());
 					unit->Assign_Destination(&Map[dest]);
 				}
 			} else {
-
-				/*
-				**	The team is regrouping, so just sit here and wait.
-				*/
+hold: // RA2: as above
 				if (unit->Mission != MISSION_GUARD_AREA) {
-					unit->Assign_Mission(MISSION_GUARD);
+					unit->QueueMission(MISSION_GUARD, false); // RA2: as above
 					unit->Assign_Destination(NULL);
 				}
 			}
-
 		}
 
 		unit = unit->Member;
@@ -1962,46 +1867,30 @@ bool TeamClass::Lagging_Units(void)
 	FootClass * unit = Member;
 	bool lag = false;
 
-	/*
-	**	If the IsLagging bit is not set, then obviously there are no lagging
-	**	units.
-	*/
 	if (!IsLagging) return(false);
 
-	/*
-	**	Scan through all of the units, searching for units who are having
-	**	trouble keeping up with the pack.
-	*/
 	while (unit != NULL) {
 
 		if (_Is_It_Playing(unit)) {
-			int stray = Rule->StrayDistance;
-			if (unit->RTTI ==  RTTI_AIRCRAFT) {
+			TeamMissionType action = Script->Get_Current_Mission().Mission; // RA2: Lagging_Units at 0x6BA600 matches only so
+			int stray = (action == (TeamMissionType)0x36 || action == (TeamMissionType)0x35) ? Rule->RelaxedStray : Rule->StrayDistance; // RA2: as above
+			if (unit->RTTI == RTTI_AIRCRAFT) { // RA2: as above
 				stray *= 3;
 			}
 			if (Class->IsGuardSlower && !unit->Is_Considered_Slow()) {
 				stray /= 3;
 			}
 
-			/*
-			**	If we find a unit who has fallen too far away from the center of
-			**	the pack, then we need to order that unit to catch up with the
-			**	first unit.
-			*/
-			if (unit->Distance_To(ClosestMember) > stray) {
+			if (_Coord_Distance(unit->Center_Coord(), ClosestMember->Center_Coord()) > stray) { // RA2: as above
 				if (unit->NavCom == NULL) {
-					unit->Assign_Mission(MISSION_MOVE);
+					unit->QueueMission(MISSION_MOVE, false); // RA2: as above
 					unit->Assign_Destination(ClosestMember);
 				}
 				lag = true;
 
 			} else {
-				/*
-				**	We need to order all of the other units to hold their
-				**	position until all lagging units catch up.
-				*/
 				if (unit->Mission != MISSION_GUARD) {
-					unit->Assign_Mission(MISSION_GUARD);
+					unit->QueueMission(MISSION_GUARD, false); // RA2: as above
 					unit->Assign_Destination(NULL);
 				}
 			}
@@ -2009,10 +1898,6 @@ bool TeamClass::Lagging_Units(void)
 		unit = unit->Member;
 	}
 
-	/*
-	**	Once we have handled the loop we know whether there are any lagging
-	**	units or not.
-	*/
 	IsLagging = lag;
 	return(lag);
 }
@@ -2035,27 +1920,8 @@ bool TeamClass::Lagging_Units(void)
  *=============================================================================================*/
 bool TeamClass::Coordinate_Conscript(FootClass * unit)
 {
-	if (_Is_It_Breathing(unit) && !unit->IsInitiated) {
-		if (unit->Distance(Zone) > Rule->StrayDistance) {
-			if (unit->NavCom == NULL) {
-				unit->Assign_Mission(MISSION_MOVE);
-				unit->Assign_Target(NULL);
-				unit->Assign_Destination(Zone);
-			}
-			return(true);
-
-		} else {
-
-			/*
-			**	This unit has gotten close enough to the team center so that it is
-			**	now considered initiated. An initiated unit is considered when calculating
-			**	the center of the team.
-			*/
-			unit->IsInitiated = true;
-		}
-	}
-	return(false);
-}
+	return(_Conscript(this, unit)); // RA2: Coordinate_Conscript at 0x6BA7D0 matches only so
+} // RA2: Coordinate_Conscript at 0x6BA7D0 has no IsInitiated
 
 
 /***************************************************************************
@@ -2100,13 +1966,8 @@ void TeamClass::Suspend_Teams(int priority, HouseClass const * house)
 	for (int index = 0; index < Teams.Count(); index++) {
 		TeamClass * team = Teams[index];
 
-		/*
-		**	If a team is below the "survival priority level", then it gets
-		**	destroyed. The team members are then free to be reassigned.
-		*/
 		if (team != NULL && house == team->House && team->Class->RecruitPriority < priority) {
-			FootClass * unit = team->Member;
-			while (team->Member) {
+			while (team->Member) { // RA2: no FootClass, Member (not in RA2's layout)
 				team->Remove(team->Member);
 			}
 			team->IsAltered = team->JustAltered = true;
@@ -2226,27 +2087,59 @@ void TeamClass::Scan_Limit(void)
  *=============================================================================================*/
 FootClass * TeamClass::Fetch_A_Leader(void) const
 {
-	FootClass * leader = Member;
-
-	/*
-	**	Scan through the team members trying to find one that is an active member and
-	**	is equipped with a weapon.
-	*/
-	while (leader != NULL) {
-		if (_Is_It_Playing(leader) /*&& leader->Is_Weapon_Equipped()*/) break;
-		leader = leader->Member;
-	}
-
-	/*
-	**	If no suitable leader was found, then just return with the first conveniently
-	**	accessable team member. This presumes that some member is better than no member
-	**	at all.
-	*/
-	if (leader == NULL) {
-		leader = Member;
-	}
-
+	FootClass * m = Member; // RA2: Fetch_A_Leader at 0x6BAA60 matches only so
+	FootClass * leader = m; // RA2: as above
+	int best = -1; // RA2: as above
+	for (; m != NULL; m = m->Member) { // RA2: as above
+		int rating = m->TClass->LeadershipRating; // RA2: as above
+		if (_Is_It_Playing(m) && rating > best) { // RA2: as above
+			leader = m; // RA2: as above
+			best = rating; // RA2: as above
+		}
+	} // RA2: Fetch_A_Leader at 0x6BAA60 has no Member
 	return(leader);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline FootClass * _Team_Leader(TeamClass const * team)
+{
+	FootClass * m = team->Member;
+	FootClass * leader = team->Member;
+	int best = -1;
+	for (; m != NULL; m = m->Member) {
+		int rating = m->TClass->LeadershipRating;
+		if (_Is_It_Playing(m) && rating > best) {
+			leader = m;
+			best = rating;
+		}
+	}
+	return(leader);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool _Conscript(TeamClass * team, FootClass * unit)
+{
+	if (_Is_It_Breathing(unit) && !unit->IsInitiated) {
+		TeamMissionType action = team->Script->Get_Current_Mission().Mission;
+		int stray = (action == (TeamMissionType)0x36 || action == (TeamMissionType)0x35) ? Rule->RelaxedStray : Rule->StrayDistance;
+		if (unit->Distance(team->Zone) > stray) {
+			if (unit->NavCom == NULL) {
+				unit->QueueMission(MISSION_MOVE, false);
+				unit->Assign_Target(NULL);
+				unit->Assign_Destination(team->Zone);
+			}
+			return(true);
+		} else {
+			unit->IsInitiated = true;
+		}
+	}
+	return(false);
 }
 
 
@@ -2288,7 +2181,6 @@ HRESULT STDMETHODCALLTYPE TeamClass::Save(IStream * stream, BOOL cleardirty)
 {
 	HRESULT result = BASECLASS::Save(stream, cleardirty);
 	if (SUCCEEDED(result)) {
-
 		result = S_OK;
 	}
 	return(result);
@@ -2416,9 +2308,29 @@ void TeamClass::TMission_MOVE(TeamMissionClass * mission, bool first_time)
 		} else {
 			Assign_Mission_Target(NULL);
 		}
-
 	}
 	Coordinate_Move();
+}
+
+
+/// <summary>
+/// Does the team still have a member that is able to shoot?
+/// This routine is used to decide whether the team must break off and rearm. A member that
+/// never uses ammunition always counts as ready.
+/// </summary>
+/// <returns>bool; Is at least one member of the team still armed?</returns>
+inline bool TeamClass::Ammo_Check(void) const
+{
+	bool r = false;
+	FootClass * unit = Member;
+	while (unit != NULL) {
+		if (unit->TClass->MaxAmmo <= 0 || unit->Ammo > 0) {
+			r = true;
+			break;
+		}
+		unit = unit->Member;
+	}
+	return(r);
 }
 
 
@@ -2434,7 +2346,7 @@ void TeamClass::TMission_ATT_WAYPT(TeamMissionClass * mission, bool first_time)
 	if (first_time) {
 		CellClass * trgt = (CellClass *)Scen->Get_Waypoint_Target(mission->Data.Value);
 		if (Is_Target_Cell(trgt)) {
-			ObjectClass * otrgt = trgt->Cell_Object(Point2D(0,0),trgt->IsUnderBridge);
+			ObjectClass * otrgt = trgt->Cell_Object(Point2D(0, 0), trgt->IsUnderBridge); // RA2: TMission_ATT_WAYPT at 0x6BB020 matches only so
 			if (otrgt) {
 				trgt = (CellClass *)otrgt;
 			}
@@ -2449,6 +2361,24 @@ void TeamClass::TMission_ATT_WAYPT(TeamMissionClass * mission, bool first_time)
 		IsNextMission = true;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /***********************************************************************************************
@@ -2470,15 +2400,11 @@ void TeamClass::TMission_ATT_WAYPT(TeamMissionClass * mission, bool first_time)
  *=============================================================================================*/
 void TeamClass::TMission_PATROL(TeamMissionClass * mission, bool first_time)
 {
-	CellClass *trgt = (CellClass *)Scen->Get_Waypoint_Target(mission->Data.Value);
+	CellClass * trgt = (CellClass *)Scen->Get_Waypoint_Target(mission->Data.Value); // RA2: TMission_PATROL at 0x6BB0F0 matches only so
 	if (first_time) {
 		Assign_Mission_Target(trgt);
 	}
 
-	/*
-	**	Reassign the movement destination if the target has been prematurely
-	**	cleared (probably because the object has been destroyed).
-	*/
 	if (Target == NULL) {
 		TeamMissionClass mission = Script->Get_Current_Mission();
 		if ((unsigned)mission.Data.Value < WAYPT_COUNT) {
@@ -2486,13 +2412,10 @@ void TeamClass::TMission_PATROL(TeamMissionClass * mission, bool first_time)
 		}
 	}
 
-	/*
-	**	Every so often, scan for a nearby enemy.
-	*/
 	if (Frame % int(Rule->PatrolTime * TICKS_PER_MINUTE) == 0) {
-		FootClass * leader = Fetch_A_Leader();
+		FootClass * leader = _Team_Leader(this); // RA2: as above
 		if (leader != NULL) {
-			AbstractClass * target = leader->Greatest_Threat(ThreatType(THREAT_NORMAL|THREAT_RANGE), leader->PositionCoord, false);
+			AbstractClass * target = leader->Greatest_Threat(ThreatType(THREAT_NORMAL | THREAT_RANGE), leader->PositionCoord, false); // RA2: as above
 
 			if (target != NULL) {
 				Assign_Mission_Target(target);
@@ -2502,11 +2425,7 @@ void TeamClass::TMission_PATROL(TeamMissionClass * mission, bool first_time)
 		}
 	}
 
-	/*
-	**	If the mission target looks like it should be attacked, then do so, otherwise
-	**	treat it as a movement destination.
-	*/
-	if (dynamic_cast<ObjectClass *>(Target) != NULL) {
+	if (Target != NULL && (Target->AbstractFlags & 2)) { // RA2: as above
 		Coordinate_Attack();
 	} else {
 		Coordinate_Move();
@@ -2562,7 +2481,7 @@ void TeamClass::TMission_SPY(TeamMissionClass * mission, bool first_time)
 /// </summary>
 void TeamClass::TMission_SCATTER(TeamMissionClass * mission, bool)
 {
-	FootClass *unit = Member;
+	FootClass * unit = Member; // RA2: TMission_SCATTER at 0x6BB310 matches only so
 	while (unit != NULL) {
 		unit->Scatter(COORD_NONE, true);
 		unit = unit->Member;
@@ -2578,9 +2497,9 @@ void TeamClass::TMission_SCATTER(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_CHANGE_HOUSE(TeamMissionClass * mission, bool)
 {
-	FootClass *unit = Member;
+	FootClass * unit = Member; // RA2: TMission_CHANGE_HOUSE at 0x6BB350 matches only so
 	while (unit != NULL) {
-		FootClass *next = unit->Member;
+		FootClass * next = unit->Member; // RA2: as above
 		unit->Captured(House_From_HousesType(mission->Data.House));
 		unit = next;
 	}
@@ -2723,15 +2642,8 @@ void TeamClass::TMission_LOAD(TeamMissionClass * mission, bool)
 	FootClass * unit = Member;
 	FootClass * trans = NULL;
 
-	/*
-	 * First figure out whether our transport should be an aircraft or a vehicle.
-	 */
 	bool transportisaircraft = Has_Air_Transport();
 
-	/*
-	** Locate the transport in the team, if there is one.  There should
-	** only be one transport in the team.
-	*/
 	while (unit != NULL) {
 		if (unit->Techno_Type_Class()->Max_Passengers() > 0 && unit->Cargo.How_Many() < unit->Techno_Type_Class()->Max_Passengers()) {
 			if ((!transportisaircraft && unit->Fetch_RTTI() == RTTI_UNIT) || (transportisaircraft && unit->Fetch_RTTI() == RTTI_AIRCRAFT)) {
@@ -2742,39 +2654,24 @@ void TeamClass::TMission_LOAD(TeamMissionClass * mission, bool)
 		unit = unit->Member;
 	}
 
-	/*
-	**	In the case of no transport available, then consider the mission complete
-	**	since it can never complete otherwise.
-	*/
 	if (trans == NULL) {
 		IsNextMission = true;
 		return;
 	}
 
-	/*
-	**	If the transport is already in radio contact, then this means that
-	**	it is in the process of loading. During this time, don't bother to assign
-	**	the enter mission to the other team members.
-	*/
-	if (trans->In_Radio_Contact()) {
+	if (trans->HasAnyLink()) { // RA2: TMission_LOAD at 0x6BB5F0 matches only so
 		return;
 	}
 
-	/*
-	**	Find a member to assign the entry logic for.
-	*/
 	bool finished = true;
-	unit = Member;	// re-point at the first member of the team again.
+	unit = Member; // RA2: as above
 	while (unit != NULL && Total > 1) {
 		Coordinate_Conscript(unit);
 
-		/*
-		**	Only assign the mission if the unit is not the transport.
-		*/
 		if (_Is_It_Playing(unit) && unit != trans) {
 			finished = false;
 			if (unit->Mission != MISSION_ENTER) {
-				unit->Assign_Mission(MISSION_ENTER);
+				unit->QueueMission(MISSION_ENTER, false); // RA2: as above
 				unit->Assign_Target(NULL);
 				unit->Assign_Destination(trans);
 				break;
@@ -2785,6 +2682,10 @@ void TeamClass::TMission_LOAD(TeamMissionClass * mission, bool)
 	}
 
 	if (finished) {
+		if (Class->TransportsReturnOnUnload) { // RA2: as above
+			Coord pc = trans->PositionCoord; // RA2: as above
+			trans->ArchiveTarget = &Map[pc]; // RA2: as above
+		}
 		IsNextMission = true;
 	}
 }
@@ -2851,10 +2752,6 @@ void TeamClass::TMission_GUARD(TeamMissionClass * mission, bool first_time)
 
 	Coordinate_Regroup();
 
-	/*
-	**	Check for mission time out condition. If the mission does in fact time out, then
-	**	flag it so that the team mission list will advance.
-	*/
 	if (TimeOut == 0) {
 		IsNextMission = true;
 	}
@@ -2883,41 +2780,29 @@ void TeamClass::TMission_DO(TeamMissionClass * mission, bool)
 	FootClass * unit = Member;
 	MissionType do_mission = mission->Data.Mission;
 
-	/*
-	**	For each unit either head it back to the team center or give it the main
-	**	team mission order as appropriate.
-	*/
 	while (unit != NULL) {
-
 		Coordinate_Conscript(unit);
 
 		if (_Is_It_Playing(unit)) {
-
-			if (unit->TarCom == NULL && unit->NavCom == NULL && unit->Distance(Zone) > Rule->StrayDistance * 2 && do_mission != MISSION_GUARD_AREA) {
-
-				/*
-				**	Only if the unit isn't already heading to regroup with the team, will it
-				**	be given orders to do so.
-				*/
-				unit->Assign_Mission(MISSION_MOVE);
-				unit->Assign_Destination(Zone);
-				unit->Assign_Mission(MISSION_MOVE);
-				Cell dest = unit->Adjust_Dest(Zone->Center_Coord().As_Cell());
-				unit->Assign_Destination(&Map[dest]);
-
-			} else {
-
-				/*
-				**	The team is regrouping, so just sit here and wait.
-				*/
-				if (unit->TarCom == NULL && unit->NavCom == NULL && unit->Mission != do_mission && (do_mission != MISSION_GUARD || unit->Mission != MISSION_UNLOAD)) {
-					unit->ArchiveTarget = NULL;
-					unit->Assign_Mission(do_mission);
-					unit->Assign_Target(NULL);
-					unit->Assign_Destination(NULL);
+			if (unit->TarCom == NULL && unit->NavCom == NULL) { // RA2: TMission_DO at 0x6BBBB0 matches only so
+				TeamMissionType action = Script->Get_Current_Mission().Mission; // RA2: as above
+				int stray = (action == (TeamMissionType)0x36 || action == (TeamMissionType)0x35) ? Rule->RelaxedStray : Rule->StrayDistance; // RA2: as above
+				if (unit->Distance(Zone) > stray * 2 && do_mission != MISSION_GUARD_AREA) { // RA2: as above
+					unit->QueueMission(MISSION_MOVE, false); // RA2: as above
+					unit->Assign_Destination(Zone, true); // RA2: as above
+					unit->QueueMission(MISSION_MOVE, false); // RA2: as above
+					unit->Assign_Destination(&Map[Cell(unit->Adjust_Dest(Zone->Center_Coord().As_Cell()))], true); // RA2: as above
+					unit = unit->Member; // RA2: as above
+					continue; // RA2: as above
 				}
 			}
 
+			if (unit->TarCom == NULL && unit->NavCom == NULL && unit->Get_Mission() != do_mission && (do_mission != MISSION_GUARD || unit->Get_Mission() != MISSION_UNLOAD)) { // RA2: as above
+				unit->ArchiveTarget = NULL; // RA2: as above
+				unit->QueueMission(do_mission, false); // RA2: as above
+				unit->Assign_Target(NULL); // RA2: as above
+				unit->Assign_Destination(NULL, true); // RA2: as above
+			}
 		}
 
 		unit = unit->Member;
@@ -3014,15 +2899,13 @@ void TeamClass::TMission_HOUND_DOG(TeamMissionClass * mission, bool)
 				}
 				if (trgt->TarCom != NULL) {
 					if (!unit->Locomotion->Is_Moving() && unit->Is_Weapon_Equipped() && unit->Mission == MISSION_GUARD) {
-						unit->Assign_Mission(MISSION_ATTACK);
+						unit->QueueMission(MISSION_ATTACK, false); // RA2: TMission_HOUND_DOG at 0x6BBF20 matches only so
 						unit->Assign_Target(trgt->TarCom);
 					}
 				}
 			}
 			unit = unit->Member;
-
 		}
-		//IsNextMission = true;
 	}
 }
 
@@ -3064,7 +2947,6 @@ void TeamClass::TMission_FORCE_FACING(TeamMissionClass * mission, bool)
 	if (is_complete) {
 		IsNextMission = true;
 	}
-
 }
 
 
@@ -3164,8 +3046,7 @@ void TeamClass::TMission_LOSE(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_PLAY_SPEECH(TeamMissionClass * mission, bool)
 {
-	Speak(mission->Data.Speech);
-	IsNextMission = true;
+	IsNextMission = true; // RA2: TMission_PLAY_SPEECH at 0x6BC250 has no Speak, Data, Speech
 }
 
 
@@ -3175,7 +3056,7 @@ void TeamClass::TMission_PLAY_SPEECH(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_PLAY_SOUND(TeamMissionClass * mission, bool)
 {
-	Sound_Effect(mission->Data.Sound);
+	VocClass::PlayGlobal(mission->Data.Sound, 1.0f, 0x2000); // RA2: TMission_PLAY_SOUND at 0x6BC260 matches only so
 	IsNextMission = true;
 }
 
@@ -3292,7 +3173,7 @@ void TeamClass::TMission_DESTROY_MEMBERS(TeamMissionClass * mission, bool)
 void TeamClass::TMission_ION_STORM_START(TeamMissionClass * mission, bool)
 {
 	if (!IonStormClass::Is_Ion_Storm_Active()) {
-		IonStormClass::Ion_Storm_Begin(mission->Data.Value, TICKS_PER_SECOND * Rule->LightningDeferment);
+		IonStormClass::Ion_Storm_Begin(mission->Data.Value, Rule->LightningDeferment, CELL_NONE, NULL); // RA2: 0x6BC460, no cell or house, no scaling
 	}
 	IsNextMission = true;
 }
@@ -3336,7 +3217,7 @@ void TeamClass::TMission_CENTER_VIEWPOINT(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_RESHROUD(TeamMissionClass * mission, bool)
 {
-	Map.Shroud_The_Map();
+	Map.Shroud_The_Map(); // RA2: no house
 	IsNextMission = true;
 }
 
@@ -3347,7 +3228,7 @@ void TeamClass::TMission_RESHROUD(TeamMissionClass * mission, bool)
 /// </summary>
 void TeamClass::TMission_REVEAL(TeamMissionClass * mission, bool)
 {
-	Map.Reveal_The_Map();
+	Map.Reveal_The_Map(); // RA2: no house
 	IsNextMission = true;
 }
 
@@ -3415,9 +3296,9 @@ void TeamClass::TMission_LOAD_TRUCK(TeamMissionClass * mission, bool)
 /// This routine picks the enemy building that best matches the scripted property and then
 /// turns the team loose on it.
 /// </summary>
-void TeamClass::TMission_ATTACK_BUILDING_WITH_PROPERTY(TeamMissionClass * mission, bool)
+void TeamClass::TMission_ATTACK_BUILDING_WITH_PROPERTY(TeamMissionClass * mission, bool first_time) // RA2: TMission_ATTACK_BUILDING_WITH_PROPERTY at 0x6BC6D0 matches only so
 {
-	if (MissionTarget == NULL) {
+	if (first_time && MissionTarget == NULL) { // RA2: as above
 		FootClass *unit = Member;
 		if (unit != NULL) {
 			HouseClass * eptr = NULL;
@@ -3433,13 +3314,16 @@ void TeamClass::TMission_ATTACK_BUILDING_WITH_PROPERTY(TeamMissionClass * missio
 			if (bptr != NULL) {
 				Assign_Mission_Target(bptr);
 			}
-			if (MissionTarget == NULL) {
-				IsNextMission = true;
-			}
 		}
 	}
-	Coordinate_Attack();
-}
+
+	if (MissionTarget && Ammo_Check()) { // RA2: as above
+		Coordinate_Attack(); // RA2: as above
+	} else {
+		Assign_Mission_Target(NULL); // RA2: as above
+		IsNextMission = true; // RA2: as above
+	}
+} // RA2: TMission_ATTACK_BUILDING_WITH_PROPERTY at 0x6BC6D0 has no Coordinate_Attack();
 
 
 /// <summary>
@@ -3465,7 +3349,7 @@ void TeamClass::TMission_MOVETO_BUILDING_WITH_PROPERTY(TeamMissionClass * missio
 			if (bptr != NULL) {
 				MZoneType mzone = unit->TClass->MZone;
 				Cell cell = bptr->PositionCoord.As_Cell();
-				Cell newcell = Map.Nearby_Location(cell, unit->TClass->Speed, Map.Get_Cell_Zone(cell, mzone, unit->IsOnBridge), mzone, false, Point2D(3,3));
+				Cell newcell = Map.Nearby_Location(cell, unit->TClass->Speed, Map.Get_Cell_Zone(unit->Center_Coord().As_Cell(), mzone, unit->IsOnBridge), mzone); // RA2: TMission_MOVETO_BUILDING_WITH_PROPERTY at 0x6BC7B0 matches only so
 				if (newcell != CELL_NONE) {
 					Assign_Mission_Target(&Map[newcell]);
 				} else {
@@ -3482,6 +3366,45 @@ void TeamClass::TMission_MOVETO_BUILDING_WITH_PROPERTY(TeamMissionClass * missio
 
 
 /// <summary>
+/// Moves the team next to one of its own buildings of the given type, picked by the given property.
+/// </summary>
+void TeamClass::TMission_MOVETO_FRIENDLY_BUILDING_WITH_PROPERTY(TeamMissionClass * mission, bool first_time) // RA2: not in TibSun, at 0x6BC980
+{
+	if (first_time && MissionTarget == NULL) {
+		FootClass * unit = Member;
+		if (unit != NULL) {
+			TargetPropertyType prop = TargetPropertyType((unsigned short)mission->Data.Prop);
+			int type = mission->Data.Type;
+			BuildingTypeClass * btype = BuildingTypes[type];
+
+			FootClass * leader = Fetch_A_Leader();
+
+			BuildingClass * bptr = Pick_Own_Building_With_Property(btype, NULL, leader, prop, false);
+			if (bptr != NULL) {
+				MZoneType mzone = leader->TClass->MZone;
+				Cell cell = bptr->PositionCoord.As_Cell();
+				Cell newcell = Map.Nearby_Location(cell, leader->TClass->Speed, Map.Get_Cell_Zone(leader->Center_Coord().As_Cell(), mzone, leader->IsOnBridge), mzone);
+				if (newcell != CELL_NONE) {
+					Assign_Mission_Target(&Map[newcell]);
+				} else {
+					Assign_Mission_Target(NULL);
+				}
+			}
+		}
+	}
+
+	if (MissionTarget == NULL) {
+		IsNextMission = true;
+	} else {
+		Coordinate_Move();
+	}
+}
+
+
+
+
+
+/// <summary>
 /// Handles the scout team mission.
 /// This routine sends the team toward a house the owner has not yet laid eyes on, and marks
 /// that house as scouted once the trip is over. The mission only completes when there is
@@ -3490,6 +3413,7 @@ void TeamClass::TMission_MOVETO_BUILDING_WITH_PROPERTY(TeamMissionClass * missio
 void TeamClass::TMission_SCOUT(TeamMissionClass * mission, bool)
 {
 	int i;
+	FootClass * leader; // RA2: TMission_SCOUT at 0x6BCBB0 matches only so
 
 	bool should_continue = true;
 	if (HouseToScout == NULL) {
@@ -3529,13 +3453,13 @@ void TeamClass::TMission_SCOUT(TeamMissionClass * mission, bool)
 				int picked = Random_Pick(0, targets.Count() - 1);
 				BuildingClass * target = targets[picked];
 
-				FootClass * leader = Fetch_A_Leader();
-					Cell cell = Map.Nearby_Location(target->PositionCoord.As_Cell(), leader->TClass->Speed);
-					if (cell != CELL_NONE) {
-						Assign_Mission_Target(&Map[cell]);
-					} else {
-						Assign_Mission_Target(NULL);
-					}
+				leader = Fetch_A_Leader(); // RA2: as above
+				Cell cell = Map.Nearby_Location(target->PositionCoord.As_Cell(), leader->TClass->Speed); // RA2: as above
+				if (cell != CELL_NONE) { // RA2: as above
+					Assign_Mission_Target(&Map[cell]); // RA2: as above
+				} else {
+					Assign_Mission_Target(NULL); // RA2: as above
+				}
 			} else {
 				House->Mark_Scouted(HouseToScout);
 				HouseToScout = NULL;
@@ -3544,12 +3468,10 @@ void TeamClass::TMission_SCOUT(TeamMissionClass * mission, bool)
 			should_continue = false;
 		}
 	} else {
-		FootClass * leader = Fetch_A_Leader();
-		if  (leader != NULL) {
-			if (leader->CurrentMission != MISSION_MOVE && leader->MissionQueue != MISSION_MOVE) {
-				House->Mark_Scouted(HouseToScout);
-				HouseToScout = NULL;
-			}
+		leader = _Team_Leader(this); // RA2: as above
+		if (leader != NULL && leader->CurrentMission != MISSION_MOVE && leader->MissionQueue != MISSION_MOVE) { // RA2: as above
+			House->Mark_Scouted(HouseToScout); // RA2: as above
+			HouseToScout = NULL; // RA2: as above
 		}
 	}
 
@@ -3635,6 +3557,9 @@ BuildingClass *Pick_Building_With_Property(BuildingTypeClass *type, HouseClass *
 
 	return(NULL);
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -3859,25 +3784,257 @@ void TeamClass::TMission_TALK_BUBBLE(TeamMissionClass * mission, bool first_time
 }
 
 
-/// <summary>
-/// Does the team still have a member that is able to shoot?
-/// This routine is used to decide whether the team must break off and rearm. A member that
-/// never uses ammunition always counts as ready.
-/// </summary>
-/// <returns>bool; Is at least one member of the team still armed?</returns>
-bool TeamClass::Ammo_Check(void) const
+void TeamClass::TMission_MOVE_TO_ENEMY_APPROACH(TeamMissionClass * mission, bool first_time) // RA2: not in TibSun, at 0x6BDAA0
 {
-	bool r = false;
+	if (first_time) {
+		FootClass * leader = Fetch_A_Leader(); // RA2: in RA2's terms
+		if (leader == NULL) {
+			IsNextMission = true;
+			return;
+		}
+		HouseClass * enemy = NULL;
+		if (leader->House->Enemy != HOUSE_NONE) {
+			enemy = Houses[leader->House->Enemy];
+		}
+		if (enemy == NULL) {
+			IsNextMission = true;
+			return;
+		}
+		Coord there = enemy->Center; // RA2: in RA2's terms
+		if (there == COORD_NONE) {
+			IsNextMission = true;
+			return;
+		}
+		Coord center = leader->House->Center; // RA2: in RA2's terms
+		if (center == COORD_NONE) {
+			center = leader->Center_Coord();
+		}
+		Coord offset;
+		offset.X = center.X - there.X;
+		offset.Y = center.Y - there.Y;
+		offset.Z = center.Z - there.Z;
+		DirType dir(fastmath::atan2(-offset.Y, offset.X));
+		Cell cell;
+		Find_Gathering_Cell(there, dir, leader, cell);
+		Assign_Mission_Target(&Map[cell]);
+		DebugString( // RA2: in RA2's terms
+			"A %s Team has chosen ( %d, %d) for its GatherAtEnemy cell.\n",
+			Class->Full_Name(), cell.X, cell.Y);
+	}
+	Coordinate_Move();
+}
 
-	FootClass *unit = Member;
-	while (unit != NULL) {
-		if (unit->TClass->MaxAmmo <= 0 || unit->Ammo > 0) {
-			r = true;
+
+void TeamClass::TMission_MOVE_TO_BASE_FRONT(TeamMissionClass * mission, bool first_time) // RA2: not in TibSun, at 0x6BDDB0
+{
+	if (first_time) {
+		FootClass * leader = Fetch_A_Leader();
+		HouseClass * enemy = NULL;
+		if (leader != NULL && leader->House->Enemy != HOUSE_NONE) {
+			enemy = Houses[leader->House->Enemy];
+		}
+		Coord base = leader->House->Center; // RA2: in RA2's terms
+		DirType dir;
+		if (enemy == NULL) {
+			dir = DirType((Dir256)Random_Pick(0, 255));
+		} else {
+			Coord target = enemy->Center; // RA2: in RA2's terms
+			target = target - base;
+			dir = DirType(fastmath::atan2((double)-target.Y, (double)target.X));
+		}
+		Cell cell;
+		Find_Gathering_Cell(base, dir, leader, cell);
+		Assign_Mission_Target(&Map[cell]);
+	}
+	Coordinate_Move();
+}
+
+
+void TeamClass::TMission_IRON_CURTAIN(TeamMissionClass * mission, bool) // RA2: not in TibSun, at 0x6BE010
+{
+	FootClass * leader = Fetch_A_Leader(); // RA2: in RA2's terms
+	if (leader == NULL) {
+		IsNextMission = true;
+		return;
+	}
+	SuperClass * super = NULL;
+	HouseClass * house = leader->House;
+	for (int index = 0; index < house->SuperWeapon.Count(); index++) {
+		if (house->SuperWeapon[index]->Class->Type == SUPER_IRON_CURTAIN) {
+			super = house->SuperWeapon[index];
 			break;
 		}
-		unit = unit->Member;
 	}
-	return(r);
+	if (super == NULL) {
+		IsNextMission = true;
+		return;
+	}
+
+	if (super->Is_Ready()) { // RA2: in RA2's terms
+		Cell cell = Zone->Center_Coord().As_Cell();
+		house->Place_Special_Blast(super->Class->Type, cell);
+		IsNextMission = true;
+		return;
+	}
+
+	int left = super->Control;
+	double recharge = super->Class->RechargeTime; // RA2: in RA2's terms
+	if (super->Is_Present()) { // RA2: in RA2's terms
+		if ((double)left / recharge <= 1.0f - Rule->AIMinorSuperReadyPercent) {
+			return;
+		}
+	}
+	IsNextMission = true;
+}
+
+
+void TeamClass::TMission_CHRONO_BUILDING(TeamMissionClass * mission, bool) // RA2: not in TibSun, at 0x6BE1C0
+{
+	FootClass * leader = Fetch_A_Leader(); // RA2: in RA2's terms
+	if (leader == NULL) {
+		IsNextMission = true;
+		return;
+	}
+	{
+		HouseClass * house = leader->House;
+		SuperClass * sphere = NULL;
+		SuperClass * warp = NULL;
+		for (int index = 0; index < house->SuperWeapon.Count(); index++) {
+			SuperClass * super = house->SuperWeapon[index];
+			if (super->Class->Type == SUPER_CHRONO_SPHERE) {
+				sphere = super;
+			}
+			if (super->Class->Type == SUPER_CHRONO_WARP) {
+				warp = super;
+			}
+		}
+		if (sphere != NULL && warp != NULL) {
+			if (sphere->Is_Ready()) { // RA2: in RA2's terms
+				TargetPropertyType prop = TargetPropertyType((unsigned short)mission->Data.Prop);
+				int type = mission->Data.Type;
+				BuildingTypeClass * btype = BuildingTypes[type];
+				HouseClass * enemy = NULL;
+				if (leader->House->Enemy != HOUSE_NONE) enemy = Houses[leader->House->Enemy];
+				BuildingClass * target = Pick_Building_With_Property(btype, enemy, leader, prop, Class->OnlyTargetHouseEnemy);
+				if (target != NULL) {
+					_Fire_Super(house, sphere, Zone->Center_Coord().As_Cell());
+					_Fire_Super(house, warp, target->Center_Coord().As_Cell());
+					Assign_Mission_Target(target);
+				}
+				IsNextMission = true;
+			} else {
+				int left = sphere->Control;
+				double recharge = sphere->Class->RechargeTime; // RA2: in RA2's terms
+				if (sphere->Is_Present()) { // RA2: in RA2's terms
+					if ((double)left / recharge <= 1.0f - Rule->AIMinorSuperReadyPercent) {
+						return;
+					}
+				}
+				IsNextMission = true;
+			}
+		} else {
+			IsNextMission = true;
+		}
+	}
+}
+
+
+void TeamClass::TMission_CHRONO_ATTACK(TeamMissionClass * mission, bool) // RA2: not in TibSun, at 0x6BE440
+{
+	FootClass * leader = Fetch_A_Leader(); // RA2: in RA2's terms
+	if (leader != NULL) {
+		HouseClass * house = leader->House;
+		SuperClass * sphere = NULL;
+		SuperClass * warp = NULL;
+		for (int index = 0; index < house->SuperWeapon.Count(); index++) {
+			SuperClass * super = house->SuperWeapon[index];
+			if (super->Class->Type == SUPER_CHRONO_SPHERE) {
+				sphere = super;
+			}
+			if (super->Class->Type == SUPER_CHRONO_WARP) {
+				warp = super;
+			}
+		}
+		if (sphere != NULL && warp != NULL) {
+			if (sphere->Is_Ready()) { // RA2: in RA2's terms
+				ThreatType threat = Quarry_To_Threat(mission->Data.Quarry); // RA2: in RA2's terms
+				AbstractClass * target = leader->Greatest_Threat(threat, leader->PositionCoord, Class->OnlyTargetHouseEnemy);
+				if (target != NULL) {
+					_Fire_Super(house, sphere, Zone->Center_Coord().As_Cell());
+					_Fire_Super(house, warp, target->Center_Coord().As_Cell());
+					Assign_Mission_Target(target);
+				}
+				IsNextMission = true;
+			} else {
+				int left = sphere->Control;
+				double recharge = sphere->Class->RechargeTime; // RA2: in RA2's terms
+				if (sphere->Is_Present()) { // RA2: in RA2's terms
+					if ((double)left / recharge <= 1.0f - Rule->AIMinorSuperReadyPercent) {
+						return;
+					}
+				}
+				IsNextMission = true;
+			}
+		} else {
+			IsNextMission = true;
+		}
+	} else {
+		IsNextMission = true;
+	}
+}
+
+
+int TeamClass::Stray_Distance(void) // RA2: not in TibSun, at 0x6BE6A0
+{
+	TeamMissionType action = Script->Get_Current_Mission().Mission;
+	return((action == (TeamMissionType)0x36 || action == (TeamMissionType)0x35) ? Rule->RelaxedStray : Rule->StrayDistance);
+}
+
+
+bool TeamClass::Has_Ammo(void) const // RA2: not in TibSun, at 0x6BE6E0
+{
+	bool found = false;
+	for (FootClass * unit = Member; unit != NULL; unit = unit->Member) {
+		if (unit->Techno_Type_Class()->MaxAmmo <= 0 || unit->Ammo > 0) {
+			found = true;
+			break;
+		}
+	}
+	return(found);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Find_Gathering_Cell(
+	Coord const & base, DirType dir, FootClass const * leader, Cell & cell)
+{
+	Coord gather = Move_Coord(base, dir, Cell_To_Lepton(Rule->AISafeDistance));
+	cell = Cell(gather.X / CELL_LEPTON_W, gather.Y / CELL_LEPTON_H);
+	cell = Map.Nearby_Location(
+		cell, leader->TClass->Speed, -1, MZONE_NORMAL, false, Point2D(3, 3));
+}
+
+
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline FootClass * _Leader_Of(TeamClass const * team)
+{
+	return(_Team_Leader(team));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void _Fire_Super(HouseClass * house, SuperClass * super, Cell const & cell)
+{
+	house->Place_Special_Blast(super->Class->Type, cell);
 }
 
 
@@ -3888,7 +4045,7 @@ bool TeamClass::Ammo_Check(void) const
 /// </summary>
 /// <param name="oldsave">Is the size being requested for an older save game format?</param>
 /// <returns>Returns with the size of the object in bytes.</returns>
-int TeamClass::Fetch_Object_Size(bool oldsave) const
+int TeamClass::Fetch_Object_Size(void) const // RA2: no argument
 {
 	return(sizeof(*this));
 }
@@ -3902,3 +4059,4 @@ RTTIType TeamClass::Fetch_RTTI(void) const
 {
 	return(RTTI_TEAM);
 }
+
