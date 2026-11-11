@@ -576,11 +576,7 @@ readline,0x006395C0,0x00639710,tibsun,"functions compiled from src/readline.cpp,
 unk_00639710,0x00639710,0x0063B090,unknown,code not assigned to a module
 restate,0x0063B090,0x0063B300,tibsun,"functions compiled from src/restate.cpp, matched, without gaps"
 unk_0063B300,0x0063B300,0x0063BB40,unknown,code not assigned to a module
-unk_0063BB40,0x0063BB40,0x0063BB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0063BB90,0x0063BB90,0x0063BEF0,unknown,code not assigned to a module
-unk_0063BEF0,0x0063BEF0,0x0063BFA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0063BFA0,0x0063BFA0,0x0063C270,unknown,code not assigned to a module
-unk_0063C270,0x0063C270,0x0063C490,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+revent,0x0063BB40,0x0063C490,tibsun,"functions compiled from src/revent.cpp, without gaps; matched except ?Process_Radar_Events@@YIXXZ and ?Process@RadarEventClass@@QAEXXZ and ?Get_Max_Color@RadarEventClass@@QBE?AVRGBClass@@XZ and ?Get_Min_Color@RadarEventClass@@QBE?AVRGBClass@@XZ and ?Draw@RadarEventClass@@QAEXXZ and ?Try_Suppress_Radar_Event@@YI_NW4RadarEventType@@HVCell@@@Z; ?Draw@RadarEventClass@@QAEXXZ placed at their function starts; ?Plot_Radar_Event_Point@@YIXABVPoint2D@@@Z not placed; ?Can_Suppress_Radar_Event@@YI_NW4RadarEventType@@@Z not placed; ?Submit_Radar_Event@@YI_NW4RadarEventType@@VCell@@@Z not placed; ??0RadarEventClass@@QAE@W4RadarEventType@@VCell@@@Z not placed; ??1RadarEventClass@@QAE@XZ not placed; ?Process_Radar_Events@@YIXXZ not placed; ?Process@RadarEventClass@@QAEXXZ not placed; ?Get_Max_Color@RadarEventClass@@QBE?AVRGBClass@@XZ not placed; ?Get_Min_Color@RadarEventClass@@QBE?AVRGBClass@@XZ not placed; ?Get_Visibility_Duration@RadarEventClass@@QAEHXZ not placed; ?Get_Duration@RadarEventClass@@QAEHXZ not placed; ?Get_Suppression_Distance@RadarEventClass@@QAEHXZ not placed; ?Clear@RadarEventClass@@SIXXZ not placed; ?Clear_Radar_Events@@YIXXZ not placed"
 unk_0063C490,0x0063C490,0x0063CC80,unknown,code not assigned to a module
 rgb,0x0063CC80,0x0063D150,tibsun,"functions compiled from src/rgb.cpp, matched, without gaps; _$E3 not placed"
 rle,0x0063D150,0x0063D2D0,tibsun,"functions compiled from src/rle.cpp, matched, without gaps"
