@@ -768,13 +768,9 @@ unk_0071DC10,0x0071DC10,0x0071DE00,unknown,code not assigned to a module
 walk,0x0071DE00,0x0071FDE0,tibsun,"functions compiled from src/walk.cpp, without gaps; matched except ?Movement_AI@WalkLocomotionClass@@QAEX_N@Z and ?Mark_Head_To@WalkLocomotionClass@@QAE_NABVCoord@@@Z; seven placed by the gap"
 unk_0071FDE0,0x0071FDE0,0x007200C0,unknown,code not assigned to a module
 warhead,0x007200C0,0x00721090,tibsun,"functions compiled from src/warhead.cpp, matched, without gaps; two placed by the gap"
-unk_00721090,0x00721090,0x00721BF0,unknown,code not assigned to a module
-unk_00721BF0,0x00721BF0,0x00721CC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00721CC0,0x00721CC0,0x00721DB0,unknown,code not assigned to a module
-unk_00721DB0,0x00721DB0,0x00721EB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00721EB0,0x00721EB0,0x007220C0,unknown,code not assigned to a module
-unk_007220C0,0x007220C0,0x00722190,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00722190,0x00722190,0x007249F0,unknown,code not assigned to a module
+unk_00721090,0x00721090,0x00721900,unknown,code not assigned to a module
+wave,0x00721900,0x00724600,tibsun,"functions compiled from src/wave.cpp, without gaps; matched except ?Load@WaveClass@@UAGJPAUIStream@@@Z and ?Draw_Sonic@WaveClass@@QAEXABVPoint2D@@ABV?$TRect@H@@@Z and ?Draw_Laser@WaveClass@@QAEXABVPoint2D@@ABV?$TRect@H@@@Z and ?Wave_Shape_AI@WaveClass@@AAEXXZ; three placed by the gap; ?Draw_Laser@WaveClass@@QAEXABVPoint2D@@ABV?$TRect@H@@@Z and ?Draw_Sonic@WaveClass@@QAEXABVPoint2D@@ABV?$TRect@H@@@Z placed where matched code calls them; ??0WaveClass@@QAE@ABVCoord@@0PAVTechnoClass@@W4WaveType@@1@Z not placed; ??0WaveClass@@QAE@XZ not placed; ?Build_Wave_Shape@WaveClass@@AAEXABVCoord@@0@Z not placed"
+unk_00724600,0x00724600,0x007249F0,unknown,code not assigned to a module
 waypoint,0x007249F0,0x00725200,tibsun,"functions compiled from src/waypoint.cpp, matched, without gaps; _$E5 and _$E3 not placed; four placed by the gap"
 unk_00725200,0x00725200,0x00726930,unknown,code not assigned to a module
 unk_00726930,0x00726930,0x007269B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
