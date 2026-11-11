@@ -44,20 +44,7 @@ const char * RadarEventNames[RADAREVENT_COUNT] = {
 /// <param name="event">The kind of event to raise.</param>
 /// <param name="cell">The cell that the event should draw attention to.</param>
 /// <returns>bool; Was an event actually created?</returns>
-bool Submit_Radar_Event(RadarEventType event, Cell cell)
-{
-	if (Can_Suppress_Radar_Event(event)) {
-		for (int index = 0; index < RadarEventClass::RadarEvents.Count(); index++) {
-			if (RadarEventClass::RadarEvents[index]->Type == event) {
-				if (cell.Distance_To(RadarEventClass::RadarEvents[index]->Location) < RadarEventClass::RadarEvents[index]->Get_Suppression_Distance()) {
-					return(false);
-				}
-			}
-		}
-	}
-	new RadarEventClass(event, cell);
-	return(true);
-}
+
 
 
 /// <summary>
@@ -87,6 +74,31 @@ bool Can_Suppress_Radar_Event(RadarEventType event)
 			return(true);
 	}
 	return(false);
+}
+
+
+/// <summary>
+/// Raises a radar event at the specified cell.
+/// This is the routine the game logic calls to draw the player's eye to something
+/// worth looking at. An event of a suppressible kind is quietly dropped when one of
+/// the same kind is already showing nearby.
+/// </summary>
+/// <param name="event">The kind of event to raise.</param>
+/// <param name="cell">The cell that the event should draw attention to.</param>
+/// <returns>bool; Was an event actually created?</returns>
+bool Submit_Radar_Event(RadarEventType event, Cell cell) // RA2: at 0x0063B5B0
+{
+	if (Can_Suppress_Radar_Event(event)) {
+		for (int index = 0; index < RadarEventClass::RadarEvents.Count(); index++) {
+			if (RadarEventClass::RadarEvents[index]->Type == event) {
+				if (cell.Distance_To(RadarEventClass::RadarEvents[index]->Location) < RadarEventClass::RadarEvents[index]->Get_Suppression_Distance()) {
+					return(false);
+				}
+			}
+		}
+	}
+	new RadarEventClass(event, cell);
+	return(true);
 }
 
 
@@ -204,6 +216,18 @@ void RadarEventClass::Draw_Events(void)
 		}
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -517,3 +541,15 @@ void RadarEventClass::Clear(void)
 		delete RadarEvents[i];
 	}
 }
+
+
+/// <summary>
+/// Deletes every radar event.
+/// </summary>
+void Clear_Radar_Events(void) // RA2: not in TibSun, at 0x0063C640
+{
+	for (int i = RadarEventClass::RadarEvents.Count() - 1; i >= 0; i--) {
+		delete RadarEventClass::RadarEvents[i];
+	}
+}
+
