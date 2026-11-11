@@ -567,13 +567,13 @@ class SessionClass
 		void FUN_0069B7E0(int color, bool random);
 		void FUN_0069B8C0(void);
 		void Resume(void);
-		void FUN_0069BB40(void);
+		void Leave_Game(void); // RA2: 0x672E70
 		unsigned short FUN_0069BC20(int connection_id);
 		int FUN_0069BC60(int index);
 		int FUN_0069BCC0(char const * name);
 		int FUN_0069BD00(int slot);
 		void FUN_0069BD60(void);
-		bool FUN_0069BBE0(void) const;
+		bool Is_In_Game(void) const; // RA2: 0x672F10
 
 		bool Log_To_File(FILE *out);
 

@@ -39,11 +39,11 @@ template<class T> class DynamicVectorClass;
 
 class FileEntryClass {
 	public:
-		char Descr[128];    // save-game description
+		wchar_t Descr[128];    // save-game description // RA2: wide
 		char Filename[32];
 		unsigned Scenario;  // scenario #
 		HousesType House;   // house
-		char PlayerName[64];
+		wchar_t PlayerName[64]; // RA2: wide
 		int Num;            // save file number (from the extension)
 		FILETIME DateTime;  // date/time stamp of file
 		bool Valid;         // Is the scenario valid?
@@ -88,14 +88,14 @@ class LoadOptionsClass
 		virtual ~LoadOptionsClass (void);
 
 		bool Load(void);
-		bool Save(char * description);
+		bool Save(wchar_t const * description); // RA2: wide (YR)
 		bool Delete(void);
 
 		void Pick_Filename(char * file_name);
 		bool Files_Present(void);
 
 		virtual bool Load_File(const char * file_name);
-		virtual bool Save_File(const char * file_name, const char * descr);
+		virtual bool Save_File(const char * file_name, wchar_t const * descr); // RA2: a wide description
 		virtual bool Delete_File(const char * file_name);
 		virtual bool Read_File(FileEntryClass * entry, WIN32_FIND_DATAA * ff);
 
@@ -138,7 +138,7 @@ class LoadOptionsClass
 		 * about to be saved, and it receives whatever the player finally types. It is NULL
 		 * for the load and delete styles, which have nothing to describe.
 		 */
-		char * Description;
+		wchar_t * Description; // RA2: wide
 
 		/*
 		 * This is how much free disk space, expressed in bytes, must be available before the

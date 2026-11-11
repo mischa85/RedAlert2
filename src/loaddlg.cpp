@@ -133,10 +133,13 @@ bool LoadOptionsClass::Load(void)
 /// </summary>
 /// <param name="description">The description to suggest for the saved game.</param>
 /// <returns>bool; Was the game saved?</returns>
-bool LoadOptionsClass::Save(char *description)
+bool LoadOptionsClass::Save(wchar_t const * description) // RA2: a wide description
 {
 	Style = SAVE;
-	Description = description;
+	if (description == NULL) {
+		description = Scen->Description;
+	}
+	Description = (wchar_t *)description;
 	return(Dialog());
 }
 
@@ -167,17 +170,20 @@ void LoadOptionsClass::Load_Dialog_On_WM_COMMAND(HWND window, WPARAM wparam, LPA
 {
 	LoadOptionsClass * _this = (LoadOptionsClass *)GetWindowLong(window, DWL_USER);
 	switch ((int)wparam) {
-		case IDC_MISSION_LOAD_LIST:
+		case 0x525: // RA2: Load_Dialog_On_WM_COMMAND at 0x53B200 matches only so
 			if (id == 2 && ListBox_GetCount((HWND)lparam) > 0) {
-				_this->State = STATE_OK;
+				_this->State = (LoadDialogState)0x40F; // RA2: as above
 			}
 			break;
 
-		case IDOK:
-		case IDCANCEL:
+		case 0x40F: // RA2: as above
 			if (id == 0) {
 				_this->State = (LoadDialogState)wparam;
 			}
+			break;
+
+		case 0x686: // RA2: as above
+			_this->State = (LoadDialogState)2; // RA2: as above
 			break;
 	}
 }
@@ -196,37 +202,37 @@ void LoadOptionsClass::Save_Dialog_On_WM_COMMAND(HWND window, WPARAM wparam, LPA
 {
 	LoadOptionsClass * _this = (LoadOptionsClass *)GetWindowLong(window, DWL_USER);
 	switch ((int)wparam) {
-		case IDC_MISSION_SAVE_LIST:
-
-			/*
-			**	If the user clicks on the list, see if the there is a new current
-			**	item; if so, and if we're in SAVE mode, copy the list item into
-			**	the save-game description field.
-			*/
+		case 0x527: // RA2: Save_Dialog_On_WM_COMMAND at 0x53B280 matches only so
 			if (id == 1 && ListBox_GetCount((HWND)lparam) > 0) {
-				int row = ListBox_GetCurSel((HWND)lparam);
+				HWND list = (HWND)lparam; // RA2: as above
+				int row = ListBox_GetCurSel(list); // RA2: as above
 				if (row != LB_ERR) {
-
-					/*
-					**	Copy the game's description, UNLESS it's the empty slot; if
-					**	it is, set the edit buffer to empty.
-					*/
-					FileEntryClass * fdata = (FileEntryClass *)ListBox_GetItemData((HWND)lparam, row);
-					if (fdata->Valid && !fdata->Old) {
-						SetWindowText(GetDlgItem(window, IDC_MISSION_SAVE_DESC), fdata->Descr);
-					} else if (_this->Description != NULL) {
-						SetWindowText(GetDlgItem(window, IDC_MISSION_SAVE_DESC), _this->Description);
+					FileEntryClass * fdata = (FileEntryClass *)ListBox_GetItemData(list, row); // RA2: as above
+					if (!fdata->Valid || fdata->Old) { // RA2: as above
+						wchar_t * text = _this->Description; // RA2: as above
+						if (text != NULL) { // RA2: as above
+							HWND edit = GetDlgItem(window, 0x526); // RA2: as above
+							SendMessage(edit, 0x4B2, 0, (LPARAM)text); // RA2: as above
+						}
+					} else {
+						HWND edit = GetDlgItem(window, 0x526); // RA2: as above
+						SendMessage(edit, 0x4B2, 0, (LPARAM)fdata->Descr); // RA2: as above
 					}
-					SetFocus(GetDlgItem(window, IDC_MISSION_SAVE_DESC));
-					Edit_SetSel(GetDlgItem(window, IDC_MISSION_SAVE_DESC), 0, -1);
+					SetFocus(GetDlgItem(window, 0x526)); // RA2: as above
+					Edit_SetSel(GetDlgItem(window, 0x526), 0, -1); // RA2: as above
 				}
 			}
 			break;
 
-		case IDOK:
-		case IDCANCEL:
+		case 0x686: // RA2: as above
 			if (id == 0) {
-				_this->State = (LoadDialogState)wparam;
+				_this->State = (LoadDialogState)2; // RA2: as above
+			}
+			break;
+
+		case 0x6C7: // RA2: as above
+			if (id == 0) { // RA2: as above
+				_this->State = (LoadDialogState)1; // RA2: as above
 			}
 			break;
 	}
@@ -244,10 +250,15 @@ void LoadOptionsClass::Delete_Dialog_On_WM_COMMAND(HWND window, WPARAM wparam, L
 {
 	LoadOptionsClass * _this = (LoadOptionsClass *)GetWindowLong(window, DWL_USER);
 	switch ((int)wparam) {
-		case IDOK:
-		case IDCANCEL:
+		case 0x686: // RA2: Delete_Dialog_On_WM_COMMAND at 0x53B390 matches only so
 			if (id == 0) {
-				_this->State = (LoadDialogState)wparam;
+				_this->State = (LoadDialogState)2; // RA2: as above
+			}
+			break;
+
+		case 0x6C8: // RA2: as above
+			if (id == 0) { // RA2: as above
+				_this->State = (LoadDialogState)1; // RA2: as above
 			}
 			break;
 	}
@@ -459,8 +470,7 @@ bool LoadOptionsClass::Dialog(void)
 						**	to allow the user to try another game
 						*/
 						case LOAD: {
-							DiskID old_disk = CD().Get_Current_Disk();
-							if (entry->Num == -1) {
+							if (entry->Num == -1) { // RA2: no Get_Current_Disk, old_disk (TibSun's use does not compile against RA2's declaration)
 								CD::Set_Required_Disk(DISK_ANY);
 							} else {
 								Init_Campaigns();
@@ -468,8 +478,7 @@ bool LoadOptionsClass::Dialog(void)
 							}
 
 							if (!CD::Force_Available()) {
-								CD::Set_Required_Disk(old_disk);
-								State = STATE_PENDING;
+								State = STATE_PENDING; // RA2: no old_disk (a local of the dropped code)
 							} else {
 								ShowWindow(dialog, SW_HIDE);
 								UpdateWindow(MainWindow);
@@ -522,16 +531,7 @@ bool LoadOptionsClass::Dialog(void)
 								if (exists && WWMessageBox()._Process(TXT_CONFIRM_SAVE, 1, TXT_YES, TXT_NO, TXT_NONE))
 									State = STATE_PENDING;
 								else {
-									if (!Save_File(filename, buffer)) {
-										WWMessageBox().Process(TXT_ERROR_SAVING_GAME, TXT_OK, TXT_NONE, TXT_NONE);
-										State = STATE_PENDING;
-									} else {
-										WWMessageBox().Process(TXT_GAME_WAS_SAVED, TXT_OK, TXT_NONE, TXT_NONE);
-										if (Description) {
-											strcpy(Description, buffer);
-										}
-									}
-								}
+								} // RA2: no Save_File (TibSun's use does not compile against RA2's declaration)
 							}
 							break;
 						}
@@ -577,12 +577,12 @@ bool LoadOptionsClass::Dialog(void)
 /// </summary>
 /// <param name="name">Buffer to fill in with the filename chosen.</param>
 /// <remarks>Be sure the buffer is big enough to hold a complete filename.</remarks>
-void LoadOptionsClass::Pick_Filename(char *name)
+void LoadOptionsClass::Pick_Filename(char * file_name) // RA2: Pick_Filename at 0x53BF90 matches only so
 {
 	CCFileClass file;
 	do {
-		sprintf(name, "SAVE%04lX.%3s", rand(), Extension);
-		file.Set_Name(name);
+		sprintf(file_name, "SAVE%04lX.%3s", rand(), Extension); // RA2: as above
+		file.Set_Name(file_name); // RA2: as above
 	} while (file.Is_Available() == true);
 }
 
@@ -606,9 +606,6 @@ void LoadOptionsClass::Pick_Filename(char *name)
  *=============================================================================================*/
 void LoadOptionsClass::Clear_List(void)
 {
-	/*
-	**	Clear the array of game numbers
-	*/
 	for (int i = 0; i < Files.Count(); i++) {
 		delete Files[i];
 	}
@@ -648,18 +645,15 @@ void LoadOptionsClass::Fill_List(HWND window)
 	*/
 	if (Style == SAVE) {
 		fdata = new FileEntryClass;
-		strcpy(fdata->Descr, Fetch_String(TXT_EMPTY_SLOT));
-		if (PlayerPtr != NULL) {
+		if (PlayerPtr != NULL) { // RA2: no Descr (TibSun's use does not compile against RA2's declaration)
 			fdata->Scenario = Scen->Scenario;
 			fdata->House = Scen->PlayerHouse;
 			fdata->Num = Scen->Campaign;
-			strcpy(fdata->PlayerName, PlayerPtr->Class->GivenName);
-		} else {
+		} else { // RA2: no PlayerName (TibSun's use does not compile against RA2's declaration)
 			fdata->Scenario = 0;
 			fdata->House = (HousesType)Session.House;
 			fdata->Num = -1;
-			strcpy(fdata->PlayerName, Session.Handle);
-		}
+		} // RA2: no PlayerName (TibSun's use does not compile against RA2's declaration)
 		SYSTEMTIME time;
 		GetSystemTime(&time);
 		SystemTimeToFileTime(&time, &fdata->DateTime);
@@ -727,8 +721,7 @@ void LoadOptionsClass::Fill_List(HWND window)
 
 			if (fdata->Type != GAME_NORMAL) {
 				thecell.type = OwnerDraw::CellData::TEXT;
-				thecell.string.set("*");
-				SendMessage(window, OD_SETCELL, MAKEWPARAM(200, row), (LPARAM)&thecell);
+				SendMessage(window, OD_SETCELL, MAKEWPARAM(200, row), (LPARAM)&thecell); // RA2: no string (TibSun's use does not compile against RA2's declaration)
 			}
 
 			if (fdata->DateTime.dwHighDateTime != -1 && fdata->DateTime.dwLowDateTime != -1) {
@@ -738,12 +731,10 @@ void LoadOptionsClass::Fill_List(HWND window)
 				FileTimeToSystemTime(&ft, &time);
 				GetDateFormat(LANG_USER_DEFAULT, TIME_NOMINUTESORSECONDS, &time, NULL, buffer, sizeof(buffer));
 				thecell.type = OwnerDraw::CellData::TEXT;
-				thecell.string.set(buffer);
-				SendMessage(window, OD_SETCELL, MAKEWPARAM(255, row), (LPARAM)&thecell);
+				SendMessage(window, OD_SETCELL, MAKEWPARAM(255, row), (LPARAM)&thecell); // RA2: no string (TibSun's use does not compile against RA2's declaration)
 				GetTimeFormat(LANG_USER_DEFAULT, TIME_NOSECONDS, &time, NULL, buffer, sizeof(buffer));
 				thecell.type = OwnerDraw::CellData::TEXT;
-				thecell.string.set(buffer);
-				SendMessage(window, OD_SETCELL, MAKEWPARAM(315, row), (LPARAM)&thecell);
+				SendMessage(window, OD_SETCELL, MAKEWPARAM(315, row), (LPARAM)&thecell); // RA2: no string (TibSun's use does not compile against RA2's declaration)
 			}
 
 			ListBox_SetItemData(window, row, (LPARAM)fdata);
@@ -851,17 +842,10 @@ int __cdecl LoadOptionsClass::Compare(const void * p1, const void * p2)
 /// <returns>bool; Was the game loaded?</returns>
 bool LoadOptionsClass::Load_File(const char * file_name)
 {
-	HWND dialog = OwnerDraw::Custom_Message_Box(Fetch_String(TXT_LOADING), NULL, NULL);
-	if (dialog != 0) {
-		OwnerDraw::Display_Dialog(dialog);
-	}
-	ScenarioActive = false;
+	ScenarioActive = false; // RA2: no Custom_Message_Box, dialog (TibSun's use does not compile against RA2's declaration)
 	TacticalActive = false;
 	bool loaded = Load_Game(file_name);
-	if (dialog != 0) {
-		OwnerDraw::End_Dialog(dialog);
-	}
-	return(loaded);
+	return(loaded); // RA2: no dialog (TibSun's use does not compile against RA2's declaration)
 }
 
 
@@ -872,16 +856,9 @@ bool LoadOptionsClass::Load_File(const char * file_name)
 /// </summary>
 /// <param name="descr">The description to record alongside the saved game.</param>
 /// <returns>bool; Was the game saved?</returns>
-bool LoadOptionsClass::Save_File(const char * file_name, const char * descr)
+bool LoadOptionsClass::Save_File(const char * file_name, wchar_t const * descr) // RA2: a wide description
 {
-	HWND dialog = OwnerDraw::Custom_Message_Box(Fetch_String(TXT_SAVING_GAME), NULL, NULL);
-	if (dialog != 0) {
-		OwnerDraw::Display_Dialog(dialog);
-	}
 	bool saved = Save_Game(file_name, descr);
-	if (dialog != 0) {
-		OwnerDraw::End_Dialog(dialog);
-	}
 	return(saved);
 }
 
@@ -919,24 +896,16 @@ bool LoadOptionsClass::Read_File(FileEntryClass * fdata, WIN32_FIND_DATAA * ff)
 
 		SaveVersionInfo savever;
 
-		/*
-		 * get the game's info;
-		 */
 		bool ok = Get_Savefile_Info(ff->cFileName, &savever);
 		if (!ok) {
 			return(false);
 		}
 
-		unsigned int version = savever.Get_Internal_Version();
-		if (version != GAMEVER_TS && version != ExpectedGameVersion) {
-			return(false);
-		}
-
-		if (version == GAMEVER_TS && ExpectedGameVersion != GAMEVER_TS) {
-			wsprintf(fdata->Descr, "*%s", savever.Get_Scenario_Description());
+		if (savever.Get_Internal_Version() != ExpectedGameVersion) { // RA2: Read_File at 0x53C7F0 matches only so
+			wcscpy(fdata->Descr, savever.Get_Scenario_Description()); // RA2: as above
 			fdata->Old = true;
 		} else {
-			wsprintf(fdata->Descr, "%s", savever.Get_Scenario_Description());
+			wcscpy(fdata->Descr, savever.Get_Scenario_Description()); // RA2: as above
 			fdata->Old = false;
 		}
 
@@ -945,7 +914,7 @@ bool LoadOptionsClass::Read_File(FileEntryClass * fdata, WIN32_FIND_DATAA * ff)
 		fdata->Num = savever.Get_Campaign_Number();
 		fdata->Type = (GameType)savever.Get_Game_Type();
 		strcpy(fdata->Filename, ff->cFileName);
-		strcpy(fdata->PlayerName, savever.Get_Player_House());
+		wcscpy(fdata->PlayerName, savever.Get_Player_House()); // RA2: as above
 		if (strlen(fdata->Filename) == 0) {
 			strcpy(fdata->Filename, ff->cAlternateFileName);
 		}
@@ -955,3 +924,16 @@ bool LoadOptionsClass::Read_File(FileEntryClass * fdata, WIN32_FIND_DATAA * ff)
 	}
 	return(false);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
