@@ -186,8 +186,9 @@ void WaveClass::Set_Laser_Pixel(unsigned short * buffer, int mult) const
 	int red = rgb.Get_Red();
 	int green = rgb.Get_Green();
 	int blue = rgb.Get_Blue();
-	red += ((red * mult) >> 8);
-	*buffer = DSurface::Build_Hicolor_Pixel(MIN(255, red), green, blue);
+	red += ((mult * 64) >> 8); // RA2: red brightens by a fixed 64/256 of the multiplier
+	blue += ((mult * 96) >> 8); // RA2: and blue by 96/256
+	*buffer = DSurface::Build_Hicolor_Pixel(MIN(255, red), MIN(255, green), MIN(255, blue));
 }
 
 
@@ -493,7 +494,7 @@ HRESULT STDMETHODCALLTYPE WaveClass::GetClassID(CLSID * retval)
 /// Fetches the size of this object as it is written to the save game file.
 /// </summary>
 /// <returns>Returns with the number of bytes this object occupies.</returns>
-int WaveClass::Fetch_Object_Size(bool oldsave) const
+int WaveClass::Fetch_Object_Size(void) const // RA2: takes no argument
 {
 	return(sizeof(*this));
 }
@@ -528,8 +529,6 @@ ObjectTypeClass const * WaveClass::Class_Of(void) const
 /// <returns>bool; Was the wave successfully placed?</returns>
 bool WaveClass::Unlimbo(Coord const & coord, Dir256 facing)
 {
-	assert(this != NULL);
-
 	if (GameActive && IsInLimbo && !IsDown) {
 		if (ScenarioInit || Can_Enter_Cell(&Map[coord], FACING_NONE, coord.Z) == MOVE_OK) {
 			IsInLimbo = false;
@@ -559,8 +558,6 @@ bool WaveClass::Unlimbo(Coord const & coord, Dir256 facing)
 /// <returns>bool; Was the wave removed?</returns>
 bool WaveClass::Limbo(void)
 {
-	assert(this != NULL);
-
 	if (GameActive && !IsInLimbo) {
 
 		Detach_All();
@@ -599,6 +596,8 @@ void WaveClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 			break;
 	}
 }
+
+
 
 
 /// <summary>
@@ -804,6 +803,8 @@ void WaveClass::Draw_Sonic(Point2D const & point, Rect const & cliprect)
 }
 
 
+
+
 /// <summary>
 /// Draws the laser wave.
 /// The wave brightens the screen pixels it covers rather than replacing them, so that the
@@ -931,6 +932,9 @@ void WaveClass::Draw_Laser(Point2D const & point, Rect const & cliprect)
 }
 
 
+
+
+
 /// <summary>
 /// Handles the per frame logic for the wave.
 /// This routine is called by the logic layer and merely dispatches to the handler for this
@@ -970,6 +974,9 @@ void WaveClass::Sonic_AI(void)
 }
 
 
+
+
+
 /// <summary>
 /// Handles the per frame logic for a laser wave.
 /// A laser wave inflicts no damage of its own. It merely dims until it is too faint to be
@@ -981,6 +988,33 @@ void WaveClass::Laser_AI(void)
 	if (LaserEC < 32) {
 		Delete_Me();
 	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool _Differs(Cell const & a, Cell const & b) // RA2: cells compared by value
+{
+	return a != b; // RA2: by value
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void _Set(Cell & c, Coord const & coord) // RA2: a cell set from a coordinate
+{
+	c = coord.As_Cell(); // RA2: by value
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool _Differs(Cell const & a, Coord const & c) // RA2: a cell compared with a coordinate's cell
+{
+	return a != c.As_Cell(); // RA2: by value
 }
 
 
@@ -1000,7 +1034,7 @@ void WaveClass::Wave_Recalc_Affected_Cells(void)
 			Coord coord = Lerp(StartCoord, EndCoord, t);
 			Cell cell = coord.As_Cell();
 			if (start != cell) {
-				start = cell;
+				start = coord.As_Cell(); // RA2: the start cell from the coordinate
 				Sonic_Add_Cell(start);
 			}
 		}
@@ -1021,20 +1055,99 @@ void WaveClass::Wave_Recalc_Affected_Cells(void)
 			}
 
 			coord = Lerp(StartCoord, EndCoord, t);
-			if (middle != coord.As_Cell()) {
-				middle = coord.As_Cell();
+			if (_Differs(middle, coord.As_Cell())) { // RA2: through _Differs
+				_Set(middle, coord); // RA2: through _Set
 				Sonic_Add_Cell(middle);
 			}
 
 			if (Direction >= FACING_S) {
 				coord = Lerp(WaveStartRightCoord, WaveEndRightCoord, t);
-				if (right != coord.As_Cell()) {
-					right = coord.As_Cell();
+				if (_Differs(right, coord)) { // RA2: through _Differs
+					_Set(right, coord); // RA2: through _Set
 					Sonic_Add_Cell(right);
 				}
 			}
 		}
 	}
+}
+
+
+
+
+/// <summary>
+/// Handles the per frame update of the wave geometry.
+/// This routine keeps the wave anchored to the object that fired it and to the object it
+/// was aimed at. While that link holds, the shape is rebuilt and its leading edge is drawn
+/// further out until the wave has reached its full length. Once the link is broken the
+/// trailing edge is drawn in after it, and the wave removes itself when nothing of it is
+/// left. The list of cells the wave covers is refreshed before returning.
+/// </summary>
+void WaveClass::Wave_Shape_AI(void) // RA2: defined after Wave_Recalc_Affected_Cells, at 0x00724200
+{
+	if (Target != NULL && Source != NULL && WaveEC != (int)(1.0 / WaveStep) && Source->TarCom == Target) {
+		if ((Source->PositionCoord - Target->As_Coord()).Length() > CELL_LEPTON_DIAG * 6.0) {
+			IsWaveActive = false;
+		}
+	} else {
+		IsWaveActive = false;
+	}
+
+	if (IsWaveActive) {
+		Build_Wave_Shape(Source->Fire_Coord(0), Target->As_Coord());
+	}
+
+	if (WaveProgress < 1.0 && IsWaveActive) {
+		WaveProgress += WaveStep;
+		if (WaveProgress > 0.98) {
+			WaveProgress = 1.0;
+		}
+		WaveShape.Vertices[PolygonShapeStruct::END_LEFT] = Lerp(WaveStartLeft, WaveEndLeft, WaveProgress);
+		WaveShape.Vertices[PolygonShapeStruct::END_MIDDLE] = Lerp(WaveStartMiddle, WaveEndMiddle, WaveProgress);
+		WaveShape.Vertices[PolygonShapeStruct::END_RIGHT] = Lerp(WaveStartRight, WaveEndRight, WaveProgress);
+	} else if (!IsWaveActive) {
+		if (WaveStep * 0.5 + WaveProgress >= FadeProgress) {
+			FadeProgress += WaveStep;
+			if (WaveProgress <= FadeProgress) {
+				Delete_Me();
+				return;
+			} else {
+				WaveShape.Vertices[PolygonShapeStruct::START_RIGHT] = Lerp(WaveStartRight, WaveEndRight, FadeProgress);
+				WaveShape.Vertices[PolygonShapeStruct::START_MIDDLE] = Lerp(WaveStartMiddle, WaveEndMiddle, FadeProgress);
+				WaveShape.Vertices[PolygonShapeStruct::START_LEFT] = Lerp(WaveStartLeft, WaveEndLeft, FadeProgress);
+			}
+		}
+	}
+
+	Wave_Recalc_Affected_Cells();
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Lerp_From(Coord & point, Coord const & origin, float t) // RA2: a point pulled toward an origin
+{
+	double inv = 1.0 - t; // RA2: the remaining weight
+	point = Coord(origin.X * inv + point.X * t, origin.Y * inv + point.Y * t, origin.Z * inv + point.Z * t); // RA2: blended per axis
+}
+
+
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// Fetches the RTTI type of this object.
+/// </summary>
+/// <returns>Returns with the RTTI identifier that marks this object as a wave.</returns>
+RTTIType WaveClass::Fetch_RTTI(void) const // RA2: defined last
+{
+	return(RTTI_WAVE);
 }
 
 
@@ -1154,60 +1267,3 @@ void WaveClass::Build_Wave_Shape(Coord const & source_coord, Coord const & targe
 	Facing = Source->SecondaryFacing;
 }
 
-
-/// <summary>
-/// Handles the per frame update of the wave geometry.
-/// This routine keeps the wave anchored to the object that fired it and to the object it
-/// was aimed at. While that link holds, the shape is rebuilt and its leading edge is drawn
-/// further out until the wave has reached its full length. Once the link is broken the
-/// trailing edge is drawn in after it, and the wave removes itself when nothing of it is
-/// left. The list of cells the wave covers is refreshed before returning.
-/// </summary>
-void WaveClass::Wave_Shape_AI(void)
-{
-	if (Target != NULL && Source != NULL && WaveEC != (int)(1.0 / WaveStep) && Source->TarCom == Target) {
-		if ((Source->PositionCoord - Target->As_Coord()).Length() > CELL_LEPTON_DIAG * 6.0) {
-			IsWaveActive = false;
-		}
-	} else {
-		IsWaveActive = false;
-	}
-
-	if (IsWaveActive) {
-		Build_Wave_Shape(Source->Fire_Coord(0), Target->As_Coord());
-	}
-
-	if (WaveProgress < 1.0 && IsWaveActive) {
-		WaveProgress += WaveStep;
-		if (WaveProgress > 0.98) {
-			WaveProgress = 1.0;
-		}
-		WaveShape.Vertices[PolygonShapeStruct::END_LEFT] = Lerp(WaveStartLeft, WaveEndLeft, WaveProgress);
-		WaveShape.Vertices[PolygonShapeStruct::END_MIDDLE] = Lerp(WaveStartMiddle, WaveEndMiddle, WaveProgress);
-		WaveShape.Vertices[PolygonShapeStruct::END_RIGHT] = Lerp(WaveStartRight, WaveEndRight, WaveProgress);
-	} else if (!IsWaveActive) {
-		if (WaveStep * 0.5 + WaveProgress >= FadeProgress) {
-			FadeProgress += WaveStep;
-			if (WaveProgress <= FadeProgress) {
-				Delete_Me();
-				return;
-			} else {
-				WaveShape.Vertices[PolygonShapeStruct::START_RIGHT] = Lerp(WaveStartRight, WaveEndRight, FadeProgress);
-				WaveShape.Vertices[PolygonShapeStruct::START_MIDDLE] = Lerp(WaveStartMiddle, WaveEndMiddle, FadeProgress);
-				WaveShape.Vertices[PolygonShapeStruct::START_LEFT] = Lerp(WaveStartLeft, WaveEndLeft, FadeProgress);
-			}
-		}
-	}
-
-	Wave_Recalc_Affected_Cells();
-}
-
-
-/// <summary>
-/// Fetches the RTTI type of this object.
-/// </summary>
-/// <returns>Returns with the RTTI identifier that marks this object as a wave.</returns>
-RTTIType WaveClass::Fetch_RTTI(void) const
-{
-	return(RTTI_WAVE);
-}
