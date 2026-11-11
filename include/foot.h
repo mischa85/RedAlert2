@@ -513,6 +513,8 @@ class FootClass : public TechnoClass
 		virtual int Do_MISSION_RETREAT(void) override;
 		virtual int Do_MISSION_ENTER(void) override;
 		virtual int Do_MISSION_MOVE(void) override;
+		virtual int Do_MISSION_EATEN(void) override; // RA2: 0x4C4370
+		virtual int Do_MISSION_UNLOAD(void) override; // RA2: 0x4C8D70
 		virtual int Do_MISSION_CAPTURE(void) override;
 		virtual int Do_MISSION_ATTACK(void) override;
 		virtual int Do_MISSION_GUARD(void) override;
