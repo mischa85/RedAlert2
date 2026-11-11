@@ -59,6 +59,8 @@ class FoggedObjectClass;
 **	these structures. This structure holds information that is specific
 **	and dynamic for a particular building.
 */
+extern Cell EmptyCell; // RA2: 0x84ED10, an all-zero cell
+
 class BuildingClass : public TechnoClass
 {
 		typedef TechnoClass BASECLASS;
@@ -408,6 +410,16 @@ class BuildingClass : public TechnoClass
 		virtual ActionType What_Action(ObjectClass const * target, bool disallow_force = false) const override;
 		virtual ActionType What_Action(Cell const & cell, bool check_fog = false, bool disallow_force = false) const override;
 		virtual bool Can_Repair(void) const override;
+		virtual bool Is_In_Team(void) const override {return(false);} // RA2: 0x453B50
+		virtual bool Is_In_Same_Zone_As(ObjectClass const *) const override {return(true);} // RA2: 0x453B60
+		virtual ZGradientType Get_Z_Gradient(void) const override {return(ZGRAD_90DEG);} // RA2: 0x453B70
+		virtual Cell GetLastFlightMapCoords(void) const override {return(EmptyCell);} // RA2: 0x453B80
+		virtual void SetLastFlightMapCoords(Cell) override {} // RA2: 0x453B90
+		virtual bool Is_Allowed_To_Leave_Map(void) const override {return(false);} // RA2: 0x453BA0
+		virtual void Advance_Waypoint_Path(void) override {} // RA2: 0x453BB0
+		virtual bool IsParalyzed(void) const override {return(false);} // RA2: 0x453BC0
+		virtual bool Crash(ObjectClass *) override {return(false);} // RA2: 0x453BD0
+		virtual void Draw_Action_Line(bool, int) const override {} // RA2: 0x453BE0
 		virtual bool Can_Demolish(void) const override;
 		bool Can_Upgrade(BuildingTypeClass const * upgrade, HouseClass const * upgrader) const;
 		bool Add_Upgrade(void);
@@ -424,7 +436,7 @@ class BuildingClass : public TechnoClass
 		int Power_Output(void) const;
 		int Power_Drain(void) const;
 		Cell Check_Point(CheckPointType cp) const;
-		bool Is_Powered_On(void) const;
+		virtual bool IsPowerOnline(void) const override; // RA2: Is_Powered_On is the TechnoClass virtual, at 0x450360
 		SuperWeaponType Fetch_Super_Weapon(void) const;
 		SuperWeaponType Fetch_Super_Weapon2(void) const;
 		bool Should_Fog(void) const;
@@ -475,6 +487,21 @@ class BuildingClass : public TechnoClass
 		virtual bool Mark(MarkType mark=MARK_CHANGE) override;
 		virtual Rect Get_Render_Rect(void) override;
 		virtual void Draw_Radial_Indicator(DWORD) override; // RA2: takes an argument; not const
+		int GetRadialIndicatorRange(void) const; // RA2: 0x451930
+		int Tinted_Brightness(int brightness); // RA2: 0x4521E0
+		void Rotate_Overpowerer(InfantryClass * infantry); // RA2: 0x44DA20
+		bool Is_In_Psychic_Range(AbstractClass const * target); // RA2: 0x44DAA0
+		bool Is_Cell_In_Psychic_Range(CellClass const * cell); // RA2: 0x44DB40
+		virtual void IronCurtain(int duration) override; // RA2: 0x452E60
+		bool CanBeOccupiedBy(InfantryClass * infantry) const; // RA2: 0x452EB0
+		int GetOccupantCount(void) const; // RA2: 0x4532F0
+		void Update_Garrison_Owner(void); // RA2: 0x453300
+		void Refresh_State_Animations(void); // RA2: 0x453450
+		void KillOccupants(TechnoClass * killer); // RA2: 0x4536D0
+		void Produce_Cash(void); // RA2: 0x453850
+		bool Exit_New_Object(ObjectTypeClass const * type); // RA2: 0x4538D0
+		int Storage_Level(void) const; // RA2: 0x453AB0
+		bool Is_Impassable_Cell(CellClass const * cell); // RA2: 0x453AF0
 		void Draw_Overlays(Point2D const & point, Rect const & cliprect) const;
 		void Begin_Mode(BStateType bstate);
 		virtual void Draw_Extras(Point2D &point, Rect &rect);
@@ -581,7 +608,7 @@ class BuildingClass : public TechnoClass
 
 		void Begin_Anim(BAnimType anim, bool damaged, int delay = 0);
 		void Set_Anim_Coords(void);
-		void Create_Anim(char const * name, BAnimType anim, bool damaged, int delay);
+		void Create_Anim(char const * name, BAnimType anim, bool damaged, bool garrisoned, int delay); // RA2: garrisoned
 		void Detach_Anim(AnimClass * anim);
 		void End_Anim(BAnimType anim);
 		void Set_Anim_Damage_State(bool damaged);
