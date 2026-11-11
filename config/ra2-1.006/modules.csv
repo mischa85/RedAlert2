@@ -607,7 +607,9 @@ unk_0065FBB0,0x0065FBB0,0x00662D60,unknown,code not assigned to a module
 unk_00662D60,0x00662D60,0x00662E00,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00662E00,0x00662E00,0x00663690,unknown,code not assigned to a module
 scheme,0x00663690,0x00663DF0,tibsun,"functions compiled from src/scheme.cpp, matched, without gaps"
-unk_00663DF0,0x00663DF0,0x00668730,unknown,code not assigned to a module
+unk_00663DF0,0x00663DF0,0x00665E50,unknown,code not assigned to a module
+score,0x00665E50,0x00668300,tibsun,"functions compiled from src/score.cpp, without gaps; matched except ??0SfxEntry@@QAE@PBD0@Z and ?Do_Graph@ScoreClass@@AAEXHHH@Z and ?Print_Minutes@ScoreClass@@AAEXH@Z and ?Count_Up_Print@ScoreClass@@AAE?AV?$TRect@H@@PAVSurface@@PADHHHH@Z and ?Input_Name@ScoreClass@@AAEXQADHH@Z and ?DoSound@ScoreClass@@AAEXPBDH@Z and ?Load_Sounds@ScoreFontClass@@QAEXXZ and ?String_Width@ScoreFontClass@@UAEHPBD@Z and ?Char_Width@ScoreFontClass@@UAEHD@Z and ?Print_Char@ScoreFontClass@@UAEXPAVSurface@@DHHH_N@Z and ?Print_String@ScoreFontClass@@UAEXPAVSurface@@PBDHHH@Z and ??0ScorePrintClass@@QAE@HHHPAVScoreFontClass@@_N@Z and ?Update@ScorePrintClass@@UAE_NPAVSurface@@@Z; one placed by the gap; ?Print_Minutes@ScoreClass@@AAEXH@Z to ?Input_Name@ScoreClass@@AAEXQADHH@Z share the room between their neighbours; ?Load_Sounds@ScoreFontClass@@QAEXXZ to ?Print_String@ScoreFontClass@@UAEXPAVSurface@@PBDHHH@Z share the room between their neighbours; ??0SfxEntry@@QAE@PBD0@Z placed at their function starts; ?Presentation@ScoreClass@@QAEXXZ not placed"
+unk_00668300,0x00668300,0x00668730,unknown,code not assigned to a module
 script,0x00668730,0x006691A0,tibsun,"functions compiled from src/script.cpp, matched, without gaps; ten placed by the gap"
 unk_006691A0,0x006691A0,0x006695E0,unknown,code not assigned to a module
 scroll,0x006695E0,0x0066AC60,tibsun,"functions compiled from src/scroll.cpp, matched, without gaps"
