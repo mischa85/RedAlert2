@@ -45,6 +45,7 @@ class SurfaceCacheClass : public Dictionary<Wstring, SurfaceCacheEntry>
 		bool CachePalettedPCX(char const *name);
 
 		Surface * GetSurface(char const * name, void * palette = NULL);
+		void Remove(char const *name); // RA2: 0x68CB30
 
 		bool Draw(Rect const & rect, Surface & tosurface, Surface & fromsurface, int x = 0, int y = 0);
 		bool DrawTrans(Rect const & rect, Surface & tosurface, Surface & fromsurface, short trans);

@@ -19,6 +19,7 @@
 #include "dsurface.h"
 #include "ownrdraw.h"
 #include "pcx.h"
+#include "wstring.h" // RA2: the cache is keyed by Wstring
 
 #include <new>
 
@@ -78,6 +79,20 @@ void SurfaceCacheConvertPalette(unsigned char *pal)
 }
 
 
+static unsigned int SurfaceCache_Wstring_Hash(Wstring & string); // RA2: defined below
+
+
+/// <summary>
+/// Constructs the cache as a Wstring-keyed dictionary using the surface
+/// cache hash function.
+/// </summary>
+SurfaceCacheClass::SurfaceCacheClass(void) :
+	Dictionary<Wstring, SurfaceCacheEntry>(SurfaceCache_Wstring_Hash)
+{
+
+}
+
+
 /// <summary>
 /// Hash function for the surface cache dictionary: a rotating shift-xor hash
 /// over the key's characters, seeded with the string length.
@@ -96,17 +111,6 @@ static unsigned int SurfaceCache_Wstring_Hash(Wstring & string)
 		hash = (hash << 8) ^ (hash >> 24);
 	}
 	return(hash);
-}
-
-
-/// <summary>
-/// Constructs the cache as a Wstring-keyed dictionary using the surface
-/// cache hash function.
-/// </summary>
-SurfaceCacheClass::SurfaceCacheClass(void) :
-	Dictionary<Wstring, SurfaceCacheEntry>(SurfaceCache_Wstring_Hash)
-{
-
 }
 
 
@@ -417,6 +421,38 @@ Surface * SurfaceCacheClass::GetSurface(char const * name, void * palette)
 
 
 /// <summary>
+/// Drops the named surface from the cache and deletes it.
+/// </summary>
+void SurfaceCacheClass::Remove(char const *name) // RA2: not in TibSun, at 0x68CB30
+{
+	Wstring key(name);
+	SurfaceCacheEntry entry;
+	if (getValue(key, entry)) {
+		Surface * surf = entry.surf;
+		remove(key, entry);
+		delete surf;
+	}
+	getEntries();
+}
+
+
+
+
+
+/// <summary>
+/// Do-nothing draw variant; never draws.
+/// </summary>
+/// <param name="rect">Unused.</param>
+/// <param name="tosurface">Unused.</param>
+/// <param name="fromsurface">Unused.</param>
+/// <returns>Always false.</returns>
+bool SurfaceCacheClass::DrawNullsub(Rect const & rect, Surface & tosurface, Surface & fromsurface) // RA2: defined here
+{
+	return(false);
+}
+
+
+/// <summary>
 /// Fills the destination rectangle from a 16-bit source surface, wrapping the
 /// source with modulo arithmetic so it tiles endlessly. A source larger than
 /// the rectangle is centered over it.
@@ -514,19 +550,6 @@ bool SurfaceCacheClass::DrawTrans(Rect const & rect, Surface & tosurface, Surfac
 	tosurface.Unlock();
 	fromsurface.Unlock();
 	return(true);
-}
-
-
-/// <summary>
-/// Do-nothing draw variant; never draws.
-/// </summary>
-/// <param name="rect">Unused.</param>
-/// <param name="tosurface">Unused.</param>
-/// <param name="fromsurface">Unused.</param>
-/// <returns>Always false.</returns>
-bool SurfaceCacheClass::DrawNullsub(Rect const & rect, Surface & tosurface, Surface & fromsurface)
-{
-	return(false);
 }
 
 
@@ -709,3 +732,4 @@ bool SurfaceCacheClass::DrawMasked(Rect const & rect, Surface & tosurface, Surfa
 	masksurface.Unlock();
 	return(true);
 }
+
