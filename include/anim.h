@@ -76,6 +76,8 @@ class AnimClass : public ObjectClass, public StageClass
 		static void Post_Load_Game(void);
 
 		void Attach_To(ObjectClass *obj);
+		void Set_Attached_Bullet(BulletClass * bullet); // RA2
+		void Set_Owner(HouseClass * house); // RA2
 		void Make_Invisible(void) {IsInvisible = true;};
 		void Make_Visible(void) {IsInvisible = false;};
 		static void Do_Atom_Damage(HousesType ownerhouse, Cell const & cell);

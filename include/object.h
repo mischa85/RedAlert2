@@ -394,11 +394,11 @@ class ObjectClass : public AbstractClass
 		/*
 		**	RA2: chrono warping state.
 		*/
-		virtual bool IsBeingWarpedOut(void) const;
-		virtual bool IsWarpingIn(void) const;
-		virtual bool IsWarpingSomethingOut(void) const;
-		virtual bool IsNotWarping(void) const;
-		virtual void * GetRemapColour(void) const;
+		virtual bool IsBeingWarpedOut(void) const {return(false);}
+		virtual bool IsWarpingIn(void) const {return(false);}
+		virtual bool IsWarpingSomethingOut(void) const {return(false);}
+		virtual bool IsNotWarping(void) const {return(true);}
+		virtual void * GetRemapColour(void) const {return(0);}
 		void Set_Height(int height);
 
 		__declspec( property( get=Get_Height, put=Set_Height ) ) int Height;

@@ -174,13 +174,8 @@ AnimClass::AnimClass(AnimTypeClass const * type, Coord const & coord, int timede
 
 	Set_Stage(0);
 
-	if (!Class->IsGroundLayer) {
-		Height = Rule->FlightLevel;
-	} else {
-		HeightAGL = 0;
-	}
 
-	if (Class->IsReverse) {
+	if (Class->IsReverse) { // RA2: no IsGroundLayer (not in RA2's layout)
 		Set_Stage(Class->LoopEnd);
 		Set_Step(-Fetch_Step());
 	}
@@ -356,7 +351,7 @@ AnimType Anim_From_Name(char const * name)
 {
 	if (name == NULL) return(ANIM_NONE);
 
-	if (strcmpi(name, "<none>") == 0 || strcmpi(name, "none") == 0) return(ANIM_NONE);
+	if (strcmpi(name, "<none>") == 0) return(ANIM_NONE); // RA2: Anim_From_Name at 0x420CD0 matches only so
 
 	for (AnimType anim = ANIM_FIRST; anim < AnimTypes.Count(); anim++) {
 		if (stricmp(AnimTypes[anim]->IniName, name) == 0) {
@@ -675,10 +670,7 @@ BounceResultType AnimClass::Bounce_AI(void)
 		case BOUNCE_IMPACT: {
 			if (Class->BounceAnim != NULL) {
 				new AnimClass(Class->BounceAnim, Center_Coord());
-			}
-			if ((unsigned char)Class->BounceSound != UCHAR_MAX) {
-				Sound_Effect(Class->BounceSound, Center_Coord());
-			}
+			} // RA2: Bounce_AI at 0x421580 has no Class, BounceSound
 			ObjectClass * optr = Map[bounce.Get_Bounce_Coord()].Cell_Occupier();
 			while (optr != NULL) {
 				Coord cdiff = bounce.Get_Bounce_Coord() - optr->Center_Coord();
@@ -744,10 +736,7 @@ void AnimClass::AI(void)
 					Explosion_Damage(Bounce.Get_Bounce_Coord(), Class->Damage, NULL, Class->Warhead);
 					Combat_Lighting(Bounce.Get_Bounce_Coord(), Class->Damage, Class->Warhead);
 				}
-				if ((unsigned char)Class->ExpireSound != (unsigned char)VOC_NONE) {
-					Sound_Effect(Class->ExpireSound, Center_Coord());
-				}
-			}
+			} // RA2: no ExpireSound (not in RA2's layout)
 
 			if (!water || bridge) {
 				Coord coord = Bounce.Get_Bounce_Coord();
@@ -758,21 +747,8 @@ void AnimClass::AI(void)
 					}
 				}
 
-				if (Rule->CraterLevel != 0 && Class->IsMeteor && !bridge) {
-					Map.Deform_Terrain(coord.As_Cell(), false);
-					if (Rule->CraterLevel > 1) {
-						for (int dir = FACING_FIRST; dir < FACING_COUNT; dir++) {
-							if (dir % 2 != 0 || Rule->CraterLevel > 2) {
-								Map.Deform_Terrain(Adjacent_Cell(Cell(coord), (FacingType)dir), false);
-							}
-						}
-						if (Rule->CraterLevel > 3) {
-							Map.Deform_Terrain(coord.As_Cell(), false);
-						}
-					}
-				}
 
-				Rect updaterect(0, 0, 0, 0);
+				Rect updaterect(0, 0, 0, 0); // RA2: no CraterLevel (not in RA2's layout)
 				if (Class->IsTiberium && !bridge) {
 					for (int x = -Class->TiberiumSpreadRadius; x <= Class->TiberiumSpreadRadius; x++) {
 						for (int y = -Class->TiberiumSpreadRadius; y <= Class->TiberiumSpreadRadius; y++) {
@@ -1047,6 +1023,29 @@ void AnimClass::Attach_To(ObjectClass * obj)
 }
 
 
+// RA2: 0x00422680
+void AnimClass::Set_Attached_Bullet(BulletClass * bullet)
+{
+	AttachedBullet = bullet;
+}
+
+
+// RA2: 0x00422690
+void AnimClass::Set_Owner(HouseClass * house)
+{
+	Owner = house;
+}
+
+
+
+
+
+
+
+
+
+
+
 /***********************************************************************************************
  * AnimClass::In_Which_Layer -- Determines what render layer the anim should be in.            *
  *                                                                                             *
@@ -1065,10 +1064,7 @@ void AnimClass::Attach_To(ObjectClass * obj)
  *=============================================================================================*/
 LayerType AnimClass::In_Which_Layer(void) const
 {
-	if (xObject != NULL || (Class != NULL && Class->IsGroundLayer)) {
-		return(LAYER_GROUND);
-	}
-	return(LAYER_AIR);
+	return(LAYER_AIR); // RA2: no IsGroundLayer (not in RA2's layout)
 }
 
 
@@ -1093,20 +1089,13 @@ void AnimClass::Start(void)
 {
 	Mark(MARK_CHANGE);
 
-	if (!IsInert && Class->Sound != VOC_NONE) {
-
-		/*
-		**	Play the sound effect for this animation.
-		*/
-		Sound_Effect(Class->Sound, Center_Coord());
-	}
 
 	/*
 	**	If the stage where collateral effects occur is the first stage of the animation, then
 	**	perform this action now. Subsequent checks against this stage value starts with the
 	**	second frame of the animation.
 	*/
-	if (!Class->Biggest) {
+	if (!Class->Biggest) { // RA2: no Sound (not in RA2's layout)
 		Middle();
 	}
 
@@ -1476,6 +1465,49 @@ int AnimClass::Get_Height(void) const
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline DirType _Direction(ObjectClass * object, Coord const & to)
+{
+	return(DirType().Direction(object->Center_Coord(), to));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline TPoint3D<int> _Flat_Diff(Coord b, Coord a)
+{
+	return(TPoint3D<int>(a.X - b.X, a.Y - b.Y, 0));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int _Flat_Distance(Coord b, Coord a)
+{
+	return(_Flat_Diff(b, a).Length());
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline Coord _Move_Coord(Coord const & start, DirType const & dir, int distance)
+{
+	double radians = dir.As_Radian();
+	int y = start.Y - fastmath::sin(radians) * distance;
+	int x = start.X + fastmath::cos(radians) * distance;
+	Coord c;
+	c.X = x;
+	c.Y = y;
+	c.Z = start.Z;
+	return(c);
+}
+
+
+/// <summary>
 /// Handles the per frame logic for a burning victim animation.
 /// This routine moves the animation along toward the water it is making for, keeps the
 /// running frames pointed the way it is traveling, and switches it over to the death
@@ -1610,38 +1642,39 @@ Coord AnimClass::Next_Flaming_Guy_Coord(void)
 	if (any && mincell != CELL_NONE) {
 		int dx = mincell.X - cell.X;
 		int dy = mincell.Y - cell.Y;
-		short ndy = 0;
-		short ndx = 0;
+		Point2D step(0, 0); // RA2: Next_Flaming_Guy_Coord at 0x4237B0 matches only so
 		if (dx < 0) {
-			ndx = -1;
+			step.X = -1; // RA2: as above
 		} else if (dx > 0) {
-			ndx = 1;
+			step.X = 1; // RA2: as above
 		}
 		if (dy < 0) {
-			ndy = -1;
+			step.Y = -1; // RA2: as above
 		} else if (dy > 0) {
-			ndy = 1;
+			step.Y = 1; // RA2: as above
 		}
 
-		if (Is_Valid_Flaming_Guy_Cell(cell + Cell(ndx, ndy))) {
-			return(Cell(cell.X + ndx, cell.Y + ndy));
+		if (Is_Valid_Flaming_Guy_Cell(cell + Cell(step.X, step.Y))) { // RA2: as above
+			return(Coord(Cell(cell.X + step.X, cell.Y + step.Y))); // RA2: as above
 		}
 
-		if (Is_Valid_Flaming_Guy_Cell(cell + Cell(ndx, 0))) {
-			return(Cell(cell.X + ndx, cell.Y).As_Coord());
+		if (Is_Valid_Flaming_Guy_Cell(cell + Cell(step.X, 0))) { // RA2: as above
+			return(Cell(cell.X + step.X, cell.Y).As_Coord()); // RA2: as above
 		}
 
-		if (Is_Valid_Flaming_Guy_Cell(cell + Cell(0, ndy))) {
-			return(Cell(cell.X, cell.Y + ndy).As_Coord());
+		if (Is_Valid_Flaming_Guy_Cell(cell + Cell(0, step.Y))) { // RA2: as above
+			return(Cell(cell.X, cell.Y + step.Y).As_Coord()); // RA2: as above
 		}
 	}
 
 	if (CELL_NONE == Cell(0, 0)) {
 		FacingType dir = Random_Pick(FACING_FIRST, FacingType(FACING_COUNT - 1));
 		for (int i = 0; i < FACING_COUNT; i++) {
-			Cell newcell = Adjacent_Cell(cell, FacingType((dir + i) % FACING_COUNT));
+			FacingType facing = FacingType((dir + i) % FACING_COUNT); // RA2: as above
+			Cell const & offset = AdjacentCell[(int)facing & 7]; // RA2: as above
+			Cell newcell = cell + offset; // RA2: as above
 			if (Is_Valid_Flaming_Guy_Cell(newcell)) {
-				return(newcell);
+				return(newcell.As_Coord()); // RA2: as above
 			}
 		}
 	}
@@ -1665,11 +1698,9 @@ bool AnimClass::Is_Valid_Flaming_Guy_Cell(Cell const & cell)
 			return(false);
 		}
 	} else {
-
 		if (cptr->Land_Type() == LAND_ROCK || cptr->Land_Type() == LAND_TUNNEL || cptr->Land_Type() == LAND_WALL) {
 			return(false);
 		}
-
 		if (cptr->Overlay != OVERLAY_NONE && OverlayTypes[cptr->Overlay]->IsWall) {
 			return(false);
 		}
@@ -1702,11 +1733,17 @@ void AnimClass::Post_Load_Game(void)
 				}
 			}
 		}
-		if (anim->Class->IsFlamingGuy) {
-			anim->AlternativeDrawer = ColorSchemes[PlayerPtr->Scheme]->Converter;
-		}
-	}
+	} // RA2: Post_Load_Game at 0x423C70 has no Class, IsFlamingGuy, AlternativeDrawer and 4 more
 }
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -1714,7 +1751,7 @@ void AnimClass::Post_Load_Game(void)
 /// </summary>
 /// <param name="oldsave">Is the size being figured for an older save game format?</param>
 /// <returns>Returns with the size of the animation object, in bytes.</returns>
-int AnimClass::Fetch_Object_Size(bool oldsave) const
+int AnimClass::Fetch_Object_Size(void) const
 {
 	return(sizeof(*this));
 }
@@ -1744,3 +1781,4 @@ RTTIType AnimClass::Fetch_RTTI(void) const
 {
 	return(RTTI_ANIM);
 }
+
