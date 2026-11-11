@@ -82,11 +82,59 @@
 #include "theme.h"
 #include "vector.h"
 #include "vox.h"
+#include "voc.h" // RA2: for the volume setters
+#include "audlevel.h" // RA2: for the volume setters
+#include "auddsnd.h" // RA2: for the volume setters
 
 #include "diff.hh"
 
 
 char const * const OptionsClass::HotkeyName = "WinHotkeys";
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int __fastcall Hotkey_To_Key(int hotkey) // RA2: not in TibSun, at 0x005D87D0
+{
+	int key = hotkey & 0xFF;
+	unsigned int mods = (hotkey >> 8) & 0xFF;
+	if (mods & 4) {
+		key |= KN_ALT_BIT;
+	}
+	if (mods & 2) {
+		key |= KN_CTRL_BIT;
+	}
+	if (mods & 1) {
+		key |= KN_SHIFT_BIT;
+	}
+	if (mods & 8) {
+		key = 0;
+	}
+	return key;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int __fastcall Key_To_Hotkey(unsigned short key) // RA2: not in TibSun, at 0x005D8800
+{
+	int mods = 0;
+	if (key & KN_ALT_BIT) {
+		mods = 4;
+	}
+	if (key & KN_CTRL_BIT) {
+		mods |= 2;
+	}
+	if (key & KN_SHIFT_BIT) {
+		mods |= 1;
+	}
+	if (key & WWKEY_VK_BIT) {
+		mods |= 8;
+	}
+	return (key & 0xFF) | (mods << 8);
+}
 
 
 /***********************************************************************************************
@@ -227,11 +275,9 @@ void OptionsClass::Set_Repeat(bool on)
 void OptionsClass::Set_Score_Volume(float volume, bool feedback)
 {
 	ScoreVolume = MIN(volume, 1.0);
+	AudioLevelSet(&AudioScoreAttribs->VolumeLevel, ScoreVolume * 16384.0f); // RA2: 0x5D8980 sets the score level, no feedback beep
 	Theme.Set_Volume(ScoreVolume * 255.0);
-	if (feedback && !Theme.Still_Playing()) {
-		Sound_Effect(Rule->GenericBeep, ScoreVolume);
-	}
-	DebugString("ScoreVolume = %f\n", ScoreVolume);
+	DebugString("ScoreVolume = %f\n", ScoreVolume); // RA2: Set_Score_Volume at 0x5D8980 has no Theme, Rule, GenericBeep and 1 more
 }
 
 
@@ -256,8 +302,9 @@ void OptionsClass::Set_Score_Volume(float volume, bool feedback)
 void OptionsClass::Set_Sound_Volume(float volume, bool feedback)
 {
 	SoundVolume = MIN(volume, 1.0);
+	AudioLevelSet(&AudioSoundAttribs->VolumeLevel, SoundVolume * 16384.0f); // RA2: 0x5D89F0 sets the sound level
 	if (feedback) {
-		Sound_Effect(Rule->GenericBeep);
+		VocClass::PlayGlobal(Rule->GenericBeep, 1.0f, 0x2000); // RA2: as above, beeps through PlayGlobal
 	}
 	DebugString("SoundVolume = %f\n", SoundVolume);
 }
@@ -275,14 +322,9 @@ void OptionsClass::Set_Voice_Volume(float volume, bool feedback)
 {
 	VoiceVolume = MIN(volume, 1.0);
 	Set_Speech_Volume(VoiceVolume * 255.0);
+	AudioLevelSet(&AudioVoiceAttribs->VolumeLevel, VoiceVolume * 16384.0f); // RA2: 0x5D8A70 sets the voice level
 	if (feedback) {
-		if (GameActive == true) {
-			if (!Is_Speaking()) {
-				Speak(Sim_Random_Pick(VOX_GDI_TAUNT_01, VOX_NOD_TAUNT_10), true);
-			}
-		} else {
-			Voice_Sound_Effect(Rule->GenericBeep, VoiceVolume);
-		}
+		VocClass::PlayGlobal(Rule->GenericBeep, VoiceVolume, 0x2000); // RA2: as above, beeps through PlayGlobal, no taunt
 	}
 	DebugString("VoiceVolume = %f\n", VoiceVolume);
 }
@@ -489,7 +531,7 @@ void OptionsClass::Setup_Dest_Net(void)
 			if (i >= 4) {
 				Session.IsBridge = true;
 				memset(node, 0xff, sizeof(node));
-				Session.BridgeNet = IPXAddressClass(net, node);
+				Session.BridgeNet = IPXAddressClass(net, node, 0); // RA2: IPXAddressClass has only the (net, node, port) constructor
 			}
 		}
 
@@ -811,11 +853,9 @@ BOOL CALLBACK Hotkey_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARA
 /// </summary>
 bool OptionsClass::Hotkey_Dialog(void)
 {
-	HWND handle;
-	int res = -1;
+	int res = -1; // RA2: Hotkey_Dialog at 0x5DA360 has no HWND
 
-	handle = OwnerDraw::Begin_Dialog(IDD_OPT_KEYBOARD, Hotkey_Dialog_Proc);
-
+	HWND handle = OwnerDraw::Begin_Dialog(163, Hotkey_Dialog_Proc, 0); // RA2: Hotkey_Dialog at 0x5DA360 matches only so
 	if (handle != NULL) {
 		SetWindowLong(handle, DWL_USER, (LONG)&res);
 		OwnerDraw::Display_Dialog(handle);
@@ -842,3 +882,10 @@ int OptionsClass::Get_Scroll_Method(void) const
 {
 	return(ScrollMethod);
 }
+
+
+
+
+
+
+
