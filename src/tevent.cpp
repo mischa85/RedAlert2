@@ -57,6 +57,9 @@
 #include "tracker.h"
 #include "vector.h"
 
+namespace Unsorted { extern bool ArmageddonMode; }
+
+
 DynamicVectorClass<TEventClass *> Events;
 
 #ifdef _DEBUG
@@ -148,6 +151,9 @@ TEventClass::TEventClass(void) :
 
 	Data.Value = 0;
 }
+
+
+
 
 
 /// <summary>
@@ -697,6 +703,9 @@ AttachType Attaches_To(TEventType event)
 		case TEVENT_DISCOVERED:
 		case TEVENT_NONE:
 		case TEVENT_BRIDGE_DESTROYED:
+		case 53: // RA2: RA2's events 53, 54 and 59 attach to a cell too
+		case 54: // RA2: event 54
+		case 59: // RA2: event 59
 			attach = AttachType(attach | ATTACH_CELL);
 			break;
 
@@ -725,9 +734,6 @@ AttachType Attaches_To(TEventType event)
 		case TEVENT_NEAR_WAYPOINT:
 		case TEVENT_ENEMY_IN_SPOTLIGHT:
 		case TEVENT_PICKUP_CRATE:
-		case TEVENT_PARALYZED:
-		case TEVENT_ENEMY_IN_SPOTLIGHT_REPEATING:
-		case TEVENT_LIMPED:
 			attach = AttachType(attach | ATTACH_OBJECT);
 			break;
 
@@ -764,6 +770,10 @@ AttachType Attaches_To(TEventType event)
 		case TEVENT_CREDITS_BELOW:
 		case TEVENT_THIEVED:
 		case TEVENT_ANY:
+		case 55: // RA2: RA2's events 55 to 58
+		case 56: // RA2: event 56
+		case 57: // RA2: event 57
+		case 58: // RA2: event 58
 			attach = AttachType(attach | ATTACH_HOUSE);
 			break;
 
@@ -785,6 +795,8 @@ AttachType Attaches_To(TEventType event)
 		case TEVENT_AMBIENT_GREATER_THAN:
 		case TEVENT_LEAVES_MAP:
 		case TEVENT_PICKUP_CRATE_ANY:
+		case 60: // RA2: RA2's events 60 and 61
+		case 61: // RA2: event 61
 			attach = AttachType(attach | ATTACH_GENERAL);
 			break;
 
@@ -897,39 +909,11 @@ HRESULT STDMETHODCALLTYPE TEventClass::Save(IStream * stream, BOOL cleardirty)
 bool TEventClass::Is_Time_Based(void) const
 {
 	switch (Event) {
-		case TEVENT_PICKUP_CRATE:
-		case TEVENT_PICKUP_CRATE_ANY:
-		case TEVENT_PLAYER_ENTERED:
-		case TEVENT_SPIED:
-		case TEVENT_THIEVED:
-		case TEVENT_DISCOVERED:
-		case TEVENT_ATTACKED:
-		case TEVENT_ATTACKED_BY:
-		case TEVENT_DESTROYED:
-		case TEVENT_DESTROYED_ANY:
-		case TEVENT_DESTROYED_ANY_X:
-		case TEVENT_EVAC_CIVILIAN:
-		case TEVENT_BUILD:
-		case TEVENT_BUILD_UNIT:
-		case TEVENT_BUILD_INFANTRY:
-		case TEVENT_BUILD_AIRCRAFT:
-		case TEVENT_LEAVES_MAP:
-		case TEVENT_ENTERS_ZONE:
-		case TEVENT_CROSS_HORIZONTAL:
-		case TEVENT_CROSS_VERTICAL:
-		case TEVENT_SELECTED:
-		case TEVENT_NEAR_WAYPOINT:
-		case TEVENT_ENEMY_IN_SPOTLIGHT:
-		case TEVENT_FIRST_DAMAGED:
-		case TEVENT_ENTER_YELLOW:
-		case TEVENT_ENTER_RED:
-		case TEVENT_FIRST_DAMAGED_ANY:
-		case TEVENT_ENTER_YELLOW_ANY:
-		case TEVENT_ENTER_RED_ANY:
-		case TEVENT_BRIDGE_DESTROYED:
-		case TEVENT_PARALYZED:
-		case TEVENT_ENEMY_IN_SPOTLIGHT_REPEATING:
-		case TEVENT_LIMPED:
+		case 1: case 2: case 3: case 4: case 6: case 7: // RA2: the momentary events, by RA2's numbers
+		case 18: case 19: case 20: case 21: case 22: case 23: case 24: case 25: case 26: // RA2: by RA2's numbers
+		case 29: case 31: case 33: case 34: case 35: // RA2: by RA2's numbers
+		case 38: case 39: case 40: case 41: case 42: case 43: case 44: // RA2: by RA2's numbers
+		case 48: case 49: case 50: case 53: case 54: case 59: // RA2: including RA2's 53, 54 and 59
 			return(true);
 
 	}
@@ -947,12 +931,67 @@ bool TEventClass::Is_Time_Based(void) const
 bool TEventClass::Is_To_Flag_As_Tripped(void) const
 {
 	switch (Event) {
-		case TEVENT_ATTACKED:
-		case TEVENT_ATTACKED_BY:
-		case TEVENT_PLAYER_ENTERED:
-		case TEVENT_PARALYZED:
-		case TEVENT_ENEMY_IN_SPOTLIGHT_REPEATING:
+		case 1: case 6: case 31: case 44: case 59: // RA2: never flagged as tripped, by RA2's numbers
 			return(false);
 	}
 	return(true);
 }
+
+
+
+
+
+
+
+
+#ifdef _DEBUG
+/***********************************************************************************************
+ * Event_From_Name -- retrieves EventType for given name                                       *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *      name      name to get event for                                                        *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *      EventType for given name                                                               *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   11/29/1994 BR : Created.                                                                  *
+ *=============================================================================================*/
+TEventType Event_From_Name (char const * name) // RA2: defined here
+{
+	if (name) {
+		for (TEventType i = TEVENT_NONE; i < TEVENT_COUNT; ++i) {
+			if (!stricmp(name, _EventText[i].Name)) {
+				return(i);
+			}
+		}
+	}
+
+	return(TEVENT_NONE);
+}
+
+
+/***********************************************************************************************
+ * Name_From_Event -- retrieves name for EventType                                             *
+ *                                                                                             *
+ * INPUT:                                                                                      *
+ *      event      EventType to get name for                                                   *
+ *                                                                                             *
+ * OUTPUT:                                                                                     *
+ *      name for EventType                                                                     *
+ *                                                                                             *
+ * WARNINGS:                                                                                   *
+ *      none.                                                                                  *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   11/29/1994 BR : Created.                                                                  *
+ *=============================================================================================*/
+char const * Name_From_Event(TEventType event) // RA2: defined here
+{
+	return(_EventText[event].Name);
+}
+#endif
+
