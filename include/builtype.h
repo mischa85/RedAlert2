@@ -903,10 +903,17 @@ class BuildingTypeClass : public TechnoTypeClass
 		virtual ObjectClass * Create_One_Of(HouseClass * house) const override;
 		virtual Cell const * Occupy_List(bool placement=false) const override;
 		virtual void const * Get_Image_Data(void) const override;
+		bool Get_Rubble_Shape(ShapeSet const ** shape, int * frame); // RA2: 0x458E00
+		bool Get_Rubble_Shadow(ShapeSet const ** shape, int * frame); // RA2: 0x458E50
 		void Fetch_Building_Normal_Image(TheaterType theater);
 		void Fetch_Building_Voxel_Image(void);
 		virtual void const * Get_Buildup_Data(void) const;
 		void Free_Buildup_Data(void);
+		void Free_Bib_Shape(void); // RA2: 0x45E960
+		void Free_Deploying_Anim(void); // RA2: 0x45E9A0
+		void Free_Under_Door_Anim(void); // RA2: 0x45E9E0
+		void Free_Roof_Deploying_Anim(void); // RA2: 0x45EA20
+		void Free_Under_Roof_Door_Anim(void); // RA2: 0x45EA60
 		virtual bool Legal_Placement(Cell const & pos, HouseClass * house = NULL) const override;
 
 		bool Is_Factory(void) const {return(ToBuild != RTTI_NONE);}
@@ -960,7 +967,7 @@ class BuildingTypeClass : public TechnoTypeClass
 		 * BSizeType. A building type adopts the list that matches its Size, so the
 		 * ordinary rectangular structures never spell their occupied cells out.
 		 */
-		static Cell const OccupyLists[BSIZE_COUNT][24];
+		static Cell const OccupyLists[BSIZE_COUNT][30]; // RA2: rows of 30 (Load 0x45DD90 steps 120 bytes)
 
 		/*
 		 * These are the exit cell lists for every building size, indexed by BSizeType.

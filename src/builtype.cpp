@@ -96,7 +96,7 @@ void const * BuildingTypeClass::WrenchShapes;
 
 BSurface * CloakingSurface;
 
-Cell const BuildingTypeClass::OccupyLists[BSIZE_COUNT][24] = {
+Cell const BuildingTypeClass::OccupyLists[BSIZE_COUNT][30] /* RA2: rows of 30 */ = {
 	/* BSIZE_11,	*/ { Cell(0,0),REFRESH_EOL },
 	/* BSIZE_21,	*/ { Cell(0,0),Cell(1,0),REFRESH_EOL },
 	/* BSIZE_12,	*/ { Cell(0,0),Cell(0,1),REFRESH_EOL },
@@ -308,16 +308,9 @@ BuildingTypeClass::BuildingTypeClass(char const * ininame) :
 	GateStages(9),
 	PowersUpToLevel(-1),
 	VoxelBarrelScale(1.0),
-	TurretChargeAnimRate(3),
-	StartPitch(DIR_E),
-	IsLimpetMine(false),
-	IsMobileWar(false),
-	IsMobileStealth(false),
-	IsJuggernaut(false),
-	IsCoreDefender(false),
-	IsBarrelAnimAVoxel(false),
-	IsTurretAnimExclusive(false),
-	IsDamagedDoor(false),
+	StartPitch(DIR_E), // RA2: no TurretChargeAnimRate (not in RA2's layout)
+	IsBarrelAnimAVoxel(false), // RA2: no IsLimpetMine, IsMobileWar, IsMobileStealth and 2 more (not in RA2's layout)
+	IsDamagedDoor(false), // RA2: no IsTurretAnimExclusive (not in RA2's layout)
 	IsInvisibleInGame(false),
 	IsTerrainPalette(false),
 	IsCanPlaceAnywhere(false),
@@ -380,13 +373,35 @@ BuildingTypeClass::BuildingTypeClass(NoInitClass const & x) :
 /// </summary>
 BuildingTypeClass::~BuildingTypeClass(void)
 {
-	if (IsDemandLoad && ImageData != NULL) {
-		delete (ShapeSet *)ImageData;
-		ImageData = NULL;
-	}
-	if (IsDemandLoadBuildup && BuildupData != NULL) {
+	if (BuildupLoaded && BuildupData != NULL) { // RA2: 0x4581C0 frees the six images it loaded, in this order; not ImageData
 		delete (ShapeSet *)BuildupData;
 		BuildupData = NULL;
+		BuildupLoaded = false; // RA2: ~BuildingTypeClass at 0x4581C0 matches only so
+	}
+	if (BibShapeLoaded && BibShape != NULL) { // RA2: as above
+		delete (ShapeSet *)BibShape; // RA2: as above
+		BibShape = NULL; // RA2: as above
+		BibShapeLoaded = false; // RA2: as above
+	}
+	if (DeployingAnimLoaded && DeployingAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)DeployingAnim; // RA2: as above
+		DeployingAnim = NULL; // RA2: as above
+		DeployingAnimLoaded = false; // RA2: as above
+	}
+	if (UnderDoorAnimLoaded && UnderDoorAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)UnderDoorAnim; // RA2: as above
+		UnderDoorAnim = NULL; // RA2: as above
+		UnderDoorAnimLoaded = false; // RA2: as above
+	}
+	if (RoofDeployingAnimLoaded && RoofDeployingAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)RoofDeployingAnim; // RA2: as above
+		RoofDeployingAnim = NULL; // RA2: as above
+		RoofDeployingAnimLoaded = false; // RA2: as above
+	}
+	if (UnderRoofDoorAnimLoaded && UnderRoofDoorAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)UnderRoofDoorAnim; // RA2: as above
+		UnderRoofDoorAnim = NULL; // RA2: as above
+		UnderRoofDoorAnimLoaded = false; // RA2: as above
 	}
 	Detach_This_From_All(this, true);
 	BuildingTypes.Delete(this);
@@ -573,7 +588,7 @@ void BuildingTypeClass::Fetch_Z_Data(void)
 	for (int h = 0; h < height; h++) {
 		for (int w = 0; w < width; w++) {
 			if (data[h * width + w] != 0) {
-				data[h * width + w] -= 39;
+				data[h * width + w] -= 65; // RA2: sub 65 (0x458510)
 			}
 		}
 	}
@@ -620,6 +635,7 @@ void BuildingTypeClass::Init(TheaterType theater)
 				if (classptr->ImageData != NULL) {
 					delete (ShapeSet *)classptr->ImageData;
 					classptr->ImageData = NULL;
+					classptr->ImageAllocated = false; // RA2: 0x458600 clears the flag too
 				}
 			}
 
@@ -634,6 +650,7 @@ void BuildingTypeClass::Init(TheaterType theater)
 				if (classptr->BuildupData != NULL) {
 					delete (ShapeSet *)classptr->BuildupData;
 					classptr->BuildupData = NULL;
+					classptr->BuildupLoaded = false; // RA2: 0x458600 clears the flag too
 				}
 			}
 
@@ -650,12 +667,14 @@ void BuildingTypeClass::Init(TheaterType theater)
 				if (classptr->ImageData != NULL) {
 					delete (ShapeSet *)classptr->ImageData;
 					classptr->ImageData = NULL;
+					classptr->ImageAllocated = false; // RA2: 0x458600 clears the flag too
 				}
 			}
 			if (classptr->IsDemandLoadBuildup) {
 				if (classptr->BuildupData != NULL) {
 					delete (ShapeSet *)classptr->BuildupData;
 					classptr->BuildupData = NULL;
+					classptr->BuildupLoaded = false; // RA2: 0x458600 clears the flag too
 				}
 			}
 			classptr->Fetch_Building_Normal_Image(theater);
@@ -788,7 +807,7 @@ int BuildingTypeClass::Height(bool bib) const
  *=============================================================================================*/
 int BuildingTypeClass::Max_Pips(void) const
 {
-	int maxpips = (Width() * ISO_TILE_PIXEL_W) / 8;
+	int maxpips = (Width() * 60) / 8; // RA2: Max_Pips at 0x458980 matches only so
 
 	switch (PipScale) {
 		case PIPSCALE_TIBERIUM:
@@ -906,8 +925,8 @@ int BuildingTypeClass::Flush_For_Placement(Cell const & cell, HouseClass * house
 					if (occupier->RTTI == RTTI_TERRAIN) {
 						return(2);
 					}
-					TechnoClass * techno = dynamic_cast<TechnoClass *>(occupier); /// Note, not As_TechnoClass(), that uses Abstract to Techno, this is Object to Techno
-					if (techno != NULL) {
+					if (occupier->AbstractFlags & 1) { // RA2: Flush_For_Placement at 0x458B10 matches only so
+						TechnoClass * techno = (TechnoClass *)occupier; // RA2: as above
 						if (techno->RTTI == RTTI_BUILDING) {
 							if (!((BuildingClass *)techno)->Can_Upgrade(this, house)) {
 								return(2);
@@ -942,6 +961,9 @@ int BuildingTypeClass::Flush_For_Placement(Cell const & cell, HouseClass * house
 /// was flagged to defer loading until it is really needed.
 /// </summary>
 /// <returns>Returns with a pointer to the shape data, or NULL if there is none.</returns>
+void Generic_Theater_Name(char * name); // RA2: 0x5D7C20 (objtype.cpp)
+void Theater_Name_Fixup(char * name, TheaterType theater); // RA2: 0x5D7BD0 (objtype.cpp)
+
 void const * BuildingTypeClass::Get_Image_Data(void) const
 {
 	if (ImageData == NULL && IsDemandLoad) {
@@ -949,10 +971,55 @@ void const * BuildingTypeClass::Get_Image_Data(void) const
 			CCFileClass file(TheaterImageFile);
 			file.Is_Available();
 			(void *&)ImageData = Load_Alloc_Data(file);
+			if (ImageData != NULL) { // RA2: 0x458CE0 sets ImageAllocated, else retries the generic theater name
+				(bool &)ImageAllocated = true; // RA2: Get_Image_Data at 0x458CE0 matches only so
+			} else {
+				char fallback[260]; // RA2: as above
+				strncpy(fallback, TheaterImageFile, 19); // RA2: as above
+				Generic_Theater_Name(fallback); // RA2: as above
+				CCFileClass file2(fallback); // RA2: as above
+				(void *&)ImageData = Load_Alloc_Data(file2); // RA2: as above
+				if (ImageData != NULL) { // RA2: as above
+					(bool &)ImageAllocated = true; // RA2: as above
+				}
+			}
 		}
 		return(ImageData);
 	}
 	return(ImageData);
+}
+
+/// <summary>
+/// Fetches the frame that shows this building as rubble.
+/// </summary>
+/// <returns>bool; Was there a rubble frame to give?</returns>
+bool BuildingTypeClass::Get_Rubble_Shape(ShapeSet const ** shape, int * frame) // RA2: not in TibSun, at 0x458E00
+{
+	if (LeaveRubble && shape != NULL) {
+		*shape = (ShapeSet const *)Get_Image_Data();
+		if (*shape != NULL && (*shape)->Get_Count() / 2 > 3) {
+			*frame = 3;
+			return(true);
+		}
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// Fetches the shadow frame of this building's rubble.
+/// </summary>
+/// <returns>bool; Was there a rubble shadow frame to give?</returns>
+bool BuildingTypeClass::Get_Rubble_Shadow(ShapeSet const ** shape, int * frame) // RA2: not in TibSun, at 0x458E50
+{
+	if (LeaveRubble && shape != NULL) {
+		*shape = (ShapeSet const *)Get_Image_Data();
+		if (*shape != NULL && (*shape)->Get_Count() / 2 > 3) {
+			*frame = (*shape)->Get_Count() / 2 + 3;
+			return(true);
+		}
+	}
+	return(false);
 }
 
 
@@ -984,7 +1051,7 @@ void BuildingTypeClass::Fetch_Building_Normal_Image(TheaterType theater)
 					count = GateStages + 1;
 				}
 				if (count > 0) {
-					timedelay = (Rule->BuildupTime * TICKS_PER_MINUTE) / count;
+					timedelay = (int)(Rule->BuildupTime * 900.0 / count); // RA2: double math (0x45E790)
 				}
 				Init_Anim(BSTATE_CONSTRUCTION, 0, count, timedelay);
 			}
@@ -1082,7 +1149,7 @@ void BuildingTypeClass::Fetch_Building_Voxel_Image(void)
 		strcpy(buffer, AnimData[BANIM_TURRET].Anim);
 		_makepath(fullname, NULL, NULL, buffer, ".VXL");
 
-		if (Upr_Strstr(&fullname[4], "TUR")) {
+		if (strstr(strupr(&fullname[4]), strupr("TUR"))) { // RA2: Fetch_Building_Voxel_Image at 0x459640 matches only so
 			CCFileClass vxl(fullname);
 			if (vxl.Is_Available()) {
 				delete AuxVoxel.VoxLib;
@@ -1098,7 +1165,7 @@ void BuildingTypeClass::Fetch_Building_Voxel_Image(void)
 				}
 			}
 
-			if (char * nameroot = Upr_Strstr(&buffer[4], "TUR")) {
+			if (char * nameroot = strstr(strupr(&buffer[4]), strupr("TUR"))) { // RA2: as above
 				*nameroot++ = 'B';
 				*nameroot++ = 'A';
 				*nameroot++ = 'R';
@@ -1167,13 +1234,8 @@ bool BuildingTypeClass::Read_INI(CCINIClass const & ini)
 		IsWall = ini.Get_Bool(Name(), "Wall", IsWall);
 		IsWeeder = ini.Get_Bool(Name(), "Weeder", IsWeeder);
 		IsHelipad = ini.Get_Bool(Name(), "Helipad", IsHelipad);
-		IsLimpetMine = ini.Get_Bool(Name(), "IsLimpetMine", IsLimpetMine);
-		IsMobileWar = ini.Get_Bool(Name(), "IsMobileWar", IsMobileWar);
-		IsMobileStealth = ini.Get_Bool(Name(), "IsMobileStealth", IsMobileStealth);
-		IsJuggernaut = ini.Get_Bool(Name(), "IsJuggernaut", IsJuggernaut);
-		IsCoreDefender = ini.Get_Bool(Name(), "IsCoreDefender", IsCoreDefender);
 
-		IsBarrelAnimAVoxel = ini.Get_Bool(Name(), "BarrelAnimIsVoxel", IsBarrelAnimAVoxel);
+		IsBarrelAnimAVoxel = ini.Get_Bool(Name(), "BarrelAnimIsVoxel", IsBarrelAnimAVoxel); // RA2: no IsLimpetMine, IsMobileWar, IsMobileStealth and 2 more (not in RA2's layout)
 		ini.Get_String(Name(), "VoxelBarrelFile", VoxelBarrelFile, VoxelBarrelFile, sizeof(VoxelBarrelFile));
 		VoxelBarrelOffsetToPitchPivotPoint = ini.Get_Point(Name(), "VoxelBarrelOffsetToPitchPivotPoint", VoxelBarrelOffsetToPitchPivotPoint);
 		VoxelBarrelOffsetToRotatePivotPoint = ini.Get_Point(Name(), "VoxelBarrelOffsetToRotatePivotPoint", VoxelBarrelOffsetToRotatePivotPoint);
@@ -1182,10 +1244,8 @@ bool BuildingTypeClass::Read_INI(CCINIClass const & ini)
 		StartFace = Dir256(ini.Get_Int(Name(), "StartFacing", StartFace >> 5) << 5);
 		StartPitch = Dir256(ini.Get_Int(Name(), "StartPitch", StartPitch >> 5) << 5);
 		VoxelBarrelScale = ini.Get_Float(Name(), "VoxelBarrelScale", VoxelBarrelScale);
-		TurretChargeAnimRate = ini.Get_Int(Name(), "TurretChargeAnimRate", TurretChargeAnimRate);
-		IsTurretAnimExclusive = ini.Get_Bool(Name(), "TurretAnimIsExclusive", IsTurretAnimExclusive);
 
-		AuxSound1 = ini.Get_VocType(Name(), "DeploySound", AuxSound1);
+		AuxSound1 = ini.Get_VocType(Name(), "DeploySound", AuxSound1); // RA2: no TurretChargeAnimRate, IsTurretAnimExclusive (not in RA2's layout)
 		AuxSound2 = ini.Get_VocType(Name(), "UndeploySound", AuxSound2);
 		ToBuild = ini.Get_RTTIType(Name(), "Factory", ToBuild);
 		FreeUnit = TGet_Class(ini, Name(), "FreeUnit", FreeUnit);
@@ -1634,7 +1694,7 @@ bool BuildingTypeClass::Legal_Placement(Cell const & pos, HouseClass * house) co
 	if (IsCanPlaceAnywhere) {
 		return(true);
 	}
-	return(BASECLASS::Legal_Placement(pos, house));
+	return(TechnoTypeClass::Legal_Placement(pos, house)); // RA2: Legal_Placement at 0x45D880 matches only so
 }
 
 
@@ -1644,7 +1704,7 @@ bool BuildingTypeClass::Legal_Placement(Cell const & pos, HouseClass * house) co
 /// <returns>Returns with the width, height and vertical extent of the building.</returns>
 Point3D BuildingTypeClass::Lepton_Dimensions(void) const
 {
-	return(Point3D(Width() * CELL_LEPTON_W, Height() * CELL_LEPTON_H, 40 * (ZHeight * 5)));
+	return(Point3D(SizeWidth[Size] << 8, SizeHeight[Size] << 8, ZHeight * LEVEL_LEPTON_H)); // RA2: Lepton_Dimensions at 0x45D8B0 matches only so
 }
 
 
@@ -1656,7 +1716,7 @@ Point3D BuildingTypeClass::Lepton_Dimensions(void) const
 /// <param name="crc">The CRC engine to submit this object's data to.</param>
 void BuildingTypeClass::Compute_CRC(CRCEngine & crc) const
 {
-	BASECLASS::Compute_CRC(crc);
+	TechnoTypeClass::Compute_CRC(crc); // RA2: Compute_CRC at 0x45D8F0 matches only so
 	crc(GateCloseDelay);
 	crc(LightVisibility);
 	crc(LightIntensity);
@@ -1669,11 +1729,14 @@ void BuildingTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(ToBuild);
 	crc(Power);
 	crc(Drain);
+	crc(ExtraPower); // RA2: as above
+	crc(ExtraDrain); // RA2: as above
 	crc(Size);
 	crc(ZHeight);
+	crc(OccupyHeight); // RA2: as above
 	crc(MidPoint);
 	crc(DoorStages);
-	crc(&Anims, sizeof(Anims));
+	crc(&Anims, 72); // RA2: as above
 	crc(&AnimData, sizeof(AnimData));
 	crc(Upgrades);
 	crc(SpecialZOverlayZAdjust);
@@ -1682,16 +1745,22 @@ void BuildingTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(IsTemple);
 	crc(HasSpotlight);
 	crc(IsBase);
+	crc(EligibleForAllyBuilding); // RA2: as above
+	crc(NeedsEngineer); // RA2: as above
 	crc(IsBibbed);
 	crc(IsWall);
 	crc(IsCaptureable);
 	crc(IsPowered);
 	crc(IsUnsellable);
 	crc(IsRadar);
+	crc(SpySat); // RA2: as above
 	crc(IsHasChargeAnim);
+	crc(IsAnimDelayedFire); // RA2: as above
+	crc(DelayedFireDelay); // RA2: as above
 	crc(IsSiloDamage);
 	crc(IsCanUnitRepair);
 	crc(IsCanUnitReload);
+	crc(Cloning); // RA2: as above
 	crc(IsFlat);
 	crc(IsDockUnload);
 	crc(IsRecoilless);
@@ -1706,21 +1775,7 @@ void BuildingTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(IsLaserFence);
 	crc(IsFirestormWall);
 	crc(IsHelipad);
-	crc(VoxelBarrelFile);
-	crc(VoxelBarrelScale);
-	crc(&VoxelBarrelOffsetToPitchPivotPoint, sizeof(VoxelBarrelOffsetToPitchPivotPoint));
-	crc(&VoxelBarrelOffsetToRotatePivotPoint, sizeof(VoxelBarrelOffsetToRotatePivotPoint));
-	crc(&VoxelBarrelOffsetToBuildingPivotPoint, sizeof(VoxelBarrelOffsetToBuildingPivotPoint));
-	crc(&VoxelBarrelOffsetToBarrelEnd, sizeof(VoxelBarrelOffsetToBarrelEnd));
-	crc(StartPitch);
-	crc(IsLimpetMine);
-	crc(IsMobileWar);
-	crc(IsMobileStealth);
-	crc(IsJuggernaut);
-	crc(IsCoreDefender);
-	crc(IsBarrelAnimAVoxel);
-	crc(TurretChargeAnimRate);
-	crc(IsTurretAnimExclusive);
+	crc(OrePurifier); // RA2: as above
 	crc(IsExtraDamageStage);
 	crc(IsHospital);
 	crc(IsArmory);
@@ -1730,6 +1785,19 @@ void BuildingTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(IsInvisibleInGame);
 	crc(IsTerrainPalette);
 	crc(IsTurretAnimAVoxel);
+	crc(IsBarrelAnimAVoxel); // RA2: as above
+	crc((char const *)VoxelBarrelFile); // RA2: as above
+	crc(VoxelBarrelScale); // RA2: as above
+	crc(&VoxelBarrelOffsetToPitchPivotPoint, 12); // RA2: as above
+	crc(&VoxelBarrelOffsetToRotatePivotPoint, 12); // RA2: as above
+	crc(&VoxelBarrelOffsetToBuildingPivotPoint, 12); // RA2: as above
+	crc(&VoxelBarrelOffsetToBarrelEnd, 12); // RA2: as above
+	crc(CrateBeneath); // RA2: as above
+	crc(LeaveRubble); // RA2: as above
+	crc(CrateBeneathIsMoney); // RA2: as above
+	crc(NumberOfDocks); // RA2: as above
+	crc(StartPitch); // RA2: as above
+	crc(ConcentricRadialIndicator); // RA2: as above
 }
 
 
@@ -1740,31 +1808,64 @@ void BuildingTypeClass::Compute_CRC(CRCEngine & crc) const
 /// </summary>
 /// <param name="stream">The stream to read this object from.</param>
 /// <returns>Returns with S_OK if the object was read.</returns>
-HRESULT STDMETHODCALLTYPE BuildingTypeClass::Load(IStream *stream)
+HRESULT STDMETHODCALLTYPE BuildingTypeClass::Load(IStream * stream) // RA2: Load at 0x45DD90 matches only so
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
-	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&IsDamagedDoor, &VoxelBarrelFile, size - offsetof(BuildingTypeClass, IsDamagedDoor));
-			VoxelBarrelFile[0] = '\0';
-			VoxelBarrelScale = 1.0;
-			VoxelBarrelOffsetToPitchPivotPoint = Point3D(0, 0, 0);
-			VoxelBarrelOffsetToRotatePivotPoint = Point3D(0, 0, 0);
-			VoxelBarrelOffsetToBuildingPivotPoint = Point3D(0, 0, 0);
-			VoxelBarrelOffsetToBarrelEnd = Point3D(0, 0, 0);
-			IsLimpetMine = false;
-			IsMobileWar = false;
-			IsMobileStealth = false;
-			IsJuggernaut = false;
-			IsCoreDefender = false;
-			IsBarrelAnimAVoxel = false;
-			StartPitch = DIR_E;
-			TurretChargeAnimRate = 3;
-			IsTurretAnimExclusive = false;
+	if (IsFreeBuildup && BuildupData != NULL) { // RA2: as above
+		delete (ShapeSet *)BuildupData; // RA2: as above
+		BuildupData = NULL; // RA2: as above
+		BuildupLoaded = false; // RA2: as above
+	}
+	if (BibShapeLoaded && BibShape != NULL) { // RA2: as above
+		delete (ShapeSet *)BibShape; // RA2: as above
+		BibShape = NULL; // RA2: as above
+		BibShapeLoaded = false; // RA2: as above
+	}
+	if (DeployingAnimLoaded && DeployingAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)DeployingAnim; // RA2: as above
+		DeployingAnim = NULL; // RA2: as above
+		DeployingAnimLoaded = false; // RA2: as above
+	}
+	if (UnderDoorAnimLoaded && UnderDoorAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)UnderDoorAnim; // RA2: as above
+		UnderDoorAnim = NULL; // RA2: as above
+		UnderDoorAnimLoaded = false; // RA2: as above
+	}
+	if (RoofDeployingAnimLoaded && RoofDeployingAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)RoofDeployingAnim; // RA2: as above
+		RoofDeployingAnim = NULL; // RA2: as above
+		RoofDeployingAnimLoaded = false; // RA2: as above
+	}
+	if (UnderRoofDoorAnimLoaded && UnderRoofDoorAnim != NULL) { // RA2: as above
+		delete (ShapeSet *)UnderRoofDoorAnim; // RA2: as above
+		UnderRoofDoorAnim = NULL; // RA2: as above
+		UnderRoofDoorAnimLoaded = false; // RA2: as above
+	}
+
+	HRESULT result = TechnoTypeClass::Load(stream); // RA2: as above
+	if (FAILED(result)) { // RA2: as above
+		return(result); // RA2: as above
+	}
+
+	{
+		new (this) BuildingTypeClass(NoInitClass()); // RA2: as above
+
+		int count; // RA2: as above
+		result = stream->Read(&count, sizeof(count), NULL); // RA2: as above
+		if (FAILED(result)) { // RA2: as above
+			return(result); // RA2: as above
 		}
 
-		new (this) BuildingTypeClass(NoInitClass());
+		new (&DockingOffsets) VectorClass<Point3D>(); // RA2: as above
+		DockingOffsets.Resize(count, NULL); // RA2: as above
+		for (int index = 0; index < count; index++) { // RA2: as above
+			Point3D offset(0, 0, 0); // RA2: as above
+			result = stream->Read(&offset, sizeof(offset), NULL); // RA2: as above
+			if (FAILED(result)) { // RA2: as above
+				return(result); // RA2: as above
+			}
+			DockingOffsets[index] = offset; // RA2: as above
+		}
+	}
 
 		Fetch_Building_Voxel_Image();
 		Fetch_Normal_Image();
@@ -1776,13 +1877,24 @@ HRESULT STDMETHODCALLTYPE BuildingTypeClass::Load(IStream *stream)
 		Swizzle_Pointer(&ToOverlay);
 		Swizzle_Pointer(&FreeUnit);
 
-		Fetch_Building_Voxel_Image();
-		Fetch_Building_Normal_Image(Scen->Theater);
+	Fetch_Building_Voxel_Image(); // RA2: as above
 
-		result = S_OK;
-	}
-	return(result);
-}
+	BuildupData = NULL; // RA2: as above
+	BuildupLoaded = false; // RA2: as above
+	BibShape = NULL; // RA2: as above
+	BibShapeLoaded = false; // RA2: as above
+	DeployingAnim = NULL; // RA2: as above
+	DeployingAnimLoaded = false; // RA2: as above
+	UnderDoorAnim = NULL; // RA2: as above
+	UnderDoorAnimLoaded = false; // RA2: as above
+	RoofDeployingAnim = NULL; // RA2: as above
+	RoofDeployingAnimLoaded = false; // RA2: as above
+	UnderRoofDoorAnim = NULL; // RA2: as above
+	UnderRoofDoorAnimLoaded = false; // RA2: as above
+
+	Fetch_Building_Normal_Image(Scen->Theater); // RA2: as above
+	return(S_OK); // RA2: as above
+} // RA2: Load at 0x45DD90 has no return(result);
 
 
 /// <summary>
@@ -1791,14 +1903,26 @@ HRESULT STDMETHODCALLTYPE BuildingTypeClass::Load(IStream *stream)
 /// <param name="stream">The stream to write this object to.</param>
 /// <param name="cleardirty">Should the dirty flag be cleared by this save?</param>
 /// <returns>Returns with S_OK if the object was written.</returns>
-HRESULT STDMETHODCALLTYPE BuildingTypeClass::Save(IStream * stream, int cleardirty)
+HRESULT STDMETHODCALLTYPE BuildingTypeClass::Save(IStream * stream, BOOL cleardirty) // RA2: Save at 0x45E020 matches only so
 {
-	HRESULT result = BASECLASS::Save(stream, cleardirty);
-	if (SUCCEEDED(result)) {
-
-		result = S_OK;
+	HRESULT result = TechnoTypeClass::Save(stream, cleardirty); // RA2: as above
+	if (FAILED(result)) { // RA2: as above
+		return(result); // RA2: as above
 	}
-	return(result);
+
+	int count = DockingOffsets.Length(); // RA2: as above
+	result = stream->Write(&count, sizeof(count), NULL); // RA2: as above
+	if (FAILED(result)) { // RA2: as above
+		return(result); // RA2: as above
+	}
+
+	for (int index = 0; index < count; index++) { // RA2: as above
+		result = stream->Write(&DockingOffsets[index], sizeof(Point3D), NULL); // RA2: as above
+		if (FAILED(result)) { // RA2: as above
+			return(result); // RA2: as above
+		}
+	}
+	return(S_OK); // RA2: as above
 }
 
 
@@ -1848,7 +1972,16 @@ void BuildingTypeClass::Post_Load_Game(void)
 		CloakingSurface = new BSurface(maxcloak + 16, maxcloak + 16, 1);
 	}
 
-	Post_Read_Tile_Fixup();
+	char buffer[60]; // RA2: Post_Load_Game at 0x45E170 matches only so
+	for (int i = 0; i < BuildingTypes.Count(); i++) { // RA2: as above
+		BuildingTypeClass * building = BuildingTypes[i]; // RA2: as above
+		buffer[0] = '\0'; // RA2: as above
+		RuleINI->Get_String(building->Name(), "ToTile", NULL, buffer, sizeof(buffer)); // RA2: as above
+		IsometricTileType ittype = IsometricTileTypeClass::From_Name(buffer); // RA2: as above
+		if (ittype >= ISOTILE_FIRST && ittype < IsometricTileTypes.Count()) { // RA2: as above
+			building->ToTile = IsometricTileTypes[ittype]; // RA2: as above
+		}
+	}
 }
 
 
@@ -1954,18 +2087,24 @@ void const * BuildingTypeClass::Get_Buildup_Data(void) const
 	if (BuildupData == NULL && IsDemandLoadBuildup) {
 		if (strlen(BuildupFilename) != 0) {
 			_makepath(fullname, NULL, NULL, BuildupFilename, ".SHP");
-			Theater_Naming_Convention(fullname, Scen->Theater);
+			Theater_Name_Fixup(fullname, Scen->Theater); // RA2: the free function at 0x5D7BD0
 			CCFileClass file(fullname);
 			ShapeSet * data = (ShapeSet *)Load_Alloc_Data(file);
+			if (data == NULL) { // RA2: 0x45E790 retries the generic theater name
+				Generic_Theater_Name(fullname); // RA2: Get_Buildup_Data at 0x45E790 matches only so
+				CCFileClass file2(fullname); // RA2: as above
+				data = (ShapeSet *)Load_Alloc_Data(file2); // RA2: as above
+			}
 			((void const *&)BuildupData) = data;
 			if (BuildupData != NULL) {
 				int timedelay = 1;
+				(bool &)BuildupLoaded = true; // RA2: as above, marks it loaded
 				int count = ((ShapeSet const *)BuildupData)->Get_Count()/2;
 				if (IsGate) {
 					count = GateStages + 1;
 				}
 				if (count > 0) {
-					timedelay = (Rule->BuildupTime * TICKS_PER_MINUTE) / count;
+					timedelay = (int)(Rule->BuildupTime * 900.0 / count); // RA2: double math (0x45E790)
 				}
 				Init_Anim(BSTATE_CONSTRUCTION, 0, count, timedelay);
 			}
@@ -1983,11 +2122,75 @@ void const * BuildingTypeClass::Get_Buildup_Data(void) const
 /// </summary>
 void BuildingTypeClass::Free_Buildup_Data(void)
 {
-	if (IsFreeBuildup) {
-		if (BuildupData != NULL) {
-			delete (ShapeSet *)BuildupData;
-			BuildupData = NULL;
-		}
+	if (IsFreeBuildup && BuildupData != NULL) { // RA2: Free_Buildup_Data at 0x45E920 matches only so
+		delete (ShapeSet *)BuildupData; // RA2: as above
+		BuildupData = NULL; // RA2: as above
+		BuildupLoaded = false; // RA2: as above
+	}
+}
+
+
+/// <summary>
+/// Releases this building's BibShape if it loaded it itself.
+/// </summary>
+void BuildingTypeClass::Free_Bib_Shape(void) // RA2: not in TibSun, at 0x45E960
+{
+	if (BibShapeLoaded && BibShape != NULL) {
+		delete (ShapeSet *)BibShape;
+		BibShape = NULL;
+		BibShapeLoaded = false;
+	}
+}
+
+
+/// <summary>
+/// Releases this building's DeployingAnim if it loaded it itself.
+/// </summary>
+void BuildingTypeClass::Free_Deploying_Anim(void) // RA2: not in TibSun, at 0x45E9A0
+{
+	if (DeployingAnimLoaded && DeployingAnim != NULL) {
+		delete (ShapeSet *)DeployingAnim;
+		DeployingAnim = NULL;
+		DeployingAnimLoaded = false;
+	}
+}
+
+
+/// <summary>
+/// Releases this building's UnderDoorAnim if it loaded it itself.
+/// </summary>
+void BuildingTypeClass::Free_Under_Door_Anim(void) // RA2: not in TibSun, at 0x45E9E0
+{
+	if (UnderDoorAnimLoaded && UnderDoorAnim != NULL) {
+		delete (ShapeSet *)UnderDoorAnim;
+		UnderDoorAnim = NULL;
+		UnderDoorAnimLoaded = false;
+	}
+}
+
+
+/// <summary>
+/// Releases this building's RoofDeployingAnim if it loaded it itself.
+/// </summary>
+void BuildingTypeClass::Free_Roof_Deploying_Anim(void) // RA2: not in TibSun, at 0x45EA20
+{
+	if (RoofDeployingAnimLoaded && RoofDeployingAnim != NULL) {
+		delete (ShapeSet *)RoofDeployingAnim;
+		RoofDeployingAnim = NULL;
+		RoofDeployingAnimLoaded = false;
+	}
+}
+
+
+/// <summary>
+/// Releases this building's UnderRoofDoorAnim if it loaded it itself.
+/// </summary>
+void BuildingTypeClass::Free_Under_Roof_Door_Anim(void) // RA2: not in TibSun, at 0x45EA60
+{
+	if (UnderRoofDoorAnimLoaded && UnderRoofDoorAnim != NULL) {
+		delete (ShapeSet *)UnderRoofDoorAnim;
+		UnderRoofDoorAnim = NULL;
+		UnderRoofDoorAnimLoaded = false;
 	}
 }
 
@@ -1997,21 +2200,24 @@ void BuildingTypeClass::Free_Buildup_Data(void)
 /// This routine rates how dangerous the structure is to aircraft, armor and infantry so
 /// that the computer can weigh its base defenses against the enemy it expects to face.
 /// </summary>
+static inline double Defense_Cap(double amount, double cap) // RA2: the cap compare 0x45EAA0 inlines (fcom, keep the smaller)
+{
+	return(cap < amount ? cap : amount);
+}
+
 void BuildingTypeClass::Calculate_Base_Defense_Values(void)
 {
-	if (IsBaseDefense) {
-		WeaponTypeClass * weapon = Get_Weapon(0)->Weapon;
-
+	if (IsBaseDefense) { // RA2: 0x45EAA0 rates the first weapon (TibSun's is empty)
+		WeaponTypeClass const * weapon = Get_Weapon(0)->Weapon; // RA2: Calculate_Base_Defense_Values at 0x45EAA0 matches only so
 		if (weapon != NULL) {
-			int damage = weapon->Attack / (weapon->ROF * 0.025);
-
+			int rate = weapon->Attack / (weapon->ROF * 0.025); // RA2: as above
 			if (weapon->Bullet->IsAntiAircraft) {
-				AntiAirValue = MIN((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_STEEL]);
+				AntiAirValue = Defense_Cap(rate * weapon->WarheadPtr->Modifier[ARMOR_LIGHT], Rule->MaximumBaseDefenseValue); // RA2: as above
 			}
 
 			if (weapon->Bullet->IsAntiGround) {
-				AntiArmorValue = MIN((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_STEEL]);
-				AntiInfantryValue = MIN((double)Rule->MaximumBaseDefenseValue, damage * weapon->WarheadPtr->Modifier[ARMOR_NONE]);
+				AntiArmorValue = Defense_Cap(rate * weapon->WarheadPtr->Modifier[ARMOR_MEDIUM], Rule->MaximumBaseDefenseValue); // RA2: as above
+				AntiInfantryValue = Defense_Cap(rate * weapon->WarheadPtr->Modifier[ARMOR_NONE], Rule->MaximumBaseDefenseValue); // RA2: as above
 			}
 		}
 	}
@@ -2047,7 +2253,7 @@ void BuildingTypeClass::Post_Read_Tile_Fixup(void)
 /// <returns>bool; Is undeploying always permitted for this building?</returns>
 bool BuildingTypeClass::Can_Always_Undeploy(void) const
 {
-	return(IsLimpetMine || IsMobileWar);
+	return(false); // RA2: 0x45EC40 (xor al,al; ret)
 }
 
 
@@ -2057,7 +2263,7 @@ bool BuildingTypeClass::Can_Always_Undeploy(void) const
 /// <returns>bool; Can this building undeploy back into a unit?</returns>
 bool BuildingTypeClass::Is_Mobile_Deployer(void) const
 {
-	return(IsSensorArray || IsTickTank || IsICBMLauncher || IsArtillary || IsMobileStealth || IsJuggernaut || IsCoreDefender || IsLimpetMine);
+	return(IsSensorArray || IsTickTank || IsICBMLauncher || IsArtillary); // RA2: Is_Mobile_Deployer at 0x45EC50 matches only so
 }
 
 
@@ -2097,38 +2303,9 @@ RTTIType BuildingTypeClass::Fetch_RTTI(void) const
 /// </summary>
 /// <param name="oldsave">Is the size wanted for an old format save game?</param>
 /// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int BuildingTypeClass::Fetch_Object_Size(bool oldsave) const
+int BuildingTypeClass::Fetch_Object_Size(void) const // RA2: no argument (as hover.h), at 0x0045ED10
 {
-	int delta = oldsave ? Get_Object_Size_Delta() : 0;
-	return(sizeof(*this) - delta);
-}
-
-
-/// <summary>
-/// Fetches the number of bytes this type has grown by since the old save format.
-/// This routine is used by the load logic to work out how much smaller the object was
-/// when an older version of the game wrote it out.
-/// </summary>
-/// <returns>Returns with the combined size of the members added since then.</returns>
-int BuildingTypeClass::Get_Object_Size_Delta(void) const
-{
-	return	(BASECLASS::Get_Object_Size_Delta() +
-			sizeof(VoxelBarrelFile) +
-			sizeof(VoxelBarrelScale) +
-			sizeof(VoxelBarrelOffsetToPitchPivotPoint) +
-			sizeof(VoxelBarrelOffsetToRotatePivotPoint) +
-			sizeof(VoxelBarrelOffsetToBuildingPivotPoint) +
-			sizeof(VoxelBarrelOffsetToBarrelEnd) +
-			sizeof(TurretChargeAnimRate) +
-			sizeof(StartPitch) +
-			sizeof(IsLimpetMine) +
-			sizeof(IsMobileWar) +
-			sizeof(IsMobileStealth) +
-			sizeof(IsJuggernaut) +
-			sizeof(IsCoreDefender) +
-			sizeof(IsBarrelAnimAVoxel) +
-			sizeof(IsTurretAnimExclusive) +
-			sizeof(UnusedBTypeBool1));
+	return(sizeof(*this));
 }
 
 
