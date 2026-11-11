@@ -54,6 +54,7 @@ class BaseNodeClass
 	public:
 		BaseNodeClass(void) {};
 		BaseNodeClass(StructType building, Cell cell) : Type(building), CellID(cell) {};
+		BaseNodeClass(BaseNodeClass const & node) : Type(node.Type), CellID(node.CellID), Placed(node.Placed), Attempts(node.Attempts) {}; // RA2
 		bool operator == (BaseNodeClass const & node);
 		bool operator != (BaseNodeClass const & node);
 		bool operator > (BaseNodeClass const & node);
@@ -66,6 +67,10 @@ class BaseNodeClass
 		 * time comes to build it.
 		 */
 		Cell CellID;
+
+		bool Placed; // RA2: +0x08
+
+		int Attempts; // RA2: +0x0C
 };
 
 
@@ -103,6 +108,9 @@ class BaseClass
 		**	Tells if the given node has been built or not
 		*/
 		bool Is_Built(int index) const;
+		bool Is_Placed(int index) const; // RA2
+		void Mark_Node_Placed(BuildingClass * building); // RA2
+		int Failed_To_Place_Node(BaseNodeClass * node); // RA2
 
 		/*
 		**	Returns a pointer to the object for the given node

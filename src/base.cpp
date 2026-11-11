@@ -128,6 +128,9 @@ bool BaseNodeClass::operator > (BaseNodeClass const & )
 }
 
 
+
+
+
 /// <summary>
 /// Creates an empty base.
 /// This routine sets up a base that owns no nodes and belongs to no house. The scenario
@@ -143,7 +146,6 @@ BaseClass::BaseClass(void) :
 	LastBaseAreaRect(0,0,0,0),
 	House(NULL)
 {
-
 }
 
 
@@ -189,6 +191,18 @@ bool BaseClass::Is_Built(int index) const
 }
 
 
+/// <summary>
+/// RA2: has the building of the node specified been placed?
+/// </summary>
+bool BaseClass::Is_Placed(int index) const // RA2: at 0x42C080
+{
+	return(Nodes[index].Placed);
+}
+
+
+
+
+
 /***********************************************************************************************
  * BaseClass::Get_Building -- Returns ptr to the built building for the given node             *
  *                                                                                             *
@@ -209,10 +223,6 @@ BuildingClass * BaseClass::Get_Building(int index) const
 {
 	int i;
 
-	/*
-	**	Check the location on the map where this building should be; if it's
-	**	there, return a pointer to it.
-	*/
 	Cell cell = Nodes[index].CellID;
 
 	if (cell != Cell(0, 0)) {
@@ -232,8 +242,8 @@ BuildingClass * BaseClass::Get_Building(int index) const
 				if (btype->PowersUpBuilding[0] != '\0') {
 
 					int upgrades = 0;
-					for (i = 0; i < ARRAY_SIZE(bldg->Upgrades); i++) {
-						if (bldg->Upgrades[i] == btype) {
+					for (int u = 0; u < ARRAY_SIZE(bldg->Upgrades); u++) { // RA2: Get_Building at 0x42C0A0 matches only so
+						if (bldg->Upgrades[u] == btype) { // RA2: as above
 							upgrades++;
 						}
 					}
@@ -543,6 +553,7 @@ void BaseClass::Write_INI(CCINIClass & ini, char const * hname)
 	}
 }
 
+
 /// <summary>
 /// Loads the base from a save game stream.
 /// This routine reads the base object back, then rebuilds the node list and the inner and
@@ -683,5 +694,40 @@ void BaseClass::Compute_CRC(CRCEngine & crc) const
 /// </summary>
 BaseClass::BaseClass(NoInitClass const & x)
 {
-
 }
+
+
+/// <summary>
+/// RA2: marks the node of the building specified as placed, with its failed attempts cleared.
+/// </summary>
+void BaseClass::Mark_Node_Placed(BuildingClass * building) // RA2: at 0x42CAD0
+{
+	BaseNodeClass * node = Get_Node(building);
+	if (node != NULL) {
+		node->Placed = true;
+		node->Attempts = 0;
+	}
+}
+
+
+/// <summary>
+/// RA2: counts one more failed attempt to place the node specified.
+/// </summary>
+/// <returns>Returns with the number of failed attempts so far (0 without a node).</returns>
+int BaseClass::Failed_To_Place_Node(BaseNodeClass * node) // RA2: at 0x42CB70
+{
+	if (node == NULL) {
+		return(0);
+	}
+	return(++node->Attempts);
+}
+
+
+
+
+
+
+
+
+
+
