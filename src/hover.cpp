@@ -140,6 +140,44 @@ void HoverLocomotionClass::Gravity_AI(void)
 /// <returns>Returns with the matrix to render the object with.</returns>
 Matrix3DStruct STDMETHODCALLTYPE HoverLocomotionClass::Draw_Matrix(int *key)
 {
+	if ((float)fabs(LinkedTo->AngleRotatedSideways) >= 0.005 || (float)fabs(LinkedTo->AngleRotatedForwards) >= 0.005) { // RA2: tilted when either angle is 0.005 or more
+		if (key) { // RA2: no cache key for a tilted matrix
+			*key = -1;
+		}
+
+		Matrix3D m1(true), m2(true); // RA2: two working matrices,
+		Matrix3D basemtx; // RA2: and the base matrix
+
+		float val = LinkedTo->TClass->VoxelCenterY; // RA2: the voxel centre's Y
+		float val2 = LinkedTo->TClass->VoxelCenterX; // RA2: and X
+
+		float scos, fcos, fsin; // RA2: the tilt's cosines and sines
+		fcos = fastmath::cos(LinkedTo->AngleRotatedForwards); // RA2: cos of the forward tilt
+		fsin = fastmath::sin(LinkedTo->AngleRotatedForwards); // RA2: sin of the forward tilt
+
+		scos = fastmath::cos(LinkedTo->AngleRotatedSideways); // RA2: cos of the sideways tilt
+		float ssin = fastmath::sin(LinkedTo->AngleRotatedSideways); // RA2: sin of the sideways tilt
+
+		int num = fabs(ssin) * val + fabs(fsin) * val2; // RA2: lifted by the tilt's reach
+
+		int x_offset = (int)(val2 - (float)(int)(fcos * val2)); // RA2: X shift from the forward tilt
+		int y_offset = (int)(val - (float)(int)(scos * val)); // RA2: Y shift from the sideways tilt
+		if (LinkedTo->AngleRotatedForwards < 0.0f) { // RA2: mirrored for a backward tilt
+			x_offset = -x_offset; // RA2: negated
+		}
+		if (LinkedTo->AngleRotatedSideways > 0.0f) { // RA2: mirrored for a tilt to the right
+			y_offset = -y_offset; // RA2: negated
+		}
+
+		m1.Translate_Z(num); // RA2: lifted
+		m2.Translate_X(x_offset); // RA2: shifted in X
+		m2.Translate_Y(y_offset); // RA2: and Y
+		m2.Rotate_X(LinkedTo->AngleRotatedSideways); // RA2: rotated sideways
+		m2.Rotate_Y(LinkedTo->AngleRotatedForwards); // RA2: and forwards
+
+		return(basemtx.Matrix3D::Matrix3D(BASECLASS::Draw_Matrix(key)), (Matrix3DStruct &)((m1 * basemtx) * m2)); // RA2: lift * base * tilt
+	}
+
 	if (!Is_Powered()) {
 		int ramp = Map[(Coord const &)(LinkedTo->PositionCoord)].Ramp;
 		Matrix3D mtx = Get_Slope_Matrix(ramp);
@@ -155,20 +193,28 @@ Matrix3DStruct STDMETHODCALLTYPE HoverLocomotionClass::Draw_Matrix(int *key)
 
 
 /// <summary>
-/// Handles the per frame processing for a hovering object.
-/// This is the main driver routine for the locomotor. It steers and accelerates the
-/// object, walks it along its path a cell at a time, kicks up a wake when it passes over
-/// water, and applies the bob and sag of the hover cushion.
+/// Fetches the matrix the hover unit's shadow is drawn with.
+/// A tilted unit casts no shadow of its own; a level one uses the locomotor's default.
 /// </summary>
+Matrix3DStruct STDMETHODCALLTYPE HoverLocomotionClass::Shadow_Matrix(int *key) // RA2: overridden
+{
+	if (!((float)fabs(LinkedTo->AngleRotatedSideways) < 0.005 && (float)fabs(LinkedTo->AngleRotatedForwards) < 0.005) && key) { // RA2: a tilted unit casts no shadow
+		*key = -1;
+	}
+	return(BASECLASS::Shadow_Matrix(key)); // RA2: the base shadow otherwise
+}
+
+
 /// <returns>bool; Is the object still moving?</returns>
 boolean STDMETHODCALLTYPE HoverLocomotionClass::Process(void)
 {
 	if (Is_Moving() && Is_Moving1()) {
 		Motion_AI();
+		if (!LinkedTo->IsActive) return(false); // RA2: an inactive unit does not move
 
 		int height = LinkedTo->Height;
 		int speed = LinkedTo->Current_Speed() * Acceleration;
-		DirType direction = Direction(LinkedTo->Center_Coord(), HeadToCoord);
+		DirType direction = DirType().Direction(LinkedTo->Center_Coord(), HeadToCoord); // RA2: through DirType's Direction
 
 		if (speed == 0 && Facing.Current().Is_Complete_Turn(direction, 0)) {
 			Start();
@@ -186,7 +232,14 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Process(void)
 				HeadToCoord = COORD_NONE;
 			}
 
-			if (DestinationCoord != COORD_NONE) {
+			Cell dock = CELL_NONE; // RA2: a unit that has reached its docking cell carries on moving
+			TechnoClass * contact = LinkedTo->Radio_Link(0); // RA2: the radio contact
+			if (contact != NULL) { // RA2: if there is one
+				dock = contact->Docking_Coord(LinkedTo).As_Cell(); // RA2: gives the docking cell
+			}
+			bool at_dock = (LinkedTo->Get_Cell() == dock); // RA2: has the unit reached it
+
+			if (DestinationCoord != COORD_NONE || at_dock) { // RA2: keeps moving at its dock
 				MoveType ok = While_Moving(true);
 				if (!LinkedTo->IsActive || LinkedTo->IsInLimbo || LinkedTo->IsFalling) return(MOVE_NO);
 				if (ok == MOVE_OK && HeadToCoord == COORD_NONE) {
@@ -194,7 +247,7 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Process(void)
 					**	Perform "per cell" activities.
 					*/
 					LinkedTo->Per_Cell_Process(PCP_END);
-					if (LinkedTo == NULL || !LinkedTo->IsActive || LinkedTo->IsInLimbo || LinkedTo->IsFalling) return(false);
+					if (!LinkedTo->IsActive || LinkedTo->IsInLimbo || LinkedTo->IsFalling) return(false); // RA2: no NULL test of LinkedTo
 				}
 				if (ok == MOVE_NO) {
 					if (LinkedTo->CurrentTube >= TUBE_FIRST) return(false);
@@ -332,6 +385,12 @@ CoordStruct STDMETHODCALLTYPE HoverLocomotionClass::Head_To_Coord(void)
 
 
 /// <summary>
+/// Starts the hovering object moving toward its destination.
+/// This routine is used to spin the drive back up when the object has been sitting still,
+/// either at the beginning of a move order or after it has been stalled by a blockage.
+
+
+/// <summary>
 /// Assigns a new destination to the hovering object.
 /// This is the entry point the owning object uses to hand a move order to the locomotor.
 /// The destination is dropped onto the terrain -- or onto the bridge deck above it -- and
@@ -341,7 +400,10 @@ CoordStruct STDMETHODCALLTYPE HoverLocomotionClass::Head_To_Coord(void)
 void STDMETHODCALLTYPE HoverLocomotionClass::Move_To(CoordStruct to)
 {
 	DestinationCoord = to;
-	if (Is_Powered() && Is_Ion_Sensitive() && IonStormClass::Is_Ion_Storm_Active()) {
+	if (LinkedTo->IsParalyzed()) { // RA2: a paralysed unit does nothing
+		return; // RA2: returns
+	}
+	if (Is_Powered() && Is_Ion_Sensitive() && LinkedTo->House->Ion_Sensitives_Should_Be_Offline()) { // RA2: the house decides whether ion sensitives are offline
 		Power_Off();
 	}
 	DestinationCoord.Z = Map.Get_Height_GL(DestinationCoord);
@@ -603,6 +665,15 @@ void HoverLocomotionClass::Stop_Driver(void)
 
 
 /// <summary>
+/// Fetches the facing from one coordinate to another.
+/// </summary>
+static inline DirType Facing_To(Coord const & from, Coord const & to) // RA2: the facing between two coordinates
+{
+	return(DirType().Direction(from, to)); // RA2: through DirType's Direction
+}
+
+
+/// <summary>
 /// Handles the steering and the throttle for a hovering object.
 /// This routine is called from the locomotor's main process. It swings the drive around
 /// toward the next stop, eases the throttle up to cruising speed or back off as the
@@ -612,7 +683,7 @@ void HoverLocomotionClass::Stop_Driver(void)
 void HoverLocomotionClass::Motion_AI(void)
 {
 	if (Is_Moving() && HeadToCoord != COORD_NONE) {
-		DirType newdir = DirType().Direction(LinkedTo->Center_Coord(), HeadToCoord);
+		DirType newdir = Facing_To(LinkedTo->Center_Coord(), HeadToCoord); // RA2: through Facing_To
 		if (!WasPushed) {
 			Facing.Set_Desired(newdir);
 		} else {
@@ -620,8 +691,8 @@ void HoverLocomotionClass::Motion_AI(void)
 		}
 
 		if (Is_Powered() && Facing.Current().Is_Complete_Turn(newdir, DIR_STEP_8 << 8) || WasPushed) {
-			if ((DestinationCoord == COORD_NONE && LinkedTo->Center_Coord().Distance_To(HeadToCoord) < CELL_LEPTON) ||
-				 DestinationCoord != COORD_NONE && LinkedTo->Center_Coord().Distance_To(DestinationCoord) < CELL_LEPTON) {
+			if ((DestinationCoord == COORD_NONE && LinkedTo->Distance(HeadToCoord) < CELL_LEPTON) || // RA2: ObjectClass::Distance
+				 DestinationCoord != COORD_NONE && LinkedTo->Distance(DestinationCoord) < CELL_LEPTON) { // RA2: ObjectClass::Distance
 
 				Height = 0.5;
 			} else {
@@ -694,8 +765,6 @@ void STDMETHODCALLTYPE HoverLocomotionClass::Stop_Moving(void)
 /// <param name="coord">The direction the object should come to face.</param>
 void HoverLocomotionClass::Do_Turn(DirStruct coord)
 {
-	assert(LinkedTo->IsActive);
-
 	DirType dir = (DirType &)coord;
 
 	LinkedTo->PrimaryFacing.Set_Desired(dir);
@@ -732,7 +801,7 @@ bool HoverLocomotionClass::Reduce_Path_Length(void)
 		if (LinkedTo->Path[0] != FACING_NONE) {
 			int dist;
 
-			if (dynamic_cast<UnitClass *>(LinkedTo->NavCom) || dynamic_cast<InfantryClass *>(LinkedTo->NavCom)) {
+			if ((LinkedTo->NavCom != NULL && LinkedTo->NavCom->Fetch_RTTI() == RTTI_UNIT) || (LinkedTo->NavCom != NULL && LinkedTo->NavCom->Fetch_RTTI() == RTTI_INFANTRY)) { // RA2: a unit or infantry NavCom by RTTI, not dynamic_cast
 				dist = Lepton_To_Cell((LEPTON)LinkedTo->Distance(DestinationCoord));
 
 				if (dist < ARRAY_SIZE(LinkedTo->Path)) {
@@ -741,7 +810,7 @@ bool HoverLocomotionClass::Reduce_Path_Length(void)
 				}
 			}
 
-			if (LinkedTo->TarCom != NULL && LinkedTo->In_Range(LinkedTo->TarCom)) {
+			if (LinkedTo->TarCom != NULL && LinkedTo->IsCloseEnoughToAttack(LinkedTo->TarCom)) { // RA2: IsCloseEnoughToAttack, not In_Range
 				LinkedTo->Path[0] = FACING_NONE;
 				return(true);
 			}
@@ -841,7 +910,7 @@ void HoverLocomotionClass::Start_Of_Move(int num)
 				} else {
 					LinkedTo->Assign_Destination(NULL);
 					if (!LinkedTo->IsActive) return;
-					if (LinkedTo->IsNewNavCom) Sound_Effect(Rule->ScoldSound);
+					if (LinkedTo->IsNewNavCom) VocClass::PlayGlobal(Rule->ScoldSound, 1.0f, 0x2000); // RA2: played through VocClass::PlayGlobal
 					LinkedTo->IsNewNavCom = false;
 				}
 			}
@@ -852,7 +921,7 @@ void HoverLocomotionClass::Start_Of_Move(int num)
 			**	TarCom, then give this unit a range limit so that it might not pick
 			**	a "can't reach" target again.
 			*/
-			if (!Is_Moving() && LinkedTo->TarCom != NULL && !LinkedTo->In_Range(LinkedTo->TarCom)) {
+			if (!Is_Moving() && LinkedTo->TarCom != NULL && !LinkedTo->IsCloseEnoughToAttack(LinkedTo->TarCom)) { // RA2: IsCloseEnoughToAttack, not In_Range
 				LinkedTo->IsScanLimited = true;
 				if (LinkedTo->Team != NULL) LinkedTo->Team->Scan_Limit();
 				LinkedTo->Assign_Target(NULL);
@@ -919,7 +988,7 @@ void HoverLocomotionClass::Start_Of_Move(int num)
 /// <returns>bool; Was the power turned off?</returns>
 boolean STDMETHODCALLTYPE HoverLocomotionClass::Power_Off(void)
 {
-	if (Is_Powered() && LinkedTo->CurrentMission != MISSION_SLEEP) {
+	if (Is_Powered() && LinkedTo->CurrentMission != MISSION_SLEEP && LinkedTo->CurrentMission != MISSION_ENTER) { // RA2: not while entering either
 		Do_Shove();
 	}
 	if (Is_Moving()) {
@@ -955,11 +1024,11 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Powered(void)
 boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Ion_Sensitive(void)
 {
 	BuildingClass *bptr;
-	if (LinkedTo->In_Radio_Contact()) {
-		BuildingClass * ptr = (BuildingClass *)LinkedTo->Contact_With_Whom();
+	if (LinkedTo->HasAnyLink()) { // RA2: any radio link
+		BuildingClass * ptr = (BuildingClass *)LinkedTo->Radio_Link(0); // RA2: the first radio link
 
-		if (ptr->RTTI == RTTI_BUILDING) {
-			ptr = (BuildingClass *)LinkedTo->Contact_With_Whom();
+		if (ptr->Fetch_RTTI() == RTTI_BUILDING) { // RA2: by Fetch_RTTI
+			ptr = (BuildingClass *)LinkedTo->Radio_Link(0); // RA2: the first radio link
 			if (ptr->Class->IsWeaponsFactory) {
 				return(false);
 			}
@@ -1099,6 +1168,8 @@ HRESULT STDMETHODCALLTYPE HoverLocomotionClass::Load(IStream * stream)
 }
 
 
+
+
 /// <summary>
 /// Fetches the display layer that the object should be rendered in.
 /// A hovering object skims the ground rather than flying over it, so it shares the ground
@@ -1141,9 +1212,6 @@ void STDMETHODCALLTYPE HoverLocomotionClass::Mark_All_Occupation_Bits(int mark)
 	if (mark == MARK_UP) {
 		Coord coord = Head_To_Coord();
 		LinkedTo->Clear_Occupy_Bit(coord);
-	} else {
-		Coord coord = Head_To_Coord();
-		LinkedTo->Set_Occupy_Bit(coord);
 	}
 }
 
@@ -1164,3 +1232,11 @@ boolean STDMETHODCALLTYPE HoverLocomotionClass::Is_Moving_Here(CoordStruct to)
 	}
 	return(false);
 }
+
+
+/// <summary>
+/// Handles the per frame processing for a hovering object.
+/// This is the main driver routine for the locomotor. It steers and accelerates the
+/// object, walks it along its path a cell at a time, kicks up a wake when it passes over
+/// water, and applies the bob and sag of the hover cushion.
+/// </summary>
