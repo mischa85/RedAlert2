@@ -182,60 +182,6 @@ TeamTypeClass::~TeamTypeClass(void)
 }
 
 
-#if _DEBUG
-/***************************************************************************
- * TeamTypeClass::Mission_From_Name -- returns team mission for given name *
- *                                                                         *
- * INPUT:                                                                  *
- *      name         name to compare                                       *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      mission for that name                                              *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/13/1994 BR : Created.                                              *
- *=========================================================================*/
-TeamMissionType TeamTypeClass::Mission_From_Name(char const * name)
-{
-	if (name) {
-		for (TeamMissionType order = TMISSION_FIRST; order < TMISSION_COUNT; order++) {
-			if (stricmp(TMissions[order], name) == 0) {
-				return(order);
-			}
-		}
-	}
-
-	return(TMISSION_NONE);
-}
-
-
-/***************************************************************************
- * TeamTypeClass::Name_From_Mission -- returns name for given mission      *
- *                                                                         *
- * INPUT:                                                                  *
- *      order      mission to get name for                                 *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      name of mission                                                    *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/13/1994 BR : Created.                                              *
- *=========================================================================*/
-char const * TeamTypeClass::Name_From_Mission(TeamMissionType order)
-{
-	assert((unsigned)order < TMISSION_COUNT);
-
-	return(TMissions[order]);
-}
-#endif
-
-
 /***********************************************************************************************
  * TeamTypeClass::Create_One_Of -- Creates a team of this type.                                *
  *                                                                                             *
@@ -576,6 +522,9 @@ void TeamTypeClass::Detach(AbstractClass const * target, bool all)
 	if (Script == target) {
 		Script = NULL;
 	}
+	if (Script != NULL) { // RA2: the script is detached too
+		Script->Detach(target, all); // RA2: from the target
+	}
 }
 
 
@@ -771,6 +720,18 @@ Cell TeamTypeClass::Get_Origin(void) const
 
 
 /// <summary>
+/// RA2
+/// </summary>
+Cell TeamTypeClass::Get_Transport_Origin(void) const // RA2: at 0x006BFAD0, after Get_Origin
+{
+	if (TransportOrigin == -1) { // RA2: no transport origin set
+		return(CELL_NONE); // RA2: no cell
+	}
+	return(Scen->Get_Waypoint_Cell(TransportOrigin)); // RA2: the waypoint's cell
+}
+
+
+/// <summary>
 /// Fetches the team type of the name given, creating it if need be.
 /// </summary>
 /// <param name="name">The name of the team type wanted.</param>
@@ -796,11 +757,9 @@ void TeamTypeClass::Read_All(CCINIClass const & ini, INIScopeType scope)
 	int len = ini.Entry_Count("TeamTypes");
 	for (int index = 0; index < len; index++) {
 		char const * entry = ini.Get_Entry("TeamTypes", index);
-		assert(entry != NULL);
 		ini.Get_String("TeamTypes", entry, "", buffer, sizeof(buffer));
 		TeamTypeClass * ttptr = Find_Or_Make(buffer);
-		assert(ttptr != NULL);
-		ttptr->Read_INI(ini);
+		ttptr->Read_INI((CCINIClass &)ini); // RA2: Read_INI takes the CCINIClass
 		ttptr->Scope = scope;
 	}
 }
@@ -913,12 +872,13 @@ void TeamTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(IsLooseRecruit);
 	crc(IsSuicide);
 	crc(IsDroppod);
+	crc(IsUseTransportOrigin); // RA2: IsUseTransportOrigin is in the CRC
 	crc(RecruitPriority);
 	crc(MaxAllowed);
 	crc(Fear);
 
 	if (House != NULL) {
-		crc((RTTIType)House->RTTI);
+		crc((RTTIType)House->Fetch_RTTI()); // RA2: by Fetch_RTTI
 	}
 	if (House != NULL) {
 		crc(House->Fetch_ID());
@@ -931,6 +891,7 @@ void TeamTypeClass::Compute_CRC(CRCEngine & crc) const
 	}
 
 	crc(Origin);
+	crc(TransportOrigin); // RA2: and TransportOrigin
 	crc(Number);
 
 	if (Script != NULL) {
@@ -961,7 +922,7 @@ bool TeamTypeClass::Can_Recruit(FootClass * foot, HouseClass * house) const
 		return(false);
 	}
 
-	if (foot->In_Radio_Contact()) {
+	if (foot->HasAnyLink()) { // RA2: any radio link
 		return(false);
 	}
 
@@ -969,7 +930,7 @@ bool TeamTypeClass::Can_Recruit(FootClass * foot, HouseClass * house) const
 		return(false);
 	}
 
-	if (foot->Mission != MISSION_NONE && !MissionClass::Is_Recruitable_Mission(foot->Mission)) {
+	if (foot->Get_Mission() != MISSION_NONE && !MissionClass::Is_Recruitable_Mission(foot->Get_Mission())) { // RA2: through Get_Mission
 		return(false);
 	}
 
@@ -981,7 +942,7 @@ bool TeamTypeClass::Can_Recruit(FootClass * foot, HouseClass * house) const
 		return(false);
 	}
 
-	if (foot->RTTI == RTTI_AIRCRAFT && foot->PrimaryWeapon != NULL && foot->Ammo == NULL) {
+	if (foot->Fetch_RTTI() == RTTI_AIRCRAFT && foot->Get_Primary_Weapon() != NULL && foot->Ammo == 0) { // RA2: by Fetch_RTTI and Get_Primary_Weapon; Ammo compared with 0
 		return(false);
 	}
 
@@ -1023,3 +984,159 @@ TeamClass * TeamTypeClass::Find_First_Of_Type(void)
 	}
 	return(NULL);
 }
+
+
+
+
+
+
+
+
+
+
+
+#if _DEBUG
+/***************************************************************************
+ * TeamTypeClass::Mission_From_Name -- returns team mission for given name *
+ *                                                                         *
+ * INPUT:                                                                  *
+ *      name         name to compare                                       *
+ *                                                                         *
+ * OUTPUT:                                                                 *
+ *      mission for that name                                              *
+ *                                                                         *
+ * WARNINGS:                                                               *
+ *      none.                                                              *
+ *                                                                         *
+ * HISTORY:                                                                *
+ *   12/13/1994 BR : Created.                                              *
+ *=========================================================================*/
+TeamMissionType TeamTypeClass::Mission_From_Name(char const * name)
+{
+	if (name) {
+		for (TeamMissionType order = TMISSION_FIRST; order < TMISSION_COUNT; order++) {
+			if (stricmp(TMissions[order], name) == 0) {
+				return(order);
+			}
+		}
+	}
+
+	return(TMISSION_NONE);
+}
+
+
+/***************************************************************************
+ * TeamTypeClass::Name_From_Mission -- returns name for given mission      *
+ *                                                                         *
+ * INPUT:                                                                  *
+ *      order      mission to get name for                                 *
+ *                                                                         *
+ * OUTPUT:                                                                 *
+ *      name of mission                                                    *
+ *                                                                         *
+ * WARNINGS:                                                               *
+ *      none.                                                              *
+ *                                                                         *
+ * HISTORY:                                                                *
+ *   12/13/1994 BR : Created.                                              *
+ *=========================================================================*/
+char const * TeamTypeClass::Name_From_Mission(TeamMissionType order)
+{
+	assert((unsigned)order < TMISSION_COUNT);
+
+	return(TMissions[order]);
+}
+#endif
+
+
+
+#ifdef _DEBUG
+/***********************************************************************************************
+ * TeamTypeClass::Member_Description -- Builds a member description string.                    *
+ *                                                                                             *
+ *    This routine will build a team member description string. The string will be composed    *
+ *    of the team member type and quantity. As many team member types will be listed that      *
+ *    can fit within a reasonable size.                                                        *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  Returns with a pointer to the text string that contains a description of the team  *
+ *          type members.                                                                      *
+ *                                                                                             *
+ * WARNINGS:   The return string may be truncated if necessary to fit within reasonable size   *
+ *             limits.                                                                         *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   01/05/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+char const * TeamTypeClass::Member_Description(void) const
+{
+	static char buffer[128];
+
+	buffer[0] = '\0';
+
+	if (TaskForce == NULL) return(buffer);
+
+	/*
+	**	Fill in class & count for all classes
+	*/
+	for (int index = 0; index < TaskForce->ClassCount; index++) {
+		char txt[10];
+
+		strcat(buffer, TaskForce->Members[index].Class->IniName);
+		strcat(buffer, ":");
+
+		sprintf(txt, "%d", TaskForce->Members[index].Quantity);
+		strcat(buffer, txt);
+
+		if (index < TaskForce->ClassCount-1) {
+			strcat(buffer, ",");
+		}
+	}
+
+	if (strlen(buffer) > 25) {
+		strcpy(&buffer[25-3], "...");
+	}
+
+	return(buffer);
+}
+
+
+/***********************************************************************************************
+ * TeamTypeClass::Description -- Builds a description of the team.                             *
+ *                                                                                             *
+ *    This routine will build a brief description of the team type. This description is used   *
+ *    in the team type list.                                                                   *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  Returns with the composed text string that represents the team type.               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   01/05/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+char const * TeamTypeClass::Description(void) const
+{
+	static char _buffer[128];
+	char extra = ' ';
+	char loc[3];
+
+	loc[0] = loc[1] = loc[2] = 0;
+	if (IsAutocreate) extra = '*';
+	if (Origin > -1) {
+//	if (Origin != -1) {
+		if (Origin < 26) {
+			loc[0] = 'A' + Origin;
+		} else {
+			loc[0] = Origin / 26 + 'A'-1;
+			loc[1] = Origin % 26 + 'A';
+		}
+	}
+
+	sprintf(_buffer, "%s\t%s\t%c%s\t%d\t%s", (char const *)IniName, House->Class->Suffix, extra, loc, Script ? Script->MissionCount : 0, Member_Description());
+	return(_buffer);
+}
+#endif
+

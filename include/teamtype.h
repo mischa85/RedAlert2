@@ -111,6 +111,7 @@ class TeamTypeClass : public AbstractTypeClass
 
 		int Get_Group(void) const;
 		Cell Get_Origin(void) const;
+		Cell Get_Transport_Origin(void) const; // RA2: at 0x006BFAD0, the TransportOrigin waypoint
 
 		bool Can_Recruit(FootClass * foot, HouseClass * house) const;
 		void Flash(int);
