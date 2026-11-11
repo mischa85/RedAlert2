@@ -190,18 +190,8 @@ droppod,0x004A5A40,0x004A6590,tibsun,"functions compiled from src/droppod.cpp, m
 unk_004A6590,0x004A6590,0x004A6910,unknown,code not assigned to a module
 dropship,0x004A6910,0x004A6B90,tibsun,"functions compiled from src/dropship.cpp, matched, without gaps; one placed by the gap; ?Dropship_Screen@@YIXXZ not placed; ?Draw_Cost@@YIXHHAAVSurface@@ABVPoint2D@@PBD_NAAVConvertClass@@PBVBlitter@@@Z not placed; ?Draw_Unit_Info@@YIXPAVSurface@@PAVConvertClass@@PAVTechnoTypeClass@@_N@Z not placed"
 unk_004A6B90,0x004A6B90,0x004AA5A0,unknown,code not assigned to a module
-unk_004AA5A0,0x004AA5A0,0x004AA660,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004AA660,0x004AA660,0x004AAB60,unknown,code not assigned to a module
-unk_004AAB60,0x004AAB60,0x004AABF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004AABF0,0x004AABF0,0x004AAC30,unknown,code not assigned to a module
-unk_004AAC30,0x004AAC30,0x004AAC60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004AAC60,0x004AAC60,0x004AADC0,unknown,code not assigned to a module
-unk_004AADC0,0x004AADC0,0x004AAE40,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004AAE40,0x004AAE40,0x004ABA00,unknown,code not assigned to a module
-unk_004ABA00,0x004ABA00,0x004ABB30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004ABB30,0x004ABB30,0x004AF550,unknown,code not assigned to a module
-unk_004AF550,0x004AF550,0x004AF650,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_004AF650,0x004AF650,0x004B2970,unknown,code not assigned to a module
+dsurface,0x004AA5A0,0x004B1340,tibsun,"functions compiled from src/dsurface.cpp, without gaps; matched except ??0DSurface@@QAE@HH_N@Z and ?Create_Primary@DSurface@@SIPAV1@PAPAV1@@Z and ?Draw_Depth_Antialiased_Line@DSurface@@UAE_NABV?$TRect@H@@ABVPoint2D@@1AAVRGBClass@@HH_N333M@Z; eight placed by the gap; ?Create_Primary@DSurface@@SIPAV1@PAPAV1@@Z and ?Draw_Depth_Antialiased_Line@DSurface@@UAE_NABV?$TRect@H@@ABVPoint2D@@1AAVRGBClass@@HH_N333M@Z placed at their function starts; ??0DSurface@@QAE@HH_N@Z not placed"
+unk_004B1340,0x004B1340,0x004B2970,unknown,code not assigned to a module
 edit,0x004B2970,0x004B2F50,tibsun,"functions compiled from src/edit.cpp, matched, without gaps"
 unk_004B2F50,0x004B2F50,0x004B3160,unknown,code not assigned to a module
 effects,0x004B3160,0x004B3580,tibsun,"functions compiled from src/effects.cpp, matched, without gaps"
