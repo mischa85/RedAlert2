@@ -130,6 +130,10 @@
 #include "tagtype.h"
 #include "tracker.h"
 
+namespace Unsorted { extern bool ArmageddonMode; }
+namespace Game { extern bool IsActive; }
+
+
 
 #define	GRAVITY	1.4
 
@@ -151,11 +155,10 @@
  * HISTORY:                                                                                    *
  *   09/24/1994 JLB : Created.                                                                 *
  *=============================================================================================*/
-ObjectClass::ObjectClass(void) :
+ObjectClass::ObjectClass(void) : // RA2: at 0x005D22E0
 	BASECLASS(),
 	IsActive(true),
 	IsDown(false),
-	IsToDamage(false),
 	IsToDisplay(false),
 	IsInLimbo(true),
 	IsSelected(false),
@@ -208,6 +211,21 @@ ObjectClass::~ObjectClass(void)
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /// <summary>
 /// Fetches the direction from this object to another.
 /// The two objects are compared by their center points, so the answer is the facing this
@@ -219,6 +237,12 @@ DirType ObjectClass::Direction(AbstractClass const * object) const
 {
 	return(::Direction(Center_Coord(), object->Center_Coord()));
 }
+
+
+
+
+
+
 
 
 /***********************************************************************************************
@@ -238,23 +262,7 @@ DirType ObjectClass::Direction(AbstractClass const * object) const
  *=============================================================================================*/
 void const * ObjectClass::Get_Image_Data(void) const
 {
-	assert(this != NULL);
-
 	return(Class_Of()->Get_Image_Data());
-}
-
-
-/// <summary>
-/// Determines if this object is a mobile one.
-/// Use this routine before casting an object down to a FootClass, since only the mobile
-/// object types carry a locomotor.
-/// </summary>
-/// <returns>bool; Is this object derived from FootClass?</returns>
-bool ObjectClass::Is_Foot(void) const
-{
-	assert(this != NULL);
-
-	return(dynamic_cast<FootClass const *>(this)!=NULL);
 }
 
 
@@ -339,8 +347,6 @@ void ObjectClass::AI(void)
 /// </summary>
 void ObjectClass::Fall_From_Height(void)
 {
-	assert(this != NULL);
-
 	IsFalling = true;
 	IsToExplode = true;
 
@@ -381,8 +387,6 @@ void ObjectClass::Fall_From_Height(void)
  *=============================================================================================*/
 ActionType ObjectClass::What_Action(ObjectClass const *, bool) const
 {
-	assert(this != NULL);
-
 	return(ACTION_NONE);
 }
 
@@ -408,8 +412,6 @@ ActionType ObjectClass::What_Action(ObjectClass const *, bool) const
  *=============================================================================================*/
 ActionType ObjectClass::What_Action(Cell const &, bool, bool) const
 {
-	assert(this != NULL);
-
 	return(ACTION_NONE);
 }
 
@@ -431,10 +433,11 @@ ActionType ObjectClass::What_Action(Cell const &, bool, bool) const
  *=============================================================================================*/
 LayerType ObjectClass::In_Which_Layer(void) const
 {
-	assert(this != NULL);
-
-	if (HeightAGL < int(Rule->FlightLevel * 0.6)) {
+	if (!In_Air()) { // RA2: on the ground below flight
 		return(LAYER_GROUND);
+	}
+	if (HeightAGL < Rule->JumpjetCruiseHeight) { // RA2: below the jumpjet cruise height
+		return(LAYER_AIR); // RA2: is the air layer
 	}
 	return(LAYER_TOP);
 }
@@ -457,9 +460,7 @@ LayerType ObjectClass::In_Which_Layer(void) const
  *=============================================================================================*/
 int ObjectClass::Get_Ownable(void) const
 {
-	assert(this != NULL);
-
-	return(INT_MAX); /// All bits (owners), except for the highest bit, because 0xFFFFFFFF == -1 == no one
+	return(0x7FFFFFFF); // RA2: no owner (0x7FFFFFFF)
 }
 
 
@@ -480,8 +481,6 @@ int ObjectClass::Get_Ownable(void) const
  *=============================================================================================*/
 bool ObjectClass::Can_Repair(void) const
 {
-	assert(this != NULL);
-
 	return(false);
 }
 
@@ -503,8 +502,6 @@ bool ObjectClass::Can_Repair(void) const
  *=============================================================================================*/
 bool ObjectClass::Can_Demolish(void) const
 {
-	assert(this != NULL);
-
 	return(false);
 }
 
@@ -527,8 +524,6 @@ bool ObjectClass::Can_Demolish(void) const
  *=============================================================================================*/
 bool ObjectClass::Can_Player_Fire(void) const
 {
-	assert(this != NULL);
-
 	return(false);
 }
 
@@ -551,10 +546,11 @@ bool ObjectClass::Can_Player_Fire(void) const
  *=============================================================================================*/
 bool ObjectClass::Can_Player_Move(void) const
 {
-	assert(this != NULL);
-
 	return(false);
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -597,7 +593,6 @@ void ObjectClass::Record_The_Kill(TechnoClass * )
  *=============================================================================================*/
 void ObjectClass::Do_Shimmer(void)
 {
-	assert(this != NULL);
 }
 
 
@@ -645,7 +640,6 @@ int ObjectClass::Exit_Object(TechnoClass *)
  *=============================================================================================*/
 void ObjectClass::Hidden(void)
 {
-	assert(this != NULL);
 }
 
 
@@ -669,7 +663,6 @@ void ObjectClass::Hidden(void)
  *=============================================================================================*/
 void ObjectClass::Look(bool, bool)
 {
-	assert(this != NULL);
 }
 
 
@@ -692,10 +685,8 @@ void ObjectClass::Look(bool, bool)
  * HISTORY:                                                                                    *
  *   09/21/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool ObjectClass::Active_Click_With(ActionType , ObjectClass *, bool)
+bool ObjectClass::Active_Click_With(ActionType, ObjectClass *, bool) // RA2: unnamed parameters
 {
-	assert(this != NULL);
-
 	return(false);
 }
 
@@ -717,10 +708,8 @@ bool ObjectClass::Active_Click_With(ActionType , ObjectClass *, bool)
  * HISTORY:                                                                                    *
  *   09/21/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool ObjectClass::Active_Click_With(ActionType, Cell const &, bool)
+bool ObjectClass::Active_Click_With(ActionType, Cell const &, Cell const &, bool) // RA2: not in TibSun, at 0x005D2CA0
 {
-	assert(this != NULL);
-
 	return(false);
 }
 
@@ -743,7 +732,6 @@ bool ObjectClass::Active_Click_With(ActionType, Cell const &, bool)
  *=============================================================================================*/
 void ObjectClass::Clicked_As_Target(int)
 {
-	assert(this != NULL);
 }
 
 
@@ -766,10 +754,8 @@ void ObjectClass::Clicked_As_Target(int)
  * HISTORY:                                                                                    *
  *   09/21/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool ObjectClass::In_Range(Coord const & , int) const
+bool ObjectClass::In_Range(Coord const &, int) const // RA2: unnamed parameters
 {
-	assert(this != NULL);
-
 	return(false);
 }
 
@@ -792,8 +778,6 @@ bool ObjectClass::In_Range(Coord const & , int) const
  *=============================================================================================*/
 int ObjectClass::Weapon_Range(int) const
 {
-	assert(this != NULL);
-
 	return(0);
 }
 
@@ -819,7 +803,6 @@ int ObjectClass::Weapon_Range(int) const
  *=============================================================================================*/
 void ObjectClass::Scatter(Coord const &, bool, bool)
 {
-	assert(this != NULL);
 }
 
 
@@ -843,8 +826,6 @@ void ObjectClass::Scatter(Coord const &, bool, bool)
  *=============================================================================================*/
 bool ObjectClass::Catch_Fire(void)
 {
-	assert(this != NULL);
-
 	return(false);
 }
 
@@ -866,7 +847,6 @@ bool ObjectClass::Catch_Fire(void)
  *=============================================================================================*/
 void ObjectClass::Fire_Out(void)
 {
-	assert(this != NULL);
 }
 
 
@@ -891,8 +871,6 @@ void ObjectClass::Fire_Out(void)
  *=============================================================================================*/
 int ObjectClass::Value(void) const
 {
-	assert(this != NULL);
-
 	return(0);
 }
 
@@ -915,8 +893,6 @@ int ObjectClass::Value(void) const
  *=============================================================================================*/
 MissionType ObjectClass::Get_Mission(void) const
 {
-	assert(this != NULL);
-
 	return(MISSION_NONE);
 }
 
@@ -940,9 +916,8 @@ MissionType ObjectClass::Get_Mission(void) const
  * HISTORY:                                                                                    *
  *   07/24/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void ObjectClass::Repair(int )
+void ObjectClass::Repair(int) // RA2: unnamed parameter
 {
-	assert(this != NULL);
 }
 
 
@@ -965,9 +940,8 @@ void ObjectClass::Repair(int )
  * HISTORY:                                                                                    *
  *   07/19/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-void ObjectClass::Sell_Back(int )
+void ObjectClass::Sell_Back(int) // RA2: unnamed parameter
 {
-	assert(this != NULL);
 }
 
 
@@ -989,8 +963,6 @@ void ObjectClass::Sell_Back(int )
  *=============================================================================================*/
 void ObjectClass::Move(FacingType facing)
 {
-	assert(this != NULL);
-
 	Mark(MARK_UP);
 	Coord coord = Adjacent_Cell(PositionCoord, facing);
 	if (Can_Enter_Cell(&Map[coord], facing) == MOVE_OK) {
@@ -1017,8 +989,6 @@ void ObjectClass::Move(FacingType facing)
  *=============================================================================================*/
 void ObjectClass::Unselect(void)
 {
-	assert(this != NULL);
-
 	if (IsSelected) {
 
 		CurrentObject.Delete(this);
@@ -1288,8 +1258,6 @@ void ObjectClass::Debug_Dump(MonoClass * mono) const
  *=============================================================================================*/
 void ObjectClass::Mark_For_Redraw(void)
 {
-	assert(this != NULL);
-
 	if (!IsToDisplay) {
 		IsToDisplay = true;
 
@@ -1569,8 +1537,6 @@ void ObjectClass::Detach_All(bool all)
  *=============================================================================================*/
 RadioMessageType ObjectClass::Receive_Message(RadioClass *, RadioMessageType message, int & )
 {
-	assert(this != NULL);
-
 	switch (message) {
 
 		/*
@@ -1582,6 +1548,12 @@ RadioMessageType ObjectClass::Receive_Message(RadioClass *, RadioMessageType mes
 		case RADIO_REDRAW:
 			Mark(MARK_CHANGE);
 			return(RADIO_ROGER);
+
+		case RADIO_NEED_REPAIR: // RA2: a unit asking for repair
+			if ((double)Strength / Class_Of()->MaxStrength >= Rule->ConditionGreen) { // RA2: at or above ConditionGreen
+				return(RADIO_NEGATIVE); // RA2: is refused
+			}
+			return(RADIO_ROGER); // RA2: otherwise accepted
 
 		default:
 			break;
@@ -1822,8 +1794,6 @@ ResultType ObjectClass::Take_Damage(int & damage, int distance, WarheadTypeClass
  *=============================================================================================*/
 bool ObjectClass::Mark(MarkType mark)
 {
-	assert(this != NULL);
-
 	if (!IsInLimbo) {
 
 		/*
@@ -1841,21 +1811,13 @@ bool ObjectClass::Mark(MarkType mark)
 		}
 
 		/// These values are gathered and then never used.
-
-		/*
-		**	It is important to know whether the object is a techno class
-		**	or not to see if we have to adjust the regional threat ratings
-		*/
-		int threat = 0;
-		HousesType house = HOUSE_NONE;
-		Cell cell(0,0);
-		TechnoClass * tech = Dynamic_Cast<TechnoClass *>(this);
-		if (tech != NULL) {
-			threat = tech->Risk();
-			house  = tech->Owner();
-			cell   = PositionCell;
-		} else {
-			tech = NULL;
+		if (RTTI != RTTI_BUILDING || !((BuildingClass *)this)->Class->ToTile || mark != MARK_UP) { // RA2: risk, owner and cell of a techno are gathered
+			TechnoClass * tech = Dynamic_Cast<TechnoClass *>(this); // RA2: through Dynamic_Cast
+			if (tech != NULL) { // RA2: for a techno only
+				int threat = tech->Risk(); // RA2: its risk
+				HousesType house = tech->Owner(); // RA2: its owner
+				Cell cell = Get_Cell(); // RA2: its cell
+			}
 		}
 
 		/*
@@ -1898,8 +1860,6 @@ bool ObjectClass::Mark(MarkType mark)
  *=============================================================================================*/
 bool ObjectClass::Revealed(HouseClass * house)
 {
-	assert(this != NULL);
-
 	return(house != NULL);
 }
 
@@ -1965,8 +1925,6 @@ bool ObjectClass::Paradrop(Coord const & coord)
  *=============================================================================================*/
 bool ObjectClass::Attach_Tag(TagClass * tag)
 {
-	assert(this != NULL);
-
 	if (Tag != NULL) {
 		TagClass * tptr = Tag;
 		tptr->AttachCount--;
@@ -1994,8 +1952,6 @@ Cell const * ObjectClass::Occupy_List(bool placement) const
 {
 	static Cell const _list[] = {REFRESH_EOL};
 
-	assert(this != NULL);
-
 	if (Class_Of() == NULL) {
 		return(_list);
 	}
@@ -2015,8 +1971,6 @@ Cell const * ObjectClass::Occupy_List(bool placement) const
 /// returned.</returns>
 BuildingClass * ObjectClass::Who_Can_Build_Me(bool intheory, bool legal) const
 {
-	assert(this != NULL);
-
 	return(Class_Of()->Who_Can_Build_Me(intheory, legal, false, Owner_HouseClass()));
 }
 
@@ -2027,8 +1981,6 @@ BuildingClass * ObjectClass::Who_Can_Build_Me(bool intheory, bool legal) const
 /// <returns>Returns with the health ratio, where 1 is undamaged and 0 is destroyed.</returns>
 double ObjectClass::Get_Health_Ratio(void) const
 {
-	assert(this != NULL);
-
 	return((double)Strength / Class_Of()->MaxStrength);
 }
 
@@ -2041,8 +1993,6 @@ double ObjectClass::Get_Health_Ratio(void) const
 /// <param name="health">The fraction of maximum strength to set, where 1 is undamaged.</param>
 void ObjectClass::Set_Health_Ratio(double health)
 {
-	assert(this != NULL);
-
 	if (health > 0) {
 		Strength = (int)(Class_Of()->MaxStrength * health);
 		if (Strength == 0) Strength = 1;
@@ -2050,6 +2000,18 @@ void ObjectClass::Set_Health_Ratio(double health)
 		Strength = 0;
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -2079,9 +2041,7 @@ HRESULT STDMETHODCALLTYPE ObjectClass::Load(IStream * stream)
 /// <returns>Returns with the elevation of the ground beneath the object.</returns>
 int ObjectClass::Get_Cell_Height(void) const
 {
-	assert(this != NULL);
-
-	CellClass *cell = Get_Cell_Ptr();
+	CellClass * cell = Get_Cell_Ptr(); // RA2: through Get_Cell_Ptr
 	return(cell->Height + (IsOnBridge ? BRIDGE_CELL_HEIGHT : 0));
 }
 
@@ -2092,8 +2052,6 @@ int ObjectClass::Get_Cell_Height(void) const
 /// <returns>Returns with the object's height in world coordinates, in leptons.</returns>
 int ObjectClass::Get_Height(void) const
 {
-	assert(this != NULL);
-
 	return(Position.Z);
 }
 
@@ -2106,8 +2064,6 @@ int ObjectClass::Get_Height(void) const
 /// <returns>Returns with the object's clearance above ground level, in leptons.</returns>
 int ObjectClass::Get_Height_AGL(void) const
 {
-	assert(this != NULL);
-
 	int height = Position.Z - Map.Get_Height_GL(PositionCoord);
 	if (IsOnBridge) {
 		height -= BRIDGE_LEPTON_HEIGHT;
@@ -2126,8 +2082,6 @@ int ObjectClass::Get_Height_AGL(void) const
 /// leptons.</param>
 void ObjectClass::Set_Height_AGL(int height)
 {
-	assert(this != NULL);
-
 	if (IsOnBridge) {
 		height += BRIDGE_LEPTON_HEIGHT;
 	}
@@ -2141,6 +2095,9 @@ void ObjectClass::Set_Height_AGL(int height)
 }
 
 
+
+
+
 /// <summary>
 /// Sets the absolute height of the object.
 /// This routine moves the object vertically in world coordinates. An object that is
@@ -2150,8 +2107,6 @@ void ObjectClass::Set_Height_AGL(int height)
 /// <param name="z">The absolute height to place the object at, in leptons.</param>
 void ObjectClass::Set_Height(int z)
 {
-	assert(this != NULL);
-
 	if (IsDown) {
 		Mark(MARK_UP);
 		Position.Z = z;
@@ -2171,8 +2126,6 @@ void ObjectClass::Set_Height(int z)
 /// <param name="coord">The coordinate of the cell to occupy.</param>
 void ObjectClass::Set_Occupy_Bit(Coord const & coord)
 {
-	assert(this != NULL);
-
 	if (Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT <= coord.Z && Map[coord].IsUnderBridge) {
 		Map[coord].BridgeFlag.Occupy.Monolith = true;
 	} else {
@@ -2190,8 +2143,6 @@ void ObjectClass::Set_Occupy_Bit(Coord const & coord)
 /// <param name="coord">The coordinate of the cell to release.</param>
 void ObjectClass::Clear_Occupy_Bit(Coord const & coord)
 {
-	assert(this != NULL);
-
 	if (Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT <= coord.Z && Map[coord].IsUnderBridge) {
 		Map[coord].BridgeFlag.Occupy.Monolith = false;
 	} else {
@@ -2218,9 +2169,9 @@ VoxelDataStruct::~VoxelDataStruct(void)
 /// in the back to front order the renderer wants.
 /// </summary>
 /// <returns>bool; Does this object sort earlier than the other one?</returns>
-bool ObjectClass::operator < (ObjectClass const & object) const
+bool ObjectClass::operator < (ObjectClass const & object) const // RA2: objects order by Sort_Y
 {
-	return(Sort_Y() < object.Sort_Y());
+	return(Sort_Y() < object.Sort_Y()); // RA2: Sort_Y compared
 }
 
 
@@ -2257,7 +2208,6 @@ void ObjectClass::Compute_CRC(CRCEngine & crc) const
 
 	crc(Strength);
 	crc(IsDown);
-	crc(IsToDamage);
 	if (Session.Type == GAME_NORMAL || Session.Type == GAME_SKIRMISH) {
 		crc(IsToDisplay);
 		crc(IsSelected);
@@ -2291,19 +2241,11 @@ void ObjectClass::Compute_CRC(CRCEngine & crc) const
  *=============================================================================================*/
 int ObjectClass::Distance(AbstractClass const * target) const
 {
-	assert(this != NULL);
-
 	if (target == NULL) {
 		return(0);
 	}
-	BuildingClass * obj;
-	int dist = Distance(target->Center_Coord());
-
-	/*
-	**	If the object is a building the adjust it by the average radius
-	**	of the object.
-	*/
-	obj = target->RTTI == RTTI_BUILDING ? (BuildingClass *)target : NULL;
+	int dist = Center_Coord().Distance_To(target->Center_Coord()); // RA2: centre to centre
+	BuildingClass * obj = target->RTTI == RTTI_BUILDING ? (BuildingClass *)target : NULL; // RA2: by RTTI
 	if (obj) {
 		dist -= ((obj->Class->Width() + obj->Class->Height()) * (CELL_LEPTON / 4));
 		if (dist < 0) dist = 0;
@@ -2326,19 +2268,11 @@ int ObjectClass::Distance(AbstractClass const * target) const
 /// <returns>Returns with the range to the specified target, in leptons.</returns>
 int ObjectClass::Planar_Distance(AbstractClass const * target) const
 {
-	assert(this != NULL);
-
 	if (target == NULL) {
 		return(0);
 	}
-	BuildingClass * obj;
 	int dist = Point2D(Center_Coord()).Distance_To(Point2D(target->Center_Coord()));
-
-	/*
-	**	If the object is a building the adjust it by the average radius
-	**	of the object.
-	*/
-	obj = target->RTTI == RTTI_BUILDING ? (BuildingClass *)(target) : NULL;
+	BuildingClass * obj = target->RTTI == RTTI_BUILDING ? (BuildingClass *)target : NULL; // RA2: by RTTI
 	if (obj) {
 		dist -= ((obj->Class->Width() + obj->Class->Height()) * (CELL_LEPTON / 4));
 		if (dist < 0) dist = 0;
@@ -2361,8 +2295,6 @@ int ObjectClass::Planar_Distance(AbstractClass const * target) const
 /// target yields zero.</returns>
 int ObjectClass::Relative_Distance(AbstractClass const * target) const
 {
-	assert(this != NULL);
-
 	if (target == NULL) {
 		return(0);
 	}
@@ -2383,8 +2315,6 @@ int ObjectClass::Relative_Distance(AbstractClass const * target) const
 /// <returns>Returns with the square of the horizontal distance, in leptons.</returns>
 int ObjectClass::Relative_Distance(Coord const & coord) const
 {
-	assert(this != NULL);
-
 	Coord center = Center_Coord();
 	Point2D pt(center.X - coord.X, center.Y - coord.Y);
 	return((pt.X * pt.X) + (pt.Y * pt.Y));
@@ -2400,8 +2330,6 @@ int ObjectClass::Relative_Distance(Coord const & coord) const
 /// <returns>Returns with the coordinate at the center of the object.</returns>
 Coord ObjectClass::Center_Coord(void) const
 {
-	assert(this != NULL);
-
 	return(PositionCoord);
 }
 
@@ -2416,8 +2344,6 @@ Coord ObjectClass::Center_Coord(void) const
 /// <param name="cliprect">The clipping rectangle to draw within.</param>
 void ObjectClass::Editor_Draw_It(Point2D const & point, Rect const & cliprect) const
 {
-	assert(this != NULL);
-
 	Draw_It(point, cliprect);
 }
 
@@ -2557,8 +2483,6 @@ ObjectClass * Vector_Closest_Object(DynamicVectorClass<ObjectClass *> const & li
 /// the map and back down again around the move.</remarks>
 void ObjectClass::Set_Coord(Coord const & coord)
 {
-	assert(this != NULL);
-
 	Position = coord;
 }
 
@@ -2569,8 +2493,7 @@ void ObjectClass::Set_Coord(Coord const & coord)
 /// <returns>Returns with a pointer to the cell the object's coordinate falls in.</returns>
 CellClass * ObjectClass::Get_Cell_Ptr(void) const
 {
-	assert(this != NULL);
-
+	Map[Get_Coord()]; // RA2: the cell is looked up twice
 	return(&Map[Get_Coord()]);
 }
 
@@ -2581,8 +2504,6 @@ CellClass * ObjectClass::Get_Cell_Ptr(void) const
 /// <returns>Returns with the cell that holds the object's destination.</returns>
 Cell ObjectClass::Get_Target_Cell(void) const
 {
-	assert(this != NULL);
-
 	return(Destination_Coord().As_Cell());
 }
 
@@ -2593,8 +2514,6 @@ Cell ObjectClass::Get_Target_Cell(void) const
 /// <returns>Returns with a pointer to the cell that holds the object's destination.</returns>
 CellClass * ObjectClass::Get_Target_Cell_Ptr(void) const
 {
-	assert(this != NULL);
-
 	return(&Map[Destination_Coord().As_Cell()]);
 }
 
@@ -2606,13 +2525,11 @@ CellClass * ObjectClass::Get_Target_Cell_Ptr(void) const
 /// occupation are tracked against the right surface.
 /// </summary>
 /// <returns>bool; Will the object be on a bridge once it reaches its destination?</returns>
-bool ObjectClass::Is_Moving_Onto_Bridge(void) const
+bool ObjectClass::Is_Moving_Onto_Bridge(TechnoClass * docker) const // RA2: not in TibSun, at 0x005D52F0
 {
-	assert(this != NULL);
-
 	bool bridge = IsOnBridge;
 
-	Coord destination = Destination_Coord();
+	Coord destination = Destination_Coord(docker);
 	int dest_height = Map.Get_Height_GL(destination);
 	int current_height = Map.Get_Height_GL(PositionCoord);
 
@@ -2652,9 +2569,6 @@ bool ObjectClass::Is_Moving_Onto_Bridge(void) const
 /// </summary>
 void ObjectClass::Set_Waypoint_Path(PathType path, char index)
 {
-	assert(this != NULL);
-
-	// empty
 }
 
 
@@ -2666,10 +2580,10 @@ void ObjectClass::Set_Waypoint_Path(PathType path, char index)
 /// <returns>bool; Is the object placed down and at ground level?</returns>
 bool ObjectClass::On_Ground(void) const
 {
-	assert(this != NULL);
-
-	if (IsDown && HeightAGL < LEVEL_LEPTON_H) {
-		return(true);
+	if (IsDown) { // RA2: a down object
+		if (Get_Height_AGL() < LEVEL_LEPTON_H * 2) { // RA2: below two levels
+			return(true); // RA2: counts
+		}
 	}
 	return(false);
 }
@@ -2684,10 +2598,10 @@ bool ObjectClass::On_Ground(void) const
 /// <returns>bool; Is the object placed down and clear of the ground?</returns>
 bool ObjectClass::In_Air(void) const
 {
-	assert(this != NULL);
-
-	if (IsDown && HeightAGL >= LEVEL_LEPTON_H) {
-		return(true);
+	if (IsDown) { // RA2: a down object
+		if (Get_Height_AGL() >= LEVEL_LEPTON_H * 2) { // RA2: at two levels or more
+			return(true); // RA2: counts
+		}
 	}
 	return(false);
 }
@@ -2702,9 +2616,7 @@ bool ObjectClass::In_Air(void) const
 /// has none.</returns>
 TechnoTypeClass const * ObjectClass::Techno_Type_Class(void) const
 {
-	assert(this != NULL);
-
-	return(NULL);
+	return(0); // RA2: no techno type
 }
 
 
@@ -2727,10 +2639,54 @@ TechnoTypeClass const * ObjectClass::Techno_Type_Class(void) const
  *=============================================================================================*/
 int ObjectClass::Sort_Y(void) const
 {
+	return(Render_Coord().Y + Render_Coord().X); // RA2: X plus Y of the render coordinate
+}
+
+
+
+
+#ifdef _DEBUG
+/***********************************************************************************************
+ * ObjectClass::Debug_Dump -- Displays status of the object class to the mono monitor.         *
+ *                                                                                             *
+ *    This routine is used to display the current status of the object class to the mono       *
+ *    monitor.                                                                                 *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   06/02/1994 JLB : Created.                                                                 *
+ *=============================================================================================*/
+void ObjectClass::Debug_Dump(MonoClass * mono) const // RA2: defined here
+{
 	assert(this != NULL);
 
-	return(Render_Coord().Y);
+	mono->Set_Cursor(1, 1);mono->Printf("%-18.18s", Full_Name());
+	if (Next != NULL) {
+		mono->Set_Cursor(20, 5);mono->Printf("%08X", Next);
+	}
+	if (Tag != NULL) {
+		mono->Text_Print(Tag->Class->IniName, 11, 3);
+	}
+	mono->Set_Cursor(34, 1);mono->Printf("%3d", Strength);
+
+	mono->Fill_Attrib(1, 13, 12, 1, IsDown ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(1, 14, 12, 1, IsToDamage ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(1, 15, 12, 1, IsToDisplay ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(1, 16, 12, 1, IsInLimbo ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(1, 17, 12, 1, IsSelected ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(14, 13, 12, 1, IsAnimAttached ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Set_Cursor(23, 14);mono->Printf("%d", Riser);
+	mono->Fill_Attrib(14, 12, 14, 1, IsFalling ? MonoClass::INVERSE : MonoClass::NORMAL);
+
+	BASECLASS::Debug_Dump(mono);
 }
+#endif
+
 
 
 /// <summary>
@@ -2745,3 +2701,21 @@ bool ObjectClass::Not_Underground(void) const
 
 	return(HeightAGL > -20);
 }
+
+
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool ObjectClass::CanBeSelected(void) const // RA2: not in TibSun, at 0x005D54B0
+{
+	if (IsDisguisedAs(PlayerPtr)) {
+		if (GetDisguiseHouse(true) == NULL) {
+			return(false);
+		}
+	}
+	return(Class_Of()->IsSelectable);
+}
+
