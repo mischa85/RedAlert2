@@ -524,10 +524,9 @@ int ScoreClass::Alloc_Object(ScoreAnimClass *obj)
 /// <returns>bool; Is the object gone from the animation list?</returns>
 bool ScoreClass::Score_Object_Not_Present(ScoreAnimClass * obj)
 {
-	if (ScoreObjs.ID(obj) == -1) {
-		return(true);
-	}
-	return(false);
+	int index = ScoreObjs.ID(obj); // RA2: 0x665EC0 sets the result from the compare (sete), no branch
+	bool absent = index == -1; // RA2: as above
+	return(absent); // RA2: as above
 }
 
 
@@ -1259,13 +1258,7 @@ ScoreFontClass::~ScoreFontClass(void)
 
 	score_font_count--;
 	if (score_font_count == 0) {
-		for (int i = 0; i < 3; i++) {
-			if (text_sounds[i].mSound != NULL) {
-				Audio.Stop_Sample_Playing(text_sounds[i].mSound);
-				if (text_sounds[i].mAllocated == true) {
-					delete text_sounds[i].mSound;
-				}
-			}
+		for (int i = 0; i < 3; i++) { // RA2: 0x6678B0 only clears the slots, no Stop_Sample_Playing/delete
 			text_sounds[i].mSound = NULL;
 			text_sounds[i].mAllocated = false;
 		}
@@ -1397,6 +1390,7 @@ void ScoreFontClass::Print_String(Surface *surf, const char * string, int x, int
 		string++;
 	}
 }
+
 
 
 /// <summary>
@@ -1611,13 +1605,7 @@ SfxEntry::SfxEntry(char const * name, char const *filename) :
 /// are left alone.
 /// </summary>
 SfxEntry::~SfxEntry(void)
-{
-	if (Sample != NULL) {
-		Audio.Stop_Sample_Playing(Sample);
-		if (IsAllocated == true) {
-			delete Sample;
-		}
-	}
+{ // RA2: 0x6682B0 only frees Name; the sample is not stopped or deleted
 	if (Name != NULL) {
 		free(Name);
 	}
