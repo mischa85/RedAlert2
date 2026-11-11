@@ -693,8 +693,8 @@ taskforc,0x006B6850,0x006B7190,tibsun,"functions compiled from src/taskforc.cpp,
 unk_006B7190,0x006B7190,0x006BAE00,unknown,code not assigned to a module
 unk_006BAE00,0x006BAE00,0x006BAE60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006BAE60,0x006BAE60,0x006BE950,unknown,code not assigned to a module
-unk_006BE950,0x006BE950,0x006BE9B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006BE9B0,0x006BE9B0,0x006C0CB0,unknown,code not assigned to a module
+teamtype,0x006BE950,0x006C0180,tibsun,"functions compiled from src/teamtype.cpp, without gaps; matched except ??0TeamTypeClass@@QAE@PBD@Z and ??1TeamTypeClass@@UAE@XZ and ?Suggested_New_Team@TeamTypeClass@@SI?AV?$TypeList@PBVTeamTypeClass@@@@PAVHouseClass@@_N@Z and ?Read_INI@TeamTypeClass@@UAE_NABVCCINIClass@@@Z and ?Write_INI@TeamTypeClass@@UBE_NAAVCCINIClass@@@Z; two placed by the gap; ?Read_INI@TeamTypeClass@@UAE_NABVCCINIClass@@@Z to ?Write_INI@TeamTypeClass@@UBE_NAAVCCINIClass@@@Z share the room between their neighbours; ??0TeamTypeClass@@QAE@PBD@Z and ??1TeamTypeClass@@UAE@XZ and ?Suggested_New_Team@TeamTypeClass@@SI?AV?$TypeList@PBVTeamTypeClass@@@@PAVHouseClass@@_N@Z placed at their function starts"
+unk_006C0180,0x006C0180,0x006C0CB0,unknown,code not assigned to a module
 unk_006C0CB0,0x006C0CB0,0x006C0CD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_006C0CD0,0x006C0CD0,0x006D3EB0,unknown,code not assigned to a module
 unk_006D3EB0,0x006D3EB0,0x006D3ED0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
