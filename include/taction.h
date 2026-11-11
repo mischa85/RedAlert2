@@ -165,6 +165,8 @@ class TActionClass : public AbstractClass
 		void Build_INI_Entry(char * buffer) const;
 
 		Coord Waypoint_As_Coord(void);
+		void Set_Text(char const * text); // RA2: 0x6B2EC0
+		char const * Get_Text(void) const; // RA2: 0x6B2F20
 
 		bool operator() (HouseClass * house, ObjectClass * object, TriggerClass * trigger, Cell const & cell);
 
@@ -199,6 +201,7 @@ class TActionClass : public AbstractClass
 		bool TAction_ADD_TIMER(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_SUB_TIMER(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_SET_TIMER(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
+		bool TAction_SET_TIMER_TEXT(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: at 0x006B0C50
 		bool TAction_SET_GLOBAL(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_CLEAR_GLOBAL(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_BASE_BUILDING(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
@@ -247,6 +250,7 @@ class TActionClass : public AbstractClass
 		bool TAction_SET_AMBIENT_LIGHT(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_BEGIN_AI_TRIGGERS(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_STOP_AI_TRIGGERS(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
+		bool TAction_CHEER(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B22D0
 		bool TAction_SET_AI_TRIGGER_TEAM_RATIO(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_SET_TEAM_AIRCRAFT_RATIO(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_SET_TEAM_INFANTRY_RATIO(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
@@ -267,16 +271,25 @@ class TActionClass : public AbstractClass
 		bool TAction_DEACTIVATE_FIRESTORM(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_ION_CANNON(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_MULTI_MISSILE(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
+		bool TAction_LIGHTNING_STORM(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B25E0
+		bool TAction_IRON_CURTAIN(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B26D0
+		bool TAction_SET_TECH_LEVEL(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B27E0
+		bool TAction_CHRONO_IN_TEAM(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B2810
+		bool TAction_CREATE_CRATE(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B2830
 		bool TAction_CHEM_MISSILE(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_TOGGLE_TRAIN_CARGO(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_PLAY_SOUND_RANDOM(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_PLAY_SOUND_AT(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
+		bool TAction_STOP_SOUND_AT(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B0F90
+		bool TAction_REVEAL_AROUND_WAYPOINT(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B1050
 		bool TAction_PLAY_INGAME_MOVIE(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
+		bool TAction_PLAY_INGAME_MOVIE_PAUSE(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B0D60
 		bool TAction_FLASH_TEAM(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
-		bool TAction_DISABLE_SPEECH(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
-		bool TAction_ENABLE_SPEECH(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
-		bool TAction_SET_GROUP_ID(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
 		bool TAction_TALK_BUBBLE(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell);
+		bool TAction_PAUSE_SCENARIO(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B2F90
+		bool TAction_EJECT_OCCUPANTS(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B2FA0
+		bool TAction_SWITCH_TAB(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B3010
+		bool TAction_FLASH_CAMEO(HouseClass * house, ObjectClass * object, TriggerClass * trig, Cell const & cell); // RA2: 0x6B3060
 };
 
 AttachType Attaches_To(TActionType event);

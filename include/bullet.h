@@ -222,6 +222,7 @@ class BulletClass : public ObjectClass
 		int Range;
 
 	public:
+		void Set_Weapon_Type(WeaponTypeClass * weapon); // RA2: out of line, at 0x00463BA0 (WeaponType at +0x118)
 		friend BulletClass *Create_Bullet(BulletTypeClass const *type, TechnoClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, int range, bool bright);
 };
 

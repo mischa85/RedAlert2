@@ -453,6 +453,7 @@ class BuildingClass : public TechnoClass
 		virtual void Detach_All(bool all=true) override;
 		virtual int DistanceToDockingCoord(TechnoClass * docker) const; // RA2
 		virtual void Grand_Opening(bool captured = false);
+		void Eject_Occupants(bool flag); // RA2: 0x452F50, empties a garrisoned building
 		virtual void Update_Buildables(void);
 		virtual MoveType Can_Enter_Cell(CellClass const * cell, FacingType dir = FACING_NONE, int cell_height = -1, CellClass const * = 0, bool = true) const override;
 		virtual bool Unlimbo(Coord const & , Dir256 dir = DIR_N) override;

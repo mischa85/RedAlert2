@@ -101,6 +101,8 @@
 #include "need.hh"
 
 #include <cstdio>
+#include "bullettype.h" // RA2: the missile actions create bullets through their type
+#include "stringtable.h" // RA2: the text trigger loads its text through StringTable
 
 DynamicVectorClass<TActionClass *> Actions;
 
@@ -252,6 +254,9 @@ TActionClass::TActionClass(void) :
 }
 
 
+
+
+
 /// <summary>
 /// Destructor for the trigger action object.
 /// This routine will sever every reference the game still holds to this action before it
@@ -264,6 +269,7 @@ TActionClass::~TActionClass(void)
 	AbstractTypePtrTracker.Delete(this);
 	EventActionPtrTracker.Delete(this);
 	Actions.Delete(this);
+	Text[0] = 0; // RA2: ~TActionClass at 0x6AD4F0 matches only so
 }
 
 
@@ -634,10 +640,7 @@ bool TActionClass::operator() (HouseClass * house, ObjectClass * object, Trigger
 		INVOKE(ION_LIGHTNING_STRIKE);
 		INVOKE(PLAY_INGAME_MOVIE);
 		INVOKE(FLASH_TEAM);
-		INVOKE(DISABLE_SPEECH);
-		INVOKE(ENABLE_SPEECH);
-		INVOKE(SET_GROUP_ID);
-		INVOKE(TALK_BUBBLE);
+		INVOKE(TALK_BUBBLE); // RA2: no INVOKE (not in RA2's layout)
 
 		/*
 		**	Do no action at all.
@@ -657,22 +660,8 @@ bool TActionClass::operator() (HouseClass * house, ObjectClass * object, Trigger
 /// The defense is toggled by firing the house's firestorm super weapon, so this
 /// action does nothing when the wall is already down.
 /// </summary>
-bool TActionClass::TAction_DEACTIVATE_FIRESTORM(HouseClass * house, ObjectClass *, TriggerClass *, Cell const & )
+inline bool TActionClass::TAction_DEACTIVATE_FIRESTORM(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: only inlined in operator(), no copy of its own
 {
-	if (house->FirestormDefenseActivated) {
-		int index = -1;
-		for (int i = 0; i < house->SuperWeapon.Count(); i++) {
-			SuperClass * super = house->SuperWeapon[i];
-			if (super->Class->Type == SUPER_FIRESTORM) {
-				index = i;
-				break;
-			}
-		}
-
-		if (index != -1) {
-			house->Place_Special_Blast((SuperWeaponType)index, Cell(0, 0));
-		}
-	}
 	return(true);
 }
 
@@ -682,22 +671,8 @@ bool TActionClass::TAction_DEACTIVATE_FIRESTORM(HouseClass * house, ObjectClass 
 /// The defense is toggled by firing the house's firestorm super weapon, so this
 /// action does nothing when the wall is already up.
 /// </summary>
-bool TActionClass::TAction_ACTIVATE_FIRESTORM(HouseClass * house, ObjectClass *, TriggerClass *, Cell const & )
+inline bool TActionClass::TAction_ACTIVATE_FIRESTORM(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: only inlined in operator(), no copy of its own
 {
-	if (!house->FirestormDefenseActivated) {
-		int index = -1;
-		for (int i = 0; i < house->SuperWeapon.Count(); i++) {
-			SuperClass * super = house->SuperWeapon[i];
-			if (super->Class->Type == SUPER_FIRESTORM) {
-				index = i;
-				break;
-			}
-		}
-
-		if (index != -1) {
-			house->Place_Special_Blast((SuperWeaponType)index, Cell(0, 0));
-		}
-	}
 	return(true);
 }
 
@@ -705,7 +680,7 @@ bool TActionClass::TAction_ACTIVATE_FIRESTORM(HouseClass * house, ObjectClass *,
 /// <summary>
 /// Calls down a lightning bolt at the effect waypoint.
 /// </summary>
-bool TActionClass::TAction_ION_LIGHTNING_STRIKE(HouseClass *, ObjectClass *, TriggerClass *, Cell const & )
+bool TActionClass::TAction_ION_LIGHTNING_STRIKE(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: TAction_ION_LIGHTNING_STRIKE at 0x6AF950 matches only so
 {
 	IonStormClass::Lightning_Bolt(Scen->Get_Waypoint_Cell(EffectLocation));
 	return(true);
@@ -756,7 +731,7 @@ bool TActionClass::TAction_WAKEUP_SELF(HouseClass * , ObjectClass * , TriggerCla
 		TechnoClass * techno = Technos[index];
 		if (techno->RTTI != RTTI_BUILDING && techno->IsActive && techno->IsDown && techno->Tag != NULL && techno->Tag->Is_Trigger_Attached(trigger)) {
 			if (techno->Mission == MISSION_SLEEP || techno->Mission == MISSION_HARMLESS) {
-				techno->Assign_Mission(MISSION_GUARD);
+				techno->QueueMission(MISSION_GUARD, false); // RA2: TAction_WAKEUP_SELF at 0x6AFAB0 matches only so
 			}
 		}
 	}
@@ -803,7 +778,7 @@ bool TActionClass::TAction_WAKEUP_ALL_SLEEP(HouseClass * house, ObjectClass * , 
 	for (int index = 0; index < Feet.Count(); index++) {
 		FootClass * techno = Feet[index];
 		if (techno->Mission == MISSION_SLEEP && techno->Strength > 0 && techno->IsActive && techno->IsDown && !techno->IsInLimbo && house != techno->House ) {
-			techno->Assign_Mission(MISSION_GUARD);
+			techno->QueueMission(MISSION_GUARD, false); // RA2: TAction_WAKEUP_ALL_SLEEP at 0x6AFBA0 matches only so
 		}
 	}
 	return(true);
@@ -818,7 +793,7 @@ bool TActionClass::TAction_WAKEUP_ALL_HARMLESS(HouseClass * house, ObjectClass *
 	for (int index = 0; index < Feet.Count(); index++) {
 		FootClass * techno = Feet[index];
 		if (techno->Mission == MISSION_HARMLESS && techno->Strength > 0 && techno->IsActive && techno->IsDown && !techno->IsInLimbo && techno->House == house) {
-			techno->Assign_Mission(MISSION_GUARD);
+			techno->QueueMission(MISSION_GUARD, false); // RA2: TAction_WAKEUP_ALL_HARMLESS at 0x6AFC20 matches only so
 		}
 	}
 	return(true);
@@ -833,14 +808,14 @@ bool TActionClass::TAction_WAKEUP_ALL_HARMLESS(HouseClass * house, ObjectClass *
 bool TActionClass::TAction_WAKEUP_GROUP(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
 	for (int index = 0; index < Technos.Count(); index++) {
-		FootClass * foot = Feet[index];
+		TechnoClass * foot = Technos[index]; // RA2: TAction_WAKEUP_GROUP at 0x6AFCA0 matches only so
 		if (foot->Group == Data.Value &&
 				(foot->Mission == MISSION_SLEEP || foot->Mission == MISSION_HARMLESS) &&
 				foot->Strength > 0 &&
 				foot->IsActive &&
 				foot->IsDown &&
 				!foot->IsInLimbo) {
-			foot->Assign_Mission(MISSION_GUARD);
+			foot->QueueMission(MISSION_GUARD, false); // RA2: as above
 		}
 	}
 	return(true);
@@ -1076,21 +1051,6 @@ bool TActionClass::TAction_CHANGE_HOUSE(HouseClass * , ObjectClass * , TriggerCl
 
 
 /// <summary>
-/// Assigns the triggering object to a numbered group.
-/// This routine handles the trigger action that drops an object into one of the player's
-/// team hotkey groups. Anything that is not a techno is quietly ignored.
-/// </summary>
-/// <param name="object">The object that sprung the trigger.</param>
-bool TActionClass::TAction_SET_GROUP_ID(HouseClass * , ObjectClass * object, TriggerClass *, Cell const & )
-{
-	if (object && object->Is_Techno()) {
-		((TechnoClass *)object)->Group = Data.Value;
-	}
-	return(true);
-}
-
-
-/// <summary>
 /// Hands every object owned by a house over to another house.
 /// This routine handles the trigger action that defects an entire side, units and buildings
 /// alike, to the house named in the action data.
@@ -1114,6 +1074,12 @@ bool TActionClass::TAction_ALL_CHANGE_HOUSE(HouseClass * house, ObjectClass * , 
 }
 
 
+
+
+
+
+
+
 /// <summary>
 /// Displays a line of tutorial text to the player.
 /// This routine handles the trigger action that posts a message onto the tactical map. The
@@ -1124,7 +1090,11 @@ bool TActionClass::TAction_TEXT_TRIGGER(HouseClass * , ObjectClass * , TriggerCl
 	/*
 	**	Display a text message overlayed onto the tactical map.
 	*/
-	Session.Messages.Add_Message(NULL, 0, TutorialText[Data.Value], 0, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
+	char * label = Text[0] ? Text : NULL; // RA2: a string table label, as inlined in operator() at 0x006AE33x
+	int scheme = Session.Color_Index_To_Scheme(Scen->IsGDI + 1); // RA2: the scheme from IsGDI + 1
+	if (label != NULL) { // RA2: as above, inlined in operator() at 0x006AE33x
+		Session.Messages.Add_Message(NULL, 0, StringTable::LoadString(label, NULL, "D:\\Ra2\\TAction.CPP", 1582), scheme, TextPrintType(0x4046), int(Rule->MessageDelay * TICKS_PER_MINUTE), false); // RA2: as above, inlined in operator() at 0x006AE33x
+	}
 	return(true);
 }
 
@@ -1203,7 +1173,7 @@ bool TActionClass::TAction_BASE_BUILDING(HouseClass * house, ObjectClass * , Tri
 /// This routine handles the trigger action that re-shrouds terrain the player is no longer
 /// keeping an eye on.
 /// </summary>
-bool TActionClass::TAction_CREEP_SHADOW(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
+inline bool TActionClass::TAction_CREEP_SHADOW(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: only inlined in operator(), no copy of its own
 {
 	Map.Encroach_Shadow();
 	return(true);
@@ -1322,8 +1292,7 @@ bool TActionClass::TAction_REVEAL_ALL(HouseClass * , ObjectClass * , TriggerClas
 bool TActionClass::TAction_START_TIMER(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
 	if (!Scen->MissionTimer.Is_Active()) {
-		Speak(VOX_TIMER_STARTED);
-		Scen->MissionTimer.Start();
+		Scen->MissionTimer.Start(); // RA2: no Speak (not in RA2's layout)
 		Map.Redraw_Tab();
 	}
 	return(true);
@@ -1338,8 +1307,7 @@ bool TActionClass::TAction_START_TIMER(HouseClass * , ObjectClass * , TriggerCla
 bool TActionClass::TAction_STOP_TIMER(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
 	if (Scen->MissionTimer.Is_Active()) {
-		Speak(VOX_TIMER_STOPPED);
-		Scen->MissionTimer.Stop();
+		Scen->MissionTimer.Stop(); // RA2: no Speak (not in RA2's layout)
 		Map.Redraw_Tab();
 	}
 	return(true);
@@ -1390,6 +1358,29 @@ bool TActionClass::TAction_SET_TIMER(HouseClass * , ObjectClass * , TriggerClass
 
 
 /// <summary>
+/// Sets the text shown next to the mission timer.
+/// </summary>
+bool TActionClass::TAction_SET_TIMER_TEXT(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x006B0C50
+{
+	char const * text = Text[0] ? Text : NULL;
+	if (text != NULL) {
+		TStringID<31> label(text);
+		Scen->MissionTimerTextCSF = StringTable::LoadString(text, NULL, "D:\\Ra2\\TAction.CPP", 2050);
+		Scen->MissionTimerText = label;
+	} else {
+		TStringID<31> label("");
+		Scen->MissionTimerTextCSF = L"";
+		Scen->MissionTimerText = label;
+	}
+	Map.Redraw_Tab();
+	return(true);
+}
+
+
+
+
+
+/// <summary>
 /// Plays a full screen movie.
 /// The mission is interrupted while the movie runs, and no music plays over it.
 /// </summary>
@@ -1407,9 +1398,22 @@ bool TActionClass::TAction_PLAY_MOVIE(HouseClass * , ObjectClass * , TriggerClas
 /// </summary>
 bool TActionClass::TAction_PLAY_INGAME_MOVIE(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
-	Play_Ingame_Movie(Data.Movie);
+	Play_Ingame_Movie(Data.Movie, false); // RA2: 0x6B0D50, not looped
 	return(true);
 }
+
+
+/// <summary>
+/// Plays a movie in the tactical view and loops it.
+/// </summary>
+bool TActionClass::TAction_PLAY_INGAME_MOVIE_PAUSE(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B0D60
+{
+	Play_Ingame_Movie(Data.Movie, true);
+	return(true);
+}
+
+
+
 
 
 /// <summary>
@@ -1419,7 +1423,7 @@ bool TActionClass::TAction_PLAY_INGAME_MOVIE(HouseClass * , ObjectClass * , Trig
 /// </summary>
 bool TActionClass::TAction_PLAY_SOUND(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
-	Sound_Effect(Data.Sound);
+	VocClass::PlayGlobal(Data.Sound, 1.0f, 0x2000); // RA2: TAction_PLAY_SOUND at 0x6B0D70 matches only so
 	return(true);
 }
 
@@ -1441,9 +1445,12 @@ bool TActionClass::TAction_PLAY_SOUND_RANDOM(HouseClass * , ObjectClass * , Trig
 		}
 	}
 
-	Sound_Effect(Data.Sound, Coord(list[Random_Pick(0, count-1)]));
+	VocClass::PlayIndexAtPos(Data.Sound, Coord(list[Random_Pick(0, count-1)]), 0); // RA2: 0x6B0D90 plays through PlayIndexAtPos
 	return(true);
 }
+
+
+
 
 
 /// <summary>
@@ -1451,11 +1458,75 @@ bool TActionClass::TAction_PLAY_SOUND_RANDOM(HouseClass * , ObjectClass * , Trig
 /// The sound is positioned on the map, so the player hears it only while the view is
 /// somewhere near the waypoint.
 /// </summary>
+/// <summary>
+/// Fetches the building, or else the terrain object, in the cell at the given spot.
+/// </summary>
+ObjectClass * __fastcall Coord_Object(Coord const & coord) // RA2: not in TibSun, at 0x6B0E40
+{
+	Cell cell = Cell(coord);
+	ObjectClass * object = NULL;
+	if (cell != CELL_NONE) {
+		CellClass * cellptr = &Map[cell];
+		object = cellptr->Cell_Building();
+		if (object == NULL) {
+			object = (ObjectClass *)cellptr->Cell_Terrain(false);
+		}
+	}
+	return(object);
+}
+
+
 bool TActionClass::TAction_PLAY_SOUND_AT(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
-	Sound_Effect(Data.Sound, Scen->Get_Waypoint_Coord(EffectLocation));
+	Coord coord = Scen->Get_Waypoint_Coord(EffectLocation); // RA2: 0x6B0EC0 gives the sound to the object there, else plays it at the spot
+	ObjectClass * object = Coord_Object(coord); // RA2: as above
+	if (object != NULL) { // RA2: as above
+		object->Set_Ambient_Sound(Data.Sound); // RA2: as above
+	} else {
+		VocClass::PlayIndexAtPos(Data.Sound, coord, 1); // RA2: as above
+	}
 	return(true);
 }
+
+
+/// <summary>
+/// Stops the sound playing at the trigger's waypoint.
+/// </summary>
+bool TActionClass::TAction_STOP_SOUND_AT(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B0F90
+{
+	Coord coord = Scen->Get_Waypoint_Coord(EffectLocation);
+	ObjectClass * object = Coord_Object(coord);
+	if (object != NULL) {
+		object->Set_Ambient_Sound(-1);
+	} else {
+		VocClass::Stop_At(coord, 1);
+	}
+	return(true);
+}
+
+
+/// <summary>
+/// Reveals the map around the waypoint the trigger names.
+/// </summary>
+bool TActionClass::TAction_REVEAL_AROUND_WAYPOINT(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B1050
+{
+	if (!PlayerPtr->IsVisionary) {
+		Cell waypoint = Scen->Get_Waypoint_Cell(Data.Value);
+		int height = Map[waypoint].Height + ((Map[waypoint].IsUnderBridge || Map[waypoint].WasUnderBridge) ? BRIDGE_CELL_HEIGHT : 0);
+		Map.Shroud_Gap_Area(Coord(waypoint - Cell(height/2, height/2)) + Coord(0, 0, height * LEVEL_LEPTON_H), Rule->RevealTriggerRadius);
+		Map.Refresh_Shroud();
+	}
+	return(true);
+}
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -1472,9 +1543,11 @@ bool TActionClass::TAction_PLAY_MUSIC(HouseClass * , ObjectClass * , TriggerClas
 /// <summary>
 /// Plays an EVA speech line.
 /// </summary>
+void Queue_Speech(int speech, int priority, int expire); // RA2: 0x7158C0
+
 bool TActionClass::TAction_PLAY_SPEECH(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
-	Speak(Data.Speech);
+	Queue_Speech(Data.Speech, 2, -1); // RA2: 0x6B1180 queues it
 	return(true);
 }
 
@@ -1486,11 +1559,11 @@ bool TActionClass::TAction_PLAY_SPEECH(HouseClass * , ObjectClass * , TriggerCla
 /// </summary>
 bool TActionClass::TAction_1_SPECIAL(HouseClass * house, ObjectClass * , TriggerClass * , Cell const & )
 {
-	house->SuperWeapon[Data.Special]->Enable(true, false);
+	house->SuperWeapon[Data.Special]->Enable(true, false, false); // RA2: 0x6B11A0
 
 	if (PlayerPtr == house) {
 		Map.Add(RTTI_SPECIAL, Data.Special);
-		Map.Column[1].Flag_To_Redraw();
+		Map.Flag_Tab_To_Redraw(SidebarClass::Which_Tab(RTTI_SPECIAL, Data.Special, false)); // RA2: redraws the special weapon's tab
 	}
 	return(true);
 }
@@ -1504,12 +1577,12 @@ bool TActionClass::TAction_1_SPECIAL(HouseClass * house, ObjectClass * , Trigger
 /// </summary>
 bool TActionClass::TAction_FULL_SPECIAL(HouseClass * house, ObjectClass * , TriggerClass * , Cell const & )
 {
-	house->SuperWeapon[Data.Special]->Enable(false, false);
+	house->SuperWeapon[Data.Special]->Enable(false, false, false); // RA2: 0x6B1200
 	house->SuperWeapon[Data.Special]->NeedsBuilding = false;
 
 	if (PlayerPtr == house) {
 		Map.Add(RTTI_SPECIAL, Data.Special);
-		Map.Column[1].Flag_To_Redraw();
+		Map.Flag_Tab_To_Redraw(SidebarClass::Which_Tab(RTTI_SPECIAL, Data.Special, false)); // RA2: redraws the special weapon's tab
 	}
 	return(true);
 }
@@ -1618,7 +1691,7 @@ bool TActionClass::TAction_CREATE_TEAM(HouseClass * , ObjectClass * , TriggerCla
 {
 	ScenarioInit++;
 	if (Team != NULL) {
-		Team->Create_One_Of();
+		Team->Create_One_Of(NULL); // RA2: TAction_CREATE_TEAM at 0x6B1420 matches only so
 	}
 	ScenarioInit--;
 	return(true);
@@ -1639,62 +1712,61 @@ bool TActionClass::TAction_DESTROY_TEAM(HouseClass * , ObjectClass * , TriggerCl
 }
 
 
-/// <summary>
-/// Flashes the members of the trigger's team.
-/// This routine is used to point the player at a particular team, usually alongside a
-/// line of briefing text that refers to it.
-/// </summary>
-bool TActionClass::TAction_FLASH_TEAM(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
-{
-	if (Team != NULL) {
-		Team->Flash(Data.Value);
-	}
-	return(true);
-}
 
 
-/// <summary>
-/// Silences the EVA speech channel.
-/// This routine is used to keep EVA from talking over a scripted sequence.
-/// </summary>
-bool TActionClass::TAction_DISABLE_SPEECH(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
-{
-	Set_Speech_State(false);
-	return(true);
-}
 
 
-/// <summary>
-/// Allows EVA to speak again.
-/// This routine undoes DISABLE_SPEECH once the sequence it was covering is over.
-/// </summary>
-bool TActionClass::TAction_ENABLE_SPEECH(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
-{
-	Set_Speech_State(true);
-	return(true);
-}
 
 
-/// <summary>
-/// Hangs a talk bubble over a member of the trigger's team.
-/// This routine is used to put words in a character's mouth during a scripted
-/// conversation. A trigger with no team clears the current talker instead.
-/// </summary>
-bool TActionClass::TAction_TALK_BUBBLE(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
-{
-	if (Team != NULL) {
-		TeamClass * team = Team->Find_First_Of_Type();
 
-		if (team != NULL) {
-			TechnoClass * talker = team->Get_Member();
-			TechnoClass::Set_Talker(talker, (TalkType)Data.Value);
-		}
-	} else {
-		TechnoClass::Set_Talker(NULL);
-	}
 
-	return(true);
-}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -1725,6 +1797,12 @@ bool TActionClass::TAction_REINFORCEMENTS_SPECIAL(HouseClass * , ObjectClass * ,
 	}
 	return(false);
 }
+
+
+
+
+
+
 
 
 /// <summary>
@@ -1820,8 +1898,7 @@ bool TActionClass::TAction_RESIZE_PLAYER_VIEW(HouseClass * , ObjectClass * , Tri
 		Buildings[i]->Update_Radar_Position(true);
 	}
 
-	Speak(VOX_NEW_TERRAIN);
-	return(true);
+	return(true); // RA2: no Speak (not in RA2's layout)
 }
 
 
@@ -1891,9 +1968,7 @@ bool TActionClass::TAction_METEOR_IMPACT(HouseClass * , ObjectClass * , TriggerC
 		coord.Z += BRIDGE_LEPTON_HEIGHT;
 	}
 	new VoxelAnimClass(VoxelAnimTypes[Data.VAnim], coord, NULL);
-
-	Speak(VOX_METEOR_STORM);
-	return(true);
+	return(true); // RA2: TAction_METEOR_IMPACT at 0x6B19A0 has no Speak
 }
 
 
@@ -1908,7 +1983,7 @@ bool TActionClass::TAction_ION_STORM_START(HouseClass * , ObjectClass * , Trigge
 	if (IonStormClass::Is_Ion_Storm_Active()) {
 		return(false);
 	}
-	IonStormClass::Ion_Storm_Begin(TICKS_PER_SECOND * Data.Value, TICKS_PER_SECOND * Rule->LightningDeferment);
+	IonStormClass::Ion_Storm_Begin(Data.Value, Rule->LightningDeferment, CELL_NONE, NULL); // RA2: 0x6B1A80, no cell and no house, no second scaling
 	return(true);
 }
 
@@ -1928,6 +2003,9 @@ bool TActionClass::TAction_ION_STORM_STOP(HouseClass * , ObjectClass * , Trigger
 }
 
 
+
+
+
 /// <summary>
 /// Takes control of the game away from the player.
 /// This routine is used ahead of a scripted sequence so that the player cannot
@@ -1936,9 +2014,7 @@ bool TActionClass::TAction_ION_STORM_STOP(HouseClass * , ObjectClass * , Trigger
 /// </summary>
 bool TActionClass::TAction_LOCK_INPUT(HouseClass * , ObjectClass * , TriggerClass * , Cell const & )
 {
-	Speak(VOX_CONTROL_ESTABLISHED);
-
-	Lock_Scenario_Input();
+	Lock_Scenario_Input(); // RA2: 0x6B1AE0 has no EVA line
 
 	return(true);
 }
@@ -1973,6 +2049,12 @@ bool TActionClass::TAction_CENTER_VIEWPOINT(HouseClass * , ObjectClass * , Trigg
 	TacticalMap->Setup_Trigger_Scroll(coord, Data.Speed);
 	return(true);
 }
+
+
+
+
+
+
 
 
 /// <summary>
@@ -2123,7 +2205,11 @@ bool TActionClass::TAction_ENABLE_TRIGGER(HouseClass * , ObjectClass * , Trigger
 	if (Trigger != NULL) {
 		for (int index = 0; index < Triggers.Count(); index++) {
 			if (Triggers[index]->Class == Trigger) {
-				Triggers[index]->Enable();
+				if ((Scen->Difficulty != 0 || Triggers[index]->Class->IsEnabledOnEasy) && // RA2: TAction_ENABLE_TRIGGER at 0x6B1F10 matches only so
+						(Scen->Difficulty != 1 || Triggers[index]->Class->IsEnabledOnMedium) && // RA2: as above
+						(Scen->Difficulty != 2 || Triggers[index]->Class->IsEnabledOnHard)) { // RA2: as above
+					Triggers[index]->Enable(); // RA2: as above
+				}
 			}
 		}
 	}
@@ -2185,6 +2271,9 @@ bool TActionClass::TAction_CLEAR_LOCAL(HouseClass * , ObjectClass * , TriggerCla
 }
 
 
+
+
+
 /// <summary>
 /// Rains a shower of meteors down around the action's waypoint.
 /// The meteors are scattered about the waypoint in a mixture of sizes, and the player is
@@ -2242,6 +2331,15 @@ bool TActionClass::TAction_SET_AMBIENT_RATE(HouseClass * , ObjectClass * , Trigg
 }
 
 
+
+
+
+
+
+
+
+
+
 /// <summary>
 /// Sets the ambient light level of the scenario.
 /// The map fades toward the new level right away, unless an ion storm is running -- the
@@ -2255,6 +2353,9 @@ bool TActionClass::TAction_SET_AMBIENT_LIGHT(HouseClass * , ObjectClass * , Trig
 	}
 	return(true);
 }
+
+
+
 
 
 /// <summary>
@@ -2283,6 +2384,39 @@ bool TActionClass::TAction_STOP_AI_TRIGGERS(HouseClass * , ObjectClass * , Trigg
 	}
 	return(true);
 }
+
+
+/// <summary>
+/// Makes the given house cheer.
+/// </summary>
+bool TActionClass::TAction_CHEER(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B22D0
+{
+	if (Data.House != HOUSE_NONE) {
+		House_From_HousesType(Data.House)->Cheer();
+	}
+	return(true);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -2372,19 +2506,111 @@ bool TActionClass::TAction_MULTI_MISSILE(HouseClass * , ObjectClass * , TriggerC
 		coord.Z += BRIDGE_LEPTON_HEIGHT;
 	}
 
-	Cell closest = Map.Closest_Edge_Cell(coord.As_Cell());
+	WeaponTypeClass * weapon_type = Weapons[WeaponTypeClass::From_Name("NukePayload")]; // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
+	BulletTypeClass const * bullet_type = weapon_type->Bullet; // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
+	BulletClass * bullet = bullet_type->Create_Bullet(&Map[coord], NULL, weapon_type->Attack, weapon_type->WarheadPtr, 50, false); // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
+	bullet->Set_Weapon_Type(weapon_type); // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
 
-	WeaponTypeClass const * weapon_type = Weapons[WeaponTypeClass::From_Name("MultiLauncher")];
-	BulletTypeClass const * bullet_type = weapon_type->Bullet;
-	BulletClass * bullet = Create_Bullet(bullet_type, &Map[coord], NULL, weapon_type->Attack, weapon_type->WarheadPtr, 50, weapon_type->ProjectileRange, false);
-
+	Coord launch(coord.X, coord.Y, coord.Z + 20000); // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
 	if (bullet != NULL) {
-		TVelocity3D<double> velocity(DIR_E, DIR_N, 100);
-		bullet->Unlimbo(closest, velocity);
+		TVelocity3D<double> velocity(Dir256(DIR_N), Dir256(DIR_N), -100.0); // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
+		bullet->Unlimbo(launch, velocity); // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
 		return(true);
 	}
-
 	return(false);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// Starts a lightning storm centered on the trigger's waypoint.
+/// </summary>
+bool TActionClass::TAction_LIGHTNING_STORM(HouseClass * house, ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B25E0
+{
+	Cell waypoint = Scen->Get_Waypoint_Cell(EffectLocation);
+	Coord coord = Coord(waypoint);
+	coord.Z = Map.Get_Height_GL(coord);
+	if (Map[waypoint].IsUnderBridge) {
+		coord.Z += BRIDGE_LEPTON_HEIGHT;
+	}
+	Cell cell = coord.As_Cell();
+	if (!IonStormClass::Is_Ion_Storm_Active()) {
+		IonStormClass::Ion_Storm_Begin(Rule->LightningStormDuration, Rule->LightningDeferment, cell, house);
+		return(true);
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// Puts the Iron Curtain on everything around the trigger's waypoint.
+/// </summary>
+bool TActionClass::TAction_IRON_CURTAIN(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B26D0
+{
+	Cell cell;
+	Cell waypoint = Scen->Get_Waypoint_Cell(EffectLocation);
+	Coord coord = Map[waypoint].Center_Coord();
+	new AnimClass(Rule->IronCurtainInvokeAnim, coord + Coord(0, 0, 5), 0, 1, ShapeFlags_Type(0x600), 0);
+	int count = MapClass::RadiusCount[1];
+	for (int index = 0; index < count; index++) {
+		Cell const & offset = MapClass::RadiusOffset[index];
+		cell = Cell(waypoint.X + offset.X, waypoint.Y + offset.Y);
+		ObjectClass * object = Map[cell].Cell_Occupier();
+		while (object != NULL) {
+			object->IronCurtain(Rule->IronCurtainDuration);
+			object = object->Next;
+		}
+	}
+	return(true);
+}
+
+
+/// <summary>
+/// Sets the tech level of one object type.
+/// </summary>
+bool TActionClass::TAction_SET_TECH_LEVEL(HouseClass * house, ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B27E0
+{
+	TechnoTypes[Data.Value]->Level = Value2;
+	if (house != NULL) {
+		house->IsRecalcNeeded = true;
+	}
+	return(true);
+}
+
+
+bool __fastcall Do_Chrono_Reinforcements(TeamTypeClass const * teamtype, WAYPOINT wp); // RA2: 0x63A880 (reinf.cpp)
+
+
+/// <summary>
+/// Chronoshifts the trigger's team in at its waypoint.
+/// </summary>
+bool TActionClass::TAction_CHRONO_IN_TEAM(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B2810
+{
+	if (Team != NULL && EffectLocation != -1) {
+		return(Do_Chrono_Reinforcements(Team, EffectLocation));
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// Places a crate of the given kind at the trigger's waypoint.
+/// </summary>
+bool TActionClass::TAction_CREATE_CRATE(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B2830
+{
+	Cell cell = Scen->Get_Waypoint_Cell(EffectLocation);
+	return(Map.Place_Crate(cell, (CrateType)Data.Value));
 }
 
 
@@ -2405,12 +2631,12 @@ bool TActionClass::TAction_CHEM_MISSILE(HouseClass * , ObjectClass * , TriggerCl
 
 	Cell closest = Map.Closest_Edge_Cell(coord.As_Cell());
 
-	WeaponTypeClass const * weapon_type = Weapons[WeaponTypeClass::From_Name("ChemLauncher")];
+	WeaponTypeClass * weapon_type = Weapons[WeaponTypeClass::From_Name("ChemLauncher")]; // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
 	BulletTypeClass const * bullet_type = weapon_type->Bullet;
-	BulletClass * bullet = Create_Bullet(bullet_type, &Map[coord], NULL, weapon_type->Attack, weapon_type->WarheadPtr, 20, weapon_type->ProjectileRange, false);
+	BulletClass * bullet = bullet_type->Create_Bullet(&Map[coord], NULL, weapon_type->Attack, weapon_type->WarheadPtr, 20, false); // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
 
 	if (bullet != NULL) {
-		TVelocity3D<double> velocity(DIR_E, DIR_N, 100);
+		TVelocity3D<double> velocity(DirType(DIR_N), DirType(DIR_E), 100); // RA2: YR's form; TibSun's needs WeaponTypeClass::ProjectileRange, which RA2 lacks
 		bullet->Unlimbo(closest, velocity);
 		return(true);
 	}
@@ -2427,6 +2653,9 @@ bool TActionClass::TAction_TOGGLE_TRAIN_CARGO(HouseClass * , ObjectClass * , Tri
 	Scen->IsTrainCargo = (Scen->IsTrainCargo == false);
 	return(true);
 }
+
+
+
 
 #ifdef _DEBUG
 /***********************************************************************************************
@@ -2459,6 +2688,7 @@ TActionType Action_From_Name (char const * name)
 	return(TACTION_NONE);
 }
 
+
 /***********************************************************************************************
  * Name_From_Action -- retrieves name for ActionType                                           *
  *                                                                                             *
@@ -2480,6 +2710,8 @@ char const * Name_From_Action(TActionType action)
 }
 #endif
 
+
+
 /***********************************************************************************************
  * Action_Needs -- Figures out what data an action object needs.                               *
  *                                                                                             *
@@ -2495,32 +2727,37 @@ char const * Name_From_Action(TActionType action)
  * HISTORY:                                                                                    *
  *   02/22/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-NeedType Action_Needs(TActionType action)
+NeedType Action_Needs(TActionType action) // RA2: 0x6B2AB0, RA2's actions and needs
 {
 	switch (action) {
+		case TACTION_TEXT_TRIGGER: // RA2: Action_Needs at 0x6B2AB0 matches only so
+		case TACTION_SET_TIMER_TEXT: // RA2: as above
+			return(NEED_TEXT); // RA2: as above
+
 		case TACTION_1_SPECIAL:
 		case TACTION_FULL_SPECIAL:
 			return(NEED_SPECIAL);
 
-		case TACTION_FIRE_SALE:
-		case TACTION_WIN:
+		case TACTION_WIN: // RA2: Action_Needs at 0x6B2AB0 has no case TACTION_FIRE_SALE:
 		case TACTION_LOSE:
+		case TACTION_BEGIN_PRODUCTION: // RA2: as above
 		case TACTION_ALL_HUNT:
-		case TACTION_BEGIN_PRODUCTION:
+		case TACTION_FIRE_SALE: // RA2: as above
 		case TACTION_AUTOCREATE:
+		case TACTION_CHANGE_HOUSE: // RA2: as above
+		case TACTION_ALL_CHANGE_HOUSE: // RA2: as above
 		case TACTION_MAKE_ALLY:
 		case TACTION_MAKE_ENEMY:
-		case TACTION_CHANGE_HOUSE:
-		case TACTION_ALL_CHANGE_HOUSE:
-		case TACTION_BEGIN_AI_TRIGGERS:
+		case TACTION_BEGIN_AI_TRIGGERS: // RA2: Action_Needs at 0x6B2AB0 has no case TACTION_CHANGE_HOUSE:
 		case TACTION_STOP_AI_TRIGGERS:
+		case TACTION_CHEER: // RA2: as above
 			return(NEED_HOUSE);
 
+		case TACTION_BASE_BUILDING: // RA2: as above
 		case TACTION_VEIN_GROWTH:
 		case TACTION_TIB_GROWTH:
 		case TACTION_ICE_GROWTH:
-		case TACTION_BASE_BUILDING:
-			return(NEED_BOOL);
+			return(NEED_BOOL); // RA2: Action_Needs at 0x6B2AB0 has no case TACTION_BASE_BUILDING:
 
 		case TACTION_CREATE_TEAM:
 		case TACTION_DESTROY_TEAM:
@@ -2532,37 +2769,24 @@ NeedType Action_Needs(TActionType action)
 			return(NEED_TEAM_AND_TIME);
 
 		case TACTION_REINFORCEMENTS_SPECIAL:
+		case TACTION_CHRONO_IN_TEAM: // RA2: as above
 			return(NEED_TEAM_AND_LOCATION);
 
 		case TACTION_PARTICLE_ANIM:
 			return(NEED_PARTICLE_AND_LOCATION);
 
+		case TACTION_DESTROY_TRIGGER: // RA2: as above
 		case TACTION_FORCE_TRIGGER:
-		case TACTION_DESTROY_TRIGGER:
-		case TACTION_ENABLE_TRIGGER:
+		case TACTION_ENABLE_TRIGGER: // RA2: Action_Needs at 0x6B2AB0 has no case TACTION_DESTROY_TRIGGER:
 		case TACTION_DISABLE_TRIGGER:
 			return(NEED_TRIGGER);
 
-		case TACTION_DZ:
-		case TACTION_DAMAGE:
-		case TACTION_LIGHT_SMALL:
-		case TACTION_LIGHT_MEDIUM:
-		case TACTION_LIGHT_LARGE:
-		case TACTION_REDUCE_TIBERIUM:
-		case TACTION_REVEAL_SOME:
-		case TACTION_REVEAL_ZONE:
-		case TACTION_REMOVE_PARTICLE_ANIM:
-		case TACTION_ION_LIGHTNING_STRIKE:
-		case TACTION_ION_CANNON:
-		case TACTION_MULTI_MISSILE:
-		case TACTION_CHEM_MISSILE:
-			return(NEED_WAYPOINT);
-
-		case TACTION_PLAY_MUSIC:
+		case TACTION_PLAY_MUSIC: // RA2: Action_Needs at 0x6B2AB0 has no case TACTION_DZ:
 			return(NEED_THEME);
 
 		case TACTION_PLAY_MOVIE:
 		case TACTION_PLAY_INGAME_MOVIE:
+		case TACTION_PLAY_INGAME_MOVIE_PAUSE: // RA2: as above
 			return(NEED_MOVIE);
 
 		case TACTION_PLAY_SOUND:
@@ -2575,18 +2799,9 @@ NeedType Action_Needs(TActionType action)
 		case TACTION_DESTROY_TAG:
 			return(NEED_TAG);
 
-		case TACTION_WAKEUP_GROUP:
-		case TACTION_ADD_TIMER:
-		case TACTION_SUB_TIMER:
-		case TACTION_SET_TIMER:
-		case TACTION_TEXT_TRIGGER:
-		case TACTION_SET_AMBIENT_LIGHT:
-		case TACTION_SET_AI_TRIGGER_TEAM_RATIO:
-		case TACTION_SET_TEAM_AIRCRAFT_RATIO:
-		case TACTION_SET_TEAM_INFANTRY_RATIO:
-		case TACTION_SET_TEAM_UNIT_RATIO:
-		case TACTION_SET_GROUP_ID:
-			return(NEED_NUMBER);
+		case TACTION_SET_TECH_LEVEL: // RA2: as above
+		case TACTION_FLASH_CAMEO: // RA2: as above
+			return(NEED_NUMBER_AND_TECHNO); // RA2: as above
 
 		case TACTION_SET_GLOBAL:
 		case TACTION_CLEAR_GLOBAL:
@@ -2599,10 +2814,7 @@ NeedType Action_Needs(TActionType action)
 		case TACTION_PREFERRED_TARGET:
 			return(NEED_QUARRY);
 
-		case TACTION_CHANGE_ZOOM:
-			return(NEED_NUMBER);
-
-		case TACTION_RESIZE_PLAYER_VIEW:
+		case TACTION_RESIZE_PLAYER_VIEW: // RA2: Action_Needs at 0x6B2AB0 has no case TACTION_CHANGE_ZOOM:
 			return(NEED_RECT);
 
 		case TACTION_PLAY_ANIM:
@@ -2610,6 +2822,26 @@ NeedType Action_Needs(TActionType action)
 
 		case TACTION_PLAY_SOUND_AT:
 			return(NEED_SOUND_AND_LOCATION);
+
+		case TACTION_DZ: // RA2: as above
+		case TACTION_REVEAL_SOME: // RA2: as above
+		case TACTION_REVEAL_ZONE: // RA2: as above
+		case TACTION_REDUCE_TIBERIUM: // RA2: as above
+		case TACTION_DAMAGE: // RA2: as above
+		case TACTION_LIGHT_SMALL: // RA2: as above
+		case TACTION_LIGHT_MEDIUM: // RA2: as above
+		case TACTION_LIGHT_LARGE: // RA2: as above
+		case TACTION_REMOVE_PARTICLE_ANIM: // RA2: as above
+		case TACTION_ION_LIGHTNING_STRIKE: // RA2: as above
+		case TACTION_ION_CANNON: // RA2: as above
+		case TACTION_MULTI_MISSILE: // RA2: as above
+		case TACTION_CHEM_MISSILE: // RA2: as above
+		case TACTION_REVEAL_AROUND_WAYPOINT: // RA2: as above
+		case TACTION_LIGHTNING_STORM: // RA2: as above
+		case TACTION_IRON_CURTAIN: // RA2: as above
+		case TACTION_JUMP_VIEWPOINT: // RA2: as above
+		case TACTION_STOP_SOUND_AT: // RA2: as above
+			return(NEED_WAYPOINT); // RA2: as above
 
 		case TACTION_DO_EXPLOSION:
 			return(NEED_WEAPON_AND_LOCATION);
@@ -2620,7 +2852,19 @@ NeedType Action_Needs(TActionType action)
 		case TACTION_CENTER_VIEWPOINT:
 			return(NEED_SPEED_AND_LOCATION);
 
+		case TACTION_ADD_TIMER: // RA2: as above
+		case TACTION_SUB_TIMER: // RA2: as above
+		case TACTION_SET_TIMER: // RA2: as above
+		case TACTION_CHANGE_ZOOM: // RA2: as above
 		case TACTION_ION_STORM_START:
+		case TACTION_SET_AMBIENT_LIGHT: // RA2: as above
+		case TACTION_SET_AI_TRIGGER_TEAM_RATIO: // RA2: as above
+		case TACTION_SET_TEAM_AIRCRAFT_RATIO: // RA2: as above
+		case TACTION_SET_TEAM_INFANTRY_RATIO: // RA2: as above
+		case TACTION_SET_TEAM_UNIT_RATIO: // RA2: as above
+		case TACTION_WAKEUP_GROUP: // RA2: as above
+		case TACTION_PAUSE_SCENARIO: // RA2: as above
+		case TACTION_SWITCH_TAB: // RA2: as above
 			return(NEED_NUMBER);
 
 		case TACTION_CHANGE_SPOTLIGHT_BEHAVIOR:
@@ -2636,11 +2880,20 @@ NeedType Action_Needs(TActionType action)
 		case TACTION_SET_AMBIENT_RATE:
 			return(NEED_FLOAT);
 
+		case TACTION_CREATE_CRATE: // RA2: as above
+			return(NEED_CRATE_AND_LOCATION); // RA2: as above
+
 		default:
 			break;
 	}
 	return(NEED_NONE);
 }
+
+
+
+
+
+
 
 
 /// <summary>
@@ -2722,29 +2975,23 @@ void TActionClass::Compute_CRC(CRCEngine & crc) const
 /// Determines what an action must be attached to.
 /// This routine is used by the map editor and by the trigger logic to tell which actions
 /// only make sense when the trigger is wired to an object.
+/// RA2
 /// </summary>
 /// <param name="event">The action to examine.</param>
 /// <returns>Returns with the attachment requirement of the action, or ATTACH_NONE if it can
 /// stand on its own.</returns>
-AttachType Attaches_To(TActionType event)
+int __fastcall Action_Flags(int action) // RA2: not in TibSun, at 0x006B2DF0
 {
-	AttachType attach = ATTACH_NONE;
-
-	switch (event) {
-		case TACTION_DESTROY_OBJECT:
-		case TACTION_SELL_ATTACHED:
-		case TACTION_TURN_OFF_ATTACHED:
-		case TACTION_TURN_ON_ATTACHED:
-		case TACTION_CHANGE_HOUSE:
-		case TACTION_GO_BERZERK:
-		case TACTION_SET_GROUP_ID:
-			attach = AttachType(attach | ATTACH_OBJECT);
+	int flags = 0;
+	switch (action) {
+		case 14: case 32: case 60: case 61: case 62: case 91: case 111:
+			flags = 2;
 			break;
 
 		default:
 			break;
 	}
-	return(attach);
+	return(flags);
 }
 
 
@@ -2758,3 +3005,139 @@ Coord TActionClass::Waypoint_As_Coord(void)
 {
 	return(Scen->Get_Waypoint_Coord(Data.Value));
 }
+
+/// <summary>
+/// Sets the action's text, without leading or trailing blanks.
+/// </summary>
+void TActionClass::Set_Text(char const * text) // RA2: not in TibSun, at 0x6B2EC0
+{
+	char * buffer = Text;
+	buffer[0] = '\0';
+	if (text != NULL) {
+		while (*text != '\0' && (unsigned char)*text <= ' ') {
+			text++;
+		}
+		if (*text != '\0') {
+			strncpy(buffer, text, sizeof(Text) - 1);
+			buffer[sizeof(Text) - 1] = '\0';
+			int length = strlen(buffer);
+			while (length != 0 && (unsigned char)buffer[length - 1] <= ' ') {
+				length--;
+			}
+			buffer[length] = '\0';
+		}
+	}
+}
+
+
+/// <summary>
+/// Fetches the action's text, or NULL if it has none.
+/// </summary>
+char const * TActionClass::Get_Text(void) const // RA2: not in TibSun, at 0x6B2F20
+{
+	char const * text = Text;
+	return(text[0] ? text : NULL);
+}
+
+
+
+
+
+
+
+
+/// <summary>
+/// Flashes the members of the trigger's team.
+/// This routine is used to point the player at a particular team, usually alongside a
+/// line of briefing text that refers to it.
+/// </summary>
+bool TActionClass::TAction_FLASH_TEAM(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: at 0x006B2F30
+{
+	if (Team != NULL) {
+		Team->Flash(Data.Value);
+	}
+	return(true);
+}
+
+
+/// <summary>
+/// Hangs a talk bubble over a member of the trigger's team.
+/// This routine is used to put words in a character's mouth during a scripted
+/// conversation. A trigger with no team clears the current talker instead.
+/// </summary>
+bool TActionClass::TAction_TALK_BUBBLE(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: at 0x006B2F50
+{
+	if (Team != NULL) {
+		TeamClass * team = Team->Find_First_Of_Type();
+
+		if (team != NULL) {
+			TechnoClass * talker = team->Get_Member();
+			TechnoClass::Set_Talker(talker, (TalkType)Data.Value);
+		}
+	} else {
+		TechnoClass::Set_Talker(NULL);
+	}
+
+	return(true);
+}
+
+void Hold_Scenario(int seconds); // RA2: 0x65C1F0 (scenario.cpp)
+
+
+/// <summary>
+/// Holds the scenario for the given number of seconds.
+/// </summary>
+bool TActionClass::TAction_PAUSE_SCENARIO(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B2F90
+{
+	Hold_Scenario(Data.Value);
+	return(true);
+}
+
+
+/// <summary>
+/// Ejects the occupants of the building this trigger is attached to.
+/// </summary>
+bool TActionClass::TAction_EJECT_OCCUPANTS(HouseClass * , ObjectClass * , TriggerClass * trig, Cell const & ) // RA2: not in TibSun, at 0x6B2FA0
+{
+	bool result = false;
+	for (int index = 0; index < Buildings.Count(); index++) {
+		BuildingClass * building = Buildings[index];
+		if (building->IsActive && building->IsDown && !building->IsInLimbo && building->Tag != NULL && building->Tag->Is_Trigger_Attached(trig)) {
+			building->Eject_Occupants(false);
+			result = true;
+			break;
+		}
+	}
+	return(result);
+}
+
+
+/// <summary>
+/// Switches the sidebar to the given tab, if it has anything on it.
+/// </summary>
+bool TActionClass::TAction_SWITCH_TAB(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B3010
+{
+	int tab = Data.Value;
+	if (tab < 4 && tab >= 0 && Map.Column[tab].Has_Buildables()) {
+		Map.Select_Tab(tab);
+		return(true);
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// Flashes the sidebar cameo of the given object type.
+/// </summary>
+bool TActionClass::TAction_FLASH_CAMEO(HouseClass * , ObjectClass * , TriggerClass * , Cell const & ) // RA2: not in TibSun, at 0x6B3060
+{
+	if (Data.Value < TechnoTypes.Count() && Data.Value >= 0) {
+		Map.Flash_Cameo(TechnoTypes[Data.Value], Value2);
+		return(true);
+	}
+	return(false);
+}
+
+
+// RA2: no Attaches_To here; Action_Flags (0x6B2DF0) answers what an action attaches to
+

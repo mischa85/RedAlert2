@@ -56,6 +56,8 @@ class VocClass
 		static VocType From_Name(char const * name);
 		static void * PlayGlobal(int voc, float volume, int panning, AudioController * controller = NULL); // RA2
 		static void * PlayAt(int voc, Coord const & coord, AudioController * controller = NULL); // RA2
+		static void * PlayIndexAtPos(int voc, Coord const & coord, int flag); // RA2: 0x714290
+		static void Stop_At(Coord const & coord, int flag); // RA2: 0x7143B0, stops the static sounds at a spot
 		friend VocClass *VocClass_From_Name(char const * name);
 		friend char const * Voc_Name(VocType voc);
 

@@ -122,11 +122,23 @@ enum TActionType {
 	TACTION_PLAY_SOUND_RANDOM,				/// Play sound effect at random waypoint.
 	TACTION_PLAY_SOUND_AT,					/// Play sound effect at waypoint.
 	TACTION_PLAY_INGAME_MOVIE,				/// Play movie ingame without pausing.
+	TACTION_REVEAL_AROUND_WAYPOINT,			/// Reveal the map around a waypoint. RA2: 101-117 numbered as YR's, TibSun's speech and group ID actions gone
+	TACTION_LIGHTNING_STORM,				/// Lightning storm at waypoint.
+	TACTION_SET_TIMER_TEXT,					/// Set the mission timer text.
 	TACTION_FLASH_TEAM,						/// Flash team for specified number of frames.
-	TACTION_DISABLE_SPEECH,					/// Disable EVA speech.
-	TACTION_ENABLE_SPEECH,					/// Enable EVA speech.
-	TACTION_SET_GROUP_ID,					/// Set group ID of attached object.
 	TACTION_TALK_BUBBLE,					/// Display talk bubble over unit.
+	TACTION_SET_TECH_LEVEL,					/// Set the tech level of an object type.
+	TACTION_CHRONO_IN_TEAM,					/// Chronoshift a team in at a waypoint.
+	TACTION_CREATE_CRATE,					/// Create a crate at a waypoint.
+	TACTION_IRON_CURTAIN,					/// Iron Curtain at a waypoint.
+	TACTION_PAUSE_SCENARIO,					/// Pause the scenario.
+	TACTION_EJECT_OCCUPANTS,				/// Eject the occupants of the attached building.
+	TACTION_JUMP_VIEWPOINT,					/// Jump the view to a waypoint.
+	TACTION_CHEER,							/// Make a house cheer.
+	TACTION_SWITCH_TAB,						/// Switch the sidebar tab.
+	TACTION_FLASH_CAMEO,					/// Flash a sidebar cameo.
+	TACTION_STOP_SOUND_AT,					/// Stop the sound at a waypoint.
+	TACTION_PLAY_INGAME_MOVIE_PAUSE,		/// Play an ingame movie and pause.
 
 	TACTION_COUNT,
 	TACTION_FIRST=0

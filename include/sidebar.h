@@ -123,6 +123,10 @@ class SidebarClass : public PowerClass
 		bool Abandon_Production(RTTIType type, FactoryClass * factory);
 		virtual bool Activate(int control); // RA2: virtual
 		bool Add(RTTIType type, int ID);
+		static int Which_Tab(RTTIType type, int id, bool flag); // RA2: 0x6818D0, the sidebar tab an object is built from
+		void Flag_Tab_To_Redraw(int tab); // RA2: 0x67C2D0
+		void Select_Tab(int tab); // RA2: 0x67D990
+		void Flash_Cameo(TechnoTypeClass const * type, int frames); // RA2: 0x6822B0
 		bool Sidebar_Click(KeyNumType & input, int x, int y);
 		void Recalc(void);
 		bool Factory_Link(FactoryClass * factory, RTTIType type, int id);
@@ -172,6 +176,7 @@ class SidebarClass : public PowerClass
 				void Init_IO(int id);
 				bool Recalc(void);
 				void Activate(void);
+				bool Has_Buildables(void) const; // RA2: 0x681730, any cameos on this strip
 				void Deactivate(void);
 				void Flag_To_Redraw(void);
 				bool Factory_Link(FactoryClass * factory, RTTIType type, int id);

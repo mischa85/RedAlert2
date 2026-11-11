@@ -28,7 +28,7 @@ class IonStormClass
 		static void Lightning_Bolt(Cell cell);
 		static void Set_Ion_Storm_Active(bool active);
 		static bool Is_Ion_Storm_Active(void);
-		static void Ion_Storm_Begin(int duration, int warning=0);
+		static void Ion_Storm_Begin(int duration, int deferment, Cell cell, HouseClass * house); // RA2: 0x51F930, a storm aimed at a cell for a house
 		static void Ion_Storm_End(void);
 		static void AI(void);
 		static void Apply_Secondary_Effect(bool do_static);

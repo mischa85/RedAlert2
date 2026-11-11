@@ -105,6 +105,8 @@ class MapClass: public GScreenClass
 		*/
 		void Fresh_Map(void);
 		void Sight_From(Coord const & coord, int sightrange, HouseClass * house, bool incremental=false, bool=false, bool=false, bool=true);
+		void Shroud_Gap_Area(Coord const & coord, int radius); // RA2: 0x54A720
+		void Refresh_Shroud(void); // RA2: 0x55A300, re-flags the shrouded cells
 		bool In_Radar(Cell const & cell) const;
 		bool In_Radar(Coord const & coord) const;
 		void Place_Down(Cell const & cell, ObjectClass * object);
@@ -117,6 +119,7 @@ class MapClass: public GScreenClass
 		int Cell_Threat(Cell const & cell, HouseClass const & house);
 		Cell Pick_Random_Location(void) const;
 		bool Place_Random_Crate(void);
+		bool Place_Crate(Cell cell, CrateType type); // RA2: 0x54E580
 		bool Remove_Crate(Cell const & cell);
 		void Shroud_The_Map(void);
 		void Reveal_The_Map(void);
@@ -482,7 +485,7 @@ class MapClass: public GScreenClass
 
 		int MaxLevel; // RA2: after Array
 
-	protected:
+	public: // RA2: TAction_IRON_CURTAIN (0x6B26D0) reads the radius tables
 		/*
 		 * These are the tables that drive a scan of the cells around a point, laid out as
 		 * rings of increasing distance: RadiusOffset holds the cell offsets in scan order,

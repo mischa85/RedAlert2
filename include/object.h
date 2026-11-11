@@ -332,6 +332,7 @@ class ObjectClass : public AbstractClass
 		virtual bool Active_Click_With(ActionType , ObjectClass *, bool);
 		virtual bool Active_Click_With(ActionType , Cell const &, Cell const &, bool); // RA2: a second cell
 		virtual void Clicked_As_Target(int = 7);
+		void Set_Ambient_Sound(int voc); // RA2: 0x5D5520, -1 stops it
 		virtual bool Select(void);
 		virtual void Unselect(void);
 		virtual void IronCurtain(int duration) {} // RA2: TechnoClass starts its IronCurtainTimer

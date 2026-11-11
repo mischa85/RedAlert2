@@ -30,6 +30,9 @@ class Cell;
 **	Bullets and other projectiles need some specific information according
 **	to their type.
 */
+class BulletClass; // RA2: for Create_Bullet
+class WarheadTypeClass; // RA2: for Create_Bullet
+
 class BulletTypeClass : public ObjectTypeClass
 {
 		typedef ObjectTypeClass BASECLASS;
@@ -252,6 +255,7 @@ class BulletTypeClass : public ObjectTypeClass
 		static BulletTypeClass *Find_Or_Make(const char * name);
 
 		static BulletType From_Name(char const * name);
+		BulletClass * Create_Bullet(AbstractClass * target, TechnoClass * payback, int strength, WarheadTypeClass const * warhead, int speed, bool bright) const; // RA2: a member, at 0x00463990
 		static const char * Name_From(BulletType bullet);
 
 		static void Init(TheaterType ) {};

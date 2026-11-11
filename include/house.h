@@ -825,6 +825,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 		bool Flag_To_Die(void);
 		bool Flag_To_Win(bool silent = false);
 		bool Flag_To_Lose(bool silent = false);
+		void Cheer(void); // RA2: 0x4F62B0, the house's infantry cheer
 		void Flag_To_End(void);
 		void Make_Ally(HouseClass * house);
 		void Make_Ally(HousesType house);

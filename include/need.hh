@@ -65,4 +65,6 @@ enum NeedType {
 	NEED_TEAM_AND_TIME,			/// Team type and flash count pair.
 	NEED_ANIM,					/// Anim type.
 	NEED_TALK_BUBBLE,			/// Unit talk bubble type.
+	NEED_NUMBER_AND_TECHNO,		/// RA2: number and techno type pair (YR name).
+	NEED_CRATE_AND_LOCATION,	/// RA2: crate and waypoint pair (YR name).
 };

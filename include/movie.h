@@ -23,7 +23,7 @@ extern DynamicVectorClass<char const *> Movies;
 
 void Play_Movie(char const * name, ThemeType theme=THEME_NONE, bool clrscrn_after=true, bool stretch=true, bool clrscrn_before=true);
 void Play_Movie(VQType vq, ThemeType theme=THEME_NONE, bool clrscrn=true, bool stretch=true, bool clrscrn_before=true); // RA2: one more argument, as the name overload has
-void Play_Ingame_Movie(VQType vq);
+void Play_Ingame_Movie(VQType vq, bool loop); // RA2: 0x5A0920, as movie.cpp defines it
 void Pause_Ingame_Movie(bool pause);
 void Stop_Ingame_Movie(void);
 bool Has_Ingame_Movies(void);
