@@ -518,10 +518,8 @@ unk_005DA3E0,0x005DA3E0,0x005DA7D0,unknown,code not assigned to a module
 overlay,0x005DA7D0,0x005DC290,tibsun,"functions compiled from src/overlay.cpp, matched, without gaps; four placed by the gap"
 unk_005DC290,0x005DC290,0x005DC5A0,unknown,code not assigned to a module
 overtype,0x005DC5A0,0x005DD150,tibsun,"functions compiled from src/overtype.cpp, without gaps; matched except ?Init@OverlayTypeClass@@SIXW4TheaterType@@@Z and ?Read_INI@OverlayTypeClass@@UAE_NABVCCINIClass@@@Z and ?Load@OverlayTypeClass@@UAGJPAUIStream@@@Z; seven placed by the gap; ?Init@OverlayTypeClass@@SIXW4TheaterType@@@Z and ?Load@OverlayTypeClass@@UAGJPAUIStream@@@Z and ?Read_INI@OverlayTypeClass@@UAE_NABVCCINIClass@@@Z placed at their function starts; ?Get_Image_Data@OverlayTypeClass@@UBEPBXXZ not placed"
-unk_005DD150,0x005DD150,0x005DD660,unknown,code not assigned to a module
-unk_005DD660,0x005DD660,0x005DD760,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005DD760,0x005DD760,0x005DDB40,unknown,code not assigned to a module
-unk_005DDB40,0x005DDB40,0x005DDB90,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005DD150,0x005DD150,0x005DD590,unknown,code not assigned to a module
+ovrlight,0x005DD590,0x005DDB90,tibsun,"functions compiled from src/ovrlight.cpp, without gaps; matched except ?One_Time@SpotLightClass@@SIXXZ and ?Draw_It@SpotLightClass@@QAEXXZ; one placed by the gap; ?One_Time@SpotLightClass@@SIXXZ placed at their function starts; ?Draw_It@SpotLightClass@@QAEXXZ not placed; ?Draw_All@SpotLightClass@@SIXXZ not placed"
 unk_005DDB90,0x005DDB90,0x00602A60,unknown,code not assigned to a module
 packet,0x00602A60,0x00602FD0,tibsun,"functions compiled from src/packet.cpp, matched, without gaps; six placed by definition order"
 palette,0x00602FD0,0x00603200,tibsun,"functions compiled from src/palette.cpp, matched, without gaps"
