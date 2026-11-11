@@ -78,6 +78,7 @@
 #include "always.h"
 
 #include "cell.h"
+#include "pixelfx.h" // RA2: the destructor deletes the cell's PixelFX
 
 #include "_alpha.h"
 #include "_bench.h"
@@ -138,6 +139,24 @@
 #include "ramp.hh"
 #include "tube.hh"
 
+
+
+/// <summary>
+/// RA2
+/// </summary>
+inline IsometricTileTypeClass * Next_Tile_In_Set(IsometricTileTypeClass * type, int index) { return type->Next_Tile_From_Set(index); }
+
+
+/// <summary>
+/// RA2
+/// </summary>
+inline unsigned short * Preview_Tile_Of(IsometricTileTypeClass * type, int tile, int level) { return type->Preview_Tile(tile, level); }
+
+
+/// <summary>
+/// RA2
+/// </summary>
+inline VisualType Building_Visual(BuildingClass * building) { return building->Visual_Character(false, NULL); }
 
 
 /// <summary>
@@ -229,6 +248,10 @@ CellClass::~CellClass(void)
 		delete FoggedObjects;
 		FoggedObjects = NULL;
 	}
+	if (PixelFX) { // RA2: 0x470E80 deletes the pixel effect too
+		delete PixelFX; // RA2: as above
+		PixelFX = NULL; // RA2: as above
+	}
 
 	OccupierPtr = 0;
 
@@ -258,13 +281,9 @@ CellClass::~CellClass(void)
 CellClass::CellClass(void) :
 	BASECLASS(),
 	CellID(CELL_NONE),
-	IsPlot(false),
-	IsCursorHere(false),
-	IsMapped(false),
-	IsVisible(false),
+	IsFogVisible(false), // RA2: CellClass at 0x470F10 matches only so
 	IsFogMapped(false),
-	IsFogVisible(false),
-	IsWaypoint(false),
+	IsWaypoint(false), // RA2: CellClass at 0x470F10 has no IsFogVisible
 	IsRadarCursor(false),
 	IsFlagged(false),
 	IsToShroud(false),
@@ -285,6 +304,11 @@ CellClass::CellClass(void) :
 	IsHorizontalLine(false),
 	IsVerticalLine(false),
 	IsFogged(false),
+	IsPlot(false), // RA2: as above
+	IsCursorHere(false), // RA2: as above
+	IsFoundationCopyHere(false), // RA2: as above
+	IsMapped(false), // RA2: as above
+	IsVisible(false), // RA2: as above
 	ITType(TILE_NONE),
 	Overlay(OVERLAY_NONE),
 	OverlayData(0),
@@ -301,6 +325,16 @@ CellClass::CellClass(void) :
 	UnusedCell(NULL),
 	Drawer(NULL),
 	Tag(NULL),
+	Rubble(NULL), // RA2: as above
+	Jumpjet(NULL), // RA2: as above
+	RadLevel(0), // RA2: as above
+	RadSite(NULL), // RA2: as above
+	PixelFX(NULL), // RA2: as above
+	OccupyHeightsCoveringMe(0), // RA2: as above
+	ShroudCounter(1), // RA2: as above
+	GapsCoveringThisCell(0), // RA2: as above
+	VisibilityChanged(false), // RA2: as above
+	AlliedGapsCoveringThisCell(0), // RA2: +0x13C
 	Passability(PASSABLE_LAND),
 	LastRedrawFrame(-1),
 	LastUnknownDrawFrame(-1),
@@ -310,16 +344,15 @@ CellClass::CellClass(void) :
 	ShadowFrame(-2),
 	FogFrame(-2),
 	CloakedBy(0),
-	SensedBy(0),
-	OccupiedBy(0),
+	OccupiedBy(0), // RA2: CellClass at 0x470F10 has no SensedBy
 	Intensity(0x10000),
 	Ambient(0),
-	Brightness(NORMAL_LIGHT),
-	TileBrightness(NORMAL_LIGHT),
-	AltBrightness(NORMAL_LIGHT),
-	RedTint(NORMAL_LIGHT),
-	GreenTint(NORMAL_LIGHT),
-	BlueTint(NORMAL_LIGHT),
+	Brightness(1000), // RA2: as above
+	TileBrightness(1000), // RA2: as above
+	AltBrightness(1000), // RA2: as above
+	RedTint(1000), // RA2: as above
+	GreenTint(1000), // RA2: as above
+	BlueTint(1000), // RA2: as above
 	LastBridgeDrawRedraws(-1),
 	IsIceGrowthAllowed(false),
 	SubTile(0),
@@ -328,6 +361,12 @@ CellClass::CellClass(void) :
 	Elevation(0),
 	AdjacentObjectCount(0)
 {
+	for (int i = 0; i < 24; i++) { // RA2: as above
+		SensorsOfHouses[i] = 0; // RA2: as above
+	}
+	for (int j = 0; j < 24; j++) { // RA2: as above
+		DisguiseSensorsOfHouses[j] = 0; // RA2: as above
+	}
 	Create_ID();
 	Flag.Composite = 0;
 	BridgeFlag.Composite = 0;
@@ -595,9 +634,7 @@ TechnoClass * CellClass::Cell_Techno(Point2D const & xy, bool bridge, TechnoClas
  *=========================================================================*/
 ObjectClass * CellClass::Cell_Find_Object(RTTIType rtti, bool bridge) const
 {
-	assert(rtti != RTTI_NONE);
-
-	if (GameActive) {
+	if (GameActive) { // RA2: Cell_Find_Object at 0x471760 has no assert(rtti != RTTI_NONE);
 		ObjectClass * object = Cell_Occupier(bridge);
 
 		while (object != NULL) {
@@ -698,6 +735,28 @@ ObjectClass * CellClass::Cell_Object(Point2D const & xy, bool bridge) const
 	}
 	ptr = Cell_Terrain();
 	return(ptr);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline Cell Ramp_Neighbor(Cell const & cell, FacingType dir)
+{
+	return Cell(cell.X + AdjacentCell[dir].X, cell.Y + AdjacentCell[dir].Y);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline CellClass const & LAT_Neighbor(CellClass const & cell, FacingType face)
+{
+	if ((unsigned)face >= FACING_COUNT) {
+		return cell;
+	}
+	Cell adjacent = AdjacentCell[(int)face & 7] + cell.Fetch_CellID();
+	return Map[adjacent];
 }
 
 
@@ -876,6 +935,12 @@ bool CellClass::Fixup_LAT(void)
 	 * Fetch the ranges of the LAT transition tile sets. A range is invalid
 	 * (and its family is skipped) if the theater lacks the tile set.
 	 */
+	IsometricTileType waterbridge1 = IsometricTileTypeClass::WaterBridge; // RA2: Fixup_LAT at 0x471D10 matches only so
+	IsometricTileType waterbridge2 = IsometricTileType(waterbridge1 + 1); // RA2: as above
+	if (waterbridge1 == ISOTILE_INVALID) waterbridge2 = ISOTILE_INVALID; // RA2: as above
+	IsometricTileType shore1 = IsometricTileTypeClass::ShorePieces; // RA2: as above
+	IsometricTileType shore2 = IsometricTileType(shore1 + 41); // RA2: as above
+	if (shore1 == ISOTILE_INVALID) shore2 = ISOTILE_INVALID; // RA2: as above
 	IsometricTileType cleartorough1 = IsometricTileTypeClass::ClearToRoughLat;
 	IsometricTileType cleartorough2 = IsometricTileType(cleartorough1 + 15);
 	if (cleartorough1 == ISOTILE_INVALID) {
@@ -898,13 +963,13 @@ bool CellClass::Fixup_LAT(void)
 	}
 	IsometricTileType miscpave2 = IsometricTileTypeClass::MiscPaveTile;
 	IsometricTileType miscpave1 = miscpave2;
-	miscpave2 = IsometricTileType(miscpave2 + MISC_PAVE_TILE_COUNT - 1);
+	miscpave2 = IsometricTileType(miscpave2 + 13); // RA2: as above
 	if (miscpave1 == ISOTILE_INVALID) {
 		miscpave2 = ISOTILE_INVALID;
 	}
 	IsometricTileType pavedroad2 = IsometricTileTypeClass::PavedRoads;
 	IsometricTileType pavedroad1 = pavedroad2;
-	pavedroad2 = IsometricTileType(pavedroad2 + 7);
+	pavedroad2 = IsometricTileType(pavedroad2 + 20); // RA2: as above
 	if (pavedroad1 == ISOTILE_INVALID) {
 		pavedroad2 = ISOTILE_INVALID;
 	}
@@ -915,40 +980,16 @@ bool CellClass::Fixup_LAT(void)
 		median2 = ISOTILE_INVALID;
 	}
 	IsometricTileType rampsmooth1 = IsometricTileTypeClass::RampSmooth;
-	IsometricTileType rampsmooth2 = IsometricTileType(rampsmooth1 + RAMP_SMOOTH_COUNT - 1);
+	IsometricTileType rampsmooth2 = IsometricTileType(rampsmooth1 + 11); // RA2: as above
 	if (rampsmooth1 == ISOTILE_INVALID) {
 		rampsmooth2 = ISOTILE_INVALID;
 	}
 	IsometricTileType ramp1 = IsometricTileTypeClass::RampStart;
-	IsometricTileType ramp2 = IsometricTileType(ramp1 + 3);
+	IsometricTileType ramp2 = IsometricTileType(ramp1 + 19); // RA2: as above
 	if (ramp1 == ISOTILE_INVALID) {
 		ramp2 = ISOTILE_INVALID;
 	}
-	IsometricTileType crystal1 = IsometricTileTypeClass::ClearToCrystalLat;
-	IsometricTileType crystal2 = IsometricTileType(crystal1 + 15);
-	if (crystal1 == ISOTILE_INVALID) {
-		crystal2 = ISOTILE_INVALID;
-	}
-
-	IsometricTileType crystalcliff1 = IsometricTileTypeClass::CrystalCliff;
-
-	IsometricTileType watertoswamp1 = IsometricTileTypeClass::WaterToSwampLat;
-	IsometricTileType watertoswamp2 = IsometricTileType(watertoswamp1 + 15);
-	if (watertoswamp1 == ISOTILE_INVALID) {
-		watertoswamp2 = ISOTILE_INVALID;
-	}
-	IsometricTileType swamp1 = IsometricTileTypeClass::SwampTile;
-	IsometricTileType swamp2 = IsometricTileType(swamp1 + SWAMP_COUNT);
-	if (swamp1 == ISOTILE_INVALID) {
-		swamp2 = ISOTILE_INVALID;
-	}
-	IsometricTileType mold1 = IsometricTileTypeClass::ClearToBlueMoldLat;
-	IsometricTileType mold2 = IsometricTileType(mold1 + 15);
-	if (mold1 == ISOTILE_INVALID) {
-		mold2 = ISOTILE_INVALID;
-	}
-
-	IsometricTileType old_ittype = ITType;
+	IsometricTileType old_ittype = ITType; // RA2: Fixup_LAT at 0x471D10 has no IsometricTileType, IsometricTileTypeClass, ClearToCrystalLat and 4 more
 
 	/*
 	 * Fix up rough LAT transition tiles.
@@ -981,7 +1022,7 @@ bool CellClass::Fixup_LAT(void)
 			int offset = 0;
 			unsigned int facing = 0;
 			for (int i = 0; i < FACING_COUNT / 2; i++) {
-				CellClass const & cptr = Adjacent_Cell((FacingType)facing);
+				CellClass const & cptr = LAT_Neighbor(*this, (FacingType)facing); // RA2: as above
 				IsometricTileType ittype = cptr.ITType;
 				if (ittype != IsometricTileTypeClass::SandTile && (ittype < cleartosand1 || ittype > cleartosand2)) {
 					offset |= 1 << i;
@@ -1005,9 +1046,9 @@ bool CellClass::Fixup_LAT(void)
 			int offset = 0;
 			unsigned int facing = 0;
 			for (int i = 0; i < FACING_COUNT / 2; i++) {
-				CellClass const & cptr = Adjacent_Cell((FacingType)facing);
+				CellClass const & cptr = LAT_Neighbor(*this, (FacingType)facing); // RA2: as above
 				IsometricTileType ittype = cptr.ITType;
-				if (ittype != IsometricTileTypeClass::GreenTile && (ittype < cleartogreen1 || ittype > cleartogreen2)) {
+				if (ittype != IsometricTileTypeClass::GreenTile && (ittype < cleartogreen1 || ittype > cleartogreen2) && (ittype < shore1 || ittype > shore2) && (ittype < waterbridge1 || ittype > waterbridge2)) { // RA2: as above
 					offset |= 1 << i;
 				}
 				facing = Facing_Add(facing, FACING_90);
@@ -1030,7 +1071,7 @@ bool CellClass::Fixup_LAT(void)
 			int offset = 0;
 			unsigned int facing = 0;
 			for (int i = 0; i < FACING_COUNT / 2; i++) {
-				CellClass const & cptr = Adjacent_Cell((FacingType)facing);
+				CellClass const & cptr = LAT_Neighbor(*this, (FacingType)facing); // RA2: as above
 				IsometricTileType ittype = cptr.ITType;
 				if (ittype != IsometricTileTypeClass::PaveTile
 				&& (ittype < cleartopave1 || ittype > cleartopave2)
@@ -1049,91 +1090,14 @@ bool CellClass::Fixup_LAT(void)
 		}
 	}
 
-	/*
-	 * Fix up crystal LAT transition tiles. Crystal cliff pieces count as
-	 * crystal on the appropriate half of the cliff tile.
-	 */
-	type = ITType;
-	if (type == IsometricTileTypeClass::CrystalTile || type >= crystal1 && type <= crystal2) {
-		int offset = 0;
-		unsigned int facing = 0;
-		for (int i = 0; i < FACING_COUNT / 2; i++) {
-			CellClass const & cptr = Adjacent_Cell((FacingType)facing);
-			IsometricTileType ittype = cptr.ITType;
-			CellClass const & subptr = Adjacent_Cell((FacingType)facing);
-			int subtile = subptr.SubTile;
-			if (ittype != IsometricTileTypeClass::CrystalTile
-			&& (ittype < crystal1 || ittype > crystal2)
-			&& (ittype != crystalcliff1 || subtile >= 2)
-			&& (ittype != crystalcliff1 + 1 || subtile < 2)
-			&& (ittype != crystalcliff1 + 4 || (subtile & 1) != 0)
-			&& (ittype != crystalcliff1 + 5 || (subtile & 1) == 0)) {
-				offset |= 1 << i;
-			}
-			facing = Facing_Add(facing, FACING_90);
-		}
-		if (offset != 0) {
-			ITType = IsometricTileType(crystal1 + offset);
-		} else {
-			ITType = IsometricTileTypeClass::CrystalTile;
-		}
-	}
-
-	/*
-	 * Fix up swamp LAT transition tiles.
-	 */
-	type = ITType;
-	if (type == IsometricTileTypeClass::SwampTile || type >= watertoswamp1 && type <= watertoswamp2) {
-		int offset = 0;
-		unsigned int facing = 0;
-		for (int i = 0; i < FACING_COUNT / 2; i++) {
-			CellClass const & cptr = Adjacent_Cell((FacingType)facing);
-			IsometricTileType ittype = cptr.ITType;
-			if ((ittype < swamp1 || ittype > swamp2) && (ittype < watertoswamp1 || ittype > watertoswamp2)) {
-				offset |= 1 << i;
-			}
-			facing = Facing_Add(facing, FACING_90);
-		}
-		if (offset != 0) {
-			ITType = IsometricTileType(watertoswamp1 + offset);
-		} else {
-			ITType = IsometricTileTypeClass::SwampTile;
-		}
-	}
-
-	/*
-	 * Fix up blue mold LAT transition tiles.
-	 */
-	type = ITType;
-	if (type == IsometricTileTypeClass::BlueMoldTile || type >= mold1 && type <= mold2) {
-		int offset = 0;
-		unsigned int facing = 0;
-		for (int i = 0; i < FACING_COUNT / 2; i++) {
-			CellClass const & cptr = Adjacent_Cell((FacingType)facing);
-			IsometricTileType ittype = cptr.ITType;
-			if (ittype != IsometricTileTypeClass::BlueMoldTile && (ittype < mold1 || ittype > mold2)) {
-				offset |= 1 << i;
-			}
-			facing = Facing_Add(facing, FACING_90);
-		}
-		if (offset != 0) {
-			ITType = IsometricTileType(mold1 + offset);
-		} else {
-			ITType = IsometricTileTypeClass::BlueMoldTile;
-		}
-	}
-
-	/*
-	 * Smooth ramp tiles against the neighboring ramps along the ramp's axis.
-	 */
-	type = ITType;
+	type = ITType; // RA2: Fixup_LAT at 0x471D10 has no ITType, IsometricTileTypeClass, CrystalTile and 6 more
 	if (type >= ramp1 && type <= ramp2 || type >= rampsmooth1 && type <= rampsmooth2) {
 		int offset = 0;
 		if (Ramp == RAMP_WEST) {
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_W)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_W)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 1;
 			}
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_E)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_E)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 2;
 			}
 			if (offset != 0) {
@@ -1141,10 +1105,10 @@ bool CellClass::Fixup_LAT(void)
 			}
 		}
 		if (Ramp == RAMP_NORTH) {
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_N)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_N)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 1;
 			}
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_S)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_S)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 2;
 			}
 			if (offset != 0) {
@@ -1152,10 +1116,10 @@ bool CellClass::Fixup_LAT(void)
 			}
 		}
 		if (Ramp == RAMP_EAST) {
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_E)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_E)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 1;
 			}
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_W)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_W)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 2;
 			}
 			if (offset != 0) {
@@ -1163,10 +1127,10 @@ bool CellClass::Fixup_LAT(void)
 			}
 		}
 		if (Ramp == RAMP_SOUTH) {
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_S)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_S)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 1;
 			}
-			if (Map[::Adjacent_Cell(Fetch_CellID(), FACING_N)].Ramp == RAMP_NONE) {
+			if (Map[Ramp_Neighbor(Fetch_CellID(), FACING_N)].Ramp == RAMP_NONE) { // RA2: as above
 				offset |= 2;
 			}
 			if (offset != 0) {
@@ -1463,6 +1427,21 @@ void CellClass::Destroy_Bridge(void)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline void Set_Bridge_Deck_Flags(CellClass & cell, bool state, bool east_west)
+{
+	cell.IsBridgeDeck = state;
+	cell.IsUnderBridge = state;
+	cell.IsBridgeTraversable = state;
+	cell.IsBridgeSurface = state;
+	cell.IsOvershadowed = state;
+	cell.WasUnderBridge = !state;
+	cell.IsBridgeEastWest = east_west;
+}
+
+
+/// <summary>
 /// Marks the cells that one high-bridge deck piece occupies and overshadows.
 /// The deck sprite is wider than the cell that hosts it, so this routine reaches out to the
 /// neighboring cells and flags each one as being under the bridge, as walk-on bridge surface,
@@ -1736,9 +1715,7 @@ void CellClass::Set_Under_Rail_Bridge(FacingType facing, bool state)
  *=============================================================================================*/
 void CellClass::Occupy_Down(ObjectClass * object, bool bridge)
 {
-	assert(object != NULL && object->IsActive);
-
-	ObjectClass * optr = Cell_Occupier(bridge);
+	ObjectClass * optr = Cell_Occupier(bridge); // RA2: Occupy_Down at 0x473B30 has no IsActive
 
 	if (object == NULL) return;
 
@@ -1750,9 +1727,7 @@ void CellClass::Occupy_Down(ObjectClass * object, bool bridge)
 	*/
 	if (object->RTTI == RTTI_BUILDING && optr) {
 		while (optr->Next != NULL) {
-			assert(optr != object);
-			assert(optr->RTTI != RTTI_BUILDING);
-			optr = optr->Next;
+			optr = optr->Next; // RA2: Occupy_Down at 0x473B30 has no RTTI
 		}
 		optr->Next = object;
 		object->Next = NULL;
@@ -1808,9 +1783,7 @@ void CellClass::Occupy_Down(ObjectClass * object, bool bridge)
  *=============================================================================================*/
 void CellClass::Occupy_Up(ObjectClass * object, bool bridge)
 {
-	assert(object != NULL && object->IsActive);
-
-	if (object == NULL) return;
+	if (object == NULL) return; // RA2: Occupy_Up at 0x473D20 has no IsActive
 
 	ObjectClass * optr = Cell_Occupier(bridge);		// Working pointer to the objects in the chain.
 
@@ -1822,13 +1795,11 @@ void CellClass::Occupy_Up(ObjectClass * object, bool bridge)
 		}
 		object->Next = NULL;
 	} else {
-		bool found = false;
-		while (optr != NULL) {
+		while (optr != NULL) { // RA2: Occupy_Up at 0x473D20 has no bool found = false;
 			if (optr->Next == object) {
 				optr->Next = object->Next;
 				object->Next = NULL;
-				found = true;
-				break;
+				break; // RA2: Occupy_Up at 0x473D20 has no found = true;
 			}
 			optr = optr->Next;
 		}
@@ -2517,27 +2488,6 @@ void CellClass::Draw_Shroud_And_Fog(Point2D const & point, Rect const & cliprect
 
 
 /// <summary>
-/// Draws the shadow cast by this cell's terrain tile.
-/// This routine is called by the tactical map's terrain pass. Tile artwork that is not marked
-/// as a shadow caster draws nothing.
-/// </summary>
-/// <param name="point">The pixel position to draw the cell at.</param>
-/// <param name="cliprect">The clipping rectangle to draw within.</param>
-void CellClass::Draw_Shadow_Cast(Point2D const & point, Rect const & cliprect)
-{
-	int subtile;
-	IsometricTileTypeClass * isotype;
-
-	Fetch_Icon(isotype, subtile, NULL, false);
-	if (isotype->IsShadowCaster) {
-		Point2D drawpoint = point;
-		drawpoint.Y -= LEVEL_PIXEL_H_1 * Height;
-		isotype->Draw_Shadow_Caster(subtile, LogicalSurface, drawpoint, cliprect, -2 - LEVEL_PIXEL_H_1 * (Height - 4));
-	}
-}
-
-
-/// <summary>
 /// Fetches the isometric tile artwork this cell displays.
 /// This routine is the common lookup shared by the cell drawing routines. A cell with no tile
 /// assigned to it falls back to the clear tile.
@@ -2563,6 +2513,25 @@ inline void CellClass::Fetch_Icon(IsometricTileTypeClass *& ittype, int & subtil
 		subtile = 0;
 		ittype = IsometricTileTypes[TILE_CLEAR];
 		if (doicon) *icon = Clear_Icon(TILE_CLEAR, ittype->NumTileTypesInSet);
+	}
+}
+
+
+/// <summary>
+/// Draws the shadow cast by this cell's terrain tile.
+/// This routine is called by the tactical map's terrain pass. Tile artwork that is not marked
+/// as a shadow caster draws nothing.
+/// </summary>
+/// <param name="point">The pixel position to draw the cell at.</param>
+/// <param name="cliprect">The clipping rectangle to draw within.</param>
+void CellClass::Draw_Shadow_Cast(Point2D const & point, Rect const & cliprect)
+{
+	int subtile;
+	IsometricTileTypeClass * isotype;
+
+	Fetch_Icon(isotype, subtile, NULL, false);
+	if (isotype->IsShadowCaster) {
+		isotype->Draw_Shadow_Caster(subtile, LogicalSurface, Point2D(point.X, point.Y - 15 * Height), cliprect, -2 - 15 * (Height - 4)); // RA2: Draw_Shadow_Cast at 0x4755D0 matches only so
 	}
 }
 
@@ -2687,6 +2656,22 @@ bool CellClass::Has_Wall_Or_Gate(OverlayType type, FacingType facing) const
 	}
 
 	return(false);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int Wall_Frame(CellClass & cell, FacingType const * offsets)
+{
+	int icon = 0;
+	for (unsigned i = 0; i < FACING_COUNT / 2; i++) {
+		CellClass & adjacent = cell.Adjacent_Cell(offsets[i]);
+		if (adjacent.Has_Wall_Or_Gate(cell.Overlay, offsets[i])) {
+			icon |= 1 << i;
+		}
+	}
+	return(icon);
 }
 
 
@@ -3375,7 +3360,7 @@ int CellClass::Tiberium_Adjust(bool pregame)
 	if (Overlay != OVERLAY_NONE) {
 		static int _adj[13] = {0,1,3,4,6,7,8,10,11,7,0,1,6};
 
-		TiberiumType tibtype = Tiberium_Type_Here();
+		TiberiumType tibtype = Which_Tiberium_Type(Overlay); // RA2: Tiberium_Adjust at 0x476BA0 matches only so
 		if (tibtype != TIBERIUM_NONE) {
 			TiberiumClass * tiberium = Tiberiums[tibtype];
 			int	count = 0;
@@ -3397,7 +3382,7 @@ int CellClass::Tiberium_Adjust(bool pregame)
 			for (FacingType face = FACING_FIRST; face < FACING_COUNT; face++) {
 				CellClass & adjc = Adjacent_Cell(face);
 
-				if (adjc.Tiberium_Type_Here() == tibtype) {
+				if (Which_Tiberium_Type(adjc.Overlay) == tibtype) { // RA2: as above
 					count++;
 				}
 			}
@@ -3407,6 +3392,15 @@ int CellClass::Tiberium_Adjust(bool pregame)
 		}
 	}
 	return(0);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline Coord Crate_Sound_Coord(CellClass const & cell)
+{
+	return(cell.Cell_Coord());
 }
 
 
@@ -3428,6 +3422,9 @@ int CellClass::Tiberium_Adjust(bool pregame)
  *   07/08/1995 JLB : Added a bunch of goodies to the crates.                                  *
  *   06/17/1996 JLB : Revamped for Red Alert                                                   *
  *=============================================================================================*/
+void Queue_Speech(char const * name, int priority, int expire); // RA2: 0x715B40, an EVA line by name
+extern bool CrateWater[CRATE_COUNT]; // RA2: which crates may appear on water
+
 bool CellClass::Goodie_Check(FootClass * object)
 {
 	if (object != NULL && Overlay != OVERLAY_NONE && OverlayTypes[Overlay]->IsCrate) {
@@ -3451,59 +3448,36 @@ bool CellClass::Goodie_Check(FootClass * object)
 			Scen->IsCrateBeenPickedUp = true;
 		}
 
-		/*
-		**	Determine the total number of shares for all the crate powerups. This is used as
-		**	the base pool to determine the odds from.
-		*/
-		int total_shares = 0;
 		int index;
-		for (index = CRATE_FIRST; index < CRATE_COUNT; index++) {
-			total_shares += CrateShares[index];
-		}
-
-		/*
-		**	Pick a random crate powerup according to the shares allotted to each powerup.
-		**	In solo play, the bonus item is dependant upon the rules control.
-		*/
-		CrateType powerup = CRATE_MONEY;
-		if (Session.Type == GAME_NORMAL) {
-
-			/*
-			**	Solo play has money amount determined by rules.ini file.
-			*/
-			force_money = Rule->SoloCrateMoney;
-
-			if (OverlayTypes[Overlay] == Rule->CrateImg) {
-				powerup = Rule->SilverCrate;
+		CrateType powerup; // RA2: YR's form of Goodie_Check (0x476CC0, not matched yet): RA2's also picks the MCV from the BaseUnit list; TibSun's does not compile against RA2's types
+		if (OverlayData >= CRATE_COUNT) { // RA2: as above
+			int total_shares = 0; // RA2: as above
+			for (index = 0; index < CRATE_COUNT; ++index) { // RA2: as above
+				total_shares += CrateShares[index]; // RA2: as above
 			}
-
-			if (OverlayTypes[Overlay] == Rule->WoodCrateImg) {
-				powerup = Rule->WoodCrate;
+			int pick = Random_Pick(1, total_shares); // RA2: as above
+			int count = 0; // RA2: as above
+			for (index = CRATE_FIRST; index < CRATE_COUNT; ++index) { // RA2: as above
+				count += CrateShares[index]; // RA2: as above
+				if (pick <= count) break; // RA2: as above
 			}
-
-#if NEVER
-			if (OverlayTypes[Overlay] == Rule->WaterCrateImg) {
-				powerup = Rule->WaterCrate;
-			}
-#endif
-
+			powerup = (CrateType)index; // RA2: as above
 		} else {
-			int pick = Random_Pick(1, total_shares);
-
-			int share_count = 0;
-			for (powerup = CRATE_FIRST; powerup < CRATE_COUNT; powerup++) {
-				share_count += CrateShares[powerup];
-				if (pick <= share_count) break;
+			powerup = (CrateType)OverlayData; // RA2: as above
+		}
+		if (Session.Type == GAME_NORMAL) {
+			if (OverlayData == 0) { // RA2: as above
+				force_money = Rule->SoloCrateMoney; // RA2: as above
+				if (OverlayTypes[Overlay] == Rule->CrateImg) powerup = Rule->SilverCrate; // RA2: as above
+				if (OverlayTypes[Overlay] == Rule->WoodCrateImg) powerup = Rule->WoodCrate; // RA2: as above
+				if (OverlayTypes[Overlay] == Rule->WaterCrateImg) powerup = Rule->WaterCrate; // RA2: as above
 			}
-			assert(powerup != CRATE_COUNT);
-
-			/*
-			**	Possibly force it to be an MCV if there is
-			**	sufficient money and no buildings left.
-			*/
-			if (object->House->CurBuildings == 0 &&
-					object->House->Available_Money() > 1500 &&
-					object->House->UQuantity.Value(Rule->BaseUnit->HeapID) == 0 &&
+		} else { // RA2: no OverlayTypes, Overlay, Rule and 5 more (not in RA2's layout)
+			HouseClass * house = object->House; // RA2: as above
+			UnitTypeClass const * base_unit = house->Get_First_Ownable(Rule->BaseUnit); // RA2: as above
+			if (house->CurBuildings == 0 && // RA2: as above
+					house->Available_Money() > 1500 && // RA2: as above
+					house->UQuantity.Value(base_unit->HeapID) == 0 && // RA2: as above
 					Session.Options.Bases) {
 				powerup = CRATE_UNIT;
 				force_mcv = true;
@@ -3516,92 +3490,55 @@ bool CellClass::Goodie_Check(FootClass * object)
 			switch (powerup) {
 				case CRATE_UNIT:
 					if (object->House->CurUnits > 50) powerup = CRATE_MONEY;
+					if (Land == LAND_WATER || Land == LAND_BEACH) powerup = CRATE_MONEY; // RA2: as above
 					break;
 
 				case CRATE_SQUAD:
 					if (object->House->CurInfantry > 100) powerup = CRATE_MONEY;
+					if (Land == LAND_WATER || Land == LAND_BEACH) powerup = CRATE_MONEY; // RA2: as above
 					break;
-
-				case CRATE_DARKNESS:
-					//if (object->House->IsGPSActive) powerup = CRATE_MONEY;
+				case CRATE_ARMOR: // RA2: no case CRATE_DARKNESS: (not in RA2's layout)
+					if (object->ArmorBias != 1) powerup = CRATE_MONEY; // RA2: as above
 					break;
-
-				case CRATE_ARMOR:
-					if (object->ArmorBias != 1) powerup = CRATE_MONEY;
+				case CRATE_VETERAN: // RA2: as above
+					if ((object->AbstractFlags & 1) && !object->Techno_Type_Class()->IsTrainable) { // RA2: as above
+						powerup = CRATE_MONEY; // RA2: as above
+						break;
+					}
+					if ((object->AbstractFlags & 1) && object->Veterancy.Is_Elite()) powerup = CRATE_MONEY; // RA2: as above
 					break;
 
 				case CRATE_SPEED:
-					if (object->SpeedBias != 1 || object->RTTI == RTTI_AIRCRAFT) powerup = CRATE_MONEY;
+					if (object->SpeedBias != 1 || object->Fetch_RTTI() == RTTI_AIRCRAFT) powerup = CRATE_MONEY; // RA2: as above
 					break;
 
 				case CRATE_FIREPOWER:
 					if (object->FirepowerBias != 1 || !object->Is_Weapon_Equipped()) powerup = CRATE_MONEY;
 					break;
-
-				case CRATE_REVEAL:
-//					if (object->House->IsVisionary) {
-//						if (object->House->IsGPSActive) {
-//							powerup = CRATE_MONEY;
-//						} else {
-//							powerup = CRATE_DARKNESS;
-//						}
-//					}
-					break;
-
-				case CRATE_CLOAK:
+				case CRATE_CLOAK: // RA2: no case CRATE_REVEAL: (not in RA2's layout)
 					if (object->IsCloakable) powerup = CRATE_MONEY;
 					break;
-
-				case CRATE_HEAL_BASE:
-//					if (object->House->BScan == 0) powerup = CRATE_UNIT;
-					break;
-
-				case CRATE_MONEY:
-					break;
-			}
-			/*
-			**	If the powerup is money but there is insufficient money to build a refinery but there is a construction
-			**	yard available, then force the money to be enough to rebuild the refinery.
-			*/
-#if 0
-			if (powerup == CRATE_MONEY && (object->House->BScan & (STRUCTF_CONST|STRUCTF_REFINERY)) == STRUCTF_CONST &&
-						object->House->Available_Money() < BuildingTypeClass::As_Reference(STRUCT_REFINERY).Cost * object->House->CostBias) {
-
-				force_money = BuildingTypeClass::As_Reference(STRUCT_REFINERY).Cost * object->House->CostBias;
-			}
+			} // RA2: no House, BScan, BuildingTypeClass and 2 more (not in RA2's layout)
 
 			/*
 			**	Special override for water crates so that illegal goodies items
 			**	won't appear.
 			*/
-			if (Overlay == OVERLAY_WATER_CRATE) {
-				switch (powerup) {
-					case CRATE_UNIT:
-					case CRATE_SQUAD:
-						powerup = CRATE_MONEY;
-						break;
-
-					default:
-						break;
-				}
+			if (Land == LAND_WATER && !CrateWater[powerup]) powerup = CRATE_MONEY; // RA2: as above
+			if (Session.Type == GAME_INTERNET) { // RA2: as above
+				object->House->TotalCrates.Increment_Unit_Total(powerup); // RA2: as above
 			}
-#endif
-		}
+		} // RA2: no #endif (not in RA2's layout)
 
 		/*
 		**	Keep track of the number of each type of crate found
 		*/
-		if (Session.Type == GAME_INTERNET) {
-			object->House->TotalCrates->Increment_Unit_Total(powerup);
-		}
+		Map.Remove_Crate(Fetch_CellID()); // RA2: as above
 
 		/*
 		**	Remove the crate from the map.
 		*/
-		Map.Remove_Crate(Fetch_CellID());
-//		Map[CellID].Overlay = OVERLAY_NONE;
-
-		if (Session.Type != GAME_NORMAL && Rule->IsMPCrates) {
+		if (Session.Type != GAME_NORMAL && Session.Options.Goodies) { // RA2: as above
 			Map.Place_Random_Crate();
 		}
 
@@ -3642,7 +3579,7 @@ bool CellClass::Goodie_Check(FootClass * object)
 			 */
 			case CRATE_TIBERIUM: {
 				DebugString("Crate at %d,%d contains tiberium\n", CellID.X, CellID.Y);
-				TiberiumType tibtype = (TiberiumType)Random_Pick(0, Tiberiums.Count()-1);
+				TiberiumType tibtype = (TiberiumType)Random_Pick(0, Tiberiums.Count() - 1); // RA2: as above
 				if (tibtype == TIBERIUM_CRUENTUS) {
 					tibtype = TIBERIUM_RIPARIUS;
 				}
@@ -3660,9 +3597,7 @@ bool CellClass::Goodie_Check(FootClass * object)
 			*/
 			case CRATE_DARKNESS:
 				DebugString("Crate at %d,%d contains 'shroud'\n", CellID.X, CellID.Y);
-				if (object->House->Is_Player_Control()) {
-					Map.Shroud_The_Map();
-				}
+				Map.Shroud_The_Map(); // RA2: no House (not in RA2's layout)
 				break;
 
 			/*
@@ -3670,13 +3605,8 @@ bool CellClass::Goodie_Check(FootClass * object)
 			*/
 			case CRATE_REVEAL:
 				DebugString("Crate at %d,%d contains 'reveal'\n", CellID.X, CellID.Y);
-				if (object->House->Is_Player_Control()) {
-					if (object->House->IsVisionary) {
-						Map.Shroud_The_Map();
-					} else {
-						Map.Reveal_The_Map();
-					}
-				}
+				Map.Reveal_The_Map(); // RA2: no House, IsVisionary, Map (not in RA2's layout)
+				VocClass::PlayAt(Rule->CrateRevealSound, Crate_Sound_Coord(*this)); // RA2: as above
 				break;
 
 			/*
@@ -3692,15 +3622,18 @@ bool CellClass::Goodie_Check(FootClass * object)
 				**	give him another one.
 				*/
 				if (force_mcv) {
-					utp = Rule->BaseUnit;
+					utp = object->House->Get_First_Ownable(Rule->BaseUnit); // RA2: as above
 				}
 
 				/*
 				**	If the player has a base and a refinery, but no harvester, then give him
 				**	a free one.
 				*/
-				if (utp == NULL && (object->House->BQuantity.Value(Rule->BuildRefinery[0]->HeapID) > 0) && (object->House->UQuantity.Value(Rule->HarvesterUnit[0]->HeapID) == 0)) {
-					utp = Rule->HarvesterUnit[0];
+				if (utp == NULL && (object->House->BQuantity.Value(Rule->BuildRefinery[0]->HeapID) > 0 || // RA2: as above
+						object->House->BQuantity.Value(Rule->BuildRefinery[1]->HeapID) > 0) && // RA2: as above
+						object->House->UQuantity.Value(Rule->HarvesterUnit[0]->HeapID) == 0 && // RA2: as above
+						object->House->UQuantity.Value(Rule->HarvesterUnit[1]->HeapID) == 0) { // RA2: as above
+					utp = object->House->Get_First_Ownable(Rule->HarvesterUnit); // RA2: as above
 				}
 
 				/*
@@ -3714,8 +3647,11 @@ bool CellClass::Goodie_Check(FootClass * object)
 				**	If no unit type has been determined, then pick one at random.
 				*/
 				while (utp == NULL) {
-					utp = UnitTypes[Random_Pick(UNIT_FIRST, (UnitType)(UnitTypes.Count()-1))];
-					if (utp->IsCrateGoodie && (utp->Ownable & (1 << object->Owner_HouseClass()->Class->HeapID)) && (Session.Options.Bases || Rule->BaseUnit != utp)) {
+					utp = UnitTypes[Random_Pick(UNIT_FIRST, (UnitType)(UnitTypes.Count() - 1))]; // RA2: as above
+					bool is_base = Rule->BaseUnit.Is_In_List(utp); // RA2: as above
+					bool human = object->House->Is_Human_Player(); // RA2: as above
+					if (utp->IsCrateGoodie && (Session.Options.Bases || !is_base) && // RA2: as above
+							(!Session.Options.Bases || !is_base || human || force_mcv)) { // RA2: as above
 						break;
 					}
 					utp = NULL;
@@ -3725,6 +3661,9 @@ bool CellClass::Goodie_Check(FootClass * object)
 					UnitClass * goodie_unit = (UnitClass *)utp->Create_One_Of(object->House);
 					if (goodie_unit != NULL) {
 						if (goodie_unit->Unlimbo(Cell_Coord())) {
+							if (object->House->Is_Player_Control()) { // RA2: as above
+								VocClass::PlayAt(Rule->CrateUnitSound, Cell_Coord()); // RA2: as above
+							}
 							return(false);
 						}
 
@@ -3734,6 +3673,9 @@ bool CellClass::Goodie_Check(FootClass * object)
 						*/
 						Cell cell = Map.Nearby_Location(Fetch_CellID(), goodie_unit->Class->Speed);
 						if (cell != CELL_NONE && goodie_unit->Unlimbo(cell)) {
+							if (object->House->Is_Player_Control()) { // RA2: as above
+								VocClass::PlayAt(Rule->CrateUnitSound, Cell_Coord()); // RA2: as above
+							}
 							return(false);
 						}
 						delete goodie_unit;
@@ -3748,23 +3690,7 @@ bool CellClass::Goodie_Check(FootClass * object)
 			**	Create a squad of miscellaneous composition.
 			*/
 			case CRATE_SQUAD:
-#if NEVER
-				for (index = 0; index < 5; index++) {
-					static InfantryType _inf[] = {
-						INFANTRY_E1,INFANTRY_E1,INFANTRY_E1,INFANTRY_E1,INFANTRY_E1,INFANTRY_E1,
-						INFANTRY_E2,
-						INFANTRY_E3,
-						INFANTRY_ENGINEER
-					};
-					if (!InfantryTypes[_inf[Random_Pick(0, ARRAY_SIZE(_inf)-1)]]->Create_And_Place(Fetch_CellID(), object->Owner_HouseClass())) {
-						if (index == 0) {
-							goto crate_money;
-						}
-					}
-				}
-				return(false);
-#endif
-				break;
+				break; // RA2: no NEVER, InfantryType, InfantryTypes (not in RA2's layout)
 
 			/*
 			**	Give the player money.
@@ -3773,12 +3699,15 @@ bool CellClass::Goodie_Check(FootClass * object)
 crate_money:
 				DebugString("Crate at %d,%d contains money\n", CellID.X, CellID.Y);
 				if (!force_money) {
-					force_money = Random_Pick((int)data, (int)data+900);
+					force_money = Random_Pick((int)data, (int)data + 900); // RA2: as above
 				}
 				if (!object->House->Is_Player_Control() || Session.Type != GAME_NORMAL) {
 					object->House->Refund_Money(force_money);
 				} else {
 					PlayerPtr->Refund_Money(force_money);
+				}
+				if (object->House->Is_Player_Control()) { // RA2: as above
+					VocClass::PlayAt(Rule->CrateMoneySound, Crate_Sound_Coord(*this)); // RA2: as above
 				}
 				break;
 
@@ -3796,7 +3725,8 @@ crate_money:
 					Coord frag_coord = Coord_Scatter(Cell_Coord(), Random_Pick(0, 2 * CELL_LEPTON));
 					Explosion_Damage(frag_coord, damage, NULL, Rule->C4Warhead);
 					AnimTypeClass const * anim = Combat_Anim(damage, Rule->C4Warhead, LAND_CLEAR, frag_coord);
-					new AnimClass(anim, frag_coord, 0, 1, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ZGRAD), Get_Explosion_Z(frag_coord));
+					new AnimClass(anim, frag_coord, 0, 1, // RA2: as above
+						ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ZGRAD), Get_Explosion_Z(frag_coord)); // RA2: as above
 					Combat_Lighting(frag_coord, damage, Rule->C4Warhead, false);
 				}
 				break;
@@ -3806,8 +3736,8 @@ crate_money:
 			*/
 			case CRATE_NAPALM:
 				DebugString("Crate at %d,%d contains napalm\n", CellID.X, CellID.Y);
-				coord = (Cell_Coord() + object->Center_Coord()) / 2;
-				new AnimClass(AnimTypes[ANIM_NAPALM3], coord);
+				coord = (object->Center_Coord() + Cell_Coord()) / 2; // RA2: as above
+				new AnimClass(AnimTypes[0], coord); // RA2: as above
 				damage = data;
 				if (object != NULL) {
 					int d = damage;
@@ -3819,26 +3749,32 @@ crate_money:
 			/*
 			**	All objects within a certain range will gain the ability to cloak.
 			*/
-			case CRATE_CLOAK:
+			case CRATE_CLOAK: { // RA2: as above
 				DebugString("Crate at %d,%d contains cloaking device\n", CellID.X, CellID.Y);
-				for (index = 0; index < DisplayClass::Layer[LAYER_GROUND].Count(); index++) {
-					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
+				int i; // RA2: as above
+				for (i = 0; i < DisplayClass::Layer[LAYER_GROUND].Count(); i++) { // RA2: as above
+					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][i]; // RA2: as above
 
-					if (obj != NULL && obj->IsDown && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius) {
+					if (obj != NULL && obj->IsDown && obj->Is_Techno() && // RA2: as above
+							Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius) { // RA2: as above
 						((TechnoClass *)obj)->IsCloakable = true;
 					}
 				}
 				break;
+			}
 
 			/*
 			 * All techno objects within a certain range gain veterancy.
 			 */
-			case CRATE_VETERAN:
+			case CRATE_VETERAN: { // RA2: as above
 				DebugString("Crate at %d,%d contains veterancy(TM)\n", CellID.X, CellID.Y);
-				for (index = 0; index < DisplayClass::Layer[LAYER_GROUND].Count(); index++) {
-					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
+				int i; // RA2: as above
+				for (i = 0; i < DisplayClass::Layer[LAYER_GROUND].Count(); i++) { // RA2: as above
+					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][i]; // RA2: as above
 
-					if (obj != NULL && obj->IsDown && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius) {
+					if (obj != NULL && obj->IsDown && obj->Is_Techno() && // RA2: as above
+							Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && // RA2: as above
+							((TechnoClass *)obj)->Techno_Type_Class()->IsTrainable) { // RA2: as above
 						for (int count = 0; count < data; count++) {
 							VeterancyClass * vet = &((TechnoClass *)obj)->Veterancy;
 							if (vet->Is_Veteran()) vet->Set_Elite(true);
@@ -3847,15 +3783,19 @@ crate_money:
 						}
 					}
 				}
+				if (object->House->Is_Player_Control()) { // RA2: as above
+					VocClass::PlayAt(Rule->CratePromoteSound, Cell_Coord()); // RA2: as above
+				}
 				break;
+			}
 
 			/*
 			**	All of the player's objects heal up.
 			*/
 			case CRATE_HEAL_BASE:
 				DebugString("Crate at %d,%d contains base healing\n", CellID.X, CellID.Y);
-				if (object->IsOwnedByPlayer) {
-					Sound_Effect(Rule->HealCrateSound, object->Center_Coord());
+				if (object->House->Is_Player_Control()) { // RA2: as above
+					VocClass::PlayAt(Rule->HealCrateSound, Cell_Coord()); // RA2: as above
 				}
 				for (index = 0; index < Logic.Count(); index++) {
 					ObjectClass * obj = Logic[index];
@@ -3877,10 +3817,10 @@ crate_money:
 						break;
 					}
 				}
-				if (sindex != -1 && object->House->SuperWeapon[super->HeapID]->Enable(true, false, false) && object->IsOwnedByPlayer) {
+				if (sindex != -1 && object->House->SuperWeapon[super->HeapID]->Enable(true, false, false) && // RA2: as above
+						object->IsOwnedByPlayer) { // RA2: as above
 					Map.Add(RTTI_SPECIAL, super->HeapID);
-					Map.Column[1].Flag_To_Redraw();
-				}
+				} // RA2: no Map, Column (not in RA2's layout)
 				break;
 			}
 
@@ -3889,13 +3829,18 @@ crate_money:
 				for (index = 0; index < DisplayClass::Layer[LAYER_GROUND].Count(); index++) {
 					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
 
-					if (obj != NULL && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && ((TechnoClass *)obj)->ArmorBias == 1) {
-						double val = ((TechnoClass *)obj)->ArmorBias * (1 / data);
+					if (obj != NULL && obj->Is_Techno() && // RA2: as above
+							Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && // RA2: as above
+							((TechnoClass *)obj)->ArmorBias == 1) { // RA2: as above
+						double val = ((TechnoClass *)obj)->ArmorBias * data; // RA2: as above
 						((TechnoClass *)obj)->ArmorBias = val;
 						if (obj->Owner_HouseClass()->Is_Player_Control()) tospeak = true;
 					}
 				}
-				if (tospeak) Speak(VOX_UPGRADE_ARMOR);
+				if (tospeak) Queue_Speech("EVA_UnitArmorUpgraded", -1, -1); // RA2: as above
+				if (object->House->Is_Player_Control()) { // RA2: as above
+					VocClass::PlayAt(Rule->CrateArmourSound, Cell_Coord()); // RA2: as above
+				}
 				break;
 
 			case CRATE_SPEED:
@@ -3903,13 +3848,19 @@ crate_money:
 				for (index = 0; index < DisplayClass::Layer[LAYER_GROUND].Count(); index++) {
 					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
 
-					if (obj && obj->Is_Foot() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && ((FootClass *)obj)->SpeedBias == 1 && obj->RTTI != RTTI_AIRCRAFT) {
+					if (obj && obj->Is_Foot() && // RA2: as above
+							Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && // RA2: as above
+							((FootClass *)obj)->SpeedBias == 1 && // RA2: as above
+							obj->Fetch_RTTI() != RTTI_AIRCRAFT) { // RA2: as above
 						double val = ((FootClass *)obj)->SpeedBias * data;
 						((FootClass *)obj)->SpeedBias = val;
-						if (((FootClass *)obj)->IsOwnedByPlayer) tospeak = true;
+						if (((FootClass *)obj)->House->IsPlayerControl) tospeak = true; // RA2: as above
 					}
 				}
-				if (tospeak) Speak(VOX_UPGRADE_SPEED);
+				if (tospeak) Queue_Speech("EVA_UnitSpeedUpgraded", -1, -1); // RA2: as above
+				if (object->House->Is_Player_Control()) { // RA2: as above
+					VocClass::PlayAt(Rule->CrateSpeedSound, Cell_Coord()); // RA2: as above
+				}
 				break;
 
 			case CRATE_FIREPOWER:
@@ -3917,14 +3868,18 @@ crate_money:
 				for (index = 0; index < DisplayClass::Layer[LAYER_GROUND].Count(); index++) {
 					ObjectClass * obj = DisplayClass::Layer[LAYER_GROUND][index];
 
-					if (obj && obj->Is_Techno() && Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && ((TechnoClass *)obj)->FirepowerBias == 1) {
-
+					if (obj && obj->Is_Techno() && // RA2: as above
+							Distance(Cell_Coord(), obj->Center_Coord()) < Rule->CrateRadius && // RA2: as above
+							((TechnoClass *)obj)->FirepowerBias == 1) { // RA2: as above
 						double val = ((TechnoClass *)obj)->FirepowerBias * data;
 						((TechnoClass *)obj)->FirepowerBias = val;
 						if (obj->Owner_HouseClass()->Is_Player_Control()) tospeak = true;
 					}
 				}
-				if (tospeak) Speak(VOX_UPGRADE_FIREPOWER);
+				if (tospeak) Queue_Speech("EVA_UnitFirePowerUpgraded", -1, -1); // RA2: as above
+				if (object->House->Is_Player_Control()) { // RA2: as above
+					VocClass::PlayAt(Rule->CrateFireSound, Cell_Coord()); // RA2: as above
+				}
 				break;
 
 			case CRATE_INVULN:
@@ -3938,8 +3893,8 @@ crate_money:
 		}
 
 		if (CrateAnims[powerup] != ANIM_NONE) {
-			coord = Cell_Coord() + Coord(0, 0, 200);
-			new AnimClass(AnimTypes[CrateAnims[powerup]], coord);
+			Coord const animation_coord = Cell_Coord() + Coord(0, 0, 200); // RA2: as above
+			new AnimClass(AnimTypes[CrateAnims[powerup]], animation_coord); // RA2: as above
 		}
 	}
 
@@ -4185,11 +4140,13 @@ bool CellClass::Can_Tiberium_Grow(void) const
 {
 	if (!Scen->IsTibGrowth) return(false);
 
-	TiberiumType tiberium = Tiberium_Type_Here();
+	TiberiumType tiberium = Which_Tiberium_Type(Overlay); // RA2: Can_Tiberium_Grow at 0x4788E0 matches only so
 
 	if (tiberium == TIBERIUM_NONE) return(false);
 
 	TiberiumClass *tptr = Tiberiums[tiberium];
+
+	if (Ramp != RAMP_NONE) return(false); // RA2: as above
 
 	if (OverlayData >= tptr->FrameCount - 1) return(false);
 
@@ -4220,11 +4177,13 @@ bool CellClass::Can_Tiberium_Spread(void) const
 {
 	if (!Scen->Special.IsTSpread) return(false);
 
-	TiberiumType tiberium = Tiberium_Type_Here();
+	TiberiumType tiberium = Which_Tiberium_Type(Overlay); // RA2: Can_Tiberium_Spread at 0x478950 matches only so
 
 	if (tiberium == TIBERIUM_NONE) return(false);
 
 	if (OverlayData <= tiberium / 2) return(false);
+
+	if (Ramp != RAMP_NONE) return(false); // RA2: as above
 
 	if (Tiberiums[tiberium]->SpreadPercentage < 0.00001) return(false);
 
@@ -4232,6 +4191,12 @@ bool CellClass::Can_Tiberium_Spread(void) const
 
 	return(true);
 }
+
+
+/// <summary>
+/// RA2
+/// </summary>
+inline TiberiumType Overlay_Tiberium(CellClass const * cell) { return Which_Tiberium_Type(cell->Overlay); }
 
 
 /***********************************************************************************************
@@ -4251,7 +4216,7 @@ bool CellClass::Can_Tiberium_Spread(void) const
 bool CellClass::Grow_Tiberium(void)
 {
 	if (Can_Tiberium_Grow()) {
-		return(Place_Tiberium(Tiberium_Type_Here(), 1));
+		return(Place_Tiberium(Overlay_Tiberium(this), 1)); // RA2: Grow_Tiberium at 0x4789D0 matches only so
 	}
 	return(false);
 }
@@ -4279,7 +4244,7 @@ bool CellClass::Spread_Tiberium(bool forced)
 		if (!Can_Tiberium_Spread()) return(false);
 	}
 
-	TiberiumType tibtype = Tiberium_Type_Here();
+	TiberiumType tibtype = Which_Tiberium_Type(Overlay); // RA2: Spread_Tiberium at 0x478A40 matches only so
 
 	if (!forced) {
 		if (tibtype == TIBERIUM_NONE) return(false);
@@ -4292,10 +4257,18 @@ bool CellClass::Spread_Tiberium(bool forced)
 	TiberiumClass * tiberium = Tiberiums[tibtype];
 	FacingType offset = Random_Pick(FACING_N, FACING_NW);
 	for (FacingType index = FACING_N; index < FACING_COUNT; index++) {
-		CellClass * newcell = &Adjacent_Cell(FacingType(Facing_Add(index, offset))); //was (index+offset);
+		FacingType facing = Facing_Add(index, offset); // RA2: as above
+		CellClass * newcell; // RA2: as above
+		if ((unsigned)facing >= FACING_COUNT) { // RA2: as above
+			newcell = this; // RA2: as above
+		} else {
+			Cell here = Fetch_CellID(); // RA2: as above
+			Cell next = here + AdjacentCell[(int)facing & 7]; // RA2: as above
+			newcell = &Map[next]; // RA2: as above
+		}
 
 		if (newcell != NULL && newcell->Can_Tiberium_Germinate(tiberium)) {
-			return(newcell->Place_Tiberium(tibtype, 5));
+			return(newcell->Place_Tiberium(tibtype, 3)); // RA2: as above
 		}
 	}
 	return(false);
@@ -4337,7 +4310,7 @@ bool CellClass::Can_Tiberium_Germinate(TiberiumClass const * tiberium) const
 
 	if (Overlay != OVERLAY_NONE) return(false);
 
-	if (Ramp > RAMP_SOUTH || (Ramp != RAMP_NONE && tiberium != NULL && tiberium->RampVariety == 0)) return(false);
+	if (Ramp != RAMP_NONE) return(false); // RA2: Can_Tiberium_Germinate at 0x478BA0 matches only so
 
 	if (ITType >= ISOTILE_FIRST && ITType < IsometricTileTypes.Count() && !IsometricTileTypes[ITType]->IsAllowTiberium) return(false);
 
@@ -4380,6 +4353,8 @@ HRESULT STDMETHODCALLTYPE CellClass::Load(IStream * stream)
 			}
 		}
 
+		PixelFX = NULL; // RA2: Load at 0x478CB0 matches only so
+
 		int id = CellID.X + CellID.Y * MAP_CELL_W;
 		if (Map.Array[id] != NULL) {
 			delete Map.Array[id];
@@ -4390,8 +4365,16 @@ HRESULT STDMETHODCALLTYPE CellClass::Load(IStream * stream)
 		Swizzle_Pointer(&BridgeDeckCell);
 		Swizzle_Pointer(&UnusedCell);
 		Swizzle_Pointer(&Tag);
+		Swizzle_Pointer(&Jumpjet); // RA2: as above
 		Swizzle_Pointer(&OccupierPtr);
 		Swizzle_Pointer(&BridgeOccupierPtr);
+		Swizzle_Pointer(&RadSite); // RA2: as above
+		Swizzle_Pointer(&Rubble); // RA2: as above
+
+		if (Overlay == 0xb3 || Overlay == 0xf2) { // RA2: as above
+			Overlay = OVERLAY_NONE; // RA2: as above
+			OverlayData = 0; // RA2: as above
+		}
 
 		result = S_OK;
 	}
@@ -4457,10 +4440,23 @@ void CellClass::Recalc_Passability(void)
 			Passability = PASSABLE_NO;
 			return;
 		}
+		if (overlay->IsARock) { // RA2: Recalc_Passability at 0x478F40 matches only so
+			Passability = PASSABLE_NO; // RA2: as above
+			return; // RA2: as above
+		}
+		if (overlay->IsRubble) { // RA2: as above
+			Passability = PASSABLE_LAND; // RA2: as above
+			return; // RA2: as above
+		}
 	}
 
-	if (Land == LAND_WATER || Land == LAND_BEACH) {
+	if (Land == LAND_WATER) { // RA2: as above
 		Passability = PASSABLE_WATER;
+		return; // RA2: as above
+	}
+
+	if (Land == LAND_BEACH) { // RA2: as above
+		Passability = PASSABLE_BEACH; // RA2: as above
 		return;
 	}
 
@@ -4486,7 +4482,7 @@ void CellClass::Recalc_Passability(void)
 				break;
 
 			case RTTI_TERRAIN:
-				if ((Scen->Theater == THEATER_TEMPERATE && ((TerrainClass *)occupier)->Class->TemperateOccupationBits != 7) ||
+				if ((Scen->Theater != THEATER_SNOW && ((TerrainClass *)occupier)->Class->TemperateOccupationBits != 7) || // RA2: as above
 					(Scen->Theater == THEATER_SNOW && ((TerrainClass *)occupier)->Class->SnowOccupationBits != 7)) {
 
 					Passability = PASSABLE_PARTIALLY_BLOCKED;
@@ -4519,11 +4515,9 @@ void CellClass::Init_Drawer(LightConvertClass * drawer, int intensity, int ambie
 	int red_tint, green_tint, blue_tint;
 
 	if (drawer != NULL) {
-
-		/*
-		 * We got a drawer passed in, so use it.
-		 */
-		Dec_Drawer_Ref_Count(Drawer);
+		if (Drawer != NULL) { // RA2: Init_Drawer at 0x4790F0 matches only so
+			Dec_Drawer_Ref_Count(Drawer); // RA2: as above
+		}
 		Drawer = drawer;
 		Inc_Drawer_Ref_Count(Drawer);
 
@@ -4786,8 +4780,12 @@ FacingType CellClass::Bounce_Direction(Coord const & xorigin) const
 	int dx = CellID.X - origin.X;
 	int dy = CellID.Y - origin.Y;
 
-	static FacingType _facing_lookup[5] = { FACING_NONE, FACING_E, FACING_SW, FACING_S, FACING_SE }; /// the index below is not range checked
-	FacingType base_direction = _facing_lookup[(CellID.X - origin.X) + 3 * (CellID.Y - origin.Y)]; /// dx + 3 * dy
+	static FacingType const facing_lookup[9] = { // RA2: Bounce_Direction at 0x479AC0 matches only so
+		FACING_NW, FACING_N,    FACING_NE, // RA2: as above
+		FACING_W,  FACING_NONE, FACING_E, // RA2: as above
+		FACING_SW, FACING_S,    FACING_SE // RA2: as above
+	}; // RA2: as above
+	FacingType base_direction = facing_lookup[(CellID.X - origin.X) + 3 * (CellID.Y - origin.Y) + 4]; // RA2: as above
 
 	if (dx != 0 && dy != 0) {
 		bool bounce_left;
@@ -4802,21 +4800,15 @@ FacingType CellClass::Bounce_Direction(Coord const & xorigin) const
 		}
 
 		if (bounce_left) {
-			if (bounce_right) {
-				return((FacingType)base_direction);
-			} else {
-				return(Facing_Sub(base_direction, FACING_45));
+			if (!bounce_right) { // RA2: as above
+				base_direction = Facing_Sub(base_direction, FACING_45); // RA2: as above
 			}
-		} else {
-			if (bounce_right) {
-				return((FacingType)(base_direction + FACING_45));
-			} else {
-				return((FacingType)base_direction);
-			}
+		} else if (bounce_right) { // RA2: as above
+			++base_direction; // RA2: as above
 		}
 	}
-	return(base_direction);
-}
+	return base_direction; // RA2: as above
+} // RA2: Bounce_Direction at 0x479AC0 has no return(base_direction);
 
 
 /// <summary>
@@ -4852,7 +4844,8 @@ void CellClass::Dec_Drawer_Ref_Count(LightConvertClass * convert) const
 /// <returns>bool; Is this cell part of a tunnel?</returns>
 bool CellClass::Has_Tunnel(void) const
 {
-	return(Tube >= TUBE_FIRST && Tube < Tubes.Count() && Land == LAND_TUNNEL);
+	int count = Tubes.Count(); // RA2: Has_Tunnel at 0x479CC0 matches only so
+	return(Tube >= TUBE_FIRST && Tube < count && Land == LAND_TUNNEL); // RA2: as above
 }
 
 
@@ -4893,8 +4886,7 @@ bool CellClass::Is_Near_Tunnel_NW(void) const
 			}
 			CellClass const * west3 = &west2->Adjacent_Cell(FACING_W);
 			if (west3 != NULL) {
-				if (west2->Has_Tunnel() &&
-				!west3->Has_Tunnel()) {
+				if (west2->Has_Tunnel() && !west3->Has_Tunnel()) { // RA2: Is_Near_Tunnel_NW at 0x479CF0 matches only so
 					return(true);
 				}
 			}
@@ -5016,19 +5008,8 @@ char const * CellClass::Tiberium_Name(void) const
 /// <returns>Returns with the tiberium type found, or TIBERIUM_NONE if there is none.</returns>
 TiberiumType CellClass::Tiberium_Type_Here(void) const
 {
-	TiberiumType tib = Which_Tiberium_Type(Overlay);
-
-	if (tib != TIBERIUM_NONE) return(tib);
-
-	TerrainClass * terrain = Cell_Terrain();
-	if (terrain) {
-		if (terrain->Class && terrain->Class->IsTiberiumSpawn) {
-			return(TiberiumType(terrain->Class->TiberiumToSpawn));
-		}
-	}
-
-	return(TIBERIUM_NONE);
-}
+	return(Which_Tiberium_Type(Overlay)); // RA2: Tiberium_Type_Here at 0x47A220 matches only so
+} // RA2: Tiberium_Type_Here at 0x47A220 has no return(TIBERIUM_NONE);
 
 
 /// <summary>
@@ -5061,7 +5042,7 @@ int CellClass::Tiberium_Value(void) const
 /// <returns>bool; Is this a water tile?</returns>
 bool CellClass::Is_Tile_Water(void) const
 {
-	return(IS_TILE_IN_SET(WaterSet, WATER_COUNT));
+	return(ITType >= IsometricTileTypeClass::WaterSet && ITType < IsometricTileTypeClass::WaterSet + 14); // RA2: Is_Tile_Water at 0x47A270 matches only so
 }
 
 
@@ -5077,7 +5058,17 @@ LEPTON CellClass::Occupier_Height(void) const
 	Coord coord(CELL_LEPTON_W / 2, CELL_LEPTON_H / 2, 0);
 	coord.Z = Get_Height(coord);
 
-	BuildingClass * building = Cell_Building();
+	BuildingClass * building = NULL; // RA2: Occupier_Height at 0x47A290 matches only so
+	if (GameActive) { // RA2: as above
+		ObjectClass * object = Cell_Occupier(); // RA2: as above
+		while (object != NULL) { // RA2: as above
+			if (object->Fetch_RTTI() == RTTI_BUILDING) { // RA2: as above
+				building = (BuildingClass *)object; // RA2: as above
+				break;
+			}
+			object = object->Next; // RA2: as above
+		}
+	}
 	if (building) {
 		Point3D dimensions = building->Class->Lepton_Dimensions();
 		coord.Z += dimensions.Z;
@@ -5115,7 +5106,7 @@ void CellClass::Detach(AbstractClass const * target)
 		UnusedCell = NULL;
 	}
 	if (FoggedObjects != NULL) {
-		if (target->RTTI == RTTI_FOGGEDOBJECT) {
+		if (target->Fetch_RTTI() == RTTI_FOGGEDOBJECT) { // RA2: Detach at 0x47A340 matches only so
 			FoggedObjects->Delete((FoggedObjectClass *)target);
 		}
 	}
@@ -5175,9 +5166,9 @@ void CellClass::Register_As_Dirty(void)
 {
 	Point2D point;
 	TacticalMap->Coord_To_Pixel(Coord_Whole(CellID), point);
-	point.Y += TacticalRect.Y - LEVEL_PIXEL_H_1 * Height;
-	point -= Point2D(ISO_TILE_PIXEL_W / 2, ISO_TILE_PIXEL_H / 2);
-	TacticalMap->Register_Dirty_Area(Rect(point, ISO_TILE_PIXEL_W, ISO_TILE_PIXEL_H));
+	point.Y += TacticalRect.Y - 15 * Height; // RA2: Register_As_Dirty at 0x47A4E0 matches only so
+	point -= Point2D(30, 15); // RA2: as above
+	TacticalMap->Register_Dirty_Area(Rect(point, 60, 30)); // RA2: as above
 }
 
 
@@ -5194,7 +5185,7 @@ int CellClass::Get_Vein_Frame(void) const
 		CellClass const & adjacent = Adjacent_Cell(FacingType(i << FACING_45));
 		if (adjacent.Overlay != OVERLAY_NONE && (adjacent.Ramp <= RAMP_NONE || OverlayTypes[adjacent.Overlay]->IsVeins)) {
 			if ((adjacent.Overlay != OVERLAY_VEINS && OverlayTypes[adjacent.Overlay]->IsVeins) ||
-				(adjacent.Overlay == OVERLAY_VEINS && adjacent.OverlayData >= OVERLAYDATA_FIRST_SOLID_VEIN)) {
+				(adjacent.Overlay == OVERLAY_VEINS && adjacent.OverlayData >= 0x30)) { // RA2: Get_Vein_Frame at 0x47A5A0 matches only so
 				frame |= 1 << i;
 			}
 		}
@@ -5215,8 +5206,8 @@ bool CellClass::Can_Place_Veins(void)
 	if (Ramp <= RAMP_SOUTH) {
 		if (Land != LAND_WATER && Land != LAND_ROCK && Land != LAND_ICE && Land != LAND_BEACH) {
 			if (Overlay == OVERLAY_NONE || OverlayTypes[Overlay]->IsVeins) {
-				for (int dir = FACING_N; dir < FACING_COUNT; dir += FACING_90) {
-					CellClass & adjacent = Adjacent_Cell(FacingType(dir));
+				for (FacingType dir = FACING_N; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) { // RA2: Can_Place_Veins at 0x47A670 matches only so
+					CellClass const & adjacent = ((CellClass const *)this)->Adjacent_Cell(dir); // RA2: as above
 					if (adjacent.Ramp > RAMP_SOUTH && Ramp == RAMP_NONE) {
 						if (adjacent.Overlay == OVERLAY_NONE || !OverlayTypes[adjacent.Overlay]->IsVeins) {
 							return(false);
@@ -5238,6 +5229,18 @@ bool CellClass::Can_Place_Veins(void)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline int _Vein_Frame_B(CellClass const * cell) { return cell->Get_Vein_Frame(); }
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int _Vein_Frame_A(CellClass const * cell) { return _Vein_Frame_B(cell); }
+
+
+/// <summary>
 /// Recomputes the vein overlay imagery for this cell and its four cardinal
 /// neighbors after a vein change, and registers every affected screen and
 /// radar area for redraw.
@@ -5256,8 +5259,8 @@ void CellClass::Redraw_Veins(void)
 	 * frame, or the cell is a ramp, then the vein overlay is removed.
 	 */
 	OverlayData = 0;
-	int frame = Get_Vein_Frame();
-	if (frame == 0 || Ramp != RAMP_NONE) {
+	int frame = _Vein_Frame_A(this); // RA2: Redraw_Veins at 0x47A7A0 matches only so
+	if (frame == 0 || Ramp != 0) { // RA2: as above
 		Overlay = OVERLAY_NONE;
 	} else {
 		OverlayData = 3 * frame + abs(Scen->RandomNumber() % 3);
@@ -5271,15 +5274,10 @@ void CellClass::Redraw_Veins(void)
 	for (FacingType dir = FACING_N; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
 		CellClass & adjacent = Adjacent_Cell(dir);
 
-		if (adjacent.Ramp == RAMP_NONE && adjacent.Overlay == OVERLAY_VEINS && adjacent.OverlayData < OVERLAYDATA_FIRST_SOLID_VEIN) {
+		if (adjacent.Ramp == 0 && adjacent.Overlay == OVERLAY_VEINS && adjacent.OverlayData < 0x30) { // RA2: as above
+			int adjframe = _Vein_Frame_A(&adjacent); // RA2: as above
 
-			int adjframe = adjacent.Get_Vein_Frame();
-
-			/*
-			 * Capture the neighbor's render area both before and after the
-			 * overlay change so the union covers the whole affected region.
-			 */
-			Rect rect(0, 0, 0, 0);
+			Rect rect(0, 0, 0, 0); // RA2: Redraw_Veins at 0x47A7A0 has no int adjframe = adjacent.Get_Vein_Frame()
 			rect = Union(rect, Union(adjacent.Overlay_Render_Rect(), adjacent.Overlay_Shadow_Render_Rect()));
 
 			if (adjframe == 0) {
@@ -5453,7 +5451,7 @@ bool CellClass::Is_Tile_Cliff(void) const
 	}
 
 	if (IS_TILE_IN_VALID_SET(CliffRamps, CLIFF_RAMPS_COUNT)) return(true);
-	if (IS_TILE_IN_VALID_SET(WaterCaves, WATER_CAVES_COUNT)) return(true);
+	if (IS_TILE_IN_VALID_SET(WaterCaves, 4)) return(true); // RA2: Is_Tile_Cliff at 0x47B5E0 matches only so
 	if (IS_TILE_IN_VALID_SET(BridgeSet, BRIDGE_COUNT)) return(true);
 	if (IS_TILE_IN_VALID_SET(TrainBridgeSet, TRAIN_BRIDGE_COUNT)) return(true);
 	if (IS_TILE_IN_VALID_SET(DestroyableCliffs, DESTROYABLE_CLIFFS_COUNT)) return(true);
@@ -5495,25 +5493,6 @@ bool CellClass::Is_Tile_With_Water(void) const
 		IS_TILE_IN_SET(WaterfallSouth, WATERFALL_SOUTH_COUNT) ||
 		IS_TILE_IN_SET(WaterfallNorth, WATERFALL_NORTH_COUNT)) {
 		return(true);
-	}
-
-	return(false);
-}
-
-
-/// <summary>
-/// Is the tile on this cell swamp?
-/// The water to swamp transition pieces count as swamp as well. A theater that has no
-/// swamp tiles at all always answers no.
-/// </summary>
-/// <returns>bool; Is this a swamp tile?</returns>
-bool CellClass::Is_Tile_Swamp(void) const
-{
-	if (IS_SET_VALID(SwampTile)) {
-		if (IS_TILE_IN_SET(SwampTile, SWAMP_COUNT) ||
-			IS_TILE_IN_SET(WaterToSwampLat, 16)) {
-			return(true);
-		}
 	}
 
 	return(false);
@@ -5624,27 +5603,12 @@ bool CellClass::Is_Tile_Road_Median(void) const
 
 
 /// <summary>
-/// Is the tile on this cell one of the ice tiles?
-/// Every thickness of ice the theater provides counts.
-/// </summary>
-/// <returns>bool; Is this an ice tile?</returns>
-bool CellClass::Is_Tile_Ice(void) const
-{
-	if (ITType >= IsometricTileTypeClass::Ice1Set && ITType < IsometricTileTypeClass::Ice2Set + ICE2_COUNT) {
-		return(true);
-	}
-
-	return(false);
-}
-
-
-/// <summary>
 /// Is the tile on this cell part of a road bridge?
 /// </summary>
 /// <returns>bool; Is this a bridge tile?</returns>
 bool CellClass::Is_Tile_Bridge(void) const
 {
-	if (IS_TILE_IN_SET(BridgeSet, BRIDGE_COUNT)) {
+	if (IS_TILE_IN_SET(BridgeSet, BRIDGE_COUNT)) { // RA2: no validity check (0x47B960)
 		return(true);
 	}
 
@@ -5658,7 +5622,7 @@ bool CellClass::Is_Tile_Bridge(void) const
 /// <returns>bool; Is this a train bridge tile?</returns>
 bool CellClass::Is_Tile_Train_Bridge(void) const
 {
-	if (IS_TILE_IN_SET(TrainBridgeSet, TRAIN_BRIDGE_COUNT)) {
+	if (IS_TILE_IN_SET(TrainBridgeSet, TRAIN_BRIDGE_COUNT)) { // RA2: no validity check (0x47B980)
 		return(true);
 	}
 
@@ -5689,12 +5653,27 @@ bool CellClass::Is_Tile_Clear_To_Sand_LAT(void) const
 /// <returns>bool; Is this one of the clear to green transition tiles?</returns>
 bool CellClass::Is_Tile_Clear_To_Green_LAT(void) const
 {
-	if (IS_TILE_IN_SET(ClearToGreenLat, 16)) {
+	if (ITType == IsometricTileTypeClass::GreenTile || (ITType >= IsometricTileTypeClass::ClearToGreenLat && ITType < IsometricTileTypeClass::ClearToGreenLat + 16)) { // RA2: Is_Tile_Clear_To_Green_LAT at 0x47B9C0 matches only so
 		return(true);
 	}
 
 	return(false);
 }
+
+
+/// <summary>
+/// Is this cell on the ground (not water)?
+/// </summary>
+bool CellClass::On_Ground(void) const // RA2: not in TibSun, at 0x47B9F0
+{
+	if (IS_TILE_IN_SET(WaterSet, WATER_COUNT)) {
+		return(false);
+	}
+	return(true);
+}
+
+
+
 
 
 /// <summary>
@@ -5708,7 +5687,7 @@ bool CellClass::Should_Draw_As_Cloaked(HousesType house) const
 {
 	if (PlayerPtr != NULL) {
 		if (Is_Cloaked(house)) {
-			if (house == PlayerPtr->HeapID){
+			if (house == PlayerPtr->HeapID) { // RA2: Should_Draw_As_Cloaked at 0x47BA10 matches only so
 				return(true);
 			}
 			if (!Is_Sensed(PlayerPtr->HeapID)) {
@@ -5997,8 +5976,20 @@ bool CellClass::Is_Cloaked(HousesType house) const
 /// <returns>bool; Is the cell sensed by that house?</returns>
 bool CellClass::Is_Sensed(HousesType house) const
 {
-	return((SensedBy & (1 << house)) != 0);
+	return((short)SensorsOfHouses[house] > 0); // RA2: Is_Sensed at 0x47C2E0 matches only so
 }
+
+
+/// <summary>
+/// Do the given house's disguise sensors cover this cell?
+/// </summary>
+bool CellClass::Is_Disguise_Sensed(HousesType house) const // RA2: not in TibSun, at 0x47C300
+{
+	return((short)DisguiseSensorsOfHouses[house] > 0);
+}
+
+
+
 
 
 /// <summary>
@@ -6027,7 +6018,7 @@ void CellClass::Uncloaked_By(HousesType house)
 /// </summary>
 void CellClass::Sensed_By(HousesType house)
 {
-	SensedBy |= (1 << house);
+	SensorsOfHouses[house]++; // RA2: Sensed_By at 0x47C360 matches only so
 }
 
 
@@ -6038,8 +6029,32 @@ void CellClass::Sensed_By(HousesType house)
 /// </summary>
 void CellClass::Unsensed_By(HousesType house)
 {
-	SensedBy &= ~(1 << house);
+	SensorsOfHouses[house]--; // RA2: Unsensed_By at 0x47C370 matches only so
 }
+
+
+/// <summary>
+/// Notes one more disguise sensor of the given house covering this cell.
+/// </summary>
+void CellClass::Disguise_Sensed_By(HousesType house) // RA2: not in TibSun, at 0x47C380
+{
+	DisguiseSensorsOfHouses[house]++;
+}
+
+
+/// <summary>
+/// Notes one disguise sensor of the given house fewer covering this cell.
+/// </summary>
+void CellClass::Disguise_Unsensed_By(HousesType house) // RA2: not in TibSun, at 0x47C390
+{
+	DisguiseSensorsOfHouses[house]--;
+}
+
+
+
+
+
+
 
 
 /// <summary>
@@ -6082,6 +6097,66 @@ bool CellClass::Place_Tiberium(TiberiumType tib, int data)
 }
 
 
+void CellClass::ReduceShroudCounter(void) // RA2: not in TibSun, at 0x47C840
+{
+	if (ShroudCounter == 1) {
+		ShroudCounter = 0;
+	}
+	ShroudCounter--;
+	if (!IsMapped) {
+		goto reveal;
+	}
+	if (!IsVisible) {
+reveal:
+		if (ShroudCounter <= 0) {
+			IsMapped = true;
+			IsVisible = true;
+		}
+	} else {
+		if (ShroudCounter <= 0) {
+			if (IsToShroud == 1) {
+				IsToShroud = false;
+			}
+		}
+	}
+}
+
+
+void CellClass::IncreaseShroudCounter(void) // RA2: not in TibSun, at 0x47C8A0
+{
+	int old = ShroudCounter;
+	if (ShroudCounter == -1) {
+		ShroudCounter = 0;
+	}
+	ShroudCounter++;
+	if (ShroudCounter > GapsCoveringThisCell) {
+		ShroudCounter = GapsCoveringThisCell;
+	}
+	if (old <= 0 && ShroudCounter > 0) {
+		IsToShroud = true;
+	}
+}
+
+
+void CellClass::Unshroud(void) // RA2: not in TibSun, at 0x47C900
+{
+	IsMapped = true;
+	IsVisible = true;
+	if (ShroudCounter > 0) {
+		IsToShroud = true;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
 /// <summary>
 /// Kills whatever was traveling across a bridge that has just fallen.
 /// This routine is called as a bridge span collapses. Foot units in the neighborhood that
@@ -6089,44 +6164,40 @@ bool CellClass::Place_Tiberium(TiberiumType tib, int data)
 /// </summary>
 void CellClass::On_Bridge_Collapse(void)
 {
+	ObjectClass * next; // RA2: On_Bridge_Collapse at 0x47C930 matches only so
 	if (BridgeFlag.Composite) {
-		Coord coord = CellID.As_Coord();
+		Point2D pt(CellID.X * CELL_LEPTON_W + CELL_LEPTON_W / 2, CellID.Y * CELL_LEPTON_H + CELL_LEPTON_H / 2); // RA2: as above
+		Coord coord; // RA2: as above
+		coord = Coord(pt, 0); // RA2: as above
 		coord.Z = Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT;
 
 		for (int x = -2; x < 3; x++) {
 			for (int y = -2; y < 3; y++) {
-
-				Cell cell = CellID + Cell(x, y);
-				CellClass *cellptr = &Map[cell];
-
+				CellClass * cellptr = &Map[CellID + Cell(x, y)]; // RA2: as above
 				if (cellptr != this) {
-					ObjectClass *optr = NULL;
-					ObjectClass *next = NULL;
-
-					optr = cellptr->Cell_Occupier(true);
-					while (optr != NULL) {
-						next = optr->Next;
-						if (optr->Is_Foot()) {
-							FootClass *fptr = (FootClass *)optr;
-							if (fptr->Locomotion->Is_Moving_Here(coord)) {
-								int damage = fptr->Strength;
-								fptr->Take_Damage(damage, 0, Rule->C4Warhead, NULL, true, true);
+					ObjectClass * object = cellptr->Cell_Occupier(true); // RA2: as above
+					while (object) { // RA2: as above
+						next = object->Next; // RA2: as above
+						if (object->Is_Foot()) { // RA2: as above
+							FootClass * foot = (FootClass *)object; // RA2: as above
+							if (foot->Locomotion->Is_Moving_Here(coord)) { // RA2: as above
+								int damage = foot->Strength; // RA2: as above
+								foot->Take_Damage(damage, 0, Rule->C4Warhead, NULL, true, true); // RA2: as above
 							}
 						}
-						optr = next;
+						object = next; // RA2: as above
 					}
-
-					optr = cellptr->Cell_Occupier(false);
-					while (optr != NULL) {
-						next = optr->Next;
-						if (optr->Is_Foot()) {
-							FootClass *fptr = (FootClass *)optr;
-							if (fptr->Locomotion->Is_Moving_Here(coord)) {
-								int damage = fptr->Strength;
-								fptr->Take_Damage(damage, 0, Rule->C4Warhead, NULL, true, true);
+					object = cellptr->Cell_Occupier(); // RA2: as above
+					while (object) { // RA2: as above
+						next = object->Next; // RA2: as above
+						if (object->Is_Foot()) { // RA2: as above
+							FootClass * foot = (FootClass *)object; // RA2: as above
+							if (foot->Locomotion->Is_Moving_Here(coord)) { // RA2: as above
+								int damage = foot->Strength; // RA2: as above
+								foot->Take_Damage(damage, 0, Rule->C4Warhead, NULL, true, true); // RA2: as above
 							}
 						}
-						optr = next;
+						object = next; // RA2: as above
 					}
 				}
 			}
@@ -6221,6 +6292,105 @@ bool CellClass::Can_Build_Here(void) const
 }
 
 
+void CellClass::Set_Rad_Site(RadSiteClass * site) // RA2: not in TibSun, at 0x47CE30
+{
+	RadSite = site;
+}
+
+RadSiteClass * CellClass::Get_Rad_Site(void) // RA2: not in TibSun, at 0x47CE40
+{
+	return(RadSite);
+}
+
+bool CellClass::IsRadiated(void) const // RA2: not in TibSun, at 0x47CE50
+{
+	return(RadLevel > 1.0);
+}
+
+int CellClass::GetRadLevel(void) const // RA2: not in TibSun, at 0x47CE70
+{
+	return((int)MIN(RadLevel, (double)Rule->RadLevelMax));
+}
+
+void CellClass::RadLevel_Increase(double amount) // RA2: not in TibSun, at 0x47CEA0
+{
+	RadLevel += amount;
+}
+
+void CellClass::RadLevel_Decrease(double amount) // RA2: not in TibSun, at 0x47CEC0
+{
+	double level = RadLevel - amount;
+	RadLevel = level;
+	if (0.0 > level) {
+		level = 0.0;
+	}
+	RadLevel = level;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int CellClass::GetLevel(void) const // RA2: not in TibSun, at 0x0047CF10
+{
+	return(Height + (IsBridgeDeck ? BRIDGE_CELL_HEIGHT : 0));
+}
+
+
+/// <summary>
+/// Claims this cell's jumpjet slot for the given unit, or frees it for NULL.
+/// </summary>
+/// <returns>bool; Was the slot free (or already this unit's)?</returns>
+bool CellClass::TryAssignJumpjet(FootClass * foot) // RA2: not in TibSun, at 0x47CF30
+{
+	if (foot == NULL) {
+		Jumpjet = NULL;
+		return(true);
+	}
+	if (Jumpjet != NULL && Jumpjet != foot) {
+		return(false);
+	}
+	Jumpjet = foot;
+	return(true);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+inline bool Is_Foot_Object(AbstractClass * const & p)
+{
+	return(p != NULL && (p->AbstractFlags & 4) != 0);
+}
+
+
+
+
+
+
+
+
+
+
+
 /// <summary>
 /// Determines what kind of object this is.
 /// This routine is the interface counterpart of Fetch_RTTI, and is used by outside code
@@ -6247,7 +6417,14 @@ RTTIType CellClass::Fetch_RTTI(void) const
 /// Fetches the size of this object as the save game writer sees it.
 /// </summary>
 /// <returns>Returns with the number of bytes this cell occupies when written out.</returns>
-int CellClass::Fetch_Object_Size(bool oldsave) const
+int CellClass::Fetch_Object_Size(void) const // RA2: not in TibSun, at 0x0047CF90
 {
 	return(sizeof(*this));
 }
+
+
+// RA2: no CellClass::Is_Tile_Swamp in this file (the tile tests at 0x47B590-0x47BB30 do not include it)
+
+
+// RA2: no CellClass::Is_Tile_Ice in this file (the tile tests at 0x47B590-0x47BB30 do not include it)
+

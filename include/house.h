@@ -849,6 +849,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 
 		void Begin_Construction(void);
 		BuildingTypeClass const * Get_First_Ownable(DynamicVectorClass<BuildingTypeClass const *> const & owned) const;
+		UnitTypeClass const * Get_First_Ownable(TypeList<UnitTypeClass const *> const & owned) const; // RA2: 0x4EF6F0
 		bool AI_Has_Prerequisites(TechnoTypeClass const * type, DynamicVectorClass<BuildingTypeClass const *> & owned, int ownedcount) const;
 		void Make_Base_Nodes(void);
 		static int Base_Cell_Weight_By_Distance(HouseClass const & house, Cell const & cell, int tie_breaker, int context);

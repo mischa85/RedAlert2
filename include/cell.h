@@ -559,6 +559,7 @@ class CellClass : public AbstractClass
 		*/
 		LEPTON Get_Height(Point2D const & point = Point2D(CELL_LEPTON_W / 2, CELL_LEPTON_H / 2)) const;
 		int GetLevel(void) const; // RA2: height with the bridge deck
+		bool TryAssignJumpjet(FootClass * foot); // RA2: 0x47CF30
 		bool Can_Tiberium_Germinate(TiberiumClass const * tiberium) const;
 		bool Can_Tiberium_Grow(void) const;
 		bool Can_Tiberium_Spread(void) const;
@@ -602,14 +603,21 @@ class CellClass : public AbstractClass
 		FacingType Bounce_Direction(Coord const & target_coord) const;
 
 		virtual Coord Center_Coord(void) const override;
+		virtual bool On_Ground(void) const override; // RA2: 0x47B9F0
 		virtual Coord As_Coord(void) const override;
 
 		bool Is_Cloaked(HousesType house) const;
+		void ReduceShroudCounter(void); // RA2: 0x47C840
+		void IncreaseShroudCounter(void); // RA2: 0x47C8A0
+		void Unshroud(void); // RA2: 0x47C900
 		bool Is_Sensed(HousesType house) const;
+		bool Is_Disguise_Sensed(HousesType house) const; // RA2: 0x47C300
 		void Cloaked_By(HousesType house);
 		void Uncloaked_By(HousesType house);
 		void Sensed_By(HousesType house);
 		void Unsensed_By(HousesType house);
+		void Disguise_Sensed_By(HousesType house); // RA2: 0x47C380
+		void Disguise_Unsensed_By(HousesType house); // RA2: 0x47C390
 		bool Should_Draw_As_Cloaked(HousesType house) const;
 
 		int Get_Vein_Frame(void) const;
@@ -644,6 +652,12 @@ class CellClass : public AbstractClass
 		bool Is_Fogged(void) const;
 		bool Is_Shrouded(void) const;
 		bool Can_Build_Here(void) const;
+		void Set_Rad_Site(RadSiteClass * site); // RA2: 0x47CE30
+		RadSiteClass * Get_Rad_Site(void); // RA2: 0x47CE40
+		bool IsRadiated(void) const; // RA2: 0x47CE50
+		int GetRadLevel(void) const; // RA2: 0x47CE70
+		void RadLevel_Increase(double amount); // RA2: 0x47CEA0
+		void RadLevel_Decrease(double amount); // RA2: 0x47CEC0
 		int Occupation_Mask(HousesType house) const;
 
 		/*
