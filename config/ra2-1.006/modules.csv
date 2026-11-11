@@ -514,9 +514,9 @@ unk_005CDCB0,0x005CDCB0,0x005CE920,unknown,code not assigned to a module
 nulldlg,0x005CE920,0x005CFDB0,tibsun,"functions compiled from src/nulldlg.cpp, matched, without gaps"
 unk_005CFDB0,0x005CFDB0,0x005CFFC0,unknown,code not assigned to a module
 nullmgr,0x005CFFC0,0x005D1F20,tibsun,"functions compiled from src/nullmgr.cpp, matched, without gaps; four placed by the gap"
-unk_005D1F20,0x005D1F20,0x005D4A60,unknown,code not assigned to a module
-unk_005D4A60,0x005D4A60,0x005D4AB0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005D4AB0,0x005D4AB0,0x005D5D10,unknown,code not assigned to a module
+unk_005D1F20,0x005D1F20,0x005D2730,unknown,code not assigned to a module
+object,0x005D2730,0x005D54F0,tibsun,"functions compiled from src/object.cpp, without gaps; matched except ?AI@ObjectClass@@UAEXXZ and ?Select@ObjectClass@@UAE_NXZ and ?Limbo@ObjectClass@@UAE_NXZ and ?Unlimbo@ObjectClass@@UAE_NABVCoord@@W4Dir256@@@Z and ?Detach_All@ObjectClass@@UAEX_N@Z and ?Receive_Message@ObjectClass@@UAE?AW4RadioMessageType@@PAVRadioClass@@W42@AAH@Z and ?Paradrop@ObjectClass@@UAE_NABVCoord@@@Z and ?Load@ObjectClass@@UAGJPAUIStream@@@Z and ?Delete_Me@ObjectClass@@UAEXXZ; 26 placed by the gap; ?Limbo@ObjectClass@@UAE_NXZ to ?Unlimbo@ObjectClass@@UAE_NABVCoord@@W4Dir256@@@Z share the room between their neighbours; ?Detach_All@ObjectClass@@UAEX_N@Z to ?Receive_Message@ObjectClass@@UAE?AW4RadioMessageType@@PAVRadioClass@@W42@AAH@Z share the room between their neighbours; ??0ObjectClass@@QAE@XZ not placed; ??0ObjectClass@@QAE@ABVNoInitClass@@@Z not placed; ??1ObjectClass@@UAE@XZ not placed"
+unk_005D54F0,0x005D54F0,0x005D5D10,unknown,code not assigned to a module
 unk_005D5D10,0x005D5D10,0x005D5D30,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_005D5D30,0x005D5D30,0x005D7E80,unknown,code not assigned to a module
 unk_005D7E80,0x005D7E80,0x005D7EA0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
