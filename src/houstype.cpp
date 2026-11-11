@@ -139,6 +139,9 @@ HouseTypeClass::~HouseTypeClass(void)
  *=============================================================================================*/
 HousesType HouseTypeClass::From_Name(char const * name)
 {
+	if (stricmp(name, "<random>") == 0) { // RA2: 0x4F94D0 maps "<random>" to -2 first
+		return((HousesType)-2); // RA2: as above
+	}
 	if (name != NULL) {
 		for (int house = HOUSE_FIRST; house < HouseTypes.Count(); house++) {
 			HouseTypeClass *ptr = HouseTypes[house];
@@ -288,18 +291,13 @@ HRESULT STDMETHODCALLTYPE HouseTypeClass::Load(IStream * stream)
 /// <returns>Returns with S_OK if the house type was written, otherwise a failure code.</returns>
 HRESULT STDMETHODCALLTYPE HouseTypeClass::Save(IStream * stream, BOOL cleardirty)
 {
-	HRESULT result;
+	HRESULT result = BASECLASS::Save(stream, cleardirty); // RA2: Save at 0x4FA150 matches only so
+	if (SUCCEEDED(result)) { // RA2: as above
+		VeteranInfantry.Save(stream); // RA2: as above
+		VeteranUnits.Save(stream); // RA2: as above
+		VeteranAircraft.Save(stream); // RA2: as above
 
-	if (stream == NULL) {
-		result = E_POINTER;
-	} else {
-		LONG id;
-		Swizzler.Fetch_Swizzle_ID(this, &id);
-		void *ptr = (void *)id;
-		result = stream->Write(&ptr, sizeof(ptr), NULL);
-		if (SUCCEEDED(result)) {
-			result = stream->Write(this, sizeof(*this), NULL);
-		}
+		result = S_OK; // RA2: as above
 	}
 	return(result);
 }
@@ -402,7 +400,7 @@ RTTIType HouseTypeClass::Fetch_RTTI(void) const
 /// object.
 /// </summary>
 /// <returns>Returns with the size, in bytes, of this house type.</returns>
-int HouseTypeClass::Fetch_Object_Size(bool oldsave) const
+int HouseTypeClass::Fetch_Object_Size(void) const // RA2: no argument (as hover.h), at 0x4FA3F0
 {
 	return(sizeof(*this));
 }
@@ -440,3 +438,4 @@ ULONG STDMETHODCALLTYPE HouseTypeClass::Release(void)
 {
 	return(1);
 }
+
