@@ -64,6 +64,7 @@
 #include "zgrad.hh"
 
 
+class EBolt; // RA2
 class ParticleSystemClass;
 class WaveClass;
 class WeaponTypeClass;
@@ -816,6 +817,7 @@ class TechnoClass :	public RadioClass,
 		virtual int Weapon_Range(int which) const override;
 		void Set_Owner(HouseClass * newowner);
 		void Laser_Zap(AbstractClass * target, int which, WeaponTypeClass const * weapon, Coord const & source_coord); // RA2: not a virtual
+		EBolt * Electric_Zap(AbstractClass * target, WeaponTypeClass const * weapon, Coord const & source_coord); // RA2: 0x6CA020
 		int Get_Sight_Bonus(Coord const & coord);
 		static void Remove_Target(AbstractClass * target);
 		bool Has_Ability(AbilityType ability) const;

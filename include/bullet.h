@@ -90,7 +90,7 @@ class BulletClass : public ObjectClass
 		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
 		virtual RTTIType Fetch_RTTI(void) const override;
 
-		void Set_Bullet_Data(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, int range, bool bright);
+		void Set_Bullet_Data(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, bool bright); // RA2: no range
 		bool Is_Forced_To_Explode(Coord & coord) const;
 		void Bullet_Explodes(bool forced);
 		virtual int Shape_Number(void) const;
@@ -106,6 +106,12 @@ class BulletClass : public ObjectClass
 		bool Is_Homing(void) const;
 		void Draw_Voxel(VoxelDataStruct const & voxeldata, Matrix3D const & transform, Point2D const & drawpoint, Rect const & cliprect, int frame, ShapeFlags_Type flags, int brightness) const;
 		void Detonate(Coord const & coord);
+		void LoseTarget(void); // RA2 (YR name)
+		void Shrapnel(void); // RA2 (YR name)
+		void ApplyRadiationToCell(Cell cell, int radius, int amount); // RA2 (YR name)
+		WeaponTypeClass * Get_Weapon_Type(void) const; // RA2
+		void InitScalable(void); // RA2 (YR name)
+		void NukeMaker(void); // RA2 (YR name)
 
 		/*
 		**	If this bullet is forced to be inaccurate because of some outside means. A tank
@@ -228,3 +234,5 @@ class BulletClass : public ObjectClass
 
 
 BulletClass * Create_Bullet(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, int range, bool bright);
+
+extern DynamicVectorClass<BulletClass *> ScalableBullets; // RA2: 0x008502F8 (YR name)

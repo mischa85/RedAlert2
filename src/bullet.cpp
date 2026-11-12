@@ -89,6 +89,10 @@
 #include "voxdrsys.h"
 #include "warhead.h"
 #include "weapon.h"
+#include "radsite.h" // RA2
+
+
+DynamicVectorClass<BulletClass *> ScalableBullets; // RA2: 0x008502F8 (YR name), the Scalable bullets in flight
 
 
 extern ULONG COMRefCount;
@@ -147,7 +151,7 @@ BulletClass::BulletClass(void) :
 /// <param name="payback">The object that fired the shot. It receives credit for any kill.</param>
 /// <param name="strength">The damage the projectile will inflict when it detonates.</param>
 /// <param name="bright">Should the impact throw off a lighting flash?</param>
-void BulletClass::Set_Bullet_Data(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, int range, bool bright)
+void BulletClass::Set_Bullet_Data(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, bool bright) // RA2: no range (YR's Construct), at 0x45F4F0
 {
 	Class = (BulletTypeClass *)type;
 	Payback = payback;
@@ -156,10 +160,20 @@ void BulletClass::Set_Bullet_Data(BulletTypeClass const *type, AbstractClass *ta
 	Warhead = (WarheadTypeClass *)warhead;
 	IsBright = bright;
 	Strength = strength;
-	Range = range;
 	AnimFrame = 0;
 	AnimRate = Class->AnimRate;
+	if (Class->FirersPalette && Payback != NULL) {
+		InheritedColor = Payback->House->Scheme;
+	} else {
+		InheritedColor = -1;
+	}
+	DamageMultiplier = 256;
+	NextAnim = NULL;
+	SpawnNextAnim = false;
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -918,13 +932,11 @@ int BulletClass::Shape_Number(void) const
  *=============================================================================================*/
 void BulletClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 {
-	if (Scen->Special.IsFogOfWar && Map.Is_Fogged(PositionCoord)) return;
+	if (Scen->Special.IsFogOfWar && Map.Is_Fogged(Get_Coord())) return; // RA2: Draw_It at 0x4610D0 matches only so
 
-	/*
-	**	Certain projectiles aren't visible. This includes small bullets (which are actually
-	**	invisible) and flame thrower flames (which are rendered as an animation instead of a projectile).
-	*/
 	if (Class->IsInvisible) return;
+
+	if (SpawnNextAnim) return; // RA2: as above
 
 	if (Class->IsVoxel) {
 		Matrix3D matrix(true);
@@ -933,46 +945,55 @@ void BulletClass::Draw_It(Point2D const & point, Rect const & cliprect) const
 		Draw_Voxel(Class->Voxel, Get_Isometric_View_Matrix() * matrix, point, cliprect, 0, SHAPE_ALPHA, NORMAL_LIGHT);
 
 	} else {
-
-		/*
-		**	If there is no shape loaded for this object, then
-		**	it obviously can't be rendered -- just bail.
-		*/
 		ShapeSet const * shapeptr = (ShapeSet const *)Get_Image_Data();
 		if (shapeptr == NULL) return;
 
-		/*
-		**	Get the basic shape number for this projectile.
-		*/
 		int shapenum = Shape_Number();
 
 		int height_agl = HeightAGL;
-		int height_gl = Map.Get_Height_GL(PositionCoord);
+		int height_gl = Map.Get_Height_GL(Get_Coord()); // RA2: as above
 
-		if (!IsOnBridge && Map[(Coord const &)PositionCoord].IsUnderBridge && height_agl >= BRIDGE_LEPTON_HEIGHT) {
+		if (!IsOnBridge && Map[Get_Coord()].IsUnderBridge && height_agl >= BRIDGE_LEPTON_HEIGHT) { // RA2: as above
 			height_agl -= BRIDGE_LEPTON_HEIGHT;
 			height_gl += BRIDGE_LEPTON_HEIGHT;
 		}
 
-		/*
-		**	For flying projectiles, draw the shadow and adjust the actual projectile body
-		**	render position.
-		*/
-		if (height_agl > 0) {
+		if (height_agl > 0 && Class->IsShadow) { // RA2: as above
 			Point2D shadowpoint = point + Point2D(0, TacticalMap->Z_Lepton_To_Pixel(height_agl));
 			Draw_Shape(*LogicalSurface, *NormalDrawer, shapeptr, shapenum, shadowpoint, cliprect, ShapeFlags_Type(SHAPE_DARKEN|SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ZGRAD), 0, -10 - TacticalMap->Z_Lepton_To_Pixel(height_gl));
 		}
 
-		/*
-		**	Draw the main body of the projectile.
-		*/
 		ConvertClass * drawer = NormalDrawer;
 		if (Class->IsAnimPalette) {
 			drawer = AnimDrawer;
+		} else if (Class->FirersPalette) { // RA2: as above
+			if (InheritedColor != -1) { // RA2: as above
+				drawer = ColorSchemes[InheritedColor]->Converter; // RA2: as above
+			} else {
+				drawer = ColorSchemes[PlayerPtr->Scheme]->Converter; // RA2: as above
+			}
 		}
 		Draw_Shape(*LogicalSurface, *drawer, shapeptr, shapenum, point, cliprect, ShapeFlags_Type(SHAPE_CENTER|SHAPE_WIN_REL|SHAPE_ALPHA|SHAPE_ZGRAD), 0, -30 - TacticalMap->Z_Lepton_To_Pixel(Height));
 	}
 }
+
+
+/// <summary>
+/// RA2: retargets the bullet at the cell under its target (no target while the scenario is set up, for
+/// a target in the air, or at the zero cell).
+/// </summary>
+void BulletClass::LoseTarget(void) // RA2: at 0x461470
+{
+	Cell cell = TarCom->Center_Coord().As_Cell();
+	if (!ScenarioInit && !TarCom->In_Air() && cell != CELL_NONE) {
+		TarCom = &Map[cell];
+	} else {
+		TarCom = NULL;
+	}
+}
+
+
+
 
 
 /***********************************************************************************************
@@ -1144,7 +1165,7 @@ bool BulletClass::Unlimbo(Coord const & coord, TVelocity3D<double> const & veloc
  *=============================================================================================*/
 LayerType BulletClass::In_Which_Layer(void) const
 {
-	return(LAYER_AIR);
+	return(Class->Flat ? LAYER_SURFACE : LAYER_AIR); // RA2: In_Which_Layer at 0x461BF0 matches only so
 }
 
 
@@ -1175,11 +1196,8 @@ bool BulletClass::Is_Forced_To_Explode(Coord & coord) const
 	/*
 	**	Check for impact on a wall or other high obstacle.
 	*/
-	if (!Class->IsHigh && cellptr->Overlay != OVERLAY_NONE && OverlayTypes[cellptr->Overlay]->IsHigh && height < 100) {
-		return(true);
-	}
 
-	if (height < 0) {
+	if (height < 0) { // RA2: no IsHigh (TibSun's use does not compile against RA2's declaration)
 		return(true);
 	}
 
@@ -1201,6 +1219,16 @@ bool BulletClass::Is_Forced_To_Explode(Coord & coord) const
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+static inline int Coord_Dist(Coord const & a, Coord const & b)
+{
+	Coord c = a - b;
+	return(c.Length());
+}
+
+
 /***********************************************************************************************
  * BulletClass::Bullet_Explodes -- Performs bullet explosion logic.                            *
  *                                                                                             *
@@ -1219,40 +1247,40 @@ bool BulletClass::Is_Forced_To_Explode(Coord & coord) const
 void BulletClass::Bullet_Explodes(bool forced)
 {
 	Coord coord = PositionCoord;
-	TechnoClass *target = NULL;
+	TechnoClass * target = NULL; // RA2: Bullet_Explodes at 0x461DE0 matches only so
 	if (TarCom != NULL && TarCom->In_Air()) {
 		target = (TechnoClass *)TarCom;
 	}
 
-	if (TarCom != NULL) {
-		//if (::Distance(coord, TarCom->Center_Coord()) < 32) {
-		Coord c = coord - TarCom->Center_Coord();
-		if (c.Length() < 32) {
-			if (!Class->IsAirburst && !Class->IsInaccurate) {
+	if (!Class->IsInaccurate) { // RA2: as above
+		if (TarCom != NULL) { // RA2: as above
+			if (Coord_Dist(coord, TarCom->Center_Coord()) < 32 && !Class->IsAirburst && !Class->IsInaccurate) { // RA2: as above
 				coord = TarCom->Center_Coord();
 			}
 		}
-	}
 
-	if (!Warhead->IsEMEffect) {
-		if (!Class->IsSplits) {
+		if (!Warhead->IsEMEffect && !Class->IsAirburst) { // RA2: as above
 			if (!forced && !Class->IsArcing && !Is_Homing() && Fuse.Fuse_Target() != COORD_NONE) {
 				coord = Fuse.Fuse_Target();
 			}
 
 			if (target != NULL && target->In_Which_Layer() != LAYER_GROUND) {
-				if (Distance(TarCom) < CELL_LEPTON / 2) {
+				if (Distance(TarCom) < 128) { // RA2: as above
 					coord = target->Target_Coord();
 				}
-			} else {
-				if (TarCom != NULL && Distance(TarCom) < 42) {
-					coord = TarCom->As_Coord();
+			} else if (TarCom != NULL && Distance(TarCom) < 42) { // RA2: as above
+				coord = TarCom->As_Coord(); // RA2: as above
+				if (TarCom->Fetch_RTTI() == RTTI_BUILDING) { // RA2: as above
+					Point3D const & offset = ((BuildingClass *)TarCom)->Class->TargetCoordOffset; // RA2: as above
+					if (offset.X != 0 || offset.Y != 0 || offset.Z != 0) { // RA2: as above
+						coord = ((ObjectClass *)TarCom)->Target_Coord(); // RA2: as above
+					}
 				}
 			}
 		}
 	}
 
-	if (!Class->IsSplits) {
+	if (!Class->IsAirburst) { // RA2: as above
 		Coord newcoord = coord;
 		for (int i = 0; i < Class->Cluster; i++) {
 			Detonate(coord);
@@ -1264,6 +1292,37 @@ void BulletClass::Bullet_Explodes(bool forced)
 	} else {
 		Detonate(coord);
 	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline ObjectClass * Object_Of(AbstractClass * target)
+{
+	return(target == NULL ? NULL : ((target->AbstractFlags & 2) ? (ObjectClass *)target : NULL));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Foot_Object(AbstractClass const * target)
+{
+	return(target != NULL && (target->AbstractFlags & 4));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline Vector3 Normalize_Dir(const Vector3 & vec)
+{
+	float len = (float)fastmath::sqrt(vec.Z*vec.Z + vec.Y*vec.Y + vec.X*vec.X);
+	if (len != 0.0) {
+		return(vec / len);
+	}
+	return(vec);
 }
 
 
@@ -1283,45 +1342,11 @@ void BulletClass::Detonate(Coord const & coord)
 		new EMPulseClass(coord.As_Cell(), Warhead->SpreadFactor, Strength, Payback);
 	}
 
-	else if (warhead->IsWebby) {
-		int radius = warhead->WebRadius;
-		int radius_squared = radius * radius;
-		Cell center = Center_Coord().As_Cell();
-		int max_height = 3 * LEVEL_LEPTON_H;
-
-		for (int y = -radius; y <= radius; y++) {
-			for (int x = -radius; x <= radius; x++) {
-				if (y * y + x * x <= radius_squared) {
-					CellClass * cellptr = &Map[center + Cell(x, y)];
-					if (cellptr != NULL) {
-						Coord particle_coord = cellptr->Cell_Coord();
-						ObjectClass * occupier = NULL;
-						if (abs(particle_coord.Z - coord.Z) < max_height) {
-							occupier = cellptr->Cell_Occupier();
-						} else {
-							particle_coord = cellptr->As_Coord();
-							occupier = cellptr->Cell_Occupier(true);
-						}
-						ParticleSystemClass * psys = new ParticleSystemClass(Warhead->Particle, particle_coord);
-						psys->Spawn_Held_Particle(particle_coord, particle_coord);
-						while (occupier != NULL) {
-							ObjectClass * next = occupier->Next;
-							if (occupier->IsActive && occupier->IsDown && occupier->Strength > 0) {
-								int damage = 0;
-								occupier->Take_Damage(damage, 0, Warhead);
-							}
-							occupier = next;
-						}
-					}
-				}
-			}
-		}
-	}
 
 	/*
 	**	Non-aircraft targets apply damage to the ground.
 	*/
-	else {
+	else { // RA2: no WebRadius, IsWebby (not in RA2's layout)
 		Explosion_Damage(coord, Strength, Payback, warhead, true);
 		if (!IsActive) return;
 	}
@@ -1368,65 +1393,101 @@ void BulletClass::Detonate(Coord const & coord)
 		}
 	}
 
-	if (Class->IsSplits) {
-		DynamicVectorClass<AbstractClass *> targets;
+} // RA2: no IsSplits (not in RA2's layout)
 
-		Coord split_coord = PositionCoord;
-		Cell split_cell = Center_Coord().As_Cell();
 
-		if (TarCom != NULL) {
-			ObjectClass * object = TarCom->As_ObjectClass();
-			if (object != NULL) {
-				split_coord = object->PositionCoord;
-				split_cell = object->Center_Coord().As_Cell();
-			}
+/// <summary>
+/// RA2: the type's shrapnel: up to ShrapnelCount fragments of its ShrapnelWeapon at the enemies around the
+/// impact, ring by ring within the weapon's range, and the rest at random cells nearby (a negative count:
+/// fewer the farther the impact is from the firer). Ported from meastes 0x462C50.
+/// </summary>
+void BulletClass::Shrapnel(void) // RA2: at 0x462C50
+{
+	int shrapnel = Class->ShrapnelCount;
+	int count;
+	if (shrapnel < 0) {
+		if (Payback == NULL) {
+			count = 3;
+		} else {
+			count = -shrapnel - ::Distance(Payback->Center_Coord(), Position) / CELL_LEPTON_W;
+			if (count <= 0) return;
 		}
+	} else {
+		count = shrapnel;
+	}
+	if (Map[Get_Cell()].Cell_Occupier() == NULL) return;
+	if (Map[Get_Cell()].Cell_Occupier()->Fetch_RTTI() == RTTI_BUILDING) return;
 
-		int i;
-		for (i = 0; i < Technos.Count(); i++) {
-			TechnoClass * tptr = Technos[i];
-			if (tptr->IsLocked && tptr->IsDown && tptr->Strength > 0) {
-				if (split_coord.Distance_To(tptr->PositionCoord) < CELL_LEPTON * 5) {
-					targets.Add(tptr);
+	WeaponTypeClass const * weapon = Class->ShrapnelWeapon;
+	BulletTypeClass const * projectile = weapon->Bullet;
+	Cell origin = Get_Cell();
+	int range = weapon->Range / CELL_LEPTON_W;
+	int fired = 0;
+	TVelocity3D<double> velocity;
+	for (int radius = 1; radius <= range; radius++) {
+		int end = MapClass::RadiusCount[radius];
+		for (int index = MapClass::RadiusCount[radius - 1]; index < end; index++) {
+			CellClass * cellptr = &Map[MapClass::RadiusOffset[index] + origin];
+			ObjectClass * target = cellptr->Cell_Occupier();
+			if (target != NULL && target != Payback && Payback != NULL && !Payback->House->Is_Ally(target)) {
+				BulletClass * fragment = projectile->Create_Bullet(target, Payback, weapon->Attack, weapon->WarheadPtr, weapon->MaxSpeed, weapon->IsBright);
+				if (fragment != NULL) {
+					velocity.Set(0, 0, 0);
+					velocity.Set_Yaw(::Direction(Position, target->Center_Coord()));
+					velocity.Set_Pitch(DirType(0x2000));
+					velocity.Set_Speed(weapon->MaxSpeed);
+					fragment->Unlimbo(Position, velocity);
+					Coord source = Position;
+					if (weapon->IsLaser && Payback != NULL) Payback->Laser_Zap(target, 0, weapon, source);
+					if (weapon->IsElectricBolt && Payback != NULL) Payback->Electric_Zap(target, weapon, source);
 				}
-			}
-		}
-
-		while (targets.Count() < Class->Cluster) {
-			Cell newcell = split_cell;
-			newcell.X += Random_Pick(-3, 3);
-			newcell.Y += Random_Pick(-3, 3);
-			targets.Add(&Map[newcell]);
-		}
-
-		for (i = 0; i < Class->Cluster; i++) {
-			AbstractClass * target = TarCom;
-			if (target == NULL || Random_Double(0.0, 1.0) > Class->RetargetAccuracy) {
-				int number = Random_Pick(0, targets.Count() - 1);
-				target = targets[number];
-				if (target == Payback && Random_Double(0.0, 1.0) > 0.5) {
-					number = Random_Pick(0, targets.Count() - 1);
-					target = targets[number];
-				}
-				targets.Delete_Index(number);
-			}
-
-			if (target != NULL) {
-				WeaponTypeClass * weapon = Class->AirburstWeapon;
-				const BulletTypeClass * btype = weapon->Bullet;
-				BulletClass * bullet = Create_Bullet(btype, target, Payback, weapon->Attack * 10, weapon->WarheadPtr, Class->IsSplits ? 50 : Velocity.Speed(), weapon->Range, false);
-				if (bullet != NULL) {
-					/*
-					 * Send the bomblet straight down (pitch DIR_S) with a dash of
-					 * random scatter in the heading.
-					 */
-					TVelocity3D<double> velocity(DirType((Dir256)Random_Pick(DIR_MIN, DIR_NE)), DirType(DIR_S), weapon->MaxSpeed);
-					bullet->Unlimbo(PositionCoord, velocity);
-				}
+				if (++fired == count) return;
 			}
 		}
 	}
+	if (fired < count) {
+		int remaining = count - fired;
+		do {
+			Cell cell = Get_Cell();
+			cell.X += Random_Pick(-2, 2);
+			cell.Y += Random_Pick(-2, 2);
+			BulletClass * fragment = projectile->Create_Bullet(&Map[cell], Payback, weapon->Attack, weapon->WarheadPtr, weapon->MaxSpeed, weapon->IsBright);
+			if (fragment != NULL) {
+				velocity.Set(0, 0, 0);
+				velocity.Set_Yaw(::Direction(Position, Map[cell].Center_Coord()));
+				velocity.Set_Speed(weapon->MaxSpeed);
+				velocity.Set_Pitch(DirType(0x2000));
+				fragment->Unlimbo(Position, velocity);
+				Coord source = Position;
+				if (weapon->IsLaser && Payback != NULL) Payback->Laser_Zap(&Map[cell], 0, weapon, source);
+				if (weapon->IsElectricBolt && Payback != NULL) Payback->Electric_Zap(&Map[cell], weapon, source);
+			}
+		} while (--remaining != 0);
+	}
 }
+
+
+/// <summary>
+/// RA2: leaves radiation in the cell: a new radiation site there, or more for the one it has.
+/// </summary>
+void BulletClass::ApplyRadiationToCell(Cell cell, int radius, int amount) // RA2: at 0x463720
+{
+	CellClass * cptr = &Map[cell];
+	RadSiteClass * site = cptr->Get_Rad_Site();
+	if (site == NULL) {
+		site = new RadSiteClass();
+		site->SetBaseCell(&cell);
+		site->SetSpread(radius);
+		site->SetRadLevel(amount);
+		site->Activate();
+		cptr->Set_Rad_Site(site);
+	} else {
+		site->Add(amount);
+	}
+}
+
+
+
 
 
 /// <summary>
@@ -1516,7 +1577,7 @@ bool BulletClass::Is_Homing(void) const
 /// <param name="bright">Should the impact throw off a lighting flash?</param>
 /// <returns>Returns with a pointer to the projectile created, or NULL if one could not be
 /// made.</returns>
-BulletClass * Create_Bullet(BulletTypeClass const *type, AbstractClass *target, TechnoClass *payback, int strength, WarheadTypeClass const *warhead, int max_speed, int range, bool bright)
+BulletClass * BulletTypeClass::Create_Bullet(AbstractClass * target, TechnoClass * payback, int strength, WarheadTypeClass const * warhead, int speed, bool bright) const // RA2: a member, no range, at 0x463990
 {
 	LPVOID unk = NULL;
 	if (FAILED(CoCreateInstance(CLSID_BulletClass, NULL, CLSCTX_INPROC_SERVER|CLSCTX_INPROC_HANDLER|CLSCTX_LOCAL_SERVER, IID_IUnknown, &unk))) {
@@ -1524,7 +1585,7 @@ BulletClass * Create_Bullet(BulletTypeClass const *type, AbstractClass *target, 
 	}
 
 	BulletClass * bullet = (BulletClass *)unk;
-	bullet->Set_Bullet_Data(type, target, payback, strength, warhead, max_speed, range, bright);
+	bullet->Set_Bullet_Data(this, target, payback, strength, warhead, speed, bright);
 	return(bullet);
 }
 
@@ -1562,12 +1623,68 @@ void BulletClass::Draw_Voxel(VoxelDataStruct const & voxeldata, Matrix3D const &
 
 
 /// <summary>
+/// RA2
+/// </summary>
+void BulletClass::Set_Weapon_Type(WeaponTypeClass * weapon)
+{
+	WeaponType = weapon;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+WeaponTypeClass * BulletClass::Get_Weapon_Type(void) const // RA2: at 0x463BB0
+{
+	return(WeaponType);
+}
+
+
+/// <summary>
+/// RA2: counts the bullet among the Scalable ones in flight; the more there are, the later the type spawns.
+/// </summary>
+void BulletClass::InitScalable(void) // RA2: at 0x463BC0
+{
+	ScalableBullets.Add(this);
+	int extra = ScalableBullets.Count() - 5;
+	if (extra < 0) {
+		extra = 0;
+	}
+	Class->SetScaledSpawnDelay(Class->SpawnDelay + extra / 3);
+}
+
+
+/// <summary>
+/// RA2: a NukeMaker warhead's payload: a NukePayload bullet dropped straight down on the target's cell.
+/// </summary>
+void BulletClass::NukeMaker(void) // RA2: at 0x463C50
+{
+	AbstractClass * target = TarCom;
+	CellClass * cptr = &Map[target->Center_Coord().As_Cell()];
+	WeaponTypeClass * weapon = Weapons[WeaponTypeClass::From_Name("NukePayload")];
+
+	BulletTypeClass const * type = weapon->Bullet;
+	WarheadTypeClass const * warhead = weapon->WarheadPtr;
+	int speed = weapon->MaxSpeed;
+	BulletClass * bullet = type->Create_Bullet(target, Payback, weapon->Attack, warhead, speed, true);
+	if (bullet != NULL) {
+		bullet->Limbo();
+		bullet->WeaponType = weapon;
+		Coord coord = cptr->Center_Coord();
+		coord = coord + Coord(0, 0, WeaponType->Bullet->DetonationAltitude);
+		TVelocity3D<double> velocity(DIR_N, DIR_N, -1.0);
+		bullet->Unlimbo(coord, velocity);
+	}
+}
+
+
+/// <summary>
 /// Fetches the storage size of this object.
 /// This routine is used by the save game machinery to know how many bytes of the object
 /// must be written out.
 /// </summary>
 /// <returns>Returns with the number of bytes this projectile occupies.</returns>
-int BulletClass::Fetch_Object_Size(bool oldsave) const
+int BulletClass::Fetch_Object_Size(void) const // RA2: no argument
 {
 	return(sizeof(*this));
 }
@@ -1580,6 +1697,15 @@ RTTIType BulletClass::Fetch_RTTI(void) const
 {
 	return(RTTI_BULLET);
 }
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -1615,3 +1741,4 @@ ObjectTypeClass const * BulletClass::Class_Of(void) const
 {
 	return((ObjectTypeClass const *)Class);
 }
+
