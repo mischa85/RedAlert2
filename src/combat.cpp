@@ -76,6 +76,11 @@
 #include "mph.hh"
 
 #include <windef.h>
+inline static int Explosion_Distance(Coord const & coord1, Coord const & coord2); // RA2: defined after its first caller
+
+namespace FPSCounter { extern unsigned CurrentFrameRate; }
+namespace Detail { unsigned GetMinFrameRate(void); }
+
 
 
 /***********************************************************************************************
@@ -107,54 +112,24 @@
  *=============================================================================================*/
 int Modify_Damage(int damage, WarheadTypeClass const * warhead, ArmorType armor, int distance)
 {
-	/*
-	**	If there is no raw damage value to start with, then
-	**	there can be no modified damage either.
-	*/
 	if (!damage || Scen->Special.IsInert || warhead == NULL) return(0);
 
-	/*
-	**	Negative damage (i.e., heal) is always applied full strength, but only if the heal
-	**	effect is close enough.
-	*/
 	if (damage < 0) {
-		if (distance < 0x008) return(damage);
+		if (distance < 8) return(damage); // RA2: Modify_Damage at 0x47E1C0 matches only so
 		return(0);
 	}
 
-	int modified = damage * warhead->Modifier[armor];
-	damage = 1;
-	if (modified) {
-		damage = modified;
+	float fdamage = (float)damage; // RA2: as above
+	float fmin = fdamage * warhead->PercentAtMax; // RA2: as above
+	int spread = (int)(warhead->SpreadFactor * 256.0f); // RA2: as above
+	if (fmin != fdamage && spread) { // RA2: as above
+		damage = (int)((fdamage - fmin) * (spread - distance) / spread + fmin); // RA2: as above
 	}
 
-	/*
-	**	Reduce damage according to the distance from the impact point.
-	*/
-	if (damage) {
-		if (!warhead->SpreadFactor) {
-			distance /= PIXEL_LEPTON_W/4;
-		} else {
-			distance /= warhead->SpreadFactor * (PIXEL_LEPTON_W/3);
-		}
-		distance = Bound(distance, 0, 16);
-		if (distance) {
-			damage = damage / distance;
-		}
-
-		/*
-		**	Allow damage to drop to zero only if the distance would have
-		**	reduced damage to less than 1/4 full damage. Otherwise, ensure
-		**	that at least one damage point is done.
-		*/
-		if (distance < 4) {
-			damage = MAX(damage, Rule->MinDamage);
-		}
-	}
-
-	damage = MIN(damage, Rule->MaxDamage);
-	return(damage);
-}
+	damage = MAX(damage, 0); // RA2: as above
+	damage = (int)(damage * warhead->Modifier[armor]); // RA2: as above
+	return(MIN(damage, Rule->MaxDamage)); // RA2: as above
+} // RA2: Modify_Damage at 0x47E1C0 has no Bound, MAX, Rule and 3 more
 
 
 /// <summary>
@@ -166,73 +141,7 @@ int Modify_Damage(int damage, WarheadTypeClass const * warhead, ArmorType armor,
 /// <param name="cell">The cell whose growth should be set off.</param>
 void Chain_Reaction_Damage(Cell const & cell)
 {
-	CellClass * cellptr = &Map[cell];
-	TiberiumType tiberium = cellptr->Tiberium_Type_Here();
-
-	TiberiumClass * tptr;
-	if (tiberium != TIBERIUM_NONE) {
-		tptr = Tiberiums[tiberium];
-	} else {
-		tptr = NULL;
-	}
-
-	OverlayTypeClass * optr;
-	if (cellptr->Overlay != OVERLAY_NONE) {
-		optr = OverlayTypes[cellptr->Overlay];
-	} else {
-		optr = NULL;
-	}
-
-	if (tptr != NULL && optr != NULL && optr->IsChainReaction && cellptr->OverlayData > 1) {
-
-		Coord coord = cellptr->Cell_Coord();
-		if (Percent_Chance(5 * cellptr->OverlayData > 0 ? 5 * cellptr->OverlayData : 0)) {
-			int amount = cellptr->OverlayData / 2;
-			int damage = amount * tptr->Power;
-			bool grow = false;
-			if (cellptr->OverlayData >= OVERLAYDATA_TIBERIUM_MAX) {
-				grow = true;
-			}
-			cellptr->OverlayData -= amount;
-			cellptr->Register_For_Redraw();
-
-			new AnimClass(Combat_Anim(4 * damage, Rule->C4Warhead, cellptr->Land_Type(), coord), coord);
-			Explosion_Damage(coord, damage, 0, Rule->C4Warhead, false);
-
-			for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir++){
-
-				Coord adjacent = Adjacent_Coord_With_Height(coord, dir);
-				adjacent.Z = Map[adjacent].Get_Height();
-
-				CellClass * adjacent_ptr = &Map[adjacent];
-				if (adjacent_ptr->Tiberium_Type_Here() != TIBERIUM_NONE && adjacent_ptr->OverlayData > 2 && Percent_Chance(80)) {
-					new AnimClass(AnimTypes[AnimTypeClass::From_Name("INVISO")], adjacent, Random_Pick(TICKS_PER_SECOND, 8 * TICKS_PER_SECOND));
-				}
-			}
-
-			if (grow) {
-				tptr->Queue_Growth(cell);
-			}
-		}
-	}
-}
-
-
-/// <summary>
-/// Determines the distance between two points, ignoring a slight height difference.
-/// This routine is used when explosion damage is being dealt out, so that a victim
-/// perched a fraction of a level above or below the blast is not judged to be further
-/// away than one standing level with it.
-/// </summary>
-/// <returns>Returns with the distance between the two coordinates.</returns>
-inline static int Explosion_Distance(Coord const & coord1, Coord const & coord2)
-{
-	int z1 = coord1.Z;
-	int z2 = coord2.Z;
-	if (abs(z2 - z1) < LEVEL_LEPTON_H) {
-		z2 = coord1.Z;
-	}
-	return(Coord(coord1.X - coord2.X, coord1.Y - coord2.Y, z1 - z2).Length());
+	// RA2: empty in RA2 (a bare ret at 0x47E2B0)
 }
 
 
@@ -276,9 +185,8 @@ void Explosion_Damage(Coord const & coord, int strength, TechnoClass * source, W
 
 	if (Scen->Special.IsInert || warhead == NULL) return;
 
-	if (!strength && !warhead->IsWebby) return;
 
-	range = CELL_LEPTON_W + (CELL_LEPTON_W >> 1);
+	range = CELL_LEPTON_W + (CELL_LEPTON_W >> 1); // RA2: no IsWebby (not in RA2's layout)
 	cell = coord.As_Cell();
 
 	CellClass * cellptr = &Map[cell];
@@ -303,30 +211,12 @@ void Explosion_Damage(Coord const & coord, int strength, TechnoClass * source, W
 		for (index = 0; index < Infantry.Count(); index++) {
 			InfantryClass * infantry = Infantry[index];
 
-			if (infantry->IsActive && infantry->Class->IsJumpJet) {
-				if (infantry->IsDown && infantry->Strength > 0) {
-					distance = coord.Distance_To(infantry->PositionCoord);
-					if (distance < CELL_LEPTON_W) {
-						objects.Delete(infantry);
-						objects.Add(infantry);
-					}
-				}
-			}
-		}
+		} // RA2: no IsJumpJet (not in RA2's layout)
 
 		for (index = 0; index < Units.Count(); index++) {
 			UnitClass * unit = Units[index];
 
-			if (unit->IsActive && unit->Class->IsJellyfish) {
-				if (unit->IsDown && unit->Strength > 0) {
-					distance = coord.Distance_To(unit->PositionCoord);
-					if (distance < CELL_LEPTON_W) {
-						objects.Delete(unit);
-						objects.Add(unit);
-					}
-				}
-			}
-		}
+		} // RA2: no IsJellyfish (not in RA2's layout)
 
 	}
 
@@ -391,8 +281,7 @@ void Explosion_Damage(Coord const & coord, int strength, TechnoClass * source, W
 	for (int index = 0; index < objects.Count(); index++) {
 		object = objects[index];
 
-		object->IsToDamage = false;
-		if (object->IsActive && (object->RTTI != RTTI_BUILDING || !((BuildingClass *)object)->Class->IsInvisibleInGame)) {
+		if (object->IsActive && (object->RTTI != RTTI_BUILDING || !((BuildingClass *)object)->Class->IsInvisibleInGame)) { // RA2: no IsToDamage (TibSun's use does not compile against RA2's declaration)
 			if (object->RTTI == RTTI_BUILDING && impacto == object) {
 				distance = 0;
 			} else {
@@ -403,10 +292,7 @@ void Explosion_Damage(Coord const & coord, int strength, TechnoClass * source, W
 			}
 			if (object->Strength > 0 && object->IsDown && !object->IsInLimbo && distance < range) {
 				int damage = strength;
-				if (warhead != Rule->IonStormWarhead || !object->Is_Foot() || ((FootClass *)object)->Team == NULL || !((FootClass *)object)->Team->Class->IsIonImmune) {
-					object->Take_Damage(damage, distance, warhead, source);
-				}
-			}
+			} // RA2: no IonStormWarhead (not in RA2's layout)
 		}
 	}
 
@@ -591,8 +477,7 @@ void Explosion_Damage(Coord const & coord, int strength, TechnoClass * source, W
 	}
 
 	if ((warhead->IsWallDestroyer || warhead->IsFire) && !(Map[coord].IsUnderBridge && coord.Z >= BRIDGE_LEPTON_HEIGHT + Map.Get_Height_GL(coord))) {
-		Map.DirtyIceCells.Clear();
-		if (Map.Crack_Ice(cellptr, NULL)) {
+		if (Map.Crack_Ice(cellptr, NULL)) { // RA2: no DirtyIceCells (TibSun's use does not compile against RA2's declaration)
 			Map.Recalc_Ice_Cells();
 		}
 	}
@@ -622,33 +507,28 @@ void Explosion_Damage(Coord const & coord, int strength, TechnoClass * source, W
  *=============================================================================================*/
 AnimTypeClass const * Combat_Anim(int damage, WarheadTypeClass const * warhead, LandType land, Coord const & coord)
 {
-	enum {
-		DAMAGE_PER_SPLASH_ANIM = 35,
-		DAMAGE_PER_EXPLOSION_ANIM = 25
-	};
-
-	/*
-	**	For cases of no damage or invalid warhead, don't have any
-	**	animation effect at all.
-	*/
-	if (damage == 0 || warhead == NULL) {
+	if (damage == 0 || warhead == NULL) { // RA2: Combat_Anim at 0x47F4D0 has no enum {
 		return(NULL);
 	}
 
-	if (land == LAND_WATER && warhead->IsConventional && !(Map[coord].IsUnderBridge && coord.Z >= BRIDGE_LEPTON_HEIGHT + Map.Get_Height_GL(coord))) {
+	if (land == LAND_WATER && warhead->IsConventional && !Map[coord].IsUnderBridge && coord.Z < Map.Get_Height_GL(coord) + LEVEL_LEPTON_H * 2) { // RA2: Combat_Anim at 0x47F4D0 matches only so
 		if (Rule->SplashList.Count()) {
-			int val = MIN(damage, DAMAGE_PER_SPLASH_ANIM * Rule->SplashList.Count() - 1);
-			return(Rule->SplashList[val / DAMAGE_PER_SPLASH_ANIM]);
+			int val = MIN(damage, 35 * Rule->SplashList.Count() - 1); // RA2: as above
+			return(Rule->SplashList[val / 35]); // RA2: as above
 		}
 		return(NULL);
+	}
+
+	if (warhead == Rule->LightningWarhead) { // RA2: as above
+		return(Rule->WeatherConBoltExplosion); // RA2: as above
 	}
 
 	if (warhead->ExplosionSet.Count()) {
 		if (warhead->IsEMEffect) {
 			return(warhead->ExplosionSet[Random_Pick(0, warhead->ExplosionSet.Count() - 1)]);
 		}
-		int val = MIN(damage, DAMAGE_PER_EXPLOSION_ANIM * warhead->ExplosionSet.Count() - 1);
-		return(warhead->ExplosionSet[val / DAMAGE_PER_EXPLOSION_ANIM]);
+		int val = MIN(damage, 25 * warhead->ExplosionSet.Count() - 1); // RA2: as above
+		return(warhead->ExplosionSet[val / 25]); // RA2: as above
 	}
 
 	return(NULL);
@@ -710,22 +590,10 @@ void Wide_Area_Damage(Coord const & coord, LEPTON radius, int rawdamage, TechnoC
 	int cell_radius = (radius + CELL_LEPTON_W-1) / CELL_LEPTON_W;
 	Cell cell = coord.As_Cell();
 
-	if (rawdamage > warhead->DeformThreshhold) {
-		if (Percent_Chance((rawdamage * 0.01) * warhead->Deform * 100.0)) {
-			Map.Deform_Terrain(coord.As_Cell(), false);
-		}
-	}
-
-	for (int x = -cell_radius; x <= cell_radius; x++) {
+	for (int x = -cell_radius; x <= cell_radius; x++) { // RA2: Wide_Area_Damage at 0x47F6E0 has no DeformThreshhold, Deform, Map
 		for (int y = -cell_radius; y <= cell_radius; y++) {
 			int xpos = cell.X + x;
 			int ypos = cell.Y + y;
-
-			/*
-			**	If the potential damage cell is outside of the map bounds,
-			**	then don't process it. This unusual check method ensures that
-			**	damage won't wrap from one side of the map to the other.
-			*/
 			if ((unsigned)xpos > MAP_CELL_W) {
 				continue;
 			}
@@ -740,8 +608,7 @@ void Wide_Area_Damage(Coord const & coord, LEPTON radius, int rawdamage, TechnoC
 			if (dist_from_center > 0) {
 				damagemod = 1.0 / ((double)cell_radius / dist_from_center);
 			}
-			Coord tcoord = tcell.As_Coord();
-			tcoord.Z = Map.Get_Height_GL(tcoord.As_Cell());
+			Coord tcoord(tcell, coord.Z); // RA2: Wide_Area_Damage at 0x47F6E0 matches only so
 			Explosion_Damage(tcoord, rawdamage * damagemod, source, warhead);
 		}
 	}
@@ -763,25 +630,13 @@ void Wide_Area_Damage(Coord const & coord, LEPTON radius, int rawdamage, TechnoC
 /// <returns>bool; Was a firing solution found?</returns>
 bool Calculate_Projectile_Pitch(bool high_arc, int speed, int distance, int height, double gravity, DirType & pitch)
 {
-	/*
-	 * Try launching the projectile as requested.
-	 */
 	double angle;
 	if (Calculate_Projectile_Angle(high_arc, speed, distance, height, gravity, angle)) {
-
-		/*
-		 * The high arc always goes upwards, so just return the angle.
-		 */
 		if (high_arc) {
 			pitch = DirType(angle);
 			return(true);
 		}
 
-		/*
-		 * The low arc solution can also come back pointing upwards, which makes no sense for
-		 * a flat shot. Solving again for a slightly greater distance reveals which way it
-		 * points: a smaller angle means the solution is the wrong way round and is reversed.
-		 */
 		double test;
 		Calculate_Projectile_Angle(false, speed, distance + 1, height, gravity, test);
 		if (test < angle) {
@@ -810,34 +665,33 @@ bool Calculate_Projectile_Pitch(bool high_arc, int speed, int distance, int heig
 /// <returns>bool; Was a firing solution found?</returns>
 bool Calculate_Projectile_Angle(bool high_arc, int speed, int distance, int height, double gravity, double & angle)
 {
+	if (height > 0) { // RA2: Calculate_Projectile_Angle at 0x47F9B0 matches only so
+		angle = 0.7853822499999998; // RA2: as above
+		return(true); // RA2: as above
+	}
+
 	if ((double)distance == 0.0) {
 		distance = 0;
 	}
 
 	double dx = (double)distance;
+	double velocity = (double)speed; // RA2: as above
 	double dy = (double)height;
-	double v = (double)speed;
+	double v = velocity; // RA2: as above
 
-	double dy2 = dy * dy;
-	double vsq = v * v;
-	double base = vsq - (dy * gravity);
+	double vsq = v * v; // RA2: Calculate_Projectile_Angle at 0x47F9B0 has no double dy2 = dy * dy;
+	double base = vsq - ((double)height * gravity); // RA2: as above
 	double g2 = gravity * gravity;
-	double dx2 = dx * dx;
+	double dx2 = (dx * dx); // RA2: as above
 
-	/*
-	 * Check if the equation has solutions.
-	 */
 	double value = (v * v * vsq)
 				 - (2 * vsq * dy * gravity)
 				 - (g2 * dx2);
 
-	/*
-	 * Ensure we're not trying to divide by zero.
-	 */
-	double denominator = ((dy2 / dx2) + 1.0) * 2;
+	double denominator = (((dy * dy) / dx2) + 1.0) * 2; // RA2: as above
 
 	if (value < 0.0 || denominator == 0.0) {
-		return(false); /// No valid trajectory
+		return(false); // RA2: as above
 	}
 
 	double numerator = !high_arc ? base + fastmath::sqrt(value)
@@ -846,8 +700,24 @@ bool Calculate_Projectile_Angle(bool high_arc, int speed, int distance, int heig
 	value = numerator / denominator;
 
 	if (value >= 0.0) {
-		/// Calculate the angle
 		angle = fastmath::acos(fastmath::sqrt(value) / v);
+		return(true);
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool Calculate_Projectile_Dir(int speed, int distance, int height, double gravity, DirType & dir)
+{
+	double angle;
+	if (Calculate_Projectile_Angle(false, speed, distance, height, gravity, angle)) {
+		if (angle < 0.0) {
+			angle += M_PI * 2;
+		}
+		dir = DirType(angle);
 		return(true);
 	}
 	return(false);
@@ -882,7 +752,7 @@ bool Is_Projectile_Trajectory_Valid(int speed, int distance, int height, double 
 {
 	double v = (double)speed;
 	double dx = (double)distance;
-	if (dx == 0.0) dx = 0.001; /// Avoid division by zero
+	if (dx == 0.0) dx = 0.001; // RA2: Is_Projectile_Trajectory_Valid at 0x47FBA0 matches only so
 	double dy = (double)height;
 
 	double y2 = dy * dy;
@@ -890,9 +760,6 @@ bool Is_Projectile_Trajectory_Valid(int speed, int distance, int height, double 
 	double g2 = gravity * gravity;
 	double x2 = dx * dx;
 
-	/*
-	 * Check if the equation has solutions.
-	 */
 	double discriminant = (v * v * vsq)
 						- (2 * vsq * dy * gravity)
 						- (g2 * x2);
@@ -901,21 +768,18 @@ bool Is_Projectile_Trajectory_Valid(int speed, int distance, int height, double 
 		return(false);
 	}
 
-	/*
-	 * Ensure we're not trying to divide by zero.
-	 */
 	double denominator = 2 * ((y2 / x2) + 1.0);
 	if (denominator == 0.0) {
-		return(false); /// No valid trajectory
+		return(false); // RA2: as above
 	}
 
 	double base = vsq - (dy * gravity);
 
 	if (((base + fastmath::sqrt(discriminant)) / denominator) >= 0.0 ||
 		((base - fastmath::sqrt(discriminant)) / denominator) >= 0.0) {
-		return(true); /// Valid trajectory exists
+		return(true); // RA2: as above
 	}
-	return(false); /// No valid trajectory
+	return(false); // RA2: as above
 }
 
 
@@ -941,3 +805,22 @@ double Get_Floater_Gravity(void)
 {
 	return(Rule->Gravity * 0.5);
 }
+
+
+/// <summary>
+/// Determines the distance between two points, ignoring a slight height difference.
+/// This routine is used when explosion damage is being dealt out, so that a victim
+/// perched a fraction of a level above or below the blast is not judged to be further
+/// away than one standing level with it.
+/// </summary>
+/// <returns>Returns with the distance between the two coordinates.</returns>
+inline static int Explosion_Distance(Coord const & coord1, Coord const & coord2)
+{
+	int z1 = coord1.Z;
+	int z2 = coord2.Z;
+	if (abs(z2 - z1) < LEVEL_LEPTON_H) {
+		z2 = coord1.Z;
+	}
+	return(Coord(coord1.X - coord2.X, coord1.Y - coord2.Y, z1 - z2).Length());
+}
+
