@@ -45,6 +45,8 @@
 
 #include <cstring>
 
+class IPXAddressClass; // RA2
+
 /*
 **	This event class is used to contain all external game events (things that the player can
 **	do at any time) so that these events can be transported between linked computers. This
@@ -268,15 +270,19 @@ class EventClass
 		EventClass(int index, unsigned char type, int val);
 		EventClass(int index, unsigned char type, Cell const & cell);
 		EventClass(int index, unsigned char type, TargetClass src, TargetClass dest);
-		EventClass(int index, TargetClass src, MissionType mission, TargetClass target/*=TARGET_NONE*/, TargetClass destination/*=TARGET_NONE*/);
+		EventClass(int index, TargetClass src, MissionType mission, TargetClass target, TargetClass destination, TargetClass follow); // RA2: the follow target
 
 		EventClass(int index, TargetClass src, MissionType mission, TargetClass target, TargetClass destination, SpeedType speed, MPHType maxspeed);
 
 		EventClass(int index, unsigned char type, RTTIType object, int id);
+		EventClass(int index, unsigned char type, RTTIType object, int id, BOOL naval); // RA2
+		EventClass(int index, unsigned char type, RTTIType object, int id, Cell const & cell); // RA2
+		EventClass(int index, unsigned char type, RTTIType object, int id, BOOL naval, Cell const & cell); // RA2
+		EventClass(int index, IPXAddressClass & addr, signed char value); // RA2
 		EventClass(int index, unsigned char type, RTTIType object, Cell const & cell);
 		EventClass(int index, unsigned char type, int id, Cell const & cell);
 		EventClass(int index, AnimType anim, HousesType owner, Coord const & coord);
-		EventClass(int index, unsigned char type, void *ptr, unsigned int size);
+		// RA2: no (index, type, ptr, size) constructor
 
 		// Process the event.
 		void Execute(void);

@@ -45,6 +45,7 @@
 #include "always.h"
 
 #include "event.h"
+#include "ipxaddr.h" // RA2
 
 #include "_map.h"
 #include "_rules.h"
@@ -76,6 +77,9 @@
 #include "house.hh"
 #include "ramp.hh"
 #include "special.hh"
+
+
+
 
 
 /***************************************************************************
@@ -382,6 +386,29 @@ EventClass::EventClass(int index, AnimType anim, HousesType owner, Coord const &
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+EventClass::EventClass(int index, TargetClass src, MissionType mission, TargetClass target, TargetClass destination, TargetClass follow) // RA2: the follow target
+{
+	if (index >= 0) {
+		ID = index;
+		Type = MEGAMISSION;
+		Data.MegaMission.IsPlanningEvent = false;
+		Data.MegaMission.Whom = src;
+		Data.MegaMission.Mission = mission;
+		Data.MegaMission.Target = target;
+		Data.MegaMission.Destination = destination;
+		Data.MegaMission.Follow = follow;
+		Frame = ::Frame;
+	} else {
+		ID = -1;
+		Type = EMPTY;
+		Frame = ::Frame;
+	}
+}
+
+
 /***********************************************************************************************
  * EventClass::EventClass -- Megamission assigned to unit.                                     *
  *                                                                                             *
@@ -403,22 +430,7 @@ EventClass::EventClass(int index, AnimType anim, HousesType owner, Coord const &
  * HISTORY:                                                                                    *
  *   05/18/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-EventClass::EventClass(int index, TargetClass src, MissionType mission, TargetClass target, TargetClass destination)
-{
-	if (index >= 0) {
-		ID = index;
-		Type = MEGAMISSION;
-		Data.MegaMission.Whom = src;
-		Data.MegaMission.Mission = mission;
-		Data.MegaMission.Target = target;
-		Data.MegaMission.Destination = destination;
-		Frame = ::Frame;
-	} else {
-		ID = -1;
-		Type = EMPTY;
-		Frame = ::Frame;
-	}
-}
+
 
 
 /***********************************************************************************************
@@ -468,6 +480,24 @@ EventClass::EventClass(int index, TargetClass src, MissionType mission, TargetCl
 }
 
 
+EventClass::EventClass(int index, unsigned char type, RTTIType object, int id, BOOL naval) // RA2: YR's, at 0x4B6280
+{
+	DebugString("Adding event %s\n", EventNames[type]);
+	if (index >= 0) {
+		ID = index;
+		Type = type;
+		Data.Specific.Type = object;
+		Data.Specific.ID = id;
+		Data.Specific.IsNaval = naval;
+		Frame = ::Frame;
+	} else {
+		ID = -1;
+		Type = EMPTY;
+		Frame = ::Frame;
+	}
+}
+
+
 /***********************************************************************************************
  * EventClass::EventClass -- Constructor for sidebar build events.                             *
  *                                                                                             *
@@ -487,22 +517,7 @@ EventClass::EventClass(int index, TargetClass src, MissionType mission, TargetCl
  * HISTORY:                                                                                    *
  *   05/18/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-EventClass::EventClass(int index, unsigned char type, RTTIType object, int id)
-{
-	DebugString("Adding event %s\n", EventNames[type]);
 
-	if (index >= 0) {
-		ID = index;
-		Type = type;
-		Data.Specific.Type = object;
-		Data.Specific.ID = id;
-		Frame = ::Frame;
-	} else {
-		ID = -1;
-		Type = EMPTY;
-		Frame = ::Frame;
-	}
-}
 
 
 /***********************************************************************************************
@@ -533,6 +548,46 @@ EventClass::EventClass(int index, unsigned char type, RTTIType object, Cell cons
 		ID = index;
 		Type = type;
 		Data.Place.Type = object;
+		Data.Place.ID = -1; // RA2: as in YR; 0x4B62F0 matches only so
+		Data.Place.IsNaval = 0; // RA2: as above
+		Data.Place.Where = cell;
+		Frame = ::Frame;
+	} else {
+		ID = -1;
+		Type = EMPTY;
+		Frame = ::Frame;
+	}
+}
+
+
+EventClass::EventClass(int index, unsigned char type, RTTIType object, int id, Cell const & cell) // RA2: YR's, at 0x4B6370
+{
+	DebugString("Adding event %s\n", EventNames[type]);
+	if (index >= 0) {
+		ID = index;
+		Type = type;
+		Data.Place.Type = object;
+		Data.Place.ID = id;
+		Data.Place.IsNaval = 0;
+		Data.Place.Where = cell;
+		Frame = ::Frame;
+	} else {
+		ID = -1;
+		Type = EMPTY;
+		Frame = ::Frame;
+	}
+}
+
+
+EventClass::EventClass(int index, unsigned char type, RTTIType object, int id, BOOL naval, Cell const & cell) // RA2: YR's, at 0x4B63F0
+{
+	DebugString("Adding event %s\n", EventNames[type]);
+	if (index >= 0) {
+		ID = index;
+		Type = type;
+		Data.Place.Type = object;
+		Data.Place.ID = id;
+		Data.Place.IsNaval = naval;
 		Data.Place.Where = cell;
 		Frame = ::Frame;
 	} else {
@@ -561,6 +616,12 @@ EventClass::EventClass(int index, unsigned char type, RTTIType object, Cell cons
  * HISTORY:                                                                                    *
  *   05/18/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
 EventClass::EventClass(int index, unsigned char type, int id, Cell const & cell)
 {
 	DebugString("Adding event %s\n", EventNames[type]);
@@ -579,30 +640,38 @@ EventClass::EventClass(int index, unsigned char type, int id, Cell const & cell)
 }
 
 
-/***********************************************************************************************
- * EventClass::EventClass -- construct a variable-sized event                                  *
- *                                                                                             *
- * INPUT:                                                                                      *
- *      ptr      ptr to data associated with this event                                        *
- *                                                                                             *
- * OUTPUT:                                                                                     *
- *      none.                                                                                  *
- *                                                                                             *
- * WARNINGS:                                                                                   *
- *      none.                                                                                  *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   11/10/1995 BRR : Created.                                                                 *
- *=============================================================================================*/
-EventClass::EventClass(int index, unsigned char type, void * ptr, unsigned int size)
+/// <summary>
+/// RA2
+/// </summary>
+EventClass::EventClass(int index, unsigned char type, RTTIType object, int id)
 {
 	DebugString("Adding event %s\n", EventNames[type]);
 
 	if (index >= 0) {
 		ID = index;
 		Type = type;
-		Data.Variable.Pointer = ptr;
-		Data.Variable.Size = size;
+		Data.Specific.Type = object;
+		Data.Specific.ID = id;
+		Frame = ::Frame;
+	} else {
+		ID = -1;
+		Type = EMPTY;
+		Frame = ::Frame;
+	}
+}
+
+
+EventClass::EventClass(int index, IPXAddressClass & addr, signed char value) // RA2: YR's, at 0x4B6560
+{
+	NetNumType net;
+	NetNodeType node;
+
+	if (index >= 0) {
+		ID = index;
+		Type = ADDRESS_CHANGE;
+		addr.Get_Address(net, node);
+		Data.Address.Node = *(unsigned int *)node;
+		Data.Address.Value = value;
 		Frame = ::Frame;
 	} else {
 		ID = -1;
@@ -706,10 +775,7 @@ void EventClass::Execute(void)
 				Scen->Special = Data.Options.Data;
 
 				sprintf(txt, Fetch_String(TXT_SPECIAL_WARNING), house->IniName);
-				Session.Messages.Add_Message(NULL, 0, txt,
-					house->Scheme,
-					TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), 1200);
-				Map.Flag_To_Redraw();
+				Map.Flag_To_Redraw(); // RA2: no Add_Message (TibSun's use does not compile against RA2's declaration)
 			}
 			break;
 
@@ -789,8 +855,7 @@ void EventClass::Execute(void)
 		**	what factory to use.
 		*/
 		case PRODUCE:
-			house->Begin_Production(Data.Specific.Type, Data.Specific.ID);
-			break;
+			break; // RA2: no Begin_Production (TibSun's use does not compile against RA2's declaration)
 
 		/*
 		**	This event is generated when the player puts production on hold. From the
@@ -899,8 +964,8 @@ void EventClass::Execute(void)
 						}
 					}
 				}
-				if (techno->NearbyObject != NULL) {
-					techno->NearbyObject = NULL;
+				if (techno->QueueUpToEnter != NULL) { // RA2: QueueUpToEnter
+					techno->QueueUpToEnter = NULL; // RA2: QueueUpToEnter
 				}
 				if (techno->Is_Foot()) {
 					//if (!formation) ((FootClass *)techno)->IsFormationMove = false;
@@ -1086,8 +1151,7 @@ void EventClass::Execute(void)
 				str = Fetch_String(TXT_PLAYER_CHANGED_SPEED);
 				if (str != NULL && strlen(str) != 0) {
 					sprintf(msg, str, (char *)house->IniName);
-					Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
-				}
+				} // RA2: no Add_Message (TibSun's use does not compile against RA2's declaration)
 			}
 			break;
 
@@ -1113,9 +1177,8 @@ void EventClass::Execute(void)
 
 				WWMessageBox().Process(TXT_SAVING_GAME, TXT_NONE);
 
-				Save_Game (NET_SAVE_FILE_NAME, (char *)Fetch_String(TXT_MULTIPLAYER_GAME));
 
-				while (timer > 0) {
+				while (timer > 0) { // RA2: no Save_Game (TibSun's use does not compile against RA2's declaration)
 					Call_Back();
 				}
 
@@ -1124,8 +1187,7 @@ void EventClass::Execute(void)
 				Map.Render();
 			}
 			else {
-				Save_Game (NET_SAVE_FILE_NAME, (char *)Fetch_String(TXT_MULTIPLAYER_GAME));
-			}
+			} // RA2: no Save_Game (TibSun's use does not compile against RA2's declaration)
 			break;
 
 		/*
@@ -1170,8 +1232,7 @@ void EventClass::Execute(void)
 				str = Fetch_String(TXT_PLAYER_CHANGED_LATENCY);
 				if (str != NULL && strlen(str) != 0) {
 					sprintf(msg, str, (char *)house->IniName);
-					Session.Messages.Add_Message(NULL, 0, msg, house->Scheme, TextPrintType(TPF_6PT_GRAD|TPF_USE_GRAD_PAL|TPF_FULLSHADOW), Rule->MessageDelay * TICKS_PER_MINUTE);
-				}
+				} // RA2: no Add_Message (TibSun's use does not compile against RA2's declaration)
 			}
 			break;
 
@@ -1245,3 +1306,4 @@ void EventClass::Execute(void)
 	//}
 
 }
+
