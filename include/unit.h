@@ -168,6 +168,19 @@ class UnitClass : public FootClass
 		bool Is_Immobilized(void) const; // RA2: not a virtual
 		virtual int Get_Max_Speed(void) const override;
 		bool Is_Route_Broken(Cell const & from, Cell const & to) const;
+		virtual bool Unknown_Virtual_0(int code, int) override; // RA2: 0x709890, the INoticeSink virtual
+		virtual void ReceiveGunner(FootClass * gunner) override; // RA2: 0x709A20
+		virtual void RemoveGunner(FootClass * gunner) override; // RA2: 0x709AE0
+		virtual ObjectTypeClass * GetDisguise(bool against_allies) const override; // RA2: 0x709BB0
+		virtual HouseClass * GetDisguiseHouse(bool against_allies) const override; // RA2: 0x709BF0
+		void Disguise_As_Type(ObjectTypeClass * type); // RA2: 0x709C30
+		virtual unsigned DisguiseAs(AbstractClass * target) override; // RA2: 0x709C70
+		virtual void ClearDisguise(void) override; // RA2: 0x709D20
+		virtual bool IsDisguisedAs(HouseClass * house) const override; // RA2: 0x709D50
+		virtual void Init(void) override; // RA2: 0x709E10
+		void UpdateDisguise(void); // RA2: 0x709EC0
+		virtual bool CanUseWaypoint(void) const override; // RA2: 0x70A260
+		virtual bool CanAttackOnTheMove(void) const override; // RA2: 0x70A270
 		AbstractClass * Plan_Route(AbstractClass const & object) const;
 
 		/*
@@ -228,6 +241,7 @@ class UnitClass : public FootClass
 		void Firing_AI(void);
 		void Reload_AI(void);
 		bool Edge_Of_World_AI(void);
+		virtual void Reload(void) override; // RA2: 0x6FBB40
 		void Tunnel_AI(void);
 		void Visceroid_AI(void);
 		void Jellyfish_AI(void);

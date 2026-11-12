@@ -164,6 +164,11 @@
 #include "bench.hh"
 #include "color.hh"
 #include "tube.hh"
+#include "ftimer.h"
+#include "temporal.h" // RA2
+
+namespace Unsorted { extern bool MoveFeedback; }
+
 
 char const * const UnitClass::INI_NAME = "Units";
 
@@ -180,6 +185,9 @@ int UnitClass::Visceroid_Fire_List[FACING_COUNT] = { 100, 105, 110, 115, 120, 12
 **	start of the dump animation.
 */
 int UnitClass::Harvester_Load_List[FACING_COUNT] = {4, 5, 6, 7, 0, 1, 2, 3};
+
+
+
 
 
 /***********************************************************************************************
@@ -206,14 +214,12 @@ UnitClass::UnitClass(UnitTypeClass const * type, HouseClass * house) :
 	Flagged(HOUSE_NONE),
 	IsDumping(false),
 	IsHarvesting(false),
-	Reload(0),
-	FiringSyncDelay(-1),
+	FiringSyncDelay(-1), // RA2: no Reload (TibSun's use does not compile against RA2's declaration)
 	VisceroidFacing(FACING_NONE),
 	DeathCounter(-1),
 	FollowingMe(NULL),
 	IsFollowing(false),
-	IsCompositingToEightBitSurface(false),
-	Charge(0)
+	IsCompositingToEightBitSurface(false) // RA2: no Charge (TibSun's use does not compile against RA2's declaration)
 {
 	Create_ID();
 	Units.Add(this);
@@ -232,11 +238,9 @@ UnitClass::UnitClass(UnitTypeClass const * type, HouseClass * house) :
 		Strength = Class->MaxStrength;
 	}
 
-	Reload = 0;
 
-	if (Class != NULL) {
-		Charge = Class->StartCharge;
-	}
+	if (Class != NULL) { // RA2: no Reload (TibSun's use does not compile against RA2's declaration)
+	} // RA2: no Charge, StartCharge (not in RA2's layout)
 
 	if (House != NULL) {
 		House->Tracking_Add(this);
@@ -328,6 +332,7 @@ void UnitClass::Debug_Dump(MonoClass * mono) const
 	BASECLASS::Debug_Dump(mono);
 }
 #endif
+
 
 
 /// <summary>
@@ -469,11 +474,8 @@ void UnitClass::AI(void)
 		}
 	}
 
-	if (Charge < Class->MaxCharge && !Is_Immobilized()) {
-		Charge++;
-	}
 
-	if (CurrentTube >= TUBE_FIRST) {
+	if (CurrentTube >= TUBE_FIRST) { // RA2: no MaxCharge (not in RA2's layout)
 		Tunnel_AI();
 		Update_Radar_Position();
 		return;
@@ -501,25 +503,18 @@ void UnitClass::AI(void)
 	BASECLASS::AI();
 
 	if (IsSinking) {
-		static Coord _sink_coords[] = {
-			Coord( 0, -1, 0),
-			Coord( 1, -1, 0),
-			Coord( 1,  0, 0),
-			Coord( 1,  1, 0),
-			Coord( 0,  1, 0),
-			Coord(-1,  1, 0),
-			Coord(-1,  0, 0),
-			Coord( 0,  0, 0)
-		};
-
-		Coord coord = PositionCoord;
-		coord += _sink_coords[PrimaryFacing.Current().As_Dir8()] * 3;
-		PositionCoord = coord - Coord(0, 0, 9);
-
-		if (HeightAGL < -400) {
+		Coord coord = PositionCoord; // RA2: sinks straight down, 5 leptons a frame
+		Set_Coord(coord - Coord(0, 0, 5)); // RA2: as above
+		if (Get_Height_AGL() < -400) { // RA2: as above
 			Record_The_Kill(NULL);
 			Delete_Me();
 			return;
+		}
+		if ((Frame & 3) == 0) { // RA2: a wake every 4 frames
+			int rx = Random_Pick(-170, 170); // RA2: as above
+			int ry = Random_Pick(-170, 170); // RA2: as above
+			coord = PositionCoord + Coord(ry, rx, -Get_Height_AGL()); // RA2: as above
+			new AnimClass(Rule->Wake, coord, 0, 1, ShapeFlags_Type(0x600), 0); // RA2: as above
 		}
 	}
 
@@ -539,9 +534,6 @@ void UnitClass::AI(void)
 	**	if so, if conditions are favorable for firing. When conditions permit, the
 	**	unit will fire upon its target.
 	*/
-	if (!Class->IsJellyfish) {
-		Firing_AI();
-	}
 
 	/*
 	**	Turret rotation processing. Handles rotating radar dish
@@ -549,7 +541,7 @@ void UnitClass::AI(void)
 	**	it decides that the body should face its target, then body rotation
 	**	would occur by this process as well.
 	*/
-	Rotation_AI();
+	Rotation_AI(); // RA2: no IsJellyfish (not in RA2's layout)
 
 	/*
 	**	Delete this unit if it finds itself off the edge of the map and it is in
@@ -563,19 +555,13 @@ void UnitClass::AI(void)
 		Visceroid_AI();
 	}
 
-	if (Class->IsJellyfish)	{
-		Jellyfish_AI();
-	}
 
-	if (Class->IsLimpetDrone && Fetch_Stage() >= 10) {
-		Set_Stage(0);
-	}
 
 	/*
 	**	Units will reload every so often if they are under the burden of
 	**	being required to reload between shots.
 	*/
-	Reload_AI();
+	Reload_AI(); // RA2: no IsJellyfish (not in RA2's layout)
 
 	/*
 	**	Transporters require special logic handled here since there isn't a MISSION_WAIT_FOR_PASSENGERS
@@ -661,34 +647,7 @@ void UnitClass::Rotation_AI(void)
 		}
 	}
 
-	if (Class->IsRadarEquipped) {
-		SecondaryFacing.Set((Dir256)(SecondaryFacing.Current().As_Dir256() + DIR_STEP_32));
-	} else {
-
-		IsRotating = false;
-		if (Class->IsTurretEquipped) {
-
-			if (SecondaryFacing.Is_Rotating()) {
-
-				/*
-				**	If no further rotation is necessary, flag that the rotation
-				**	has stopped.
-				*/
-				if (!Class->IsRadarEquipped) {
-					IsRotating = SecondaryFacing.Is_Rotating();
-				}
-			} else {
-				if (TarCom == NULL) {
-					if (NavCom == NULL) {
-						SecondaryFacing.Set_Desired(PrimaryFacing.Current());
-					} else {
-						SecondaryFacing.Set_Desired(Direction(NavCom));
-					}
-				}
-			}
-		}
-	}
-}
+} // RA2: no IsRadarEquipped (not in RA2's layout)
 
 
 /***********************************************************************************************
@@ -719,38 +678,22 @@ bool UnitClass::Edge_Of_World_AI(void)
 	return(false);
 }
 
-
-/***********************************************************************************************
- * UnitClass::Reload_AI -- Perform reload logic for this unit.                                 *
- *                                                                                             *
- *    Some units require special reload logic. The V2 rocket launcher in particular. Perform   *
- *    this reload logic with this routine.                                                     *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   Only call this routine once per unit per game logic loop.                       *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/30/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-void UnitClass::Reload_AI(void)
+/// <summary>
+/// RA2: a unit that cannot fire on the move holds its reload while moving.
+/// </summary>
+void UnitClass::Reload(void)
 {
-	if (Class->MaxAmmo != -1 && Class->IsNoFireWhileMoving && Ammo < Class->MaxAmmo) {
-		if (Locomotion->Is_Moving()) {
-			Reload = Reload + 1;
-		} else {
-			if (Reload == 0) {
-				Ammo++;
-				if (Ammo < Class->MaxAmmo) {
-					Reload = TICKS_PER_SECOND*30;
-				}
-				Mark(MARK_CHANGE);
-			}
+	if (!Class->MobileFire && Locomotion->Is_Moving()) {
+		if (ReloadTimer > 0) {
+			ReloadTimer = ReloadTimer + 1;
 		}
 	}
+	TechnoClass::Reload();
 }
+
+
+
+
 
 
 /// <summary>
@@ -787,6 +730,15 @@ bool UnitClass::Deploy_To_Fire(void) const
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+inline Cell Adjacent_Cell_By_Value(Cell cell, FacingType dir)
+{
+	return(cell + AdjacentCell[(int)dir & 0x07]);
+}
+
+
 /***********************************************************************************************
  * UnitClass::Firing_AI -- Handle firing logic for this unit.                                  *
  *                                                                                             *
@@ -816,15 +768,7 @@ void UnitClass::Firing_AI(void)
 
 		if (weapon) {
 			WarheadTypeClass const * warhead = weapon->WarheadPtr;
-			if (warhead && warhead->IsWebby && TarCom->RTTI == RTTI_INFANTRY) {
-				InfantryClass * inf = dynamic_cast<InfantryClass*>(TarCom);
-				if (inf && inf->ProneStruggleTimer > warhead->WebDuration / 4) {
-					Assign_Target(NULL);
-					Assign_Mission(MISSION_GUARD);
-					ok = FIRE_CANT;
-				}
-			}
-		}
+		} // RA2: no WebDuration, ProneStruggleTimer, IsWebby (TibSun's use does not compile against RA2's declaration)
 
 		if ((ok == FIRE_OK || ok == FIRE_FACING) && Deploy_To_Fire()) {
 			Assign_Mission(MISSION_UNLOAD);
@@ -982,108 +926,11 @@ void UnitClass::Visceroid_AI(void)
 
 
 /// <summary>
-/// Handles the per frame logic for a jellyfish.
-/// This routine lets the jellyfish sting anything hostile that drifts into the cells
-/// around it, and drives its animation between the idle and stinging states.
+/// RA2
 /// </summary>
-void UnitClass::Jellyfish_AI(void)
+static inline bool _Has_Room(int maxpass, CargoClass const & cargo, RadioClass * from)
 {
-	Cell pos = PositionCell;
-	WeaponTypeClass const * weapon = Class->Get_Weapon(0)->Weapon;
-	WarheadTypeClass const * warhead = weapon ? weapon->WarheadPtr : NULL;
-	int stage = Fetch_Stage();
-
-	bool time_to_attack = (stage % 8 == 0) || stage == 32;
-	bool attacked = false;
-
-	if (warhead != NULL && time_to_attack) {
-		Cell cell = (Cell)Center_Coord();
-		CellClass * cellptr = &Map[cell];
-		for (int x = -1; x <= 1; x++) {
-			for (int y = -1; y <= 1; y++) {
-				Cell newcell = cell + Cell(x, y);
-				CellClass * newcellptr = &Map[newcell];
-				if (newcellptr != NULL) {
-					Coord cell_crd = newcellptr->Cell_Coord();
-					if (abs(cell_crd.Z - PositionCoord.Z) < 3.0 * CELL_LEPTON / 2.0) {
-						ObjectClass * occupier = newcellptr->Cell_Occupier(newcellptr->IsUnderBridge && (!cellptr->IsUnderBridge || IsOnBridge));
-						while (occupier != NULL) {
-							ObjectClass * next = occupier->Next;
-							if (occupier->IsActive && occupier->IsDown && !occupier->IsInLimbo && occupier->Is_Techno() && occupier != this) {
-								TechnoClass * techno = dynamic_cast<TechnoClass *>(occupier);
-								if (techno != NULL && techno != this && techno->Strength > 0) {
-									UnitClass * unit = dynamic_cast<UnitClass *>(techno);
-									bool visceroid = (unit != NULL && (unit->Class->IsSmallVisceroid || unit->Class->IsLargeVisceroid));
-
-									bool invisible;
-									if (unit == NULL) {
-										BuildingClass * building = dynamic_cast<BuildingClass *>(techno);
-										invisible = (building != NULL && (building->Class->IsInvisibleInGame));
-									} else {
-										invisible = false;
-									}
-
-									if (!visceroid && !invisible && !House->Is_Ally(techno)) {
-										int damage = weapon->Attack * warhead->Modifier[techno->TClass->Armor];
-										techno->Take_Damage(damage, 0, warhead, this);
-										attacked = true;
-									}
-								}
-							}
-							occupier = next;
-						}
-					}
-					if (attacked) {
-						Sound_Effect((VocType)weapon->Sound.Pick(Scen->RandomNumber));
-					}
-				}
-			}
-		}
-	}
-
-	switch (stage - 1) {
-
-		case 15:
-			if (attacked) {
-				Set_Stage(16);
-				Just_Set_Rate(3);
-			} else {
-				Set_Stage(0);
-				Just_Set_Rate(1);
-			}
-			break;
-
-		case 31:
-			if (!time_to_attack || attacked) {
-				Set_Stage(16);
-				Just_Set_Rate(3);
-			}
-			break;
-
-		case 32:
-			if (time_to_attack && attacked) {
-				Set_Stage(16);
-				Just_Set_Rate(3);
-			} else {
-				Set_Stage(0);
-				Just_Set_Rate(1);
-			}
-			break;
-
-		default:
-			if (stage >= 32 || stage < 0) {
-				if (attacked) {
-					Set_Stage(16);
-					Just_Set_Rate(3);
-				} else {
-					Set_Stage(0);
-					Just_Set_Rate(1);
-				}
-			}
-			break;
-	}
-
-	Locomotion->Is_Moving();
+	return cargo.GetTotalSize() + from->Techno_Type_Class()->Size <= maxpass;
 }
 
 
@@ -1326,8 +1173,7 @@ bool UnitClass::Unlimbo(Coord const & coord, Dir256 dir)
 		if (Class->IsSmallVisceroid || Class->IsLargeVisceroid) {
 			Set_Stage(Random_Pick(0, 29));
 			Set_Rate(1);
-		} else if (Class->IsJellyfish || Class->IsLimpetDrone) {
-			Set_Stage(0);
+			Set_Stage(0); // RA2: no IsLimpetDrone, IsJellyfish (not in RA2's layout)
 			Set_Rate(1);
 		} else {
 			Set_Stage(0);
@@ -1377,10 +1223,7 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadTypeClass c
 {
 	if (Scen->Special.IsHarvesterImmune) {
 		if (Rule->HarvesterUnit.Is_In_List(Class)) {
-			if (warhead != NULL && warhead->LimpetFactor <= 0.0) {
-				return(RESULT_NONE);
-			}
-		}
+		} // RA2: no LimpetFactor (not in RA2's layout)
 	}
 
 	ResultType res = RESULT_NONE;
@@ -1598,6 +1441,54 @@ ResultType UnitClass::Take_Damage(int & damage, int distance, WarheadTypeClass c
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+static void Shake_On_Explosion(int strength)
+{
+	if (strength > Rule->ShakeScreen) {
+		int shakes = strength / (Rule->ShakeScreen / 2) + 3;
+		Shake_The_Screen(MIN(shakes, 6));
+	}
+}
+
+
+/// <summary>
+/// Creates the explosion that accompanies this unit's destruction.
+/// A loaded harvester adds a blast in proportion to the Tiberium it was carrying, and a
+/// sufficiently sturdy vehicle will rock the screen on its way out.
+/// </summary>
+void UnitClass::Explode(void)
+{
+	if (Class->Explosion.Count() > 0) {
+		AnimTypeClass const * anim = Class->Explosion.Pick(Scen->RandomNumber);
+
+		if (Class->IsExploding || Has_Ability(ABILITY_EXPLODES)) {
+			if (Class->MaxAmmo == -1 || Ammo > 0) {
+				anim = Class->Explosion[Class->Explosion.Count() - 1];
+			}
+		}
+
+		new AnimClass(anim, PositionCoord);
+
+		// The game sums the cargo power here without applying area damage.
+		if (Storage.Get_Total_Amount() > 0 && Rule->IsExplosiveHarvester && !Scen->Special.IsHarvesterImmune) {
+			int power = 0;
+			for (int i = 0; i < Tiberiums.Count(); i++) {
+				power += Storage.Get_Amount(i) * Tiberiums[i]->Power;
+			}
+		} // RA2: Explode at 0x6FD3A0 has no PositionCoord, Rule, C4Warhead
+
+		Shake_On_Explosion(Class->MaxStrength); // RA2: Explode at 0x6FD3A0 matches only so
+	}
+
+	if (Class->DestroyAnim.Count() > 0) { // RA2: as above
+		AnimTypeClass const * anim = Class->DestroyAnim.Pick(Scen->RandomNumber); // RA2: as above
+		new AnimClass(anim, PositionCoord); // RA2: as above
+	}
+}
+
+
 /***********************************************************************************************
  * UnitClass::Active_Click_With -- Intercepts the active click to see if deployment is possible*
  *                                                                                             *
@@ -1674,9 +1565,9 @@ bool UnitClass::Active_Click_With(ActionType action, ObjectClass * object, bool 
  * HISTORY:                                                                                    *
  *   09/21/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool UnitClass::Active_Click_With(ActionType action, Cell const & cell, bool is_waypoint)
+bool UnitClass::Active_Click_With(ActionType action, Cell const & cell, Cell const & cell2, bool is_waypoint) // RA2: a second cell
 {
-	return(BASECLASS::Active_Click_With(action, cell, is_waypoint));
+	return(BASECLASS::Active_Click_With(action, cell, cell2, is_waypoint)); // RA2: as above
 }
 
 
@@ -1719,49 +1610,7 @@ bool UnitClass::Enter_Idle_Mode(bool initial, bool resume_waypoint)
 		order = MISSION_MOVE;
 	} else {
 
-		if (!Class->IsMobileEMP || Mission != MISSION_UNLOAD) {
-			if (!Is_Weapon_Equipped()) {
-				if (Class->IsToHarvest || Class->IsToVeinHarvest) {
-					if (!In_Radio_Contact() && Mission != MISSION_HARVEST && MissionQueue != MISSION_HARVEST) {
-						if (initial || !House->Is_Human_Player() || Map[Get_Coord()].Land_Type() == (Class->IsToHarvest ? LAND_TIBERIUM : LAND_WEEDS)) {
-							order = MISSION_HARVEST;
-						} else {
-							order = MISSION_GUARD;
-						}
-						Assign_Target(NULL);
-						Assign_Destination(NULL);
-					} else {
-						return(res);
-					}
-				} else {
-					if (IsALoaner && Class->Max_Passengers() > 0 && Cargo.Is_Something_Attached() && Team == NULL) {
-						order = MISSION_UNLOAD;
-					} else {
-						if (!IsDeploying && (CurrentMission != MISSION_UNLOAD || Class->DeploysInto == NULL) && CurrentMission != MISSION_GUARD_AREA) {
-							order = MISSION_GUARD;
-							Assign_Target(NULL);
-							Assign_Destination(NULL);
-						} else {
-							return(res);
-						}
-					}
-				}
-			} else {
-
-				if (Mission == MISSION_GUARD || Mission == MISSION_GUARD_AREA || (Mission != MISSION_NONE && (Current_Mission_Control().IsParalyzed || Current_Mission_Control().IsZombie))) {
-					return(res);
-				}
-
-				if (House->IQ < Rule->IQGuardArea && !Has_Ability(ABILITY_GUARD_AREA) || Team != NULL) {
-					order = MISSION_GUARD;
-				} else {
-					order = MISSION_GUARD_AREA;
-				}
-			}
-		} else {
-			return(res);
-		}
-	}
+	} // RA2: no IsMobileEMP (not in RA2's layout)
 	if (CurrentMission != MISSION_PATROL && CurrentMission != MISSION_GUARD_AREA) {
 		Assign_Mission(order);
 	}
@@ -1862,6 +1711,9 @@ bool UnitClass::Goto_Clear_Spot(void)
 }
 
 
+
+
+
 /***********************************************************************************************
  * UnitClass::Try_To_Deploy -- The unit attempts to "deploy" at current location.              *
  *                                                                                             *
@@ -1949,26 +1801,19 @@ bool UnitClass::Try_To_Deploy(void)
 						TechnoClass * techno = Technos[i];
 						if (techno->TarCom != NULL && techno->TarCom->RTTI == RTTI_UNIT && techno->TarCom == this) {
 							if (techno->IsActive && techno != this && techno != building) {
-								if ((building->Class->IsMobileWar || building->Class->IsConstructionYard) && techno->RTTI == RTTI_INFANTRY && ((InfantryTypeClass *)techno->TClass)->IsVehicleThief) {
-									techno->Assign_Target(NULL);
-								} else {
-									techno->Assign_Target(building);
-								}
-							}
+							} // RA2: no IsMobileWar (not in RA2's layout)
 						}
 					}
 
 					building->ActLike = ActLike;
 					building->Group = Group;
 					building->Veterancy = Veterancy;
-					building->LimpetType = LimpetType;
-					building->LimpetSpeedFactor = LimpetSpeedFactor;
 
 					/*
 					**	Play the buildup sound for the player if this is the players
 					**	MCV.
 					*/
-					if (building->House->Is_Player_Control()) {
+					if (building->House->Is_Player_Control()) { // RA2: no LimpetType, LimpetSpeedFactor (not in RA2's layout)
 						Sound_Effect(Rule->BuildingDrop, Center_Coord());
 					} else {
 						building->IsToRebuild = true;
@@ -2046,6 +1891,12 @@ bool UnitClass::Try_To_Deploy(void)
 	}
 	return(false);
 }
+
+
+
+
+
+
 
 
 /***********************************************************************************************
@@ -2273,8 +2124,7 @@ void UnitClass::Per_Cell_Process(PCPType why)
 
 		bool broke_ice = false;
 		if (Scen->Theater == THEATER_SNOW) {
-			Map.DirtyIceCells.Clear();
-			if (Class->Weight >= Rule->IceBreakingWeight) {
+			if (Class->Weight >= Rule->IceBreakingWeight) { // RA2: no DirtyIceCells (TibSun's use does not compile against RA2's declaration)
 				broke_ice = Map.Break_Ice(&Map[(Coord const &)PositionCoord], this);
 			} else if (Class->Weight >= Rule->IceCrackingWeight) {
 				broke_ice = Map.Crack_Ice(&Map[(Coord const &)PositionCoord], this);
@@ -2311,10 +2161,7 @@ void UnitClass::Per_Cell_Process(PCPType why)
 		**	Certain units require some setup time after they come to a halt.
 		*/
 		if (NavCom == NULL && Path[0] == FACING_NONE) {
-			if (Class->IsNoFireWhileMoving) {
-				Arm = Rearm_Delay(true)/4;
-			}
-		}
+		} // RA2: no IsNoFireWhileMoving (not in RA2's layout)
 
 		/*
 		**	If after all is said and done, the unit finishes its move on an impassable cell, then
@@ -2387,6 +2234,27 @@ bool UnitClass::Render(Rect & rect, bool forced, bool extras_only) const
 	 * Units have no extras pass (only buildings do), so always render the body.
 	 */
 	return(BASECLASS::Render(rect, forced, false));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Cached(VoxelIndexClass * cache, int key)
+{
+	if (key != -1 && cache != NULL) {
+		return((*cache)[key] != NULL);
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+inline void Coord_Pixel(Coord coord, Point2D & pixel)
+{
+	TacticalMap->Coord_To_Pixel(coord, pixel);
 }
 
 
@@ -2490,182 +2358,6 @@ void UnitClass::Unit_Blit_Voxel(Surface & surface, Point2D drawpoint, Rect clipr
 
 
 /// <summary>
-/// Draws this unit from its voxel model.
-/// This routine lays down the vehicle's shadow, its hull, and whatever turret and barrel
-/// it carries. A turreted vehicle is composed on the scratch surface first so that the
-/// pieces sort correctly against one another, then blitted to the screen in one piece.
-/// </summary>
-/// <param name="xdrawpoint">The pixel position to center the unit's model upon.</param>
-/// <param name="xcliprect">The clipping rectangle to draw within.</param>
-/// <param name="brightness">The lighting level to draw the unit at.</param>
-void UnitClass::Unit_Draw_Voxel(Point2D xdrawpoint, Rect xcliprect, int brightness) const
-{
-	VoxelDataStruct *voxl;
-	Point2D drawpoint = xdrawpoint;
-	Point2D offset(0, 0);
-	Matrix3D main_matrix;
-
-	int frame = TotalFramesWalked / 2 % Class->Voxel.MotLib->Get_Frame_Count();
-
-	switch (frame) {
-		case 0:
-		case 7:
-		case 15:
-			break;
-
-		case 1:
-		case 6:
-		case 8:
-		case 14:
-			offset = Point2D(0, -1);
-			break;
-
-		default:
-			offset = Point2D(0, -2);
-			break;
-	}
-
-	Rect cliprect = xcliprect;
-	int has_turret = false;
-	ShapeFlags_Type flags = SHAPE_NORMAL;
-
-	if (Class->IsTurretEquipped && Class->AuxVoxel.VoxLib != NULL || Class->AuxVoxel2.VoxLib != NULL &&  Class->AuxVoxel2.MotLib != NULL) {
-		has_turret = true;
-	}
-
-	int key = 0;
-	main_matrix = Locomotion->Shadow_Matrix(&key);
-
-	if (!IsSinking) {
-		Point2D shadow_drawpoint = xdrawpoint;
-		if (Class->IsHunterSeeker) {
-			Coord coord = PositionCoord;
-			coord.Z = Map.Get_Height_GL(coord);
-			TacticalMap->Coord_To_Pixel(coord, shadow_drawpoint);
-			shadow_drawpoint += Locomotion->Shadow_Point();
-		}
-
-		if (IsInTransport) {
-			shadow_drawpoint.Y -= 14;
-		}
-
-		int height = HeightAGL;
-		CellClass * cellptr = &Map[Get_Coord()];
-
-		if (IsInTransport) {
-			if (!IsOnBridge && height >= BRIDGE_LEPTON_HEIGHT) {
-				if (cellptr->IsUnderBridge && (cellptr->IsBridgeEastWest && cellptr->Adjacent_Cell(FACING_N).IsUnderBridge ||
-					!cellptr->IsBridgeEastWest && cellptr->Adjacent_Cell(FACING_W).IsUnderBridge)) {
-					shadow_drawpoint.Y -= 4 * LEVEL_PIXEL_H;
-				}
-			}
-		}
-
-		Draw_Voxel_Shadow(Class->Voxel, Class->ShadowIndex, key, &Class->ShadowVoxelIndex, xcliprect, shadow_drawpoint, Get_Isometric_View_Matrix() * main_matrix, true);
-	}
-
-	Surface * old_surface = LogicalSurface;
-	if (has_turret) {
-		LogicalSurface = EightBitSurface;
-		drawpoint = Point2D(80, 80);
-		flags = ShapeFlags_Type(SHAPE_ALPHA|SHAPE_ZGRAD);
-		cliprect = LogicalSurface->Get_Rect();
-		IsCompositingToEightBitSurface = true;
-	}
-
-	if (UseVoxelCache) {
-		key = 0;
-	} else {
-		key = -1;
-	}
-
-	main_matrix = Locomotion->Draw_Matrix(&key);
-
-	if (key != -1) {
-		key = frame | (key << 5);
-	}
-
-	Rect rect = cliprect;
-	if (!has_turret && SinkingYOffset > 0) {
-		rect = Intersect(rect, Rect(0, 0, TacticalRect.Width, SinkingYOffset - TacticalMap->TacPixelY));
-	}
-
-	UnitCompositeDirtyRect = RECT_NONE;
-
-	if (strcmp(Class->IniName, "APC") == 0 && Map[Get_Coord()].Land_Type() == LAND_WATER && !IsOnBridge && HeightAGL < LEVEL_LEPTON_H) {
-		Draw_Voxel(Class->AuxVoxel, frame, -1, NULL, rect, drawpoint, Get_Isometric_View_Matrix() * main_matrix, brightness, flags);
-	} else {
-		Draw_Voxel(Class->Voxel, frame, key, &Class->VoxelIndex, rect, drawpoint, Get_Isometric_View_Matrix() * main_matrix, brightness, flags);
-	}
-
-	/*
-	**	If there is a turret, then it must be rendered as well. This may include
-	**	firing animation if required.
-	*/
-	if (Class->IsTurretEquipped && Class->AuxVoxel.VoxLib != NULL) {
-		main_matrix.Translate_X(Class->TurretOffset / 8);
-		main_matrix.Rotate_Z(SecondaryFacing.Current().As_Radian32() - PrimaryFacing.Current().As_Radian32());
-
-		/*
-		**	A recoiling turret moves "backward" one pixel.
-		*/
-		if (IsInRecoilState) {
-			main_matrix.Translate_X(-2);
-		}
-
-		Matrix3D barrel_matrix = main_matrix;
-		Vector3 vec2 = main_matrix.Get_Translation();
-		barrel_matrix.Translate(-vec2);
-
-		Vector3 flh = Vector3(-Get_Class_Weapon_Data(0)->FireFLH.X / 8, 0, -Get_Class_Weapon_Data(0)->FireFLH.Z / 8);
-		barrel_matrix.Translate(-flh);
-		barrel_matrix.Rotate_Y(-BarrelPitch.Current().As_Radian32());
-		barrel_matrix.Translate(flh);
-		barrel_matrix.Translate(vec2);
-
-		bool draw_barrel;
-		if (SecondaryFacing.Current().As_Dir4() <= 0 || SecondaryFacing.Current().As_Dir4() >= 3) {
-			draw_barrel = false;
-			voxl = &Class->AuxVoxel2;
-			if (voxl->VoxLib != NULL && voxl->MotLib != NULL) {
-				Draw_Voxel(Class->AuxVoxel2, 0, -1, &Class->VoxelIndex, cliprect, drawpoint + offset, Get_Isometric_View_Matrix() * barrel_matrix, brightness, flags);
-			}
-		} else {
-			draw_barrel = true;
-		}
-
-		Draw_Voxel(Class->AuxVoxel, frame, -1, &Class->AuxVoxelIndex, cliprect, drawpoint + offset, Get_Isometric_View_Matrix() * main_matrix, brightness, flags);
-
-		if (draw_barrel) {
-			voxl = &Class->AuxVoxel2;
-			if (voxl->VoxLib != NULL && voxl->MotLib != NULL) {
-				Draw_Voxel(Class->AuxVoxel2, 0, -1, &Class->VoxelIndex, cliprect, drawpoint + offset, Get_Isometric_View_Matrix() * barrel_matrix, brightness, flags);
-			}
-		}
-	} else {
-		voxl = &Class->AuxVoxel2;
-		if (voxl->VoxLib != NULL && voxl->MotLib != NULL) {
-			main_matrix.Rotate_Y(-(BarrelPitch.Current().As_Radian32() - main_matrix.Get_Y_Rotation()));
-			main_matrix.Translate(Get_Class_Weapon_Data(0)->FireFLH.X / 8, 0, Get_Class_Weapon_Data(0)->FireFLH.Z / 8);
-			Draw_Voxel(Class->AuxVoxel2, frame, -1, &Class->VoxelIndex, cliprect, drawpoint, Get_Isometric_View_Matrix() * main_matrix, brightness, SHAPE_NORMAL);
-		}
-	}
-
-	if (has_turret) {
-		rect = xcliprect;
-		if (SinkingYOffset > 0) {
-			rect = Intersect(rect, Rect(0, 0, TacticalRect.Width, SinkingYOffset - TacticalMap->TacPixelY));
-		}
-		Unit_Blit_Voxel(*old_surface, xdrawpoint, rect, brightness);
-		LogicalSurface->Fill_Rect(UnitCompositeDirtyRect, TBLACK);
-		LogicalSurface = old_surface;
-		IsCompositingToEightBitSurface = false;
-	}
-
-}
-
-
-/// <summary>
 /// Draws this unit from its shape artwork.
 /// This routine handles the unit types that are drawn from shapes rather than voxels --
 /// visceroids, jellyfish, limpet drones and the sprite based vehicles. A turreted vehicle
@@ -2725,16 +2417,8 @@ void UnitClass::Unit_Draw_Shape(Point2D xdrawpoint, Rect xcliprect, int brightne
 		return;
 	}
 
-	if (Class->IsJellyfish || Class->IsLimpetDrone) {
-		int zoff = 0;
-		if (Class->IsJellyfish) {
-			zoff = -TacticalMap->Z_Lepton_To_Pixel(PositionCoord.Z);
-		}
-		Draw_Object(shapefile, Fetch_Stage(), xdrawpoint, xcliprect, DIR_N, 256, zoff, ZGRAD_90DEG, false, brightness);
-		return;
-	}
 
-	if (Class->Facings == FACING_COUNT) {
+	if (Class->Facings == FACING_COUNT) { // RA2: no IsLimpetDrone, IsJellyfish (not in RA2's layout)
 		shapenum = Facing_Add(PrimaryFacing.Current().Round_To_8(), FACING_45);
 	} else {
 		shapenum = 0;
@@ -2801,11 +2485,8 @@ void UnitClass::Unit_Draw_Shape(Point2D xdrawpoint, Rect xcliprect, int brightne
 			/*
 			 * A recoiling turret moves "backward".
 			 */
-			if (IsInRecoilState) {
-				mtx.Translate_X(-2);
-			}
 
-			nmtx = mtx;
+			nmtx = mtx; // RA2: no IsInRecoilState (TibSun's use does not compile against RA2's declaration)
 
 			Vector3 trans = mtx.Get_Translation();
 			nmtx.Translate(-trans);
@@ -3332,11 +3013,7 @@ int UnitClass::Do_MISSION_UNLOAD(void)
 		//return(1);
 		return(Current_Mission_Control().Normal_Delay() + Random_Pick(0, 2));
 	} else {
-		if (Class->IsMobileEMP && !Is_Immobilized()) {
-			EMPulse_Blast();
-			Assign_Mission(MISSION_GUARD);
-		}
-	}
+	} // RA2: no IsMobileEMP (not in RA2's layout)
 
 	return(Current_Mission_Control().Normal_Delay() + Random_Pick(0, 2));
 }
@@ -3787,28 +3464,7 @@ MoveType UnitClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir, in
 			**	allies, then record that it is crushable and let the normal logic take over. The end
 			**	result should cause this unit to consider the cell passable.
 			*/
-			if (optr->IsCrushable && (Class->IsCrusher || Has_Ability(ABILITY_CRUSHER))) {
-				if (House->Is_Ally(cellptr->Owner)) {
-					if (retval < MOVE_FRIENDLY_DESTROYABLE) retval = MOVE_FRIENDLY_DESTROYABLE;
-				}
-			} else {
-				if (Is_Weapon_Equipped()) {
-					WarheadTypeClass const * whead = PrimaryWeapon->WarheadPtr;
-
-					if (whead->IsWallDestroyer || (whead->IsWoodDestroyer && optr->Armor == ARMOR_WOOD)) {
-						if (House->Is_Ally(cellptr->Owner)) {
-							if (retval < MOVE_FRIENDLY_DESTROYABLE) retval = MOVE_FRIENDLY_DESTROYABLE;
-						} else {
-							if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
-						}
-					} else {
-						return(MOVE_NO);
-					}
-				} else {
-					return(MOVE_NO);
-				}
-			}
-		}
+		} // RA2: no IsCrushable (TibSun's use does not compile against RA2's declaration)
 	}
 
 	/*
@@ -3864,11 +3520,7 @@ MoveType UnitClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir, in
 				 * Various special-purpose buildings do not block movement.
 				 */
 				if (bptr->Class->IsInvisibleInGame) {
-					obj = obj->Next;
-					continue;
-				}
-				if (bptr->Class->IsLimpetMine) {
-					obj = obj->Next;
+					obj = obj->Next; // RA2: no IsLimpetMine (not in RA2's layout)
 					continue;
 				}
 				if (bptr->Class->IsLaserFence && (bptr->LaserFenceFrame == 12 || bptr->LaserFenceFrame == 8)) {
@@ -3951,10 +3603,7 @@ MoveType UnitClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir, in
 					 */
 					if (obj->RTTI == RTTI_BUILDING) return(MOVE_NO);
 
-					if (!Class->IsJellyfish) {
-						if (retval < MOVE_TEMP) retval = MOVE_TEMP;
-					}
-				}
+				} // RA2: no IsJellyfish (not in RA2's layout)
 			} else {
 
 				/*
@@ -3970,51 +3619,7 @@ MoveType UnitClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir, in
 					**	doesn't contain a legitimate weapon.
 					*/
 					bool crusher = Class->IsCrusher || Has_Ability(ABILITY_CRUSHER);
-					if (!crusher || !obj->Class_Of()->IsCrushable) {
-
-						/*
-						 * Any non-allied blockage is considered impassable if the unit
-						 * is not equipped with a weapon (unless it is a train).
-						 */
-						if (PrimaryWeapon == NULL && !Class->IsTrain) return(MOVE_NO);
-
-						/*
-						**	Some kinds of terrain are considered destroyable if the unit is equipped
-						**	with the weapon that can destroy it. Otherwise, the terrain is considered
-						**	impassable.
-						*/
-						RTTIType rtti = obj->RTTI;
-						switch (rtti) {
-							case RTTI_TERRAIN: {
-
-								WeaponTypeClass const * weapon = Class->Get_Weapon(What_Weapon_Should_I_Use(obj))->Weapon;
-								if (weapon != NULL && weapon->WarheadPtr != NULL &&
-									weapon->WarheadPtr->IsWoodDestroyer) {
-
-									if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
-								} else {
-									return(MOVE_NO);
-								}
-								break;
-							}
-
-							case RTTI_BUILDING: {
-
-								if (((BuildingClass *)obj)->Class->IsBridgeRepairHut) {
-									return(MOVE_NO);
-								}
-								if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
-								break;
-							}
-
-							default:
-								if (retval < MOVE_DESTROYABLE) retval = MOVE_DESTROYABLE;
-								break;
-						}
-					} else {
-						if (!House->Is_Ally(obj)) crushable = true;
-					}
-				} else {
+				} else { // RA2: no IsCrushable (TibSun's use does not compile against RA2's declaration)
 					if (retval < MOVE_CLOAK) retval = MOVE_CLOAK;
 				}
 			}
@@ -4046,40 +3651,12 @@ MoveType UnitClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir, in
 	**	If some allied object has reserved the cell, then consider the cell
 	**	as blocked by a moving object.
 	*/
-	if (retval == MOVE_OK && !crushable && (flags & 0x3F) != 0 && !Class->IsJellyfish) {
-
-		/*
-		**	If reserved by a vehicle, then consider this blocked terrain.
-		*/
-		if (vehicle) {
-			retval = MOVE_MOVING_BLOCK;
-		} else {
-			if (inftype != HOUSE_NONE && House->Is_Ally(inftype)) {
-				retval = MOVE_MOVING_BLOCK;
-			} else {
-
-				/*
-				**	Enemy infantry have reserved the cell. If this unit can crush
-				**	infantry, consider the cell passable. If not, then consider the
-				**	cell destroyable if it has a weapon. If neither case applies, then
-				**	this vehicle should avoid the cell altogether.
-				*/
-				if (!Class->IsCrusher && !Has_Ability(ABILITY_CRUSHER)) {
-					if (Class->IsTrain || (PrimaryWeapon != NULL && PrimaryWeapon->Bullet->IsAntiGround)) {
-						retval = MOVE_DESTROYABLE;
-					} else {
-						return(MOVE_NO);
-					}
-				}
-			}
-		}
-	}
 
 	/*
 	**	If its ok to move into the cell because we can crush whats in the cell, then
 	**	make sure no one else is already moving into the cell to crush something.
 	*/
-	if (retval == MOVE_OK && crushable && vehicle) {
+	if (retval == MOVE_OK && crushable && vehicle) { // RA2: no IsJellyfish (not in RA2's layout)
 
 		/*
 		**	However, if the cell is occupied by a crushable vehicle, then we can
@@ -4087,10 +3664,7 @@ MoveType UnitClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir, in
 		**	the cell at the same time. In the case of a crushable vehicle in the
 		**	cell, then allow entry.
 		*/
-		if (!cellptr->Cell_Unit() || !cellptr->Cell_Unit()->Class->IsCrushable) {
-			return(MOVE_MOVING_BLOCK);
-		}
-	}
+	} // RA2: no IsCrushable (TibSun's use does not compile against RA2's declaration)
 
 	/*
 	**	Return with the most severe reason why this cell would be impassable.
@@ -4125,12 +3699,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object, bool disallow_forc
 	**	the object as a movable location.
 	*/
 	if (action == ACTION_ATTACK && !Can_Player_Fire()) {
-		if ((Class->IsCrusher || Has_Ability(ABILITY_CRUSHER)) && object->Class_Of()->IsCrushable) {
-			action = ACTION_MOVE;
-		} else {
-			action = ACTION_SELECT;
-		}
-	}
+	} // RA2: no IsCrushable (TibSun's use does not compile against RA2's declaration)
 
 	/*
 	**	Don't allow special deploy action unless there is something to deploy.
@@ -4189,14 +3758,7 @@ ActionType UnitClass::What_Action(ObjectClass const * object, bool disallow_forc
 					}
 				}
 			} else {
-				if (Class->IsMobileEMP) {
-					if (Charge < Class->MaxCharge) {
-						action = ACTION_NO_DEPLOY;
-					}
-				} else {
-					action = ACTION_NONE;
-				}
-			}
+			} // RA2: no MaxCharge, Charge, IsMobileEMP (not in RA2's layout)
 		}
 	}
 
@@ -4429,15 +3991,22 @@ int UnitClass::Do_MISSION_PATROL(void)
 {
 	IsHarvesting = false;
 
-	/*
-	**	Always make sure that that transport door is closed if the vehicle is moving.
-	*/
 	if (!Door.Is_Door_Closed()) {
 		APC_Close_Door();
 	}
 
 	return(BASECLASS::Do_MISSION_PATROL());
 }
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline DirType & _Direction(DirType & dir, ObjectClass const * from, ObjectClass const * to)
+{
+	return(dir.Direction(from->Center_Coord(), to->Center_Coord()));
+}
+
 
 /***********************************************************************************************
  * UnitClass::Desired_Load_Dir -- Determines the best cell and facing for loading.             *
@@ -4461,34 +4030,22 @@ int UnitClass::Do_MISSION_PATROL(void)
  *=============================================================================================*/
 FacingType UnitClass::Desired_Load_Dir(ObjectClass * passenger, Cell & moveto) const
 {
-	/*
-	**	Determine the ideal facing that provides the least resistance. This would be the direction
-	**	of the potential passenger or the current transport facing if it is going to unload.
-	*/
 	FacingType face = FACING_N;
 	FacingType faceto;
 	if (passenger != NULL) {
-		DirType direction = direction.Direction(Center_Coord(), passenger->Center_Coord());
+		DirType direction = _Direction(direction, this, passenger); // RA2: Desired_Load_Dir at 0x704730 matches only so
 		faceto = (FacingType)direction.As_Dir256();
 	} else {
 		faceto = (FacingType)(PrimaryFacing.Current().Right_180()).As_Dir256();
 	}
 	int desired = (int)(signed char)faceto;
 
-	/*
-	**	Sweep through the adjacent cells in order to find the best candidate.
-	*/
 	FacingType bestdir = FACING_N;
 	int bestval = -1;
 	for (; face < FACING_COUNT; face++) {
 		int value = 0;
 		Cell cellnum = Adjacent_Cell(PositionCell, face);
 
-		/*
-		**	Base the initial value of the potential cell according to whether the passenger is
-		**	allowed to enter the cell. If it can't, then give such a negative value to the
-		**	cell so that it is prevented from ever choosing that cell for load/unload.
-		*/
 		if (passenger != NULL) {
 			value = (passenger->Can_Enter_Cell(&Map[cellnum], face, Get_Cell_Height()) == MOVE_OK || passenger->PositionCell == cellnum) ? 128 : -128;
 		} else {
@@ -4504,29 +4061,17 @@ FacingType UnitClass::Desired_Load_Dir(ObjectClass * passenger, Cell & moveto) c
 			}
 		}
 
-		/*
-		**	Give more weight to the cells that require the least rotation of the transport or the
-		**	least roundabout movement for the potential passenger.
-		*/
 		value -= (int)abs((int)(signed char)DirType(face).As_Dir256() - desired);
 		if (face == FACING_S) {
 			value -= 100;
 		}
-//		if (face == FACING_SW || face == FACING_SE) value += 64;
 
-		/*
-		**	If the value for the potential cell is greater than the last recorded potential
-		**	value, then record this cell as the best candidate.
-		*/
 		if (bestval == -1 || value > bestval) {
 			bestval = value;
 			bestdir = face;
 		}
 	}
 
-	/*
-	**	If a suitable direction was found, then return with the direction value.
-	*/
 	FacingType facing = FACING_S;
 	moveto = CELL_NONE;
 	if (bestval > 0) {
@@ -4612,16 +4157,7 @@ bool UnitClass::Flag_Remove(void)
  *=============================================================================================*/
 int UnitClass::Pip_Count(void) const
 {
-	switch (Class->PipScale) {
-		case PIPSCALE_TIBERIUM:
-			return((int)(Storage.Get_Total_Amount() / (double)Class->Capacity * Class->Max_Pips() + 0.5));
-
-		case PIPSCALE_CHARGE:
-			return((int)((Charge / (double)Class->MaxCharge) * Class->Max_Pips() + 0.5));
-
-		default:
-			return(BASECLASS::Pip_Count());
-	}
+	return(BASECLASS::Pip_Count()); // RA2: no Class, PipScale, Storage and 3 more (TibSun's use does not compile against RA2's declaration)
 }
 
 
@@ -4707,36 +4243,21 @@ InfantryTypeClass const * UnitClass::Crew_Type(void) const
  *=============================================================================================*/
 int UnitClass::Do_MISSION_REPAIR(void)
 {
-	BuildingClass * nearest = Find_Docking_Bay(Rule->RepairBay, true);
+	BuildingClass * nearest = TryNearestDockBuilding((TypeList<BuildingTypeClass *> *)&Rule->RepairBay, 0, 0); // RA2: RepairBay is a list (TibSun's use does not compile against RA2's declaration)
 
 	IsHarvesting = false;
 
-	/*
-	**	If there is no available repair facility, then check to see if there
-	**	are any repair facilities at all. If not, then enter this unit
-	**	into idle state.
-	*/
 	if (nearest == NULL) {
-		if (!(House->BQuantity.Value(Rule->RepairBay->HeapID))) {
+		if (TryNearestDockBuilding((TypeList<BuildingTypeClass *> *)&Rule->RepairBay, 0, 1)) { // RA2: as above
 			Enter_Idle_Mode();
 		}
 	} else {
-
-		/*
-		**	Try to establish radio contact with the repair facility. If contact
-		**	was established, then proceed with normal enter mission, which handles
-		**	the repair process.
-		*/
 		if (Transmit_Message(RADIO_HELLO, nearest) == RADIO_ROGER) {
-			Assign_Mission(MISSION_ENTER);
+			QueueMission(MISSION_ENTER, false); // RA2: queued, as YR's
 			return(1);
 		}
 	}
 
-	/*
-	**	If no action could be performed at this time, then wait
-	**	around for a bit before trying again.
-	*/
 	return(Current_Mission_Control().Normal_Delay());
 }
 
@@ -4787,7 +4308,7 @@ DirType UnitClass::Fire_Direction(void) const
  *   04/26/1994 JLB : Created.                                                                 *
  *   06/01/1994 JLB : Returns reason why it can't fire.                                        *
  *=============================================================================================*/
-FireErrorType UnitClass::Can_Fire(AbstractClass * target, int which) const
+FireErrorType UnitClass::Can_Fire(AbstractClass * target, int which, bool ignoreRange) const // RA2: ignoreRange
 {
 	FireErrorType	fire = BASECLASS::Can_Fire(target, which);
 
@@ -4815,9 +4336,6 @@ FireErrorType UnitClass::Can_Fire(AbstractClass * target, int which) const
 		/*
 		**	If this unit cannot fire while moving, then bail.
 		*/
-		if ((Class->IsNoFireWhileMoving /*!Class->IsTurretEquipped || Class->IsLockTurret*/) && NavCom != NULL) {
-			return(FIRE_MOVING);
-		}
 
 		if ((weapon->UseSparkParticles || weapon->UseFireParticles) && NavCom != NULL) {
 			return(FIRE_MOVING);
@@ -4831,24 +4349,6 @@ FireErrorType UnitClass::Can_Fire(AbstractClass * target, int which) const
 			return(FIRE_ROTATING);
 		}
 
-		if (!Class->IsLargeVisceroid && !Class->IsSmallVisceroid && !Class->IsJellyfish) {
-			DirType turret;
-			/*
-			**	Determine if the turret facing isn't too far off of facing the target.
-			*/
-			if (Class->IsTurretEquipped) {
-				turret = SecondaryFacing.Current();
-			} else {
-				turret = PrimaryFacing.Current();
-			}
-			DirType rot = (weapon->Bullet->ROT ? DIR_STEP_16 : DIR_STEP_32);
-			if (rot < (turret - Direction(target))) {
-				return(FIRE_FACING);
-			} else {
-				//return(BASECLASS::Can_Fire(target, which));
-			}
-
-		}
 
 		FireErrorType locomotion_fire = Locomotion->Can_Fire();
 		if (locomotion_fire != FIRE_OK) {
@@ -4899,8 +4399,8 @@ BulletClass * UnitClass::Fire_At(AbstractClass * target, int which)
 			/*
 			**	Possible reload timer set.
 			*/
-			if (Class->MaxAmmo > 0 && !Class->IsManualReload && Reload == 0) {
-				Reload = TICKS_PER_SECOND * 30;
+			if (Class->MaxAmmo > 0 && !Class->IsManualReload && ReloadTimer == 0) { // RA2: TechnoClass's ReloadTimer
+				ReloadTimer = TICKS_PER_SECOND * 30; // RA2: as above
 			}
 
 			if (!sync && Class->FiringFrames > 0) {
@@ -4953,6 +4453,25 @@ double UnitClass::Tiberium_Load(void) const
 		return(Storage.Get_Total_Amount() / (double)Class->Capacity);
 	}
 	return(0.0);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Object(AbstractClass * a)
+{
+	return(a != NULL && (a->AbstractFlags & 2));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline ObjectClass * Object_Of(AbstractClass * a)
+{
+	if (a == NULL) return(NULL);
+	return((a->AbstractFlags & 2) ? (ObjectClass *)a : NULL);
 }
 
 
@@ -5060,39 +4579,7 @@ void UnitClass::Overrun_Square(Cell const & cell, bool threaten)
 			ObjectClass * object = cellptr->Cell_Occupier(isbridge);
 			int crushed = false;
 			while (object != NULL) {
-				if (object->Class_Of()->IsCrushable && (!House->Is_Ally(object) || Class->IsTrain) && Relative_Distance(object->Center_Coord()) < CELL_LEPTON*64) {
-
-					/*
-					**	If we're running over infantry, let's see if the infantry we're
-					**	squashing is a thief trying to capture us.  If so, let him succeed.
-					*/
-					if (object->RTTI == RTTI_INFANTRY && ((InfantryClass *)object)->Class->IsVehicleThief && ((InfantryClass *)object)->NavCom == this && !Class->IsTrain) {
-						ObjectClass * next = object->Next;
-						IsOwnedByPlayer = ((InfantryClass *)object)->IsOwnedByPlayer;
-						Detach_All(false);
-						Captured(((InfantryClass *)object)->House);
-						object->Delete_Me();
-						object = next;
-					} else {
-
-						ObjectClass * next = object->Next;
-						crushed = true;
-
-						/*
-						**	Record credit for the kill(s)
-						*/
-						Sound_Effect(object->Class_Of()->CrushSound, PositionCoord);
-						object->Record_The_Kill(this);
-						object->Mark(MARK_UP);
-						object->Limbo();
-						object->Delete_Me();
-
-						object = next;
-					}
-				} else {
-					object = object->Next;
-				}
-			}
+			} // RA2: no IsCrushable (TibSun's use does not compile against RA2's declaration)
 			if (crushed) Do_Uncloak();
 		}
 	}
@@ -5170,8 +4657,7 @@ void UnitClass::Assign_Destination(AbstractClass * target, bool immediate)
 					*/
 					if (b->Class->IsCanUnitRepair) {
 						target = NULL;
-						NearbyObject = b;
-					}
+					} // RA2: no NearbyObject (not in RA2's layout)
 				} else {
 					AbstractClass * oldnav = NavCom;
 					if (Transmit_Message(RADIO_DOCKING, b) != RADIO_ROGER) {
@@ -5645,29 +5131,23 @@ void UnitClass::Read_INI(CCINIClass const & ini)
  *=============================================================================================*/
 void UnitClass::Write_INI(CCINIClass & ini)
 {
-	/*
-	**	First, clear out all existing unit data from the ini file.
-	*/
 	ini.Clear(INI_NAME);
 
-	/*
-	**	Write the unit data out.
-	*/
 	for (int index = 0; index < Units.Count(); index++) {
 		UnitClass * unit = Units[index];
 		if (unit != NULL && !unit->IsInLimbo && unit->IsActive) {
-			char	uname[10];
-			char	buf[128];
+			char uname[10]; // RA2: Write_INI at 0x706F60 matches only so
+			char buf[128]; // RA2: as above
 
 			sprintf(uname, "%d", index);
 			sprintf(buf, "%s,%s,%d,%d,%d,%d,%s,%s,%d,%d,%d,%d,%d,%d",
-				(char const *)unit->House->Class->IniName,
+				(char const *)unit->House->IniName, // RA2: as above
 				(char const *)unit->Class->IniName,
-				(int)(unit->HealthRatio*256),
+				(int)(unit->HealthRatio * 256), // RA2: as above
 				unit->PositionCell.X,
 				unit->PositionCell.Y,
 				unit->PrimaryFacing.Current().As_Dir256(),
-				MissionClass::Mission_Name(unit->Mission),
+				MissionClass::Mission_Name(unit->Get_Mission()), // RA2: as above
 				(unit->Tag != NULL && unit->Tag->Class != NULL) ? (char const *)unit->Tag->Class->IniName : "None",
 				unit->Veterancy.To_Integer(),
 				unit->Group,
@@ -5726,12 +5206,11 @@ bool UnitClass::Should_Crush_It(TechnoClass const * it) const
 	**	If this unit cannot crush anything or the candidate object cannot be crushed,
 	**	then it obviously should not try to crush it -- return negative answer.
 	*/
-	if (!(Class->IsCrusher || Has_Ability(ABILITY_CRUSHER)) || it == NULL || !it->TClass->IsCrushable) return(false);
 
 	/*
 	**	Objects that are far away should really be fired upon rather than crushed.
 	*/
-	if (Distance_To(it) > Rule->CrushDistance) return(false);
+	if (Distance_To(it) > Rule->CrushDistance) return(false); // RA2: no IsCrushable (TibSun's use does not compile against RA2's declaration)
 
 	/*
 	**	Human controlled units don't automatically crush. Neither do computer controlled ones
@@ -5748,11 +5227,8 @@ bool UnitClass::Should_Crush_It(TechnoClass const * it) const
 	/*
 	**	Don't allow crushing of spies by computer-controlled vehicles.
 	*/
-	if (it->RTTI == RTTI_INFANTRY && ((InfantryClass *)it)->Class->IsDisguised) {
-		return(false);
-	}
 
-	return(true);
+	return(true); // RA2: no IsDisguised (TibSun's use does not compile against RA2's declaration)
 }
 
 
@@ -5881,7 +5357,7 @@ bool UnitClass::Limbo(void)
 {
 	if (BASECLASS::Limbo()) {
 		if (Flagged != HOUSE_NONE) {
-			Houses[Flagged]->Flag_Attach(Get_Cell());
+			Houses[Flagged]->Flag_Attach(Get_Cell(), false); // RA2: Limbo at 0x7078F0 matches only so
 			Flagged = HOUSE_NONE;
 		}
 		return(true);
@@ -5952,11 +5428,21 @@ void UnitClass::Set_Occupy_Bit(Coord const & coord)
 void UnitClass::Clear_Occupy_Bit(Coord const & coord)
 {
 	CellClass &cell = Map[coord];
-	if (Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT <= coord.Z /*&& cell.IsUnderBridge*/) {
+	if (Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT <= coord.Z) { // RA2: Clear_Occupy_Bit at 0x7079E0 matches only so
 		cell.BridgeFlag.Occupy.Vehicle = false;
 	} else {
 		cell.Flag.Occupy.Vehicle = false;
 	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Cell_Below(Cell const & a, Cell const & b)
+{
+	Cell diff = a - b;
+	return(diff.X == 0 && diff.Y == 1);
 }
 
 
@@ -6005,6 +5491,9 @@ bool UnitClass::Ready_To_Commence(void)
 }
 
 
+
+
+
 /// <summary>
 /// Reads this unit back in from a save game stream.
 /// This routine restores the unit's entry in the target tracker and brings the members of
@@ -6012,21 +5501,14 @@ bool UnitClass::Ready_To_Commence(void)
 /// </summary>
 /// <param name="stream">The stream to read this unit from.</param>
 /// <returns>Returns with S_OK if the unit was read successfully.</returns>
-HRESULT STDMETHODCALLTYPE UnitClass::Load(IStream *stream)
+HRESULT STDMETHODCALLTYPE UnitClass::Load(IStream * stream) // RA2: Load at 0x707C20 matches only so
 {
-	int size = Fetch_Object_Size(false);
-	TargetTracker.Remove_Index(Fetch_ID());
+	TargetTracker.Remove_Index(Fetch_ID()); // RA2: Load at 0x707C20 has no int size = Fetch_Object_Size(false);
 	HRESULT result = BASECLASS::Load(stream);
 	if (SUCCEEDED(result)) {
 		ILocomotion * locomotion = Locomotion;
 
-		if (IsOldSaveGame) {
-			memmove(&Unused1, &Charge, size - offsetof(UnitClass, Unused1));
-			Charge = 0;
-			DeathCounter = -1;
-		}
-
-		new (this) UnitClass(NoInitClass());
+		new (this) UnitClass(NoInitClass()); // RA2: Load at 0x707C20 has no IsOldSaveGame, Unused1, Charge and 2 more
 
 		Locomotion = locomotion;
 		locomotion->Release();
@@ -6036,6 +5518,7 @@ HRESULT STDMETHODCALLTYPE UnitClass::Load(IStream *stream)
 		Swizzle_Pointer(&Class);
 		Swizzle_Pointer(&FollowingMe);
 
+		ElectricBolt = NULL; // RA2: as above
 		result = S_OK;
 	}
 	return(result);
@@ -6064,8 +5547,7 @@ void UnitClass::Compute_CRC(CRCEngine & crc) const
 {
 	BASECLASS::Compute_CRC(crc);
 
-	crc((int)Reload);
-	crc(Class->Fetch_RTTI());
+	crc(Class->Fetch_RTTI()); // RA2: Compute_CRC at 0x707DF0 has no Reload
 	crc(Class->Fetch_ID());
 	if (FollowingMe != NULL) {
 		crc(FollowingMe->Fetch_ID());
@@ -6122,6 +5604,9 @@ void UnitClass::Record_The_Kill(TechnoClass * source)
 }
 
 
+
+
+
 /***********************************************************************************************
  * UnitClass::Mission_Attack -- AI for heading towards and firing upon target.                 *
  *                                                                                             *
@@ -6141,44 +5626,6 @@ void UnitClass::Record_The_Kill(TechnoClass * source)
 int UnitClass::Do_MISSION_ATTACK(void)
 {
 	return(BASECLASS::Do_MISSION_ATTACK());
-}
-
-
-/***********************************************************************************************
- * UnitClass::Weed_Load -- Determine the Weed load as a percentage.                            *
- *                                                                                             *
- *    Use this routine to determine what the Weed load is (as a floating point percentage).    *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  Returns with the current "fullness" rating for the object.                         *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   03/17/1995 JLB : Created.                                                                 *
- *=============================================================================================*/
-double UnitClass::Weed_Load(void) const
-{
-	if (Class->IsToVeinHarvest) {
-		return((double)Storage.Get_Total_Amount() / Class->Capacity);
-	}
-	return(0.0);
-}
-
-
-/// <summary>
-/// Fetches the maximum speed this unit may travel at.
-/// A limpet drone clamped to the vehicle drags its top speed down; otherwise this is the
-/// normal speed for any foot object.
-/// </summary>
-int UnitClass::Get_Max_Speed(void) const
-{
-	int speed = BASECLASS::Get_Max_Speed();
-	if (LimpetType) {
-		speed = (int)(speed * LimpetSpeedFactor);
-	}
-	return(speed);
 }
 
 
@@ -6501,6 +5948,41 @@ bool UnitClass::Is_Route_Broken(Cell const & from, Cell const & to) const
 	return(true);
 }
 
+/// <summary>
+/// RA2: the notice sink. A balloon or jumpjet unit in radio contact answers notice 0x117B by attacking its archived
+/// target or scattering; a Crashable one is destroyed on notice 0x117C (a balloon by its death weapon).
+/// </summary>
+bool UnitClass::Unknown_Virtual_0(int code, int)
+{
+	if ((Class->BalloonHover || Class->JumpJet) && code == 0x117B && HasAnyLink()) {
+		Transmit_Message((RadioMessageType)8);
+		if (ArchiveTarget != NULL && ArchiveTarget != NavCom) {
+			Assign_Destination(ArchiveTarget, true);
+			return(true);
+		}
+		Abort_Motion();
+		Scatter(COORD_NONE, true, false);
+		return(true);
+	}
+	if (Class->Crashable && code == 0x117C) {
+		Set_Height_AGL(0);
+		if (!Class->BalloonHover) {
+			Explode();
+		} else {
+			FireDeathWeapon(0);
+		}
+		Delete_Me();
+		return(true);
+	}
+	return(false);
+}
+
+
+
+
+
+
+
 
 /// <summary>
 /// Changes ownership of this unit to the house specified.
@@ -6509,7 +5991,7 @@ bool UnitClass::Is_Route_Broken(Cell const & from, Cell const & to) const
 /// </summary>
 /// <param name="house">The house that is to take ownership of this unit.</param>
 /// <returns>bool; Did ownership actually change hands?</returns>
-bool UnitClass::Captured(HouseClass * house)
+bool UnitClass::Captured(HouseClass * house, bool announce) // RA2: announce
 {
 	if (house != House) {
 		UnitClass * follower = FollowingMe;
@@ -6527,6 +6009,7 @@ bool UnitClass::Captured(HouseClass * house)
 }
 
 
+
 /// <summary>
 /// Is this object treated as a vehicle by the rest of the game?
 /// Some unit types -- visceroids and their kin -- are units only as a convenience and
@@ -6540,85 +6023,322 @@ bool UnitClass::Considered_Vehicle(void) const
 
 
 /// <summary>
-/// Discharges this unit's stored EM pulse charge.
-/// This routine is used by the mobile EM pulse cannon once it has built up a full charge.
-/// The pulse goes off at the vehicle's own position and the charge is spent.
+/// RA2: an IFV takes over its gunner's temporal weapon and switches to the gunner's IFVMode weapon.
 /// </summary>
-void UnitClass::EMPulse_Blast(void)
+void UnitClass::ReceiveGunner(FootClass * gunner)
 {
-	if (!Is_Immobilized() && Charge >= Class->MaxCharge) {
-		WeaponTypeClass const * weapon = WeaponTypeClass::Find_Or_Make("MobileEMPulseWeapon");
-		if (weapon != NULL && weapon->Bullet != NULL && weapon->WarheadPtr != NULL) {
-			CellClass * cptr = &Map[Center_Coord().As_Cell()];
-			BulletClass * bullet = Create_Bullet(weapon->Bullet, cptr, this, weapon->Attack, weapon->WarheadPtr, 1234, weapon->ProjectileRange, weapon->IsBright);
-			if (bullet != NULL) {
-				bullet->Set_Coord(PositionCoord);
-				bullet->Bullet_Explodes(true);
-				bullet->Delete_Me();
+	TemporalClass * temporal = gunner->TemporalImUsing;
+	if (temporal != NULL) {
+		int rearming = 0;
+		if (gunner->Arm != 0) {
+			rearming = 1;
+		}
+		TemporalImUsing = temporal;
+		temporal->Owner = this;
+		gunner->TemporalImUsing = NULL;
+		Set_Current_Weapon(7);
+		if (rearming) {
+			BurstIndex++;
+			Arm = Rearm_Delay(7);
+		}
+	}
+	Set_Current_Weapon(gunner->Techno_Type_Class()->IFVMode);
+}
+
+
+/// <summary>
+/// RA2: an IFV hands its temporal weapon back to the leaving gunner and returns to its own weapon.
+/// </summary>
+void UnitClass::RemoveGunner(FootClass * gunner)
+{
+	if (gunner != NULL) {
+		TemporalClass * temporal = TemporalImUsing;
+		if (temporal != NULL) {
+			int rearming = 0;
+			if (Arm != 0) {
+				rearming = 1;
+			}
+			gunner->TemporalImUsing = temporal;
+			TemporalImUsing->Owner = gunner;
+			TemporalImUsing = NULL;
+			if (gunner->TemporalImUsing != NULL && gunner->TemporalImUsing->Target != NULL) {
+				gunner->TemporalImUsing->LetGo();
+			}
+			if (rearming) {
+				gunner->BurstIndex++;
+				gunner->Arm = gunner->Rearm_Delay(0);
 			}
 		}
-		Charge = 0;
+	}
+	Set_Current_Weapon(0);
+}
+
+
+/// <summary>
+/// RA2: the type an enemy sees: the disguise.
+/// </summary>
+ObjectTypeClass * UnitClass::GetDisguise(bool against_allies) const
+{
+	if (House->Is_Ally(PlayerPtr) && !against_allies) {
+		return(Class);
+	}
+	return(Disguise);
+}
+
+
+/// <summary>
+/// RA2: the house an enemy sees: the disguise's.
+/// </summary>
+HouseClass * UnitClass::GetDisguiseHouse(bool against_allies) const
+{
+	if (House->Is_Ally(PlayerPtr) && !against_allies) {
+		return(House);
+	}
+	return(DisguisedAsHouse);
+}
+
+
+/// <summary>
+/// RA2: takes the look of a type (a mirage tank's tree) with no house.
+/// </summary>
+void UnitClass::Disguise_As_Type(ObjectTypeClass * type)
+{
+	if (type != NULL) {
+		Disguise = type;
+		DisguisedAsHouse = NULL;
+		Disguised = true;
+		DisguiseCreationFrame = Frame;
+		Plot_On_Radar();
+	}
+}
+
+
+#pragma warning(push)
+#pragma warning(disable: 4716)
+/// <summary>
+/// RA2: takes the look of a terrain object, an overlay or a disguised unit.
+/// </summary>
+unsigned UnitClass::DisguiseAs(AbstractClass * target)
+{
+	if (target != NULL) {
+		ObjectClass * object = (ObjectClass *)target;
+		switch (target->Fetch_RTTI()) {
+			case RTTI_TERRAIN:
+				Disguise = (ObjectTypeClass *)object->Class_Of();
+				DisguisedAsHouse = NULL;
+				return(TechnoClass::DisguiseAs(target));
+
+			case RTTI_CELL:
+				if (CanDisguiseAs(target)) {
+					Disguise = OverlayTypes[((CellClass *)target)->Overlay];
+					DisguisedAsHouse = NULL;
+					return(TechnoClass::DisguiseAs(target));
+				}
+				break;
+
+			case RTTI_UNIT:
+				if (object->IsDisguised()) {
+					Disguise = object->GetDisguise(true);
+					DisguisedAsHouse = object->GetDisguiseHouse(true);
+					TechnoClass::DisguiseAs(target);
+				}
+				break;
+		}
+	}
+}
+#pragma warning(pop)
+
+
+/// <summary>
+/// RA2: drops the disguise.
+/// </summary>
+void UnitClass::ClearDisguise(void)
+{
+	Disguised = false;
+	Plot_On_Radar();
+	Disguise = NULL;
+	DisguisedAsHouse = NULL;
+}
+
+
+/// <summary>
+/// RA2: whether the disguise fools this house (not allied, no disguise sensor on the cell).
+/// </summary>
+bool UnitClass::IsDisguisedAs(HouseClass * house) const
+{
+	if (IsDisguised()) {
+		CellClass * cell = &Map[Center_Coord().As_Cell()];
+		if (!House->Is_Ally(house) && !cell->Is_Disguise_Sensed(house->HeapID)) {
+			HouseClass * disguiser = DisguisedAsHouse;
+			if (disguiser == house || disguiser == NULL || house->Is_Ally(disguiser)) {
+				return(true);
+			}
+		}
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// RA2: a unit starts as a veteran when its house type lists it or its house infiltrated a war factory (trainable
+/// land units); a gunner type starts on its first weapon.
+/// </summary>
+void UnitClass::Init(void)
+{
+	TechnoClass::Init();
+	if (Class != NULL) {
+		if (House != NULL) {
+			TypeList<UnitTypeClass const *> & list = House->Class->VeteranUnits;
+			for (int i = 0; i < list.Count(); i++) {
+				if (list[i] == Class) {
+					Veterancy.Set_Veteran(true);
+					break;
+				}
+			}
+		}
+		if (House != NULL && House->WarFactoryInfiltrated && !Class->Naval && Class->IsTrainable) {
+			Veterancy.Set_Veteran(true);
+		}
+		if (Class->Gunner) {
+			Set_Current_Weapon(0);
+		}
 	}
 }
 
 
 /// <summary>
-/// Creates the explosion that accompanies this unit's destruction.
-/// A loaded harvester adds a blast in proportion to the Tiberium it was carrying, and a
-/// sufficiently sturdy vehicle will rock the screen on its way out.
+/// RA2: a DisguiseWhenStill unit (the mirage tank) takes a random DefaultMirageDisguises look while it stands without
+/// radio contact; moving, or enemy infantry next to it, drops the look (the latter for InfantryBlinkDisguiseTime).
 /// </summary>
-void UnitClass::Explode(void)
+void UnitClass::UpdateDisguise(void)
 {
-	if (Class->Explosion.Count() > 0) {
-		AnimTypeClass const * anim = Class->Explosion.Pick(Scen->RandomNumber);
-
-		/*
-		**	SSM launchers will really explode big if they are carrying
-		**	missiles at the time of the explosion.
-		*/
-		if (Class->IsExploding || Has_Ability(ABILITY_EXPLODES)) {
-			if (Class->MaxAmmo == -1 || Ammo > 0) {
-				anim = Class->Explosion[Class->Explosion.Count() - 1];
-			}
-		}
-
-		new AnimClass(anim, PositionCoord);
-
-		/*
-		**	Harvesters explode with a force equal to the amount of
-		**	Tiberium they are carrying.
-		*/
-		if (Storage.Get_Total_Amount() > 0 && Rule->IsExplosiveHarvester && !Scen->Special.IsHarvesterImmune) {
-			int power = 0;
-			for (int i = 0; i < Tiberiums.Count(); i++) {
-				power += Storage.Get_Amount(i) * Tiberiums[i]->Power;
-			}
-			Wide_Area_Damage(PositionCoord, CELL_LEPTON * 1.5, power, this, Rule->C4Warhead);
-		}
-
-		/*
-		**	Very strong units that have an explosion will also rock the
-		**	screen when they are destroyed.
-		*/
-		if (Class->MaxStrength > Rule->ShakeScreen) {
-			int shakes = Class->MaxStrength / (Rule->ShakeScreen / 2) + 3;
-			shakes = MIN(shakes, 6);
-			Shake_The_Screen(shakes);
+	bool still = false;
+	if (!IsDisguised()) {
+		if (!Locomotion->Is_Moving() && Class->DisguiseWhenStill && Radio_Link(0) == NULL) {
+			still = true;
 		}
 	}
+
+	if (Locomotion->Is_Moving()) {
+		goto clear;
+	}
+
+	if (Frame % 8 != 0) {
+		Cell cell = Get_Cell();
+		bool bridge = Get_Cell_Ptr()->Is_Tile_Bridge();
+		for (int face = FACING_FIRST; face < FACING_COUNT; face++) {
+			CellClass * adjacent = &Map[Adjacent_Cell(cell, FacingType(face))];
+			InfantryClass * infantry = adjacent->Cell_Infantry(bridge);
+			if (infantry != NULL && !House->Is_Ally(infantry)) {
+				InfantryBlinkTimer = Rule->InfantryBlinkDisguiseTime;
+				goto clear;
+			}
+		}
+	}
+
+	if (still) {
+		if (InfantryBlinkTimer.Value() == 0) {
+			int index = Random_Pick(0, Rule->DefaultMirageDisguises.Count() - 1);
+			index = MIN(index, Rule->DefaultMirageDisguises.Count() - 1);
+			Disguise_As_Type((ObjectTypeClass *)Rule->DefaultMirageDisguises[index]);
+		}
+	}
+	return;
+
+clear:
+	ClearDisguise();
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// Fetches the displayable name of this unit.
+/// </summary>
+/// <returns>Returns with a pointer to the name to present to the player.</returns>
+char const * UnitClass::Full_Name(void) const
+{
+	return(Class->GivenName);
+}
+
+/// <summary>
+/// RA2: TechnoClass's.
+/// </summary>
+bool UnitClass::CanUseWaypoint(void) const
+{
+	return(TechnoClass::CanUseWaypoint());
 }
 
 
 /// <summary>
-/// Is this unit unable to move?
-/// A vehicle that is playing out its death throes is immobilized on top of all the usual
-/// reasons that apply to any foot object.
+/// RA2: TechnoClass's.
 /// </summary>
-/// <returns>bool; Is the unit prevented from moving?</returns>
-bool UnitClass::Is_Immobilized(void) const
+bool UnitClass::CanAttackOnTheMove(void) const
 {
-	return(DeathCounter != -1 || BASECLASS::Is_Immobilized());
+	return(TechnoClass::CanAttackOnTheMove());
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -6628,12 +6348,9 @@ bool UnitClass::Is_Immobilized(void) const
 /// </summary>
 /// <param name="oldsave">Is the size wanted for an old format save game?</param>
 /// <returns>Returns with the size of the unit, in bytes.</returns>
-int UnitClass::Fetch_Object_Size(bool oldsave) const
+int UnitClass::Fetch_Object_Size(void) const // RA2: no argument
 {
-	int size = sizeof(*this);
-	int delta = sizeof(Charge) + sizeof(DeathCounter) + sizeof(Unused1) + sizeof(TechnoClass::LimpetSpeedFactor);
-
-	return(size - (oldsave ? delta : 0));
+	return(sizeof(*this)); // RA2: no old-save delta
 }
 
 
@@ -6661,16 +6378,6 @@ RTTIType UnitClass::Fetch_RTTI(void) const
 
 
 /// <summary>
-/// Fetches the displayable name of this unit.
-/// </summary>
-/// <returns>Returns with a pointer to the name to present to the player.</returns>
-char const * UnitClass::Full_Name(void) const
-{
-	return(Class->GivenName);
-}
-
-
-/// <summary>
 /// Fetches the direction this unit's weapon is pointing.
 /// This routine returns the turret facing for a turreted vehicle and the body facing for
 /// everything else, so a caller need not know which kind of unit it is dealing with.
@@ -6680,7 +6387,364 @@ DirType UnitClass::Turret_Facing(void) const
 {
 	if (Class->IsTurretEquipped) {
 		return(SecondaryFacing.Current());
-	} else {
-		return(PrimaryFacing.Current());
 	}
+
+	return(PrimaryFacing.Current()); // RA2: Turret_Facing at 0x70A2E0 matches only so
 }
+
+
+/// <summary>
+/// Draws this unit from its voxel model.
+/// This routine lays down the vehicle's shadow, its hull, and whatever turret and barrel
+/// it carries. A turreted vehicle is composed on the scratch surface first so that the
+/// pieces sort correctly against one another, then blitted to the screen in one piece.
+/// </summary>
+/// <param name="xdrawpoint">The pixel position to center the unit's model upon.</param>
+/// <param name="xcliprect">The clipping rectangle to draw within.</param>
+/// <param name="brightness">The lighting level to draw the unit at.</param>
+void UnitClass::Unit_Draw_Voxel(Point2D xdrawpoint, Rect xcliprect, int brightness) const
+{
+	VoxelDataStruct *voxl;
+	Point2D drawpoint = xdrawpoint;
+	Point2D offset(0, 0);
+	Matrix3D main_matrix;
+
+	int frame = TotalFramesWalked / 2 % Class->Voxel.MotLib->Get_Frame_Count();
+
+	switch (frame) {
+		case 0:
+		case 7:
+		case 15:
+			break;
+
+		case 1:
+		case 6:
+		case 8:
+		case 14:
+			offset = Point2D(0, -1);
+			break;
+
+		default:
+			offset = Point2D(0, -2);
+			break;
+	}
+
+	Rect cliprect = xcliprect;
+	int has_turret = false;
+	ShapeFlags_Type flags = SHAPE_NORMAL;
+
+	if (Class->IsTurretEquipped && Class->AuxVoxel.VoxLib != NULL || Class->AuxVoxel2.VoxLib != NULL &&  Class->AuxVoxel2.MotLib != NULL) {
+		has_turret = true;
+	}
+
+	int key = 0;
+	main_matrix = Locomotion->Shadow_Matrix(&key);
+
+	if (!IsSinking) {
+		Point2D shadow_drawpoint = xdrawpoint;
+		if (Class->IsHunterSeeker) {
+			Coord coord = PositionCoord;
+			coord.Z = Map.Get_Height_GL(coord);
+			TacticalMap->Coord_To_Pixel(coord, shadow_drawpoint);
+			shadow_drawpoint += Locomotion->Shadow_Point();
+		}
+
+		if (IsInTransport) {
+			shadow_drawpoint.Y -= 14;
+		}
+
+		int height = HeightAGL;
+		CellClass * cellptr = &Map[Get_Coord()];
+
+		if (IsInTransport) {
+			if (!IsOnBridge && height >= BRIDGE_LEPTON_HEIGHT) {
+				if (cellptr->IsUnderBridge && (cellptr->IsBridgeEastWest && cellptr->Adjacent_Cell(FACING_N).IsUnderBridge ||
+					!cellptr->IsBridgeEastWest && cellptr->Adjacent_Cell(FACING_W).IsUnderBridge)) {
+					shadow_drawpoint.Y -= 4 * LEVEL_PIXEL_H;
+				}
+			}
+		}
+
+		Draw_Voxel_Shadow(Class->Voxel, Class->ShadowIndex, key, &Class->ShadowVoxelIndex, xcliprect, shadow_drawpoint, Get_Isometric_View_Matrix() * main_matrix, true);
+	}
+
+	Surface * old_surface = LogicalSurface;
+	if (has_turret) {
+		LogicalSurface = EightBitSurface;
+		drawpoint = Point2D(80, 80);
+		flags = ShapeFlags_Type(SHAPE_ALPHA|SHAPE_ZGRAD);
+		cliprect = LogicalSurface->Get_Rect();
+		IsCompositingToEightBitSurface = true;
+	}
+
+	if (UseVoxelCache) {
+		key = 0;
+	} else {
+		key = -1;
+	}
+
+	main_matrix = Locomotion->Draw_Matrix(&key);
+
+	if (key != -1) {
+		key = frame | (key << 5);
+	}
+
+	Rect rect = cliprect;
+	if (!has_turret && SinkingYOffset > 0) {
+		rect = Intersect(rect, Rect(0, 0, TacticalRect.Width, SinkingYOffset - TacticalMap->TacPixelY));
+	}
+
+	UnitCompositeDirtyRect = RECT_NONE;
+
+	if (strcmp(Class->IniName, "APC") == 0 && Map[Get_Coord()].Land_Type() == LAND_WATER && !IsOnBridge && HeightAGL < LEVEL_LEPTON_H) {
+		Draw_Voxel(Class->AuxVoxel, frame, -1, NULL, rect, drawpoint, Get_Isometric_View_Matrix() * main_matrix, brightness, flags);
+	} else {
+		Draw_Voxel(Class->Voxel, frame, key, &Class->VoxelIndex, rect, drawpoint, Get_Isometric_View_Matrix() * main_matrix, brightness, flags);
+	}
+
+	/*
+	**	If there is a turret, then it must be rendered as well. This may include
+	**	firing animation if required.
+	*/
+	if (Class->IsTurretEquipped && Class->AuxVoxel.VoxLib != NULL) {
+		main_matrix.Translate_X(Class->TurretOffset / 8);
+		main_matrix.Rotate_Z(SecondaryFacing.Current().As_Radian32() - PrimaryFacing.Current().As_Radian32());
+
+		/*
+		**	A recoiling turret moves "backward" one pixel.
+		*/
+
+		Matrix3D barrel_matrix = main_matrix; // RA2: no IsInRecoilState (TibSun's use does not compile against RA2's declaration)
+		Vector3 vec2 = main_matrix.Get_Translation();
+		barrel_matrix.Translate(-vec2);
+
+		Vector3 flh = Vector3(-Get_Class_Weapon_Data(0)->FireFLH.X / 8, 0, -Get_Class_Weapon_Data(0)->FireFLH.Z / 8);
+		barrel_matrix.Translate(-flh);
+		barrel_matrix.Rotate_Y(-BarrelPitch.Current().As_Radian32());
+		barrel_matrix.Translate(flh);
+		barrel_matrix.Translate(vec2);
+
+		bool draw_barrel;
+		if (SecondaryFacing.Current().As_Dir4() <= 0 || SecondaryFacing.Current().As_Dir4() >= 3) {
+			draw_barrel = false;
+			voxl = &Class->AuxVoxel2;
+			if (voxl->VoxLib != NULL && voxl->MotLib != NULL) {
+				Draw_Voxel(Class->AuxVoxel2, 0, -1, &Class->VoxelIndex, cliprect, drawpoint + offset, Get_Isometric_View_Matrix() * barrel_matrix, brightness, flags);
+			}
+		} else {
+			draw_barrel = true;
+		}
+
+		Draw_Voxel(Class->AuxVoxel, frame, -1, &Class->AuxVoxelIndex, cliprect, drawpoint + offset, Get_Isometric_View_Matrix() * main_matrix, brightness, flags);
+
+		if (draw_barrel) {
+			voxl = &Class->AuxVoxel2;
+			if (voxl->VoxLib != NULL && voxl->MotLib != NULL) {
+				Draw_Voxel(Class->AuxVoxel2, 0, -1, &Class->VoxelIndex, cliprect, drawpoint + offset, Get_Isometric_View_Matrix() * barrel_matrix, brightness, flags);
+			}
+		}
+	} else {
+		voxl = &Class->AuxVoxel2;
+		if (voxl->VoxLib != NULL && voxl->MotLib != NULL) {
+			main_matrix.Rotate_Y(-(BarrelPitch.Current().As_Radian32() - main_matrix.Get_Y_Rotation()));
+			main_matrix.Translate(Get_Class_Weapon_Data(0)->FireFLH.X / 8, 0, Get_Class_Weapon_Data(0)->FireFLH.Z / 8);
+			Draw_Voxel(Class->AuxVoxel2, frame, -1, &Class->VoxelIndex, cliprect, drawpoint, Get_Isometric_View_Matrix() * main_matrix, brightness, SHAPE_NORMAL);
+		}
+	}
+
+	if (has_turret) {
+		rect = xcliprect;
+		if (SinkingYOffset > 0) {
+			rect = Intersect(rect, Rect(0, 0, TacticalRect.Width, SinkingYOffset - TacticalMap->TacPixelY));
+		}
+		Unit_Blit_Voxel(*old_surface, xdrawpoint, rect, brightness);
+		LogicalSurface->Fill_Rect(UnitCompositeDirtyRect, TBLACK);
+		LogicalSurface = old_surface;
+		IsCompositingToEightBitSurface = false;
+	}
+
+}
+
+
+/***********************************************************************************************
+ * UnitClass::Reload_AI -- Perform reload logic for this unit.                                 *
+ *                                                                                             *
+ *    Some units require special reload logic. The V2 rocket launcher in particular. Perform   *
+ *    this reload logic with this routine.                                                     *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   Only call this routine once per unit per game logic loop.                       *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/30/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+void UnitClass::Reload_AI(void)
+{
+} // RA2: no IsNoFireWhileMoving (not in RA2's layout)
+
+
+/// <summary>
+/// Handles the per frame logic for a jellyfish.
+/// This routine lets the jellyfish sting anything hostile that drifts into the cells
+/// around it, and drives its animation between the idle and stinging states.
+/// </summary>
+void UnitClass::Jellyfish_AI(void)
+{
+	Cell pos = PositionCell;
+	WeaponTypeClass const * weapon = Class->Get_Weapon(0)->Weapon;
+	WarheadTypeClass const * warhead = weapon ? weapon->WarheadPtr : NULL;
+	int stage = Fetch_Stage();
+
+	bool time_to_attack = (stage % 8 == 0) || stage == 32;
+	bool attacked = false;
+
+	if (warhead != NULL && time_to_attack) {
+		Cell cell = (Cell)Center_Coord();
+		CellClass * cellptr = &Map[cell];
+		for (int x = -1; x <= 1; x++) {
+			for (int y = -1; y <= 1; y++) {
+				Cell newcell = cell + Cell(x, y);
+				CellClass * newcellptr = &Map[newcell];
+				if (newcellptr != NULL) {
+					Coord cell_crd = newcellptr->Cell_Coord();
+					if (abs(cell_crd.Z - PositionCoord.Z) < 3.0 * CELL_LEPTON / 2.0) {
+						ObjectClass * occupier = newcellptr->Cell_Occupier(newcellptr->IsUnderBridge && (!cellptr->IsUnderBridge || IsOnBridge));
+						while (occupier != NULL) {
+							ObjectClass * next = occupier->Next;
+							if (occupier->IsActive && occupier->IsDown && !occupier->IsInLimbo && occupier->Is_Techno() && occupier != this) {
+								TechnoClass * techno = dynamic_cast<TechnoClass *>(occupier);
+								if (techno != NULL && techno != this && techno->Strength > 0) {
+									UnitClass * unit = dynamic_cast<UnitClass *>(techno);
+									bool visceroid = (unit != NULL && (unit->Class->IsSmallVisceroid || unit->Class->IsLargeVisceroid));
+
+									bool invisible;
+									if (unit == NULL) {
+										BuildingClass * building = dynamic_cast<BuildingClass *>(techno);
+										invisible = (building != NULL && (building->Class->IsInvisibleInGame));
+									} else {
+										invisible = false;
+									}
+
+									if (!visceroid && !invisible && !House->Is_Ally(techno)) {
+										int damage = weapon->Attack * warhead->Modifier[techno->TClass->Armor];
+										techno->Take_Damage(damage, 0, warhead, this);
+										attacked = true;
+									}
+								}
+							}
+							occupier = next;
+						}
+					}
+					if (attacked) {
+						Sound_Effect((VocType)weapon->Sound.Pick(Scen->RandomNumber));
+					}
+				}
+			}
+		}
+	}
+
+	switch (stage - 1) {
+
+		case 15:
+			if (attacked) {
+				Set_Stage(16);
+				Just_Set_Rate(3);
+			} else {
+				Set_Stage(0);
+				Just_Set_Rate(1);
+			}
+			break;
+
+		case 31:
+			if (!time_to_attack || attacked) {
+				Set_Stage(16);
+				Just_Set_Rate(3);
+			}
+			break;
+
+		case 32:
+			if (time_to_attack && attacked) {
+				Set_Stage(16);
+				Just_Set_Rate(3);
+			} else {
+				Set_Stage(0);
+				Just_Set_Rate(1);
+			}
+			break;
+
+		default:
+			if (stage >= 32 || stage < 0) {
+				if (attacked) {
+					Set_Stage(16);
+					Just_Set_Rate(3);
+				} else {
+					Set_Stage(0);
+					Just_Set_Rate(1);
+				}
+			}
+			break;
+	}
+
+	Locomotion->Is_Moving();
+}
+
+
+/***********************************************************************************************
+ * UnitClass::Weed_Load -- Determine the Weed load as a percentage.                            *
+ *                                                                                             *
+ *    Use this routine to determine what the Weed load is (as a floating point percentage).    *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  Returns with the current "fullness" rating for the object.                         *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   03/17/1995 JLB : Created.                                                                 *
+ *=============================================================================================*/
+double UnitClass::Weed_Load(void) const
+{
+	if (Class->IsToVeinHarvest) {
+		return((double)Storage.Get_Total_Amount() / Class->Capacity);
+	}
+	return(0.0);
+}
+
+
+/// <summary>
+/// Fetches the maximum speed this unit may travel at.
+/// A limpet drone clamped to the vehicle drags its top speed down; otherwise this is the
+/// normal speed for any foot object.
+/// </summary>
+int UnitClass::Get_Max_Speed(void) const
+{
+	int speed = BASECLASS::Get_Max_Speed();
+	return(speed); // RA2: no LimpetType, LimpetSpeedFactor (not in RA2's layout)
+}
+
+
+/// <summary>
+/// Discharges this unit's stored EM pulse charge.
+/// This routine is used by the mobile EM pulse cannon once it has built up a full charge.
+/// The pulse goes off at the vehicle's own position and the charge is spent.
+/// </summary>
+void UnitClass::EMPulse_Blast(void)
+{
+} // RA2: no MaxCharge, ProjectileRange (not in RA2's layout)
+
+
+/// <summary>
+/// Is this unit unable to move?
+/// A vehicle that is playing out its death throes is immobilized on top of all the usual
+/// reasons that apply to any foot object.
+/// </summary>
+/// <returns>bool; Is the unit prevented from moving?</returns>
+bool UnitClass::Is_Immobilized(void) const
+{
+	return(DeathCounter != -1 || BASECLASS::Is_Immobilized());
+}
+

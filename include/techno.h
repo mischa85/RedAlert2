@@ -709,6 +709,7 @@ class TechnoClass :	public RadioClass,
 		void Draw_Shaded_Line(Coord start, Coord end, RGBClass color, bool shadow) const; // RA2: 0x6D0DC0
 		int Elevation_Bonus(void); // RA2: 0x6CD6F0
 		int FireDeathWeapon(int additional_damage); // RA2: 0x6D7E20
+		void Set_Current_Weapon(int which); // RA2: 0x6D83F0
 		int GetEffectTintIntensity(int brightness) const; // RA2: 0x6D86F0
 		void UpdateThreatInCell(CellClass * cell); // RA2: 0x6D9610
 		void Set_Planning_Token(PlanningTokenClass * token); // RA2: 0x6D1420
