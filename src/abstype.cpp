@@ -14,6 +14,7 @@
 #include "always.h"
 
 #include "abstype.h"
+#include "stringtable.h" // RA2
 
 #include "ccini.h"
 #include "crc.h"
@@ -54,6 +55,7 @@ AbstractTypeClass::AbstractTypeClass(char const * ininame) :
 	}
 
 	GivenName = TStringID<48>(IniName);
+	UIName = L""; // RA2: the display name, empty until Read_INI
 	AbstractTypes.Add(this);
 }
 
@@ -94,6 +96,15 @@ AbstractTypeClass::~AbstractTypeClass(void)
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+bool AbstractTypeClass::operator == (char const * string) const
+{
+	return(stricmp(string, IniName) == 0);
+}
+
+
 /***********************************************************************************************
  * AbstractTypeClass::Read_INI -- Reads the techno type data from the INI database.            *
  *                                                                                             *
@@ -113,12 +124,19 @@ AbstractTypeClass::~AbstractTypeClass(void)
  *=============================================================================================*/
 bool AbstractTypeClass::Read_INI(CCINIClass const & ini)
 {
-	char buffer[64];
+	char buffer[1024]; // RA2: 1024
 
 	if (ini.Section_Present(IniName)) {
 
 		ini.Get_String(IniName, "Name", GivenName, buffer, GivenName.Size());
 		GivenName = TStringID<48>(buffer);
+		ini.Get_String(IniName, "UIName", UINameLabel, buffer, UINameLabel.Size()); // RA2: the display name's string-table label
+		UINameLabel = TStringID<31>(buffer); // RA2: as above
+		if (UINameLabel[0] != '\0') { // RA2: as above
+			UIName = StringTable::LoadString(UINameLabel, NULL, "D:\\Ra2\\AbsType.cpp", 205); // RA2: as above
+		} else { // RA2: as above
+			UIName = L""; // RA2: as above
+		}
 		return(true);
 	}
 	return(false);
@@ -130,10 +148,13 @@ bool AbstractTypeClass::Read_INI(CCINIClass const & ini)
 /// This routine is the counterpart to Read_INI. The type's own section is cleared before
 /// anything is written, so no stale entries survive from an earlier save.
 /// </summary>
-bool AbstractTypeClass::Write_INI(CCINIClass &ini) const
+bool AbstractTypeClass::Write_INI(CCINIClass & ini) const // RA2: Write_INI at 0x410910 matches only so
 {
 	ini.Clear(IniName);
 	ini.Put_String(IniName, "Name", GivenName);
+	if (UINameLabel[0]) { // RA2: as above
+		ini.Put_String(IniName, "UIName", UINameLabel); // RA2: as above
+	}
 	return(true);
 }
 
@@ -148,4 +169,9 @@ void AbstractTypeClass::Compute_CRC(CRCEngine & crc) const
 	BASECLASS::Compute_CRC(crc);
 	crc((const char *)IniName);
 	crc((const char *)GivenName);
+	crc((const char *)UINameLabel); // RA2: Compute_CRC at 0x410960 matches only so
 }
+
+
+
+

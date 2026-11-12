@@ -54,7 +54,7 @@ class AbstractTypeClass : public AbstractClass
 		AbstractTypeClass(NoInitClass const & x);
 		virtual ~AbstractTypeClass(void) override;
 
-		bool operator == (char const * string) const { return(IniName == string); }
+		bool operator == (char const * string) const; // RA2: out of line, at 0x4107C0
 		bool operator != (char const * string) const { return(IniName != string); }
 
 		virtual void Compute_CRC(CRCEngine & crc) const override;
