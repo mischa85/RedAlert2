@@ -448,18 +448,8 @@ unk_005B3830,0x005B3830,0x005B3F40,unknown,code not assigned to a module
 msfont,0x005B3F40,0x005B4670,tibsun,"functions compiled from src/msfont.cpp, matched, without gaps"
 unk_005B4670,0x005B4670,0x005B46B0,unknown,code not assigned to a module
 msgbox,0x005B46B0,0x005B49E0,tibsun,"functions compiled from src/msgbox.cpp, matched, without gaps"
-unk_005B49E0,0x005B49E0,0x005B4C40,unknown,code not assigned to a module
-unk_005B4C40,0x005B4C40,0x005B4C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005B4C60,0x005B4C60,0x005B5160,unknown,code not assigned to a module
-unk_005B5160,0x005B5160,0x005B51C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005B51C0,0x005B51C0,0x005B53F0,unknown,code not assigned to a module
-unk_005B53F0,0x005B53F0,0x005B5410,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005B5410,0x005B5410,0x005B55F0,unknown,code not assigned to a module
-unk_005B55F0,0x005B55F0,0x005B5610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005B5610,0x005B5610,0x005B5C30,unknown,code not assigned to a module
-unk_005B5C30,0x005B5C30,0x005B5C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_005B5C60,0x005B5C60,0x005B5D80,unknown,code not assigned to a module
-unk_005B5D80,0x005B5D80,0x005B5DC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+unk_005B49E0,0x005B49E0,0x005B4BD0,unknown,code not assigned to a module
+msglist,0x005B4BD0,0x005B5DC0,tibsun,"functions compiled from src/msglist.cpp, without gaps; matched except ?Init@MessageListClass@@QAEXHHHHHHH_NHHH@Z and ?Remove_Edit@MessageListClass@@QAEXXZ and ?Input@MessageListClass@@QAEHAAW4KeyNumType@@G@Z; ?Init@MessageListClass@@QAEXHHHHHHH_NHHH@Z and ?Input@MessageListClass@@QAEHAAW4KeyNumType@@G@Z and ?Remove_Edit@MessageListClass@@QAEXXZ placed at their function starts"
 unk_005B5DC0,0x005B5DC0,0x005B5EE0,unknown,code not assigned to a module
 msgloop,0x005B5EE0,0x005B6210,tibsun,"functions compiled from src/msgloop.cpp, matched, without gaps; one placed by the gap"
 unk_005B6210,0x005B6210,0x005B6A00,unknown,code not assigned to a module
