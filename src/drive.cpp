@@ -127,7 +127,6 @@ DriveLocomotionClass::DriveLocomotionClass(void) :
 /// </summary>
 DriveLocomotionClass::~DriveLocomotionClass(void)
 {
-	//nothing
 }
 
 
@@ -430,7 +429,7 @@ CoordStruct STDMETHODCALLTYPE DriveLocomotionClass::Head_To_Coord(void)
 /// <param name="to">The location to drive to.</param>
 void STDMETHODCALLTYPE DriveLocomotionClass::Move_To(CoordStruct to)
 {
-	if (LinkedTo->StunDuration <= 0) {
+	if (!LinkedTo->IsUnderEMP() && !LinkedTo->IsParalyzed() && !LinkedTo->IsBeingWarpedOut() && !LinkedTo->IsWarpingIn()) { // RA2: as YR's; TibSun's form does not match (Drive's and Ship's copies match only so)
 		DestinationCoord = to;
 		if (Coord(to) != COORD_NONE) {
 			if (Map[to].IsUnderBridge) {
@@ -555,6 +554,23 @@ Matrix3DStruct STDMETHODCALLTYPE DriveLocomotionClass::Draw_Matrix(int *key)
 	m = (Matrix3DStruct &)(slopemtx * basemtx);
 	return(m);
 }
+
+
+/// <summary>
+/// RA2: the shadow transform; an angled unit's is not cached (the key becomes -1).
+/// </summary>
+Matrix3DStruct STDMETHODCALLTYPE DriveLocomotionClass::Shadow_Matrix(int *key) // RA2: at 0x4A0500 (YR's body)
+{
+	if (!Is_Angled()) {
+		if (key) {
+			*key = -1;
+		}
+	}
+	return(BASECLASS::Shadow_Matrix(key));
+}
+
+
+
 
 
 /// <summary>
@@ -717,15 +733,8 @@ boolean STDMETHODCALLTYPE DriveLocomotionClass::Process(void)
  *=============================================================================================*/
 void DriveLocomotionClass::Mark_Track(Coord const & headto, MarkType type)
 {
-	assert(LinkedTo->IsActive);
-
 	if (headto != COORD_NONE) {
 		if (!IsOnShortTrack && TrackNumber != -1) {
-
-			/*
-			**	If we have not passed the per cell process point we need
-			**	to deal with it.
-			*/
 			int tracknum = TrackControl[TrackNumber].Track;
 			if (tracknum) {
 				TrackType const * ptr = RawTracks[tracknum - 1].Track;
@@ -781,8 +790,6 @@ void DriveLocomotionClass::Mark_Track(Coord const & headto, MarkType type)
  *=============================================================================================*/
 void STDMETHODCALLTYPE DriveLocomotionClass::Force_Track(int track, CoordStruct coord)
 {
-	assert(LinkedTo->IsActive);
-
 	TrackNumber = track;
 	TrackIndex = 0;
 	if ((Coord)coord != COORD_NONE) {
@@ -811,12 +818,6 @@ void STDMETHODCALLTYPE DriveLocomotionClass::Force_Track(int track, CoordStruct 
  *=============================================================================================*/
 bool DriveLocomotionClass::Stop_Driver(void)
 {
-	assert(LinkedTo->IsActive);
-
-	/*
-	**	We only need to do something if the vehicle is actually going
-	**	somewhere.
-	*/
 	if (HeadToCoord != COORD_NONE) {
 		HeadToCoord = COORD_NONE;
 		IsDriving = false;
@@ -845,16 +846,11 @@ bool DriveLocomotionClass::Stop_Driver(void)
  *=============================================================================================*/
 bool DriveLocomotionClass::Start_Driver(Coord const & headto)
 {
-	assert(LinkedTo->IsActive);
-
 	Stop_Driver();
 	if (headto != COORD_NONE) {
 		HeadToCoord = headto;
 		IsDriving = true;
 
-		/*
-		**	Check for crate goodie finder here.
-		*/
 		if (Map[headto].Goodie_Check(LinkedTo) && !LinkedTo->IsInLimbo) {
 			Mark_Track(headto, MARK_DOWN);
 			return(true);
@@ -2085,8 +2081,6 @@ void DriveLocomotionClass::Lay_Track(void)
  *=============================================================================================*/
 Point2D DriveLocomotionClass::Smooth_Turn(Point2D const & adj, Dir256 & dir)
 {
-	assert(LinkedTo->IsActive);
-
 	Dir256 workdir = dir;
 	int x,y;
 	int temp;
@@ -2223,11 +2217,6 @@ boolean STDMETHODCALLTYPE DriveLocomotionClass::Is_Moving_Here(CoordStruct to)
 
 	if (coord != COORD_NONE) {
 		if (!IsOnShortTrack && TrackNumber != -1) {
-
-			/*
-			**	If we have not passed the per cell process point we need
-			**	to deal with it.
-			*/
 			int tracknum = TrackControl[TrackNumber].Track;
 			if (tracknum) {
 				TrackType const * ptr = RawTracks[tracknum - 1].Track;
@@ -2237,8 +2226,9 @@ boolean STDMETHODCALLTYPE DriveLocomotionClass::Is_Moving_Here(CoordStruct to)
 
 					if (TrackIndex < cellidx && cellidx != -1) {
 						Point2D pt = Smooth_Turn(ptr[cellidx].Offset, dir);
-						Coord coord = Coord(pt.X, pt.Y);
-						coord.Z += LinkedTo->PositionCoord.Z;
+						Coord coord = LinkedTo->PositionCoord; // RA2: as YR's; TibSun's form does not match (Drive's and Ship's copies match only so)
+						coord.X = pt.X; // RA2: as YR's; TibSun's form does not match (Drive's and Ship's copies match only so)
+						coord.Y = pt.Y; // RA2: as YR's; TibSun's form does not match (Drive's and Ship's copies match only so)
 						if (coord.As_Cell() == ((Coord &)to).As_Cell() && abs(coord.Z - to.Z) <= LEVEL_LEPTON_H) {
 							return(true);
 						}
@@ -2384,6 +2374,7 @@ ULONG STDMETHODCALLTYPE DriveLocomotionClass::Release(void)
 {
 	return(BASECLASS::Release());
 }
+
 
 
 /***************************************************************************
