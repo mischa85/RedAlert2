@@ -43,10 +43,17 @@ class TeleportLocomotionClass : public LocomotionClass, public IPiggyback // RA2
 		virtual void STDMETHODCALLTYPE Stop_Moving(void) override;
 		virtual boolean STDMETHODCALLTYPE Process(void) override;
 		virtual LayerType STDMETHODCALLTYPE In_Which_Layer(void) override;
+		virtual void STDMETHODCALLTYPE Do_Turn(DirStruct coord) override; // RA2: 0x6E0DE0
+		virtual HRESULT STDMETHODCALLTYPE Save(IStream * stream, BOOL cleardirty) override; // RA2: 0x6E1810
+		virtual void STDMETHODCALLTYPE Mark_All_Occupation_Bits(int mark) override; // RA2: 0x6E1B50
 
 		virtual int Fetch_Object_Size(void) const override; // RA2: no argument
+		virtual void STDMETHODCALLTYPE Process_Delay(void); // RA2: 0x6E16F0
 
 		virtual boolean Is_Stationary(void);
+		bool Clear_Arrival(Coord to, bool arrive); // RA2: 0x6DFF00
+		void Check_Landing(Coord to); // RA2: 0x6E0430
+		bool Pick_Arrival(Coord const & coord); // RA2: 0x6E06B0
 
 	private:
 		/*

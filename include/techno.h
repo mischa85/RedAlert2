@@ -703,6 +703,7 @@ class TechnoClass :	public RadioClass,
 		virtual void Sensed(void); // RA2
 		virtual void Reload(void); // RA2
 		virtual void Rocking_AI(void);
+		void Become_Untargetable(void); // RA2: 0x6D7C80
 		virtual Coord GetAttackCoordinates(void) const; // RA2
 		void Draw_Action_Line(Coord start, Coord end, RGBClass color, unsigned char dashed, unsigned char shadow) const; // RA2: 0x6D0510
 		void Draw_Link_Line(Coord start, Coord end, RGBClass color) const; // RA2: 0x6D0990
