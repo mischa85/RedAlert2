@@ -52,12 +52,8 @@ b64straw,0x0042B850,0x0042B950,tibsun,"functions compiled from src/b64straw.cpp,
 unk_0042B950,0x0042B950,0x0042B970,unknown,code not assigned to a module
 bar,0x0042B970,0x0042BCD0,tibsun,"functions compiled from src/bar.cpp, matched, without gaps"
 unk_0042BCD0,0x0042BCD0,0x0042BEE0,unknown,code not assigned to a module
-unk_0042BEE0,0x0042BEE0,0x0042BF60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0042BF60,0x0042BF60,0x0042BF70,unknown,code not assigned to a module
-unk_0042BF70,0x0042BF70,0x0042C000,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0042C000,0x0042C000,0x0042CA50,unknown,code not assigned to a module
-unk_0042CA50,0x0042CA50,0x0042CAD0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0042CAD0,0x0042CAD0,0x0042D520,unknown,code not assigned to a module
+base,0x0042BEE0,0x0042CB90,tibsun,"functions compiled from src/base.cpp, without gaps; matched except ?Next_Buildable@BaseClass@@QAEPAVBaseNodeClass@@W4StructType@@@Z and ?Next_Buildable_Index@BaseClass@@QAEHW4StructType@@@Z; one placed by the gap; ?Next_Buildable@BaseClass@@QAEPAVBaseNodeClass@@W4StructType@@@Z and ?Next_Buildable_Index@BaseClass@@QAEHW4StructType@@@Z placed at their function starts"
+unk_0042CB90,0x0042CB90,0x0042D520,unknown,code not assigned to a module
 base64,0x0042D520,0x0042D770,tibsun,"functions compiled from src/base64.cpp, matched, without gaps"
 unk_0042D770,0x0042D770,0x0042F0C0,unknown,code not assigned to a module
 bench,0x0042F0C0,0x0042F200,tibsun,"functions compiled from src/bench.cpp, matched, without gaps"
