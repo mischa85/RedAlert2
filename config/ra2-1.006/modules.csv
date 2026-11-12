@@ -119,11 +119,9 @@ unk_0047D2C0,0x0047D2C0,0x0047D2E0,unknown,code not assigned to a module
 cheklist,0x0047D2E0,0x0047D6F0,tibsun,"functions compiled from src/cheklist.cpp, matched, without gaps; one placed by the gap"
 unk_0047D6F0,0x0047D6F0,0x0047D7C0,unknown,code not assigned to a module
 colrlist,0x0047D7C0,0x0047DF40,tibsun,"functions compiled from src/colrlist.cpp, matched, without gaps"
-unk_0047DF40,0x0047DF40,0x0047F8B0,unknown,code not assigned to a module
-unk_0047F8B0,0x0047F8B0,0x0047F9B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0047F9B0,0x0047F9B0,0x0047FB70,unknown,code not assigned to a module
-unk_0047FB70,0x0047FB70,0x0047FCC0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0047FCC0,0x0047FCC0,0x004800C0,unknown,code not assigned to a module
+unk_0047DF40,0x0047DF40,0x0047E1C0,unknown,code not assigned to a module
+combat,0x0047E1C0,0x0047FCF0,tibsun,"functions compiled from src/combat.cpp, without gaps; matched except ?Explosion_Damage@@YIXABVCoord@@HPAVTechnoClass@@PBVWarheadTypeClass@@_N@Z and ?Combat_Lighting@@YIXVCoord@@HPBVWarheadTypeClass@@_N@Z; one placed by the gap; ?Combat_Lighting@@YIXVCoord@@HPBVWarheadTypeClass@@_N@Z and ?Explosion_Damage@@YIXABVCoord@@HPAVTechnoClass@@PBVWarheadTypeClass@@_N@Z placed at their function starts"
+unk_0047FCF0,0x0047FCF0,0x004800C0,unknown,code not assigned to a module
 combuf,0x004800C0,0x00480AE0,tibsun,"functions compiled from src/combuf.cpp, matched, without gaps; two placed by the gap; ?Mono_Debug_Print@CommBufferClass@@QAEXH@Z not placed; ?Mono_Debug_Print2@CommBufferClass@@QAEXH@Z not placed"
 unk_00480AE0,0x00480AE0,0x00480E20,unknown,code not assigned to a module
 connect,0x00480E20,0x00481610,tibsun,"functions compiled from src/connect.cpp, matched, without gaps; one placed by the gap"
