@@ -196,6 +196,12 @@ class InfantryClass : public FootClass
 		virtual bool Ready_To_Commence(void) override;
 		virtual int Do_MISSION_ATTACK(void) override;
 		virtual int Do_MISSION_GUARD(void) override;
+		virtual void Unknown_Virtual_4D0(void) override; // RA2: 0x508750
+		virtual int What_Weapon_Should_I_Use(AbstractClass * target) const override; // RA2: 0x508530
+		virtual int Do_MISSION_GUARD_AREA(void) override; // RA2: 0x506490
+		virtual int Do_MISSION_HUNT(void) override; // RA2: 0x5063E0
+		virtual int Do_MISSION_MOVE(void) override; // RA2: 0x5064B0
+		virtual int Do_MISSION_UNLOAD(void) override; // RA2: 0x506530
 		virtual void Berzerk(void) override;
 		virtual void Start_Fear(void) override;
 		virtual void Stop_Fear(void) override;
@@ -204,6 +210,7 @@ class InfantryClass : public FootClass
 		void Firing_AI(void);
 		void Doing_AI(void);
 		void Movement_AI(void);
+		int Update_Deployed_Attack(void); // RA2: 0x507F70
 		void Tunnel_AI(void);
 		bool Theft_AI(void);
 
@@ -224,6 +231,26 @@ class InfantryClass : public FootClass
 		**	Movement and animation.
 		*/
 		virtual bool IsDeployed(void) const; // RA2
+		bool Is_Deployer(void) const; // RA2: 0x5090A0
+		bool Has_Undeploy_Delay(void) const; // RA2: 0x5090B0
+		bool Is_Deploying(void) const; // RA2: 0x5090D0
+		bool Is_Deploy_Fire(void) const; // RA2: 0x509100
+		int Deploy_Or_Stop(void); // RA2: 0x509110
+		void Enter_Occupiable(BuildingClass * building); // RA2: 0x5094B0
+		bool Is_Idle_Doing(DoType doing) const; // RA2: 0x5096E0
+		bool Is_Death_Doing(DoType doing) const; // RA2: 0x509710
+		bool Is_Dying(void) const; // RA2: 0x509760
+		virtual void IronCurtain(int duration) override; // RA2: 0x5091C0
+		virtual ObjectTypeClass * GetDisguise(bool against_allies) const override; // RA2: 0x509200
+		virtual HouseClass * GetDisguiseHouse(bool against_allies) const override; // RA2: 0x509270
+		virtual unsigned DisguiseAs(AbstractClass * target) override; // RA2: 0x5092B0
+		virtual void ClearDisguise(void) override; // RA2: 0x509330
+		virtual bool IsDisguisedAs(HouseClass * house) const override; // RA2: 0x509390
+		virtual bool CanUseWaypoint(void) const override; // RA2: 0x509450
+		virtual bool CanAttackOnTheMove(void) const override; // RA2: 0x509460
+		virtual bool Unknown_Virtual_0(int code, int) override; // RA2: 0x509590, the INoticeSink virtual
+		virtual bool CanCheer(void) const override; // RA2: 0x509670
+		virtual void Cheer(void) override; // RA2: 0x5096B0
 		virtual bool Do_Action(DoType todo, bool force=false, bool randomize=false);
 		virtual bool Random_Animate(void) override;
 		virtual MoveType Can_Enter_Cell(CellClass const * cell, FacingType dir = FACING_NONE, int cell_height = -1, CellClass const * = 0, bool = true) const override;

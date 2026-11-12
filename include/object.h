@@ -234,6 +234,7 @@ class ObjectClass : public AbstractClass
 		virtual TechnoTypeClass const * Techno_Type_Class(void) const;
 		__declspec( property( get=Techno_Type_Class) ) TechnoTypeClass const * TClass;
 		virtual ObjectTypeClass const * Class_Of(void) const {return(0);}
+		bool Is_Type_Named(char const * name) const; // RA2: 0x5D27D0
 		bool Is_Infantry(void) const {return(Fetch_RTTI() == RTTI_INFANTRY);}
 		bool Is_Foot(void) const {if (this == NULL) return(false); unsigned char flag = (AbstractFlags >> 2) & 1; return(flag != 0);} // RA2: inline; bit 2 of the abstract flags
 		virtual int Get_Ownable(void) const;

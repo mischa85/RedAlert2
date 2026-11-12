@@ -119,6 +119,7 @@
 #include "mono.h"
 #include "overlay.h"
 #include "overtype.h"
+#include "radsite.h" // RA2
 #include "rules.h"
 #include "scheme.h"
 #include "session.h"
@@ -145,68 +146,6 @@ int const InfantryClass::HumanShape[32] = {7,7,6,6,6,6,5,5,5,5,4,4,4,4,3,3,3,3,2
 char const * const InfantryClass::INI_Name = "Infantry";
 
 
-/***************************************************************************
-**	This is the array of constant data associated with infantry maneuvers. It
-**	specifies the frame rate as well as if the animation can be aborted.
-*/
-// interruptible, mobile, randomstart, rate
-DoStruct const InfantryClass::MasterDoControls[DO_COUNT] = {
-	{true,	false,	false,	0},	// DO_STAND_READY
-	{true,	false,	false,	0},	// DO_STAND_GUARD
-	{true,	false,	false,	6},	// DO_PRONE
-	{true,	true,	true,	3},	// DO_WALK
-	{true,	false,	false,	1},	// DO_FIRE_WEAPON
-	{false,	true,	false,	1},	// DO_LIE_DOWN
-	{true,	true,	true,	1},	// DO_CRAWL
-	{false,	false,	false,	1},	// DO_GET_UP
-	{true,	false,	false,	1},	// DO_FIRE_PRONE
-	{true,	false,	false,	1},	// DO_IDLE1
-	{true,	false,	false,	1},	// DO_IDLE2
-	{false,	false,	false,	1},	// DO_GUN_DEATH
-	{false,	false,	false,	1},	// DO_EXPLOSION_DEATH
-	{false,	false,	false,	1},	// DO_EXPLOSION2_DEATH
-	{false,	false,	false,	1},	// DO_GRENADE_DEATH
-	{false,	false,	false,	1},	// DO_FIRE_DEATH
-	{true,	true,	false,	1},	/// DO_HOVER
-	{true,	true,	false,	1},	/// DO_FLY
-	{true,	true,	false,	1},	/// DO_TUMBLE
-	{true,	true,	false,	1},	/// DO_FIREFLY
-	{false,	false,	true,	3},	/// DO_STRUGGLE
-};
-
-
-#ifdef _DEBUG
-/***********************************************************************************************
- * InfantryClass::Debug_Dump -- Displays debug information about infantry unit.                *
- *                                                                                             *
- *    This routine is used by the debug version to display pertinent information about the     *
- *    infantry unit.                                                                           *
- *                                                                                             *
- * INPUT:   mono  -- The monochrome screen to display the debug information to.                *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   09/01/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
-void InfantryClass::Debug_Dump(MonoClass * mono) const
-{
-	mono->Set_Cursor(0, 0);
-
-	mono->Set_Cursor(1, 11);mono->Printf("%3d", Doing);
-	mono->Set_Cursor(8, 11);mono->Printf("%3d", Fear);
-
-	mono->Fill_Attrib(66, 13, 12, 1, IsTechnician ? MonoClass::INVERSE : MonoClass::NORMAL);
-	mono->Fill_Attrib(66, 14, 12, 1, IsStoked ? MonoClass::INVERSE : MonoClass::NORMAL);
-	mono->Fill_Attrib(66, 15, 12, 1, IsProne ? MonoClass::INVERSE : MonoClass::NORMAL);
-
-	BASECLASS::Debug_Dump(mono);
-}
-#endif
-
-
 /***********************************************************************************************
  * InfantryClass::InfantryClass -- The constructor for infantry objects.                       *
  *                                                                                             *
@@ -228,15 +167,16 @@ InfantryClass::InfantryClass(InfantryTypeClass const * type, HouseClass * house)
 	Class((InfantryTypeClass *)type),
 	Doing(DO_NOTHING),
 	Comment(0),
-	ProneStruggleTimer(0),
-	LookTimer(0),
-	IsTechnician(false),
+	IsTechnician(false), // RA2: InfantryClass at 0x4FF640 has no ProneStruggleTimer, LookTimer
 	IsStoked(false),
 	IsProne(false),
 	IsBerzerk(false),
 	IsZoneCheat(false),
 	WasSelected(false),
-	Fear(FEAR_NONE)
+	Fear(FEAR_NONE), // RA2: InfantryClass at 0x4FF640 matches only so
+	Unused_5C8(0), // RA2: as RA2 initializes it
+	ShouldDeploy(false), // RA2: as above
+	LastSurface(2) // RA2: as above
 {
 	Create_ID();
 	Infantry.Add(this);
@@ -277,14 +217,27 @@ void InfantryClass::Init(void)
 	}
 
 	if (Class != NULL) {
+		if (House != NULL) { // RA2: Init at 0x4FF8B0 matches only so
+			TypeList<InfantryTypeClass const *> & list = House->Class->VeteranInfantry; // RA2: as above
+			for (int index = 0; index < list.Count(); index++) { // RA2: as above
+				if (list[index] == Class) { // RA2: as above
+					Veterancy.Set_Veteran(true); // RA2: as above
+					break;
+				}
+			}
+		}
+
+		if (House != NULL && House->BarracksInfiltrated && Class->IsTrainable) { // RA2: as above
+			Veterancy.Set_Veteran(true); // RA2: as above
+		}
 
 		Strength = Class->MaxStrength;
-
-		/*
-		**	Civilians carry much less ammo than soldiers do.
-		*/
-		Ammo = Class->MaxAmmo;
-
+		EstimatedHealth = Class->MaxStrength; // RA2: as above
+		if (Class->InitialAmmo == -1) { // RA2: as above
+			Ammo = Class->MaxAmmo; // RA2: as above
+		} else {
+			Ammo = Class->InitialAmmo; // RA2: as above
+		}
 		IsCloakable = Class->IsCloakable;
 	}
 }
@@ -374,20 +327,8 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 	/*
 	 * If the warhead is webby and we're not web immune, paralyze us.
 	 */
-	if (warhead->IsWebby && !Class->IsWebImmune) {
-		damage = 0;
-		int variation = Random_Pick(-warhead->WebDurationVariation, warhead->WebDurationVariation);
-		int duration = warhead->WebDuration + variation;
-		ProneStruggleTimer = MAX(ProneStruggleTimer, duration);
 
-		Do_Action(DO_STRUGGLE, true, true);
-
-		if (Tag != NULL) {
-			Tag->Spring(TEVENT_PARALYZED, this, CELL_NONE, false, source);
-		}
-	}
-
-	res = BASECLASS::Take_Damage(damage, distance, warhead, source, forced, no_crew);
+	res = BASECLASS::Take_Damage(damage, distance, warhead, source, forced, no_crew); // RA2: no ProneStruggleTimer, IsWebby, WebDurationVariation and 2 more (TibSun's use does not compile against RA2's declaration)
 
 	if (res == RESULT_ALREADY_DESTROYED) return(res);
 
@@ -422,8 +363,7 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 		} else if (Class->IsCyborg && IsProne) {
 			new AnimClass(Rule->InfantryExplode, PositionCoord);
 			delthis = true;
-		} else if (Class->IsJumpJet) {
-			new AnimClass(Rule->InfantryExplode, PositionCoord);
+			new AnimClass(Rule->InfantryExplode, PositionCoord); // RA2: no IsJumpJet (not in RA2's layout)
 			delthis = true;
 		} else {
 
@@ -534,71 +474,6 @@ ResultType InfantryClass::Take_Damage(int & damage, int distance, WarheadTypeCla
 
 
 /***********************************************************************************************
- * InfantryClass::Shape_Number -- Fetch the shape number for this infantry.                    *
- *                                                                                             *
- *    This will determine the shape number to use for this infantry soldier. The shape number  *
- *    is relative to the shape file associated with this infantry unit.                        *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  Returns with the shape number for this infantry object to be used when drawing.    *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/29/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-int InfantryClass::Shape_Number(void) const
-{
-	/*
-	**	Fetch the shape pointer to use for the infantry. This is controlled by what
-	**	choreograph sequence the infantry is performing, it's facing, and whether it
-	**	is prone.
-	*/
-	DoType doit = Doing;
-	if (doit == DO_NOTHING) doit = DO_STAND_READY;
-
-	/*
-	**	The infantry shape is always modulo the number of animation frames
-	**	of the action stage that the infantry is doing.
-	*/
-	int shapenum = Fetch_Stage() % MAX(Class->DoControls[doit].Count, 1);
-
-	if (Is_JumpJet() && TarCom != NULL) {
-
-		/*
-		**	If facing makes a difference, then the shape number will be incremented
-		**	by the facing accordingly.
-		*/
-		if (Class->DoControls[doit].Jump > 0) {
-			shapenum += HumanShape[Direction(TarCom).As_Dir32()] * Class->DoControls[doit].Jump;
-		}
-
-	} else {
-
-		/*
-		**	If facing makes a difference, then the shape number will be incremented
-		**	by the facing accordingly.
-		*/
-		if (Class->DoControls[doit].Jump > 0) {
-			shapenum += HumanShape[DirType(PrimaryFacing.Current()).As_Dir32()] * Class->DoControls[doit].Jump;
-		}
-	}
-
-	/*
-	**	Finally, the shape number is biased according to the starting frame number for
-	**	that action in the infantry shape file.
-	*/
-	shapenum += Class->DoControls[doit].Frame;
-
-	/*
-	**	Return with the final infantry shape number.
-	*/
-	return(shapenum);
-}
-
-
-/***********************************************************************************************
  * InfantryClass::Draw_It -- Draws a unit object.                                              *
  *                                                                                             *
  *    This routine is the one that actually draws a unit object. It displays the unit          *
@@ -704,6 +579,69 @@ void InfantryClass::Draw_It(Point2D const & xpoint, Rect const & cliprect) const
 
 	BASECLASS::Draw_It(point, cliprect);
 }
+
+
+/***************************************************************************
+**	This is the array of constant data associated with infantry maneuvers. It
+**	specifies the frame rate as well as if the animation can be aborted.
+*/
+// interruptible, mobile, randomstart, rate
+DoStruct const InfantryClass::MasterDoControls[DO_COUNT] = {
+	{true,	false,	false,	0},	// DO_STAND_READY
+	{true,	false,	false,	0},	// DO_STAND_GUARD
+	{true,	false,	false,	6},	// DO_PRONE
+	{true,	true,	true,	3},	// DO_WALK
+	{true,	false,	false,	1},	// DO_FIRE_WEAPON
+	{false,	true,	false,	1},	// DO_LIE_DOWN
+	{true,	true,	true,	1},	// DO_CRAWL
+	{false,	false,	false,	1},	// DO_GET_UP
+	{true,	false,	false,	1},	// DO_FIRE_PRONE
+	{true,	false,	false,	1},	// DO_IDLE1
+	{true,	false,	false,	1},	// DO_IDLE2
+	{false,	false,	false,	1},	// DO_GUN_DEATH
+	{false,	false,	false,	1},	// DO_EXPLOSION_DEATH
+	{false,	false,	false,	1},	// DO_EXPLOSION2_DEATH
+	{false,	false,	false,	1},	// DO_GRENADE_DEATH
+	{false,	false,	false,	1},	// DO_FIRE_DEATH
+	{true,	true,	false,	1},	/// DO_HOVER
+	{true,	true,	false,	1},	/// DO_FLY
+	{true,	true,	false,	1},	/// DO_TUMBLE
+	{true,	true,	false,	1},	/// DO_FIREFLY
+	{false,	false,	true,	3},	/// DO_STRUGGLE
+};
+
+
+#ifdef _DEBUG
+/***********************************************************************************************
+ * InfantryClass::Debug_Dump -- Displays debug information about infantry unit.                *
+ *                                                                                             *
+ *    This routine is used by the debug version to display pertinent information about the     *
+ *    infantry unit.                                                                           *
+ *                                                                                             *
+ * INPUT:   mono  -- The monochrome screen to display the debug information to.                *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   09/01/1994 JLB : Created.                                                                 *
+ *=============================================================================================*/
+void InfantryClass::Debug_Dump(MonoClass * mono) const
+{
+	mono->Set_Cursor(0, 0);
+
+	mono->Set_Cursor(1, 11);mono->Printf("%3d", Doing);
+	mono->Set_Cursor(8, 11);mono->Printf("%3d", Fear);
+
+	mono->Fill_Attrib(66, 13, 12, 1, IsTechnician ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(66, 14, 12, 1, IsStoked ? MonoClass::INVERSE : MonoClass::NORMAL);
+	mono->Fill_Attrib(66, 15, 12, 1, IsProne ? MonoClass::INVERSE : MonoClass::NORMAL);
+
+	BASECLASS::Debug_Dump(mono);
+}
+#endif
+
 
 
 /***********************************************************************************************
@@ -1100,10 +1038,7 @@ void InfantryClass::Assign_Destination(AbstractClass * target, bool immediate)
 	**	Special flag so that infantry will start heading in the right direction immediately.
 	*/
 	if (Locomotion->Is_Moving() && target != NULL && Map[Center_Coord()].Is_Clear_To_Move(Class->Speed, true, false)) {
-		if (Class->IsJumpJet || CurrentMission != MISSION_ATTACK || NavCom != target) {
-			Stop_Driver();
-		}
-	}
+	} // RA2: no IsJumpJet (not in RA2's layout)
 
 	/*
 	**	When telling an infantry soldier to move to a location twice, then this
@@ -1160,50 +1095,9 @@ void InfantryClass::Assign_Destination(AbstractClass * target, bool immediate)
 		Path[0] = FACING_NONE;
 	}
 
-	if (target != NULL && Class->IsJumpJet && Locomotion->Is_Moving()) {
-		IPersistPtr persist(Locomotion);
-		CLSID clsid;
-		persist->GetClassID(&clsid);
-		if (clsid == CLSID_WalkLocomotion) {
-			NavQueue.Add_Head(target);
-			target = Get_Target_Cell_Ptr();
-			if (target != NULL && ((CellClass *)target)->IsUnderBridge) {
-				target = NULL;
-			}
-		}
-	}
 
-	if (Class->IsJumpJet && target != NULL && !Locomotion->Is_Moving()) {
-		bool should_fly = Should_JumpJet_Fly(Destination_Coord().As_Cell(), target->Center_Coord().As_Cell());
-		if (Is_JumpJet()) {
-			if (!should_fly) {
-				IPiggybackPtr piggy(Locomotion);
-				if (piggy != NULL) {
-					if (piggy->Is_Piggybacking() && piggy->Is_Ok_To_End()) {
-						piggy->End_Piggyback(&Locomotion);
-					}
-				}
-				ILocomotionPtr walk(CLSID_WalkLocomotion);
-				walk->Link_To_Object(this);
-				piggy = IPiggybackPtr(walk);
-				if (piggy != NULL) {
-					piggy->Begin_Piggyback(Locomotion);
-					Locomotion = walk;
-				}
-			}
-		} else {
-			if (should_fly) {
-				IPiggybackPtr piggy(Locomotion);
-				if (piggy != NULL) {
-					if (piggy->Is_Piggybacking() && piggy->Is_Ok_To_End()) {
-						piggy->End_Piggyback(&Locomotion);
-					}
-				}
-			}
-		}
-	}
 
-	BASECLASS::Assign_Destination(target, immediate);
+	BASECLASS::Assign_Destination(target, immediate); // RA2: no IsJumpJet (not in RA2's layout)
 }
 
 
@@ -1245,108 +1139,6 @@ void InfantryClass::Assign_Target(AbstractClass * target)
 	if (NavCom == NULL && Class->IsCapture && !Is_Weapon_Equipped()) {
 		if (target != NULL && target->RTTI == RTTI_BUILDING && ((BuildingClass *)target)->Class->IsCaptureable) {
 			Assign_Destination(target);
-		}
-	}
-}
-
-
-/// <summary>
-/// Handles the infantry traveling through a subterranean tunnel.
-/// This routine walks the soldier along the tube it entered, following the tube's own
-/// path and sinking or rising with it along the way. When the far mouth is reached the
-/// infantry is set back down on the map, marked down into its cell, and given a per
-/// cell process so that it rejoins the world properly. Anything standing in the way of
-/// the exit is told to scatter first.
-/// </summary>
-void InfantryClass::Tunnel_AI(void)
-{
-	bool finished = Tubes[CurrentTube]->Dirs[CurrentTubeDir] == FACING_NONE;
-	if (!finished) {
-		int distance = Distance(LastTubeCoord);
-		TubeClass * tube = Tubes[CurrentTube];
-		DirType facing;
-		DirType direction = facing.Direction(Center_Coord(), LastTubeCoord);
-		int speed = Class->MaxSpeed;
-
-		int height_step;
-		{
-			Cell tube_cell = tube->Exit;
-			Coord exit(tube_cell);
-			tube_cell = tube->Enter;
-			Coord enter(tube_cell);
-			height_step = tube->Count;
-			height_step = (Map.Get_Height_GL(exit) - Map.Get_Height_GL(enter)) / height_step;
-		}
-
-		if (distance <= speed) {
-			CurrentTubeDir++;
-			FacingType tube_dir = tube->Dirs[CurrentTubeDir];
-			finished = tube_dir == FACING_NONE;
-			PositionCoord = LastTubeCoord;
-
-			if (!finished) {
-				Coord coord = Adjacent_Cell(LastTubeCoord, tube->Dirs[CurrentTubeDir]);
-				LastTubeCoord = LastTubeCoord + ((TPoint2D<int> const &)Map[coord].Cell_Coord() - (TPoint2D<int> const &)Map[LastTubeCoord].Cell_Coord());
-				LastTubeCoord.Z += height_step;
-
-				DirType dir = DirType().Direction(Center_Coord(), LastTubeCoord);
-				Coord new_coord = Move_Coord(PositionCoord, dir, speed - distance);
-				double divisor;
-				if (tube_dir % 2) {
-					divisor = CELL_LEPTON_H * M_SQRT2;
-				} else {
-					divisor = CELL_LEPTON_H;
-				}
-				new_coord.Z += (speed - distance) / divisor * height_step;
-				PositionCoord = new_coord;
-				return;
-			}
-		} else {
-			FacingType tube_dir = tube->Dirs[CurrentTubeDir];
-			Coord new_coord = Move_Coord(Get_Coord(), direction, speed);
-			double divisor;
-			if (tube_dir % 2) {
-				divisor = CELL_LEPTON_H * M_SQRT2;
-			} else {
-				divisor = CELL_LEPTON_H;
-			}
-			new_coord.Z += speed / divisor * height_step;
-			PositionCoord = new_coord;
-			return;
-		}
-	}
-
-	if (finished) {
-		CellClass * cellptr = &Map[Get_Coord()];
-		ObjectClass * occupier = cellptr->Cell_Occupier();
-		if (Can_Enter_Cell(cellptr, FACING_NONE, 0) != MOVE_OK) {
-			while (occupier != NULL) {
-				if (occupier->RTTI == RTTI_UNIT || occupier->RTTI == RTTI_INFANTRY) {
-					if (!((FootClass *)occupier)->Locomotion->Is_Moving()) {
-						occupier->Scatter(Coord(0, 0, 0), true, true);
-					}
-				}
-				occupier = occupier->Next;
-			}
-			Set_Speed(0);
-		} else {
-			Coord spot = cellptr->Closest_Free_Spot(Get_Coord());
-			spot.Z = Map.Get_Height_GL(spot);
-			PositionCoord = spot;
-
-			Locomotion->Force_Immediate_Destination(COORD_NONE);
-			Locomotion->Stop_Movement_Animation();
-			Mark(MARK_DOWN);
-			Set_Occupy_Bit(Get_Coord());
-
-			if (NavCom == cellptr) {
-				Scatter(Coord(0, 0, 0), true, true);
-			} else {
-				Set_Speed(1);
-			}
-			CurrentTube = TUBE_NONE;
-			IsPlanningToLook = true;
-			Per_Cell_Process(PCP_END);
 		}
 	}
 }
@@ -1427,11 +1219,7 @@ void InfantryClass::AI(void)
 	}
 
 	if (Locomotion->Is_Moving_Now() && HeightAGL > 0 && IsOwnedByPlayer && Class->SightRange > 0) {
-		if (!LookTimer) {
-			Look();
-			LookTimer = TICKS_PER_SECOND;
-		}
-	}
+	} // RA2: no LookTimer (TibSun's use does not compile against RA2's declaration)
 
 	/*
 	**	Infantry that are not on the ground should always be redrawn. Such is
@@ -1816,10 +1604,7 @@ MoveType InfantryClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir
 								break;
 #endif
 							case RTTI_INFANTRY:
-								if (((InfantryClass *)obj)->Class->IsDisguised) {
-									retval = MOVE_TEMP;
-								}
-								break;
+								break; // RA2: no IsDisguised (TibSun's use does not compile against RA2's declaration)
 
 							case RTTI_BUILDING:
 								if (((BuildingClass *)obj)->Class->IsBridgeRepairHut) {
@@ -1929,7 +1714,7 @@ MoveType InfantryClass::Can_Enter_Cell(CellClass const * cellptr, FacingType dir
  *   09/01/1994 JLB : Created.                                                                 *
  *   06/27/1995 JLB : Flame thrower can fire while prone now.                                  *
  *=============================================================================================*/
-FireErrorType InfantryClass::Can_Fire(AbstractClass * target, int which) const
+FireErrorType InfantryClass::Can_Fire(AbstractClass * target, int which, bool ignoreRange) const // RA2: ignoreRange
 {
 	/*
 	**	If a medic is shooting at a healed target, let's declare the target
@@ -1960,18 +1745,6 @@ FireErrorType InfantryClass::Can_Fire(AbstractClass * target, int which) const
 	}
 
 	return(BASECLASS::Can_Fire(target, which));
-}
-
-
-/// <summary>
-/// Is the infantry unable to move at the moment?
-/// A soldier struggling back to its feet after being knocked prone is pinned in place
-/// until it has finished doing so.
-/// </summary>
-/// <returns>bool; Is the infantry immobilized?</returns>
-bool InfantryClass::Is_Immobilized(void) const
-{
-	return(ProneStruggleTimer > 0 || BASECLASS::Is_Immobilized());
 }
 
 
@@ -2129,6 +1902,24 @@ bool InfantryClass::Random_Animate(void)
 		return(true);
 	}
 	return(false);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline Point2D Cell_Fraction(Coord const & x, Coord const & y)
+{
+	return Point2D(x.X & (CELL_LEPTON_W - 1), y.Y & (CELL_LEPTON_H - 1));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline DirType Coord_Direction(Coord const & coord1, Coord const & coord2)
+{
+	return(fastmath::atan2((double)coord1.Y - (double)coord2.Y, (double)coord2.X - (double)coord1.X));
 }
 
 
@@ -2343,7 +2134,13 @@ bool InfantryClass::Do_Action(DoType todo, bool force, bool randomize)
  *=============================================================================================*/
 bool InfantryClass::Stop_Driver(void)
 {
-	if (IsProne) {
+	if (Doing == 0x1b) goto deploy_fire; // RA2: Stop_Driver at 0x504AE0 matches only so
+	if (Doing == 0x1c) goto deploy_fire; // RA2: as above
+	if (Doing == 0x1d) goto deploy_fire; // RA2: as above
+	if (Doing == 0x1e) { // RA2: as above
+deploy_fire: // RA2: as above
+		Do_Action((DoType)0x1c); // RA2: as above
+	} else if (IsProne) { // RA2: as above
 		Do_Action(DO_PRONE);
 	} else {
 		Do_Action(DO_STAND_READY);
@@ -2459,15 +2256,10 @@ BulletClass * InfantryClass::Fire_At(AbstractClass * target, int which)
 
 	BulletClass * bullet = BASECLASS::Fire_At(target, which);
 	if (bullet != NULL && !IsInLimbo) {
-
-		/*
-		**	For fraidycat infantry that run out of ammo, always go into
-		**	a maximum fear state at that time.
-		*/
 		if (Class->IsFraidyCat && !Ammo) {
-			Fear = FEAR_MAXIMUM;
-			if (Mission == MISSION_ATTACK || Mission == MISSION_HUNT) {
-				Assign_Mission(MISSION_GUARD);
+			Fear = (FearType)0x12c; // RA2: Fire_At at 0x504F50 matches only so
+			if (Get_Mission() == MISSION_ATTACK || Get_Mission() == MISSION_HUNT) { // RA2: as above
+				QueueMission(MISSION_GUARD, false); // RA2: as above
 			}
 		}
 	}
@@ -2653,29 +2445,8 @@ ActionType InfantryClass::What_Action(ObjectClass const * object, bool disallow_
 	*/
 	if (Class->IsEngineer && object->RTTI == RTTI_BUILDING && House->Is_Player_Control()) {
 		BuildingClass const * bldg = (BuildingClass *)object;
-		if (!bldg->Considered_Vehicle() || bldg->Class->IsMobileWar) {
-			if (bldg->Class->IsRepairable || bldg->Class->IsMobileWar) {
-				if (bldg->Class->IsBridgeRepairHut) {
-					return(Map.Can_Repair_Bridge(bldg->Center_Coord()) ? ACTION_GREPAIR : ACTION_NO_GREPAIR);
-				}
-				if (House->Is_Ally(bldg)) {
-					if (bldg->HealthRatio == Rule->ConditionGreen) {
-						return(ACTION_NO_GREPAIR);
-					}
-					return(ACTION_GREPAIR);
-				} else {
 
-					if (bldg->Class->IsCaptureable) {
-						if (bldg->HealthRatio > Rule->EngineerCaptureLevel) {
-							return(ACTION_DAMAGE);
-						}
-						return(ACTION_CAPTURE);
-					}
-				}
-			}
-		}
-
-	}
+	} // RA2: no IsMobileWar (not in RA2's layout)
 
 	/*
 	**	If this is a medic, and the cursor's over a friendly infantryman,
@@ -2926,6 +2697,18 @@ bool InfantryClass::Active_Click_With(ActionType action, ObjectClass * object, b
 }
 
 
+/// <summary>
+/// Handles a player click on a map cell while this infantry is selected.
+/// This routine defers to the FootClass handler; infantry have no cell click
+/// behavior of their own beyond the normal movement and attack orders.
+/// </summary>
+/// <returns>bool; Was the click acted upon?</returns>
+bool InfantryClass::Active_Click_With(ActionType action, Cell const & cell, Cell const & cell2, bool is_waypoint) // RA2: a second cell
+{
+	return(BASECLASS::Active_Click_With(action, cell, cell2, is_waypoint)); // RA2: as above
+}
+
+
 /***********************************************************************************************
  * InfantryClass::Full_Name -- Fetches the full name of the infantry unit.                     *
  *                                                                                             *
@@ -2950,12 +2733,12 @@ const char * InfantryClass::Full_Name(void) const
 		return(Fetch_String(TXT_TECHNICIAN));
 	}
 
-	if (Class->IsDisguised && !House->Is_Player_Control() && Rule->Disguise != NULL) {
-		return(Rule->Disguise->GivenName);
-	}
 
-	return(Class->GivenName);
+	return(Class->GivenName); // RA2: no IsDisguised, Disguise (TibSun's use does not compile against RA2's declaration)
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -2978,20 +2761,147 @@ const char * InfantryClass::Full_Name(void) const
  *=============================================================================================*/
 int InfantryClass::Do_MISSION_ATTACK(void)
 {
-	if ((Class->IsBomber || Has_Ability(ABILITY_C4)) && TarCom != NULL && TarCom->RTTI == RTTI_BUILDING) {
-		Assign_Destination(TarCom);
-		Assign_Mission(MISSION_SABOTAGE);
+	if ((Class->IsBomber || Has_Ability(ABILITY_C4)) && TarCom != NULL && TarCom->Fetch_RTTI() == RTTI_BUILDING && ((BuildingClass *)TarCom)->Class->CanC4 && !((BuildingClass *)TarCom)->Class->IsInvisibleInGame) { // RA2: Do_MISSION_ATTACK at 0x506280 matches only so
+		Assign_Destination(TarCom, true); // RA2: as above
+		QueueMission(MISSION_SABOTAGE, false); // RA2: as above
 		return(1);
 	}
 
-	if (Class->IsCapture && TarCom != NULL && TarCom->RTTI == RTTI_BUILDING) {
-		Assign_Destination(TarCom);
-		Assign_Mission(MISSION_CAPTURE);
+	if (!House->Is_Human_Player() && TarCom != NULL && TarCom->Fetch_RTTI() == RTTI_BUILDING && (Class->IsCapture || ((Class->Occupier || Class->Assaulter) && ((BuildingClass *)TarCom)->CanBeOccupiedBy(this)))) { // RA2: as above
+		Assign_Destination(TarCom, true); // RA2: as above
+		Set_Mission(MISSION_CAPTURE); // RA2: as above
 		return(1);
+	}
+
+	if (House->Is_Human_Player()) { // RA2: as above
+		if (Doing == 0x1b) goto deploy_fire; // RA2: as above
+		if (Doing == 0x1c) goto deploy_fire; // RA2: as above
+		if (Doing == 0x1d) goto deploy_fire; // RA2: as above
+		if (Doing == 0x1e) { // RA2: as above
+deploy_fire: // RA2: as above
+			Rocking_AI(); // RA2: as above
+			return(Current_Mission_Control().Normal_Delay() + Random_Pick(0, 2)); // RA2: as above
+		}
 	}
 
 	return(BASECLASS::Do_MISSION_ATTACK());
 }
+
+
+
+
+
+/// <summary>
+/// Handles the guard mission for this infantry.
+/// Attack dogs left standing about on tiberium will turn to face east and then lie
+/// down, which is how they come to be found sleeping in the fields. Everything else
+/// about guard duty is left to the normal FootClass handler.
+/// </summary>
+/// <returns>The delay in game frames before this mission should be processed again.</returns>
+/// <summary>
+/// RA2: sends a computer-owned capturer or occupier into the building it is hunting.
+/// </summary>
+int InfantryClass::Do_MISSION_HUNT(void)
+{
+	if (!House->Is_Human_Player() && TarCom != NULL && TarCom->Fetch_RTTI() == RTTI_BUILDING) {
+		if (Class->IsCapture || ((Class->Occupier || Class->Assaulter) && ((BuildingClass *)TarCom)->CanBeOccupiedBy(this))) {
+			Assign_Destination(TarCom, true);
+			Set_Mission(MISSION_CAPTURE);
+			return(1);
+		}
+	}
+	return(BASECLASS::Do_MISSION_HUNT());
+}
+
+
+/// <summary>
+/// RA2: a deployer may deploy or fire from its deployed state before guarding.
+/// </summary>
+int InfantryClass::Do_MISSION_GUARD(void)
+{
+	int delay = Update_Deployed_Attack(); // RA2: Do_MISSION_GUARD at 0x506470 matches only so (its bytes equal Do_MISSION_GUARD_AREA's)
+	if (delay == -1) { // RA2: as above
+		return(BASECLASS::Do_MISSION_GUARD()); // RA2: as above
+	}
+	return(delay); // RA2: as above
+}
+
+
+/// <summary>
+/// RA2: as Do_MISSION_GUARD, for area guard.
+/// </summary>
+int InfantryClass::Do_MISSION_GUARD_AREA(void)
+{
+	int delay = Update_Deployed_Attack();
+	if (delay == -1) {
+		return(BASECLASS::Do_MISSION_GUARD_AREA());
+	}
+	return(delay);
+}
+
+
+/// <summary>
+/// RA2: a deployed soldier undeploys before it moves; a human player's just stops.
+/// </summary>
+int InfantryClass::Do_MISSION_MOVE(void)
+{
+	if (Doing == 27 || Doing == 28 || Doing == 29 || Doing == 30) {
+		if (Owner_HouseClass()->Is_Human_Player()) {
+			Assign_Destination(NULL, true);
+			return(1);
+		}
+		if (Class->UndeployDelay <= -1) {
+			Do_Action((DoType)31, false, false);
+			return(Class->DoControls[31].Count);
+		}
+	}
+	return(BASECLASS::Do_MISSION_MOVE());
+}
+
+
+/// <summary>
+/// RA2: the deploy command for a Deployer: deploys (aiming an area-fire deploy weapon at its own cell) or undeploys.
+/// </summary>
+int InfantryClass::Do_MISSION_UNLOAD(void)
+{
+	if (Class->Deployer) {
+		int delay = -1;
+		if (Doing == 27 || Doing == 28 || Doing == 29 || Doing == 30) {
+			if (Class->UndeployDelay <= -1) {
+				Do_Action((DoType)31, true, false);
+			}
+		} else {
+			Do_Action((DoType)27, true, false);
+			WeaponDataStruct const * weapon = GetDeployWeapon();
+			if (Is_Weapon_Valid(weapon) && weapon->Weapon->AreaFire) {
+				if (Is_Type_Named("DESO")) {
+					delay = Class->DoControls[27].Count + 1;
+				} else {
+					Assign_Target(&Map[Get_Cell()]);
+				}
+			}
+			if (Class->UndeployDelay > -1) {
+				delay = Class->UndeployDelay;
+			}
+		}
+		Set_Mission(MISSION_GUARD);
+		Assign_Destination(NULL, true);
+		if (delay > -1) {
+			return(delay);
+		}
+	}
+	return(BASECLASS::Do_MISSION_UNLOAD());
+}
+
+
+
+
+
+
+
+
+
+
 
 
 /***********************************************************************************************
@@ -3031,15 +2941,8 @@ ActionType InfantryClass::What_Action(Cell const & cell, bool check_fog, bool di
 		}
 	}
 
-	if (Class->IsJumpJet && (action == ACTION_MOVE || action == ACTION_NOMOVE) && (Map[cell].Is_Near_Tunnel_NW() || Map[cell].Is_Near_Tunnel_ES())) {
-		action = ACTION_NONE;
-	} else {
-		if (action == ACTION_MOVE && Map[cell].Has_Tunnel()) {
-			return(Map[cell].Can_Enter_Tunnel(this) ? ACTION_ENTER_TUNNEL : ACTION_NO_ENTER_TUNNEL);
-		}
-	}
 
-	CellClass * cellptr = &Map[cell];
+	CellClass * cellptr = &Map[cell]; // RA2: no IsJumpJet (not in RA2's layout)
 	BuildingTypeClass * fogged_building = NULL;
 	FoggedObjectClass * fogged_object = NULL;
 
@@ -3075,11 +2978,8 @@ ActionType InfantryClass::What_Action(Cell const & cell, bool check_fog, bool di
 		action = ACTION_ATTACK_SUPPORT;
 	}
 
-	if (House->Is_Player_Control() && action == ACTION_NONE && !Class->IsJumpJet) {
-		action = ACTION_NOMOVE;
-	}
 
-	return(action);
+	return(action); // RA2: no IsJumpJet (not in RA2's layout)
 }
 
 
@@ -3288,30 +3188,24 @@ void InfantryClass::Read_INI(CCINIClass const & ini)
  *=============================================================================================*/
 void InfantryClass::Write_INI(CCINIClass & ini)
 {
-	/*
-	**	First, clear out all existing infantry data from the ini file.
-	*/
 	ini.Clear(INI_Name);
 
-	/*
-	**	Write the infantry data out.
-	*/
 	for (int index = 0; index < Infantry.Count(); index++) {
 		InfantryClass * infantry = Infantry[index];
 		if (!infantry->IsInLimbo) {
-			char	uname[10];
-			char	buf[128];
+			char uname[10]; // RA2: Write_INI at 0x506D70 matches only so
+			char buf[128]; // RA2: as above
 
 			sprintf(uname, "%d", index);
 			sprintf(buf, "%s,%s,%d,%d,%d,%d,%s,%d,%s,%d,%d,%d,%d,%d",
-					(char const *)infantry->House->Class->IniName,
+					(char const *)infantry->House->IniName, // RA2: as above
 					(char const *)infantry->Class->IniName,
-					int(infantry->HealthRatio*256),
+					int(infantry->HealthRatio * 256), // RA2: as above
 					infantry->PositionCell.X,
 					infantry->PositionCell.Y,
 					CellClass::Spot_Index(infantry->PositionCoord),
-					MissionClass::Mission_Name((infantry->Mission == MISSION_NONE) ?
-						infantry->MissionQueue : infantry->Mission),
+					MissionClass::Mission_Name((infantry->Get_Mission() == MISSION_NONE) ? // RA2: as above
+						infantry->MissionQueue : infantry->Get_Mission()), // RA2: as above
 					infantry->PrimaryFacing.Current().As_Dir256(),
 					infantry->Tag != NULL ? (char const *)infantry->Tag->Class->IniName : "None",
 					infantry->Veterancy.To_Integer(),
@@ -3323,6 +3217,15 @@ void InfantryClass::Write_INI(CCINIClass & ini)
 			ini.Put_String(INI_Name, uname, buf);
 		}
 	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Reduce_Fear(int & fear)
+{
+	fear--;
 }
 
 
@@ -3456,21 +3359,17 @@ bool InfantryClass::Theft_AI(void)
 {
 	if (!Class->IsThief) return(false);
 	if (NavCom == NULL) return(false);
-	if (NavCom->RTTI != RTTI_UNIT) return(false);
+	if (NavCom->Fetch_RTTI() != RTTI_UNIT) return(false); // RA2: Theft_AI at 0x507170 matches only so
 
 	UnitClass * unit = (UnitClass *)NavCom;
 	if (House->Is_Ally(unit)) return(false);
 
-	Coord coord = unit->Destination_Coord();
+	Coord coord = unit->Destination_Coord(this); // RA2: as above
 	int z = coord.Z;
 	coord = Center_Coord();
 
-	/*
-	 * If the thief is close enough to the vehicle (and on the same level),
-	 * then capture the vehicle outright.
-	 */
 	if (abs(z - coord.Z) < LEVEL_LEPTON_H) {
-		if (Distance_To(unit) < CELL_LEPTON / 2) {
+		if (Center_Coord().Distance_To(unit->Center_Coord()) < CELL_LEPTON / 2) { // RA2: as above
 			if (unit->Tag != NULL) {
 				unit->Tag->Spring(TEVENT_PLAYER_ENTERED, this);
 			}
@@ -3479,18 +3378,14 @@ bool InfantryClass::Theft_AI(void)
 			if (Tag != NULL && Tag->Is_To_Inherit()) {
 				unit->Attach_Tag(Tag);
 			}
-			unit->Captured(House);
+			unit->Captured(House, true); // RA2: as above
 			unit->EnteredByInfType = Class->HeapID;
 			Delete_Me();
 			return(true);
 		}
 	}
 
-	/*
-	 * The vehicle is too far away to capture. Keep chasing it down unless
-	 * the thief is already heading toward it.
-	 */
-	if (Distance_To(unit) < 2 * CELL_LEPTON) {
+	if (Center_Coord().Distance_To(unit->Center_Coord()) < 2 * CELL_LEPTON) { // RA2: as above
 		if (Coord(Locomotion->Destination()) != COORD_NONE) {
 			if (unit->Distance(Coord(Locomotion->Destination())) <= CELL_LEPTON / 2) {
 				return(false);
@@ -3499,7 +3394,7 @@ bool InfantryClass::Theft_AI(void)
 		Assign_Destination(NavCom);
 	} else {
 		if (Coord(Locomotion->Destination()) != COORD_NONE) {
-			if (unit->Destination_Coord().As_Cell() == Coord(Locomotion->Destination()).As_Cell()) {
+			if (unit->Destination_Coord(this).As_Cell() == Coord(Locomotion->Destination()).As_Cell()) { // RA2: as above
 				return(false);
 			}
 		}
@@ -3634,32 +3529,10 @@ void InfantryClass::Doing_AI(void)
 	if (Doing == DO_NOTHING || Fetch_Stage() >= Class->DoControls[Doing].Count) {
 		switch (Doing) {
 			default:
-				if (ProneStruggleTimer == 0) {
-					if (Class->DoControls[Doing].Facing != FACING_NONE) {
-						PrimaryFacing.Set(Class->DoControls[Doing].Facing);
-					}
-
-					if (Locomotion->Is_Moving() && Speed > 0.1) {
-						if (IsProne) {
-							Do_Action(DO_CRAWL, true);
-						} else {
-							Do_Action(DO_WALK, true);
-						}
-					} else {
-						if (IsProne) {
-							Do_Action(DO_PRONE, true);
-						} else {
-							Do_Action(DO_STAND_READY, true);
-						}
-					}
-				}
-				break;
+				break; // RA2: no ProneStruggleTimer (TibSun's use does not compile against RA2's declaration)
 
 			case DO_STRUGGLE:
-				if (ProneStruggleTimer == 0) {
-					Do_Action(DO_PRONE, true);
-				}
-				break;
+				break; // RA2: no ProneStruggleTimer (TibSun's use does not compile against RA2's declaration)
 
 			case DO_GUN_DEATH:
 			case DO_EXPLOSION_DEATH:
@@ -3751,6 +3624,63 @@ void InfantryClass::Movement_AI(void)
 	}
 }
 
+/// <summary>
+/// RA2: a guarding deployer's turn. Deployed, it undeploys (UndeployDelay), fires its deploy weapon at its own cell
+/// while the radiation there is low (radiation-immune types) or rocks; undeployed, a computer-owned DeployFire type
+/// deploys once the difficulty's AIAutoDeployFrameDelay has passed. Returns -1 when there is nothing to do.
+/// </summary>
+int InfantryClass::Update_Deployed_Attack(void)
+{
+	if (Doing == 27 || Doing == 28 || Doing == 29 || Doing == 30) {
+		if (Class->UndeployDelay > -1) {
+			Do_Action((DoType)31, false, false);
+			return(Class->DoControls[31].Count);
+		}
+		if (Class->DeployFire) {
+			if (Class->ImmuneToRadiation) {
+				RadSiteClass * site = Map[Get_Cell()].Get_Rad_Site();
+				int level = Get_Class_Weapon_Data(1)->Weapon->RadLevel / 3;
+				if (site == NULL || site->GetRadLevel() < level) {
+					Assign_Target(&Map[Get_Cell()]);
+					if (Can_Fire(TarCom, 1, true) == FIRE_OK) {
+						Fire_At(TarCom, 1);
+						Assign_Target(NULL);
+						Do_Action((DoType)29, false, false);
+						return(Class->DoControls[29].Count);
+					}
+					Assign_Target(NULL);
+				}
+				return(Current_Mission_Control().Normal_Delay() + Random_Pick(10, 20));
+			}
+			Rocking_AI();
+			return(Current_Mission_Control().Normal_Delay() + Random_Pick(0, 2));
+		}
+		return(-1);
+	}
+
+	if (!Owner_HouseClass()->Is_Human_Player() && Class->Deployer && Class->DeployFire && Class->UndeployDelay <= -1 && NavCom == NULL && CurrentMissionStartTime + Rule->AIAutoDeployFrameDelay[House->Difficulty] < Frame) {
+		if (ArchiveTarget != NULL) {
+			if (ArchiveTarget->Center_Coord().As_Cell() != Center_Coord().As_Cell()) {
+				return(-1);
+			}
+		}
+		if (!Class->ImmuneToRadiation) {
+			if (!Locomotion->Is_Moving()) {
+				Do_Action((DoType)27, false, false);
+				return(Class->DoControls[27].Count);
+			}
+			Locomotion->Stop_Moving();
+			ShouldDeploy = true;
+			return(Current_Mission_Control().Normal_Delay() + Random_Pick(0, 2));
+		}
+	}
+	return(-1);
+}
+
+
+
+
+
 
 /***********************************************************************************************
  * InfantryClass::Get_Image_Data -- Fetches the image data for this infantry unit.             *
@@ -3769,13 +3699,7 @@ void InfantryClass::Movement_AI(void)
  *=============================================================================================*/
 void const * InfantryClass::Get_Image_Data(void) const
 {
-	if (Doing == DO_STRUGGLE && Rule->WebbedInfantry != NULL) {
-		return(Rule->WebbedInfantry->Get_Image_Data());
-	}
-	if (!IsOwnedByPlayer && Class->IsDisguised && Rule->Disguise != NULL) {
-		return(Rule->Disguise->ImageData);
-	}
-	return(BASECLASS::Get_Image_Data());
+	return(BASECLASS::Get_Image_Data()); // RA2: no Doing, Rule, WebbedInfantry and 5 more (TibSun's use does not compile against RA2's declaration)
 }
 
 
@@ -3797,49 +3721,29 @@ void const * InfantryClass::Get_Image_Data(void) const
  *=============================================================================================*/
 bool InfantryClass::Is_Ready_To_Random_Animate(void) const
 {
-	/*
-	**	See if the base classes (more rudimentary checking) determines that idle animations
-	**	cannot occur. If they cannot, then return with the failure code.
-	*/
 	if (!BASECLASS::Is_Ready_To_Random_Animate()) {
 		return(false);
 	}
-
-	/*
-	**	When the infantry is walking or otherwise engauged in travel, it won't idle animate.
-	*/
 	if (Locomotion->Is_Moving()) {
 		return(false);
 	}
-
-	/*
-	**	When prone, idle animations cannot occur. This is primarily because there are no prone
-	**	idle animations.
-	*/
 	if (IsProne) {
 		return(false);
 	}
-
-	/*
-	**	When firing, the infantry should not perform any idle animations.
-	*/
 	if (IsFiring) {
 		return(false);
 	}
-
-	/*
-	**	Only if the infantry is in guard or ready stance is idle animations allowed. This is
-	**	because the idle animations start and end with these frames.
-	*/
-	if (Doing != DO_STAND_GUARD && Doing != DO_STAND_READY) {
+	if (Doing == 0x1b) goto not_ready; // RA2: Is_Ready_To_Random_Animate at 0x508320 matches only so
+	if (Doing == 0x1c) goto not_ready; // RA2: as above
+	if (Doing == 0x1d) goto not_ready; // RA2: as above
+	if (Doing == 0x1e) { // RA2: as above
+not_ready: // RA2: as above
 		return(false);
 	}
-
-	/*
-	**	Since no reason was found to indicate it is not a good time to idle
-	**	animate, then it must be a good time to do so.
-	*/
-	return(true);
+	if (Doing == 1 || Doing == 0 || Doing == 0x10) { // RA2: as above
+		return(true); // RA2: as above
+	}
+	return(false); // RA2: as above
 }
 
 
@@ -3890,26 +3794,10 @@ void InfantryClass::Set_Occupy_Bit(Coord const & coord)
 	int spot_index = CellClass::Spot_Index(coord);
 	CellClass & cell = Map[coord];
 	if (Map.Get_Height_GL(coord) + BRIDGE_LEPTON_HEIGHT <= coord.Z && cell.IsUnderBridge) {
-
-		/*
-		**	Set the occupy position for the spot that we passed in
-		*/
 		cell.BridgeFlag.Composite |= (1 << spot_index);
-
-		/*
-		**	Record the type of infantry that now owns the cell
-		*/
 		cell.BridgeInfType = Owner();
 	} else {
-
-		/*
-		**	Set the occupy position for the spot that we passed in
-		*/
 		cell.Flag.Composite |= (1 << spot_index);
-
-		/*
-		**	Record the type of infantry that now owns the cell
-		*/
 		cell.InfType = Owner();
 	}
 }
@@ -3930,40 +3818,36 @@ void InfantryClass::Set_Occupy_Bit(Coord const & coord)
 void InfantryClass::Clear_Occupy_Bit(Coord const & coord)
 {
 	int spot_index = CellClass::Spot_Index(coord);
-	CellClass &cell = Map[coord];
+	CellClass & cell = Map[coord]; // RA2: Clear_Occupy_Bit at 0x5084A0 matches only so
 	int height = Map.Get_Height_GL(coord);
 
 	if (height + BRIDGE_LEPTON_HEIGHT <= coord.Z) {
-
-		/*
-		**	Clear the occupy bit for the infantry in that cell
-		*/
 		cell.BridgeFlag.Composite &= ~(1 << spot_index);
-
-		/*
-		**	If he was the last infantry recorded in the cell then
-		**	remove the infantry ownership flag.
-		*/
 		if (!(cell.BridgeFlag.Composite & 0x1C)) {
 			cell.BridgeInfType = HOUSE_NONE;
 		}
-
 	} else {
-
-		/*
-		**	Clear the occupy bit for the infantry in that cell
-		*/
 		cell.Flag.Composite &= ~(1 << spot_index);
-
-		/*
-		**	If he was the last infantry recorded in the cell then
-		**	remove the infantry ownership flag.
-		*/
 		if (!(cell.Flag.Composite & 0x1C)) {
 			cell.InfType = HOUSE_NONE;
 		}
 	}
 }
+
+/// <summary>
+/// RA2: a soldier in its deploy sequences fires its type's DeployFireWeapon when it has DeployFire.
+/// </summary>
+int InfantryClass::What_Weapon_Should_I_Use(AbstractClass * target) const
+{
+	if ((Doing == 27 || Doing == 28 || Doing == 29 || Doing == 30) && Class->DeployFire) {
+		return(Class->DeployFireWeapon);
+	}
+	return(BASECLASS::What_Weapon_Should_I_Use(target));
+}
+
+
+
+
 
 
 /// <summary>
@@ -3975,16 +3859,10 @@ void InfantryClass::Clear_Occupy_Bit(Coord const & coord)
 /// <returns>Returns with S_OK if the object was read successfully.</returns>
 HRESULT STDMETHODCALLTYPE InfantryClass::Load(IStream * stream)
 {
-	int size = Fetch_Object_Size(false);
-	TargetTracker.Remove_Index(Fetch_ID());
+	TargetTracker.Remove_Index(Fetch_ID()); // RA2: Load at 0x508570 has no int size = Fetch_Object_Size(false);
 	HRESULT result = BASECLASS::Load(stream);
 	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&LookTimer, &ProneStruggleTimer, size - offsetof(InfantryClass, LookTimer));
-			ProneStruggleTimer = 0;
-		}
-
-		ILocomotion * locomotion = Locomotion;
+		ILocomotion * locomotion = Locomotion; // RA2: Load at 0x508570 has no IsOldSaveGame, LookTimer, ProneStruggleTimer and 1 more
 
 		new (this) InfantryClass(NoInitClass());
 
@@ -3993,6 +3871,8 @@ HRESULT STDMETHODCALLTYPE InfantryClass::Load(IStream * stream)
 
 		TargetTracker.Add_Index(Fetch_ID(), this);
 		Swizzle_Pointer(&Class);
+		Swizzle_Pointer(&Disguise); // RA2: Load at 0x508570 matches only so
+		Swizzle_Pointer(&DisguisedAsHouse); // RA2: as above
 
 		result = S_OK;
 	}
@@ -4017,8 +3897,19 @@ HRESULT STDMETHODCALLTYPE InfantryClass::Save(IStream * stream, BOOL cleardirty)
 /// </summary>
 void InfantryClass::Stop_Movement_Animation(void)
 {
-	if (Doing == DO_CRAWL || Doing == DO_WALK) {
-		Doing = DO_NOTHING;
+	if (Doing == 6 || Doing == 3 || Doing == 0x11) { // RA2: Stop_Movement_Animation at 0x508730 matches only so
+		Doing = (DoType)-1; // RA2: as above
+	}
+}
+
+/// <summary>
+/// RA2: starts the deploy that Update_Deployed_Attack put off while the soldier was still moving.
+/// </summary>
+void InfantryClass::Unknown_Virtual_4D0(void)
+{
+	if (ShouldDeploy) {
+		ShouldDeploy = false;
+		Do_Action((DoType)27, false, false);
 	}
 }
 
@@ -4046,6 +3937,13 @@ bool InfantryClass::Ready_To_Commence(void)
 }
 
 
+
+
+
+
+
+
+
 /// <summary>
 /// Frightens this infantry as much as it can be frightened.
 /// Types flagged as fearless, and veterans who have earned the fearless ability, pay
@@ -4054,7 +3952,7 @@ bool InfantryClass::Ready_To_Commence(void)
 void InfantryClass::Start_Fear(void)
 {
 	if (!Class->IsFearless && !Has_Ability(ABILITY_FEARLESS)) {
-		Fear = FEAR_MAXIMUM;
+		Fear = (FearType)0x12c; // RA2: Start_Fear at 0x508820 matches only so
 	}
 }
 
@@ -4121,7 +4019,7 @@ void InfantryClass::Compute_CRC(CRCEngine & crc) const
 /// <returns>Returns with the coordinate the projectile should first appear at.</returns>
 Coord InfantryClass::Turret_Coord(int which) const
 {
-	return(Fire_Coord(which));
+	return(Fire_Coord(which)); // RA2: no offset argument
 }
 
 
@@ -4154,7 +4052,6 @@ void InfantryClass::On_Movement_Blocked(void)
 {
 	BASECLASS::On_Movement_Blocked();
 	if (NavCom != NULL && Distance(NavCom) < CELL_LEPTON_W * 4 && Is_JumpJet()) {
-		/// nothing
 	}
 }
 
@@ -4210,6 +4107,15 @@ void InfantryClass::Berzerk(void)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Deploy_Doing(int doing)
+{
+	return(doing == 0x1b || doing == 0x1c || doing == 0x1d || doing == 0x1e);
+}
+
+
+/// <summary>
 /// Is this infantry flying under jumpjet power?
 /// A jumpjet type can have a walk locomotor piggybacked onto it while it is down on
 /// the ground, so the type alone is not enough -- the locomotor actually in control
@@ -4218,7 +4124,7 @@ void InfantryClass::Berzerk(void)
 /// <returns>bool; Is the jumpjet locomotor the one in control?</returns>
 bool InfantryClass::Is_JumpJet(void) const
 {
-	if (!Class->IsJumpJet) {
+	if (!Class->JumpJet) { // RA2: Is_JumpJet at 0x508D00 matches only so
 		return(false);
 	}
 
@@ -4226,6 +4132,505 @@ bool InfantryClass::Is_JumpJet(void) const
 	CLSID clsid;
 	persist->GetClassID(&clsid);
 	return((clsid == CLSID_JumpjetLocomotion) ? true : false);
+}
+
+
+/***********************************************************************************************
+ * InfantryClass::Shape_Number -- Fetch the shape number for this infantry.                    *
+ *                                                                                             *
+ *    This will determine the shape number to use for this infantry soldier. The shape number  *
+ *    is relative to the shape file associated with this infantry unit.                        *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  Returns with the shape number for this infantry object to be used when drawing.    *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/29/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+int InfantryClass::Shape_Number(void) const
+{
+	/*
+	**	Fetch the shape pointer to use for the infantry. This is controlled by what
+	**	choreograph sequence the infantry is performing, it's facing, and whether it
+	**	is prone.
+	*/
+	DoType doit = Doing;
+	if (doit == DO_NOTHING) doit = DO_STAND_READY;
+
+	/*
+	**	The infantry shape is always modulo the number of animation frames
+	**	of the action stage that the infantry is doing.
+	*/
+	int shapenum = Fetch_Stage() % MAX(Class->DoControls[doit].Count, 1);
+
+	if (Is_JumpJet() && TarCom != NULL) {
+
+		/*
+		**	If facing makes a difference, then the shape number will be incremented
+		**	by the facing accordingly.
+		*/
+		if (Class->DoControls[doit].Jump > 0) {
+			shapenum += HumanShape[Direction(TarCom).As_Dir32()] * Class->DoControls[doit].Jump;
+		}
+
+	} else {
+
+		/*
+		**	If facing makes a difference, then the shape number will be incremented
+		**	by the facing accordingly.
+		*/
+		if (Class->DoControls[doit].Jump > 0) {
+			shapenum += HumanShape[DirType(PrimaryFacing.Current()).As_Dir32()] * Class->DoControls[doit].Jump;
+		}
+	}
+
+	/*
+	**	Finally, the shape number is biased according to the starting frame number for
+	**	that action in the infantry shape file.
+	*/
+	shapenum += Class->DoControls[doit].Frame;
+
+	/*
+	**	Return with the final infantry shape number.
+	*/
+	return(shapenum);
+}
+
+
+/// <summary>
+/// Moves the infantry closer to whatever it is attacking.
+/// Engineers are the special case here -- they must physically reach the building they
+/// have been aimed at, so they are given it as a movement destination rather than
+/// merely closing to weapon range.
+/// </summary>
+void InfantryClass::Approach_Target(void)
+{
+	if (TarCom) {
+		if (!Class->IsEngineer || NavCom == TarCom)	{
+			BASECLASS::Approach_Target();
+		}
+		else {
+			Assign_Destination(TarCom, true);
+		}
+	}
+}
+
+
+/// <summary>
+/// Can this infantry repair and capture buildings?
+/// </summary>
+/// <returns>bool; Is this soldier an engineer?</returns>
+bool InfantryClass::Is_Renovator(void) const
+{
+	return(Class->IsEngineer);
+}
+
+/// <summary>
+/// RA2: whether this soldier's type deploys.
+/// </summary>
+bool InfantryClass::Is_Deployer(void) const
+{
+	return(Class->Deployer);
+}
+
+
+/// <summary>
+/// RA2: whether this soldier's type undeploys by itself after UndeployDelay.
+/// </summary>
+bool InfantryClass::Has_Undeploy_Delay(void) const
+{
+	return(Class->UndeployDelay > -1);
+}
+
+
+/// <summary>
+/// RA2: whether this soldier is in one of the deploy sequences (deploy, deployed, deployed fire, deployed idle).
+/// </summary>
+bool InfantryClass::Is_Deploying(void) const
+{
+	return(Doing == 27 || Doing == 28 || Doing == 29 || Doing == 30);
+}
+
+
+/// <summary>
+/// RA2: whether this soldier's type fires when deployed.
+/// </summary>
+bool InfantryClass::Is_Deploy_Fire(void) const
+{
+	return(Class->DeployFire);
+}
+
+
+/// <summary>
+/// RA2: deploys a standing soldier, or stops a moving one to deploy once it has stopped.
+/// </summary>
+int InfantryClass::Deploy_Or_Stop(void)
+{
+	if (!Locomotion->Is_Moving()) {
+		Do_Action((DoType)27, false, false);
+		return(Class->DoControls[27].Count);
+	}
+	Locomotion->Stop_Moving();
+	ShouldDeploy = true;
+	return(Current_Mission_Control().Normal_Delay() + Random_Pick(0, 2));
+}
+
+
+/// <summary>
+/// RA2: the iron curtain kills infantry outright.
+/// </summary>
+void InfantryClass::IronCurtain(int duration)
+{
+	int damage = Class->MaxStrength;
+	Take_Damage(damage, 0, Rule->C4Warhead, NULL, true, false);
+}
+
+
+/// <summary>
+/// RA2: the type an enemy sees: the disguise, or the default spy disguise for the player's side.
+/// </summary>
+ObjectTypeClass * InfantryClass::GetDisguise(bool against_allies) const
+{
+	if (House->Is_Ally(PlayerPtr) && !against_allies) {
+		return(Class);
+	}
+	if (Disguise == NULL) {
+		if (PlayerPtr != NULL && PlayerPtr->ActLike == 0) {
+			return((ObjectTypeClass *)Rule->AlliedDisguise);
+		}
+		return((ObjectTypeClass *)Rule->SovietDisguise);
+	}
+	return(Disguise);
+}
+
+
+/// <summary>
+/// RA2: the house an enemy sees: the disguise's house, or the player's.
+/// </summary>
+HouseClass * InfantryClass::GetDisguiseHouse(bool against_allies) const
+{
+	if (House->Is_Ally(PlayerPtr) && !against_allies) {
+		return(House);
+	}
+	if (DisguisedAsHouse == NULL) {
+		return(PlayerPtr);
+	}
+	return(DisguisedAsHouse);
+}
+
+
+#pragma warning(push)
+#pragma warning(disable: 4716)
+/// <summary>
+/// RA2: a spy takes the look of another soldier, or of that soldier's own disguise.
+/// </summary>
+unsigned InfantryClass::DisguiseAs(AbstractClass * target)
+{
+	if (target != NULL && target->Fetch_RTTI() == RTTI_INFANTRY) {
+		BASECLASS::DisguiseAs(target);
+		ObjectClass * object = (ObjectClass *)target;
+		if (object->IsDisguised()) {
+			Disguise = object->GetDisguise(true);
+			DisguisedAsHouse = object->GetDisguiseHouse(true);
+		} else {
+			Disguise = (ObjectTypeClass *)object->Class_Of();
+			DisguisedAsHouse = object->Owner_HouseClass();
+		}
+	}
+}
+#pragma warning(pop)
+
+
+/// <summary>
+/// RA2: a PermaDisguise soldier goes back to its side's default disguise; others drop theirs.
+/// </summary>
+void InfantryClass::ClearDisguise(void)
+{
+	if (Class->PermaDisguise) {
+		Disguised = true;
+		DisguisedAsHouse = House;
+		if (House->ActLike == 0) {
+			Disguise = (ObjectTypeClass *)Rule->AlliedDisguise;
+		} else {
+			Disguise = (ObjectTypeClass *)Rule->SovietDisguise;
+		}
+	} else {
+		Disguised = false;
+	}
+}
+
+
+/// <summary>
+/// RA2: whether the disguise fools this house (not allied, no disguise sensor on the cell).
+/// </summary>
+bool InfantryClass::IsDisguisedAs(HouseClass * house) const
+{
+	if (IsDisguised()) {
+		CellClass * cell = &Map[Center_Coord().As_Cell()];
+		if (!House->Is_Ally(house) && !cell->Is_Disguise_Sensed(house->HeapID)) {
+			HouseClass * disguiser = DisguisedAsHouse;
+			if (disguiser == house || disguiser == NULL || house->Is_Ally(disguiser)) {
+				return(true);
+			}
+		}
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// RA2: TechnoClass's.
+/// </summary>
+bool InfantryClass::CanUseWaypoint(void) const
+{
+	return(TechnoClass::CanUseWaypoint());
+}
+
+
+/// <summary>
+/// RA2: TechnoClass's.
+/// </summary>
+bool InfantryClass::CanAttackOnTheMove(void) const
+{
+	return(TechnoClass::CanAttackOnTheMove());
+}
+
+
+/// <summary>
+/// RA2: whether a Deployer is in its deploy sequences.
+/// </summary>
+bool InfantryClass::IsDeployed(void) const
+{
+	return(Class->Deployer && (Doing == 27 || Doing == 28 || Doing == 29 || Doing == 30));
+}
+
+
+/// <summary>
+/// RA2: an occupier garrisons the building; an assaulter clears it and steps aside.
+/// </summary>
+void InfantryClass::Enter_Occupiable(BuildingClass * building)
+{
+	if (Class->Occupier) {
+		Limbo();
+		building->Occupants.Add(this);
+		building->UpdateThreatInCell(building->Get_Cell_Ptr());
+	} else if (Class->Assaulter) {
+		building->KillOccupants(this);
+		Assign_Destination(NULL, true);
+		Scatter(building->Center_Coord(), true, true);
+	}
+}
+
+
+/// <summary>
+/// RA2: the notice sink. A balloon or jumpjet soldier in radio contact answers notice 0x117B by attacking its
+/// archived target or scattering; a Crashable one lands on notice 0x117C.
+/// </summary>
+bool InfantryClass::Unknown_Virtual_0(int code, int)
+{
+	if ((Class->BalloonHover || Class->JumpJet) && code == 0x117B && HasAnyLink()) {
+		Transmit_Message((RadioMessageType)8);
+		if (ArchiveTarget != NULL && ArchiveTarget != NavCom) {
+			Assign_Destination(ArchiveTarget, true);
+			return(true);
+		}
+		Abort_Motion();
+		Scatter(COORD_NONE, true, false);
+		return(true);
+	}
+	if (Class->Crashable && code == 0x117C) {
+		Set_Height_AGL(0);
+		Do_Action((DoType)36, true, false);
+		return(true);
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// RA2: a guarding soldier standing or idling may cheer.
+/// </summary>
+bool InfantryClass::CanCheer(void) const
+{
+	if (Get_Mission() == MISSION_GUARD || Get_Mission() == MISSION_GUARD_AREA) {
+		if (Doing == 0 || Doing == 9 || Doing == 10 || Doing == 32) {
+			return(true);
+		}
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// RA2: cheers when it can.
+/// </summary>
+void InfantryClass::Cheer(void)
+{
+	if (CanCheer()) {
+		Do_Action((DoType)32, false, false);
+	}
+}
+
+
+/// <summary>
+/// RA2: whether a Do type is an idle or cheer sequence.
+/// </summary>
+bool InfantryClass::Is_Idle_Doing(DoType doing) const
+{
+	if (doing == 9 || doing == 10 || doing == 18 || doing == 19 || doing == 23 || doing == 32) {
+		return(true);
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// RA2: whether a Do type is a death sequence.
+/// </summary>
+bool InfantryClass::Is_Death_Doing(DoType doing) const
+{
+	return(doing == 11 || doing == 12 || doing == 13 || doing == 14 || doing == 15 || doing == 34 || doing == 35 || doing == 36 || doing == 20 || doing == 21);
+}
+
+
+/// <summary>
+/// RA2: whether this soldier is playing a death sequence.
+/// </summary>
+bool InfantryClass::Is_Dying(void) const
+{
+	return(Doing == 11 || Doing == 12 || Doing == 13 || Doing == 14 || Doing == 15 || Doing == 34 || Doing == 35 || Doing == 36 || Doing == 20 || Doing == 21);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// Fetches the byte size of this object as it appears in a save game.
+/// Save games written by earlier versions of the game predate a couple of the members,
+/// so the loader asks for the legacy size when it has to interpret one of those files.
+/// </summary>
+/// <param name="oldsave">Is the size wanted for an old format save game?</param>
+/// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
+int InfantryClass::Fetch_Object_Size(void) const // RA2: no argument
+{
+	return(sizeof(*this)); // RA2: no old-save delta
+}
+
+
+/// <summary>
+/// Fetches the class identifier used to persist this object.
+/// The save system records this identifier alongside the object data so that the
+/// correct kind of object can be created again when the stream is read back.
+/// </summary>
+/// <param name="retval">Pointer to the buffer to fill in with the class identifier.</param>
+/// <returns>Returns with S_OK, or E_POINTER if no buffer was supplied.</returns>
+HRESULT STDMETHODCALLTYPE InfantryClass::GetClassID(CLSID * retval)
+{
+	if (retval == NULL) return(E_POINTER);
+	*retval = CLSID_InfantryClass;
+	return(S_OK);
+}
+
+
+/// <summary>
+/// Fetches the RTTI type of this object.
+/// </summary>
+/// <returns>Returns with RTTI_INFANTRY.</returns>
+RTTIType InfantryClass::Fetch_RTTI(void) const
+{
+	return(RTTI_INFANTRY);
 }
 
 
@@ -4278,104 +4683,115 @@ bool InfantryClass::Should_JumpJet_Fly(Cell const & from, Cell const & to)
 
 
 /// <summary>
-/// Moves the infantry closer to whatever it is attacking.
-/// Engineers are the special case here -- they must physically reach the building they
-/// have been aimed at, so they are given it as a movement destination rather than
-/// merely closing to weapon range.
+/// Handles the infantry traveling through a subterranean tunnel.
+/// This routine walks the soldier along the tube it entered, following the tube's own
+/// path and sinking or rising with it along the way. When the far mouth is reached the
+/// infantry is set back down on the map, marked down into its cell, and given a per
+/// cell process so that it rejoins the world properly. Anything standing in the way of
+/// the exit is told to scatter first.
 /// </summary>
-void InfantryClass::Approach_Target(void)
+void InfantryClass::Tunnel_AI(void)
 {
-	if (TarCom) {
-		if (!Class->IsEngineer || NavCom == TarCom)	{
-			BASECLASS::Approach_Target();
+	bool finished = Tubes[CurrentTube]->Dirs[CurrentTubeDir] == FACING_NONE;
+	if (!finished) {
+		int distance = Distance(LastTubeCoord);
+		TubeClass * tube = Tubes[CurrentTube];
+		DirType facing;
+		DirType direction = facing.Direction(Center_Coord(), LastTubeCoord);
+		int speed = Class->MaxSpeed;
+
+		int height_step;
+		{
+			Cell tube_cell = tube->Exit;
+			Coord exit(tube_cell);
+			tube_cell = tube->Enter;
+			Coord enter(tube_cell);
+			height_step = tube->Count;
+			height_step = (Map.Get_Height_GL(exit) - Map.Get_Height_GL(enter)) / height_step;
 		}
-		else {
-			Assign_Destination(TarCom, true);
-		}
-	}
-}
 
+		if (distance <= speed) {
+			CurrentTubeDir++;
+			FacingType tube_dir = tube->Dirs[CurrentTubeDir];
+			finished = tube_dir == FACING_NONE;
+			PositionCoord = LastTubeCoord;
 
-/// <summary>
-/// Can this infantry repair and capture buildings?
-/// </summary>
-/// <returns>bool; Is this soldier an engineer?</returns>
-bool InfantryClass::Is_Renovator(void) const
-{
-	return(Class->IsEngineer);
-}
+			if (!finished) {
+				Coord coord = Adjacent_Cell(LastTubeCoord, tube->Dirs[CurrentTubeDir]);
+				LastTubeCoord = LastTubeCoord + ((TPoint2D<int> const &)Map[coord].Cell_Coord() - (TPoint2D<int> const &)Map[LastTubeCoord].Cell_Coord());
+				LastTubeCoord.Z += height_step;
 
-
-/// <summary>
-/// Handles the guard mission for this infantry.
-/// Attack dogs left standing about on tiberium will turn to face east and then lie
-/// down, which is how they come to be found sleeping in the fields. Everything else
-/// about guard duty is left to the normal FootClass handler.
-/// </summary>
-/// <returns>The delay in game frames before this mission should be processed again.</returns>
-int InfantryClass::Do_MISSION_GUARD(void)
-{
-	if (!IsProne && TarCom == NULL && NavCom == NULL && !PrimaryFacing.Is_Rotating() && Class->IsDoggie && Get_Cell_Ptr()->Land_Type() == LAND_TIBERIUM) {
-		if (PrimaryFacing.Current().As_Dir8() != FACING_E) {
-			DirType dir(DIR_E);
-			Locomotion->Do_Turn((DirStruct &)dir);
+				DirType dir = DirType().Direction(Center_Coord(), LastTubeCoord);
+				Coord new_coord = Move_Coord(PositionCoord, dir, speed - distance);
+				double divisor;
+				if (tube_dir % 2) {
+					divisor = CELL_LEPTON_H * M_SQRT2;
+				} else {
+					divisor = CELL_LEPTON_H;
+				}
+				new_coord.Z += (speed - distance) / divisor * height_step;
+				PositionCoord = new_coord;
+				return;
+			}
 		} else {
-			Do_Action(DO_LIE_DOWN);
+			FacingType tube_dir = tube->Dirs[CurrentTubeDir];
+			Coord new_coord = Move_Coord(Get_Coord(), direction, speed);
+			double divisor;
+			if (tube_dir % 2) {
+				divisor = CELL_LEPTON_H * M_SQRT2;
+			} else {
+				divisor = CELL_LEPTON_H;
+			}
+			new_coord.Z += speed / divisor * height_step;
+			PositionCoord = new_coord;
+			return;
 		}
 	}
 
-	return(BASECLASS::Do_MISSION_GUARD());
+	if (finished) {
+		CellClass * cellptr = &Map[Get_Coord()];
+		ObjectClass * occupier = cellptr->Cell_Occupier();
+		if (Can_Enter_Cell(cellptr, FACING_NONE, 0) != MOVE_OK) {
+			while (occupier != NULL) {
+				if (occupier->RTTI == RTTI_UNIT || occupier->RTTI == RTTI_INFANTRY) {
+					if (!((FootClass *)occupier)->Locomotion->Is_Moving()) {
+						occupier->Scatter(Coord(0, 0, 0), true, true);
+					}
+				}
+				occupier = occupier->Next;
+			}
+			Set_Speed(0);
+		} else {
+			Coord spot = cellptr->Closest_Free_Spot(Get_Coord());
+			spot.Z = Map.Get_Height_GL(spot);
+			PositionCoord = spot;
+
+			Locomotion->Force_Immediate_Destination(COORD_NONE);
+			Locomotion->Stop_Movement_Animation();
+			Mark(MARK_DOWN);
+			Set_Occupy_Bit(Get_Coord());
+
+			if (NavCom == cellptr) {
+				Scatter(Coord(0, 0, 0), true, true);
+			} else {
+				Set_Speed(1);
+			}
+			CurrentTube = TUBE_NONE;
+			IsPlanningToLook = true;
+			Per_Cell_Process(PCP_END);
+		}
+	}
 }
 
 
 /// <summary>
-/// Fetches the byte size of this object as it appears in a save game.
-/// Save games written by earlier versions of the game predate a couple of the members,
-/// so the loader asks for the legacy size when it has to interpret one of those files.
+/// Is the infantry unable to move at the moment?
+/// A soldier struggling back to its feet after being knocked prone is pinned in place
+/// until it has finished doing so.
 /// </summary>
-/// <param name="oldsave">Is the size wanted for an old format save game?</param>
-/// <returns>Returns with the number of bytes this object occupies in the save file.</returns>
-int InfantryClass::Fetch_Object_Size(bool oldsave) const
+/// <returns>bool; Is the infantry immobilized?</returns>
+bool InfantryClass::Is_Immobilized(void) const
 {
-	int size = sizeof(*this);
-	int delta = sizeof(ProneStruggleTimer) + sizeof(TechnoClass::LimpetSpeedFactor);
-
-	return(size - (oldsave ? delta : 0));
+	return(BASECLASS::Is_Immobilized()); // RA2: no ProneStruggleTimer
 }
 
-
-/// <summary>
-/// Fetches the class identifier used to persist this object.
-/// The save system records this identifier alongside the object data so that the
-/// correct kind of object can be created again when the stream is read back.
-/// </summary>
-/// <param name="retval">Pointer to the buffer to fill in with the class identifier.</param>
-/// <returns>Returns with S_OK, or E_POINTER if no buffer was supplied.</returns>
-HRESULT STDMETHODCALLTYPE InfantryClass::GetClassID(CLSID * retval)
-{
-	if (retval == NULL) return(E_POINTER);
-	*retval = CLSID_InfantryClass;
-	return(S_OK);
-}
-
-
-/// <summary>
-/// Fetches the RTTI type of this object.
-/// </summary>
-/// <returns>Returns with RTTI_INFANTRY.</returns>
-RTTIType InfantryClass::Fetch_RTTI(void) const
-{
-	return(RTTI_INFANTRY);
-}
-
-
-/// <summary>
-/// Handles a player click on a map cell while this infantry is selected.
-/// This routine defers to the FootClass handler; infantry have no cell click
-/// behavior of their own beyond the normal movement and attack orders.
-/// </summary>
-/// <returns>bool; Was the click acted upon?</returns>
-bool InfantryClass::Active_Click_With(ActionType action, Cell const & cell, bool is_waypoint)
-{
-	return(BASECLASS::Active_Click_With(action, cell, is_waypoint));
-}

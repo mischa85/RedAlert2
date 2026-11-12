@@ -691,6 +691,7 @@ class TechnoClass :	public RadioClass,
 		virtual int GetSecondaryWeaponIndex(void) const; // RA2
 		virtual int IsNotSprayAttack2(void) const; // RA2
 		virtual WeaponDataStruct const * GetDeployWeapon(void) const; // RA2
+		bool Is_Weapon_Valid(WeaponDataStruct const * weapon) const; // RA2: 0x6D8640
 		virtual WeaponDataStruct const * GetTurretWeapon(void) const; // RA2
 		virtual WeaponDataStruct const * Get_Class_Weapon_Data(int which=0) const;
 		virtual bool Is_Turret_Equipped(void) const;
