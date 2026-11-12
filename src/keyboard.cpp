@@ -53,6 +53,7 @@
 #include "always.h"
 
 #include "keyboard.h"
+#include "session.h" // RA2: the message list
 
 #include "_xmouse.h"
 #include "msgloop.h"
@@ -63,15 +64,10 @@
 #define	ARRAY_SIZE(x)		int(sizeof(x)/sizeof(x[0]))
 
 
-/// <summary>
-/// Halts the game for a waiting programmer.
-/// This routine is what the Scroll Lock key calls. It does nothing on its own -- the
-/// point of it is to be somewhere convenient to hang a breakpoint, so that the game can
-/// be stopped from the keyboard at an interesting moment.
-/// </summary>
-void Stop_Execution (void)
+/// Appeared in TS 2.00
+int WWKeyboardClass::Noop(void) const
 {
-	//	__asm nop			// Is this line needed?
+	return(0);
 }
 
 
@@ -117,6 +113,8 @@ unsigned short WWKeyboardClass::Buff_Get(void)
 		MouseQX = Fetch_Element();
 		MouseQY = Fetch_Element();
 		MousePos = Point2D(MouseQX, MouseQY);
+	} else if (Is_Wheel_Key(temp)) { // RA2: the wheel delta follows a wheel key
+		MouseWheel = Fetch_Element(); // RA2: as above
 	}
 	return(temp);
 }
@@ -141,6 +139,19 @@ bool WWKeyboardClass::Is_Mouse_Key(unsigned short key)
 	key &= 0xFF;
 	return(key == VK_LBUTTON || key == VK_MBUTTON || key == VK_RBUTTON);
 }
+
+
+/// <summary>
+/// RA2: does the key refer to the mouse wheel?
+/// </summary>
+bool WWKeyboardClass::Is_Wheel_Key(unsigned short key) // RA2: at 0x5322C0 (YR's body)
+{
+	key &= 0xFF;
+	return(key == 0xA);
+}
+
+
+
 
 
 /***********************************************************************************************
@@ -178,7 +189,7 @@ unsigned short WWKeyboardClass::Check(void) const
  *=============================================================================================*/
 unsigned short WWKeyboardClass::Get(void)
 {
-	while (!Check()) {}								// wait for key in buffer
+	while (!Check()) {} // RA2: Get at 0x532320 matches only so
 	return(Buff_Get());
 }
 
@@ -284,6 +295,9 @@ bool WWKeyboardClass::Put_Mouse_Message(unsigned short vk_key, int x, int y, boo
 }
 
 
+
+
+
 /***********************************************************************************************
  * WWKeyboardClass::To_ASCII -- Convert the key value into an ASCII representation.            *
  *                                                                                             *
@@ -302,16 +316,16 @@ bool WWKeyboardClass::Put_Mouse_Message(unsigned short vk_key, int x, int y, boo
  *=============================================================================================*/
 char WWKeyboardClass::To_ASCII(unsigned short key)
 {
-	/*
-	**	Released keys never translate into an ASCII value.
-	*/
 	if (key & WWKEY_RLS_BIT) {
 		return('\0');
 	}
+	if ((key & 0xFF) == VK_HOME) { // RA2: To_ASCII at 0x532720 matches only so
+		return('\b'); // RA2: as above
+	}
+	if ((key & 0xFF) == VK_END) { // RA2: as above
+		return('\\'); // RA2: as above
+	}
 
-	/*
-	**	Set the KeyState buffer to reflect the shift bits stored in the key value.
-	*/
 	if (key & WWKEY_SHIFT_BIT) {
 		KeyState[VK_SHIFT] = 0x80;
 	}
@@ -322,21 +336,13 @@ char WWKeyboardClass::To_ASCII(unsigned short key)
 		KeyState[VK_MENU] = 0x80;
 	}
 
-	/*
-	**	Ask windows to translate the key into an ASCII equivalent.
-	*/
 	char buffer[10];
 	int result;
-//	int result = 1;
 	int scancode;
-//	int scancode = 0;
 
-	scancode = MapVirtualKey(key & 0xFF, 0);
-	result = ToAscii((UINT)(key & 0xFF), (UINT)scancode, (PBYTE)KeyState, (LPWORD)buffer, (UINT)0);
+	scancode = MapVirtualKey(key, 0); // RA2: as above
+	result = ToAscii((UINT)key, (UINT)scancode, (PBYTE)KeyState, (LPWORD)buffer, (UINT)0); // RA2: as above
 
-	/*
-	**	Restore the KeyState buffer back to pristine condition.
-	*/
 	if (key & WWKEY_SHIFT_BIT) {
 		KeyState[VK_SHIFT] = 0;
 	}
@@ -347,16 +353,14 @@ char WWKeyboardClass::To_ASCII(unsigned short key)
 		KeyState[VK_MENU] = 0;
 	}
 
-	/*
-	**	If Windows could not perform the translation as expected, then
-	**	return with a null ASCII value.
-	*/
 	if (result != 1) {
 		return('\0');
 	}
-
 	return(buffer[0]);
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -406,7 +410,6 @@ unsigned short WWKeyboardClass::Fetch_Element(void)
 	unsigned short val = 0;
 	if (Head != Tail) {
 		val = Buffer[Head];
-
 		Head = (Head + 1) % ARRAY_SIZE(Buffer);
 	}
 	return(val);
@@ -534,14 +537,6 @@ void WWKeyboardClass::Fill_Buffer_From_System(void)
 {
 	if (!Is_Buffer_Full()) {
 		Windows_Message_Handler();
-//		MSG	msg;
-//		while (PeekMessage(&msg, NULL, 0, 0, PM_NOREMOVE)) {
-//		  	if (!GetMessage( &msg, NULL, 0, 0 )) {
-//				return;
-//			}
-//			TranslateMessage(&msg);
-//			DispatchMessage(&msg);
-//		}
 	}
 }
 
@@ -562,19 +557,19 @@ void WWKeyboardClass::Fill_Buffer_From_System(void)
  *=============================================================================================*/
 void WWKeyboardClass::Clear(void)
 {
-	/*
-	**	Extract any windows pending keyboard message events and then clear out the keyboard
-	**	buffer.
-	*/
 	Fill_Buffer_From_System();
 	Head = Tail;
+	Fill_Buffer_From_System();
+	Head = Tail;
+}
 
-	/*
-	**	Perform a second clear to handle the rare case of the keyboard buffer being full and there
-	**	still remains keyboard related events in the windows message queue.
-	*/
-	Fill_Buffer_From_System();
-	Head = Tail;
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Chat_Editing(void)
+{
+	return(Session.Messages.Is_Edit());
 }
 
 
@@ -626,13 +621,12 @@ int WWKeyboardClass::Message_Handler(HWND window, UINT message, UINT wParam, LON
 		case WM_SYSKEYDOWN:
 		case WM_KEYDOWN:
 			if (wParam == VK_SCROLL) {
-				Stop_Execution();
 			/*
 			 * https://learn.microsoft.com/en-us/windows/win32/inputdev/wm-keydown
 			 * check the previous key-state flag. A value of 1 if the key is down before
 			 * the message is sent, or it is zero if the key is up.
 			 */
-			} else if (!(lParam & (1 << 30))) {
+			} else if (!(lParam & (1 << 30))) { // RA2: no Stop_Execution (not in RA2's layout)
 				Put_Key_Message((unsigned short)wParam);
 			}
 			processed = true;
@@ -771,25 +765,18 @@ int WWKeyboardClass::Message_Handler(HWND window, UINT message, UINT wParam, LON
  *=============================================================================================*/
 int WWKeyboardClass::Available_Buffer_Room(void) const
 {
-#if 0
-	int avail = 0;
-	if (Head == Tail) {
-		avail = ARRAY_SIZE(Buffer);
-	}
-	if (Head < Tail) {
-		avail = Tail - Head;
-	}
-	if (Head > Tail) {
-		avail = (Tail + ARRAY_SIZE(Buffer)) - Head;
-	}
-	return(avail);
-#endif
 	return(ARRAY_SIZE(Buffer) - abs(Tail - Head));
 }
 
 
-/// Appeared in TS 2.00
-int WWKeyboardClass::Noop(void) const
+/// <summary>
+/// Halts the game for a waiting programmer.
+/// This routine is what the Scroll Lock key calls. It does nothing on its own -- the
+/// point of it is to be somewhere convenient to hang a breakpoint, so that the game can
+/// be stopped from the keyboard at an interesting moment.
+/// </summary>
+void Stop_Execution (void)
 {
-	return(0);
+	//	__asm nop			// Is this line needed?
 }
+
