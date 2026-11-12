@@ -951,6 +951,7 @@ class HouseClass : public AbstractClass, public IHouse, public IPublicHouse, pub
 
 		bool Is_Player_Control(void) const;
 		bool Is_Human_Player(void) const;
+		float Cost_Multiplier(TechnoTypeClass const * type) const; // RA2: 0x4F5960, the house type's cost factor for the kind
 
 		bool Can_Build_Here(BuildingTypeClass *building,  Cell const & cell);
 

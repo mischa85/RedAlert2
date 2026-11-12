@@ -72,145 +72,6 @@ void const * TechnoTypeClass::WakeShapes = NULL;
  *   03/19/1995 JLB : Created.                                                                 *
  *   05/11/1996 JLB : Moderated risk calc so range doesn't dominate.                           *
  *=============================================================================================*/
-TechnoTypeClass::TechnoTypeClass(char const * ininame, SpeedType speed) :
-	BASECLASS(ininame),
-	IsDoubleOwned(false),
-	IsInvisible(false),
-	IsLeader(false),
-	IsScanner(false),
-	IsNominal(false),
-	IsTurretEquipped(false),
-	IsCrew(false),
-	IsRepairable(true),
-	IsRemappable(false),
-	IsCloakable(false),
-	IsSelfHealing(false),
-	IsExploding(false),
-	MZone(MZONE_NORMAL),
-	ThreatRange(0),
-	MaxPassengers(0),
-	SightRange(0),
-	Cost(0),
-	Level(255),
-	Prerequisite(),
-	Risk(0),
-	Reward(0),
-	MaxSpeed(MPH_IMMOBILE),
-	Speed(speed),
-	MaxAmmo(-1),
-	Ownable(0),
-	CameoData(NULL),
-	Rotation(0),
-	ROT(0),
-	Points(0),
-	CollateralDamageCoefficient(.33f),
-	WalkRate(1),
-	SpecialThreatValue(0),
-	MyEffectivenessCoefficient(0),
-	TargetEffectivenessCoefficient(0),
-	TargetSpecialThreatCoefficient(0),
-	TargetStrengthCoefficient(0),
-	TargetDistanceCoefficient(0),
-	ThreatAvoidanceCoefficient(0),
-	SlowdownDistance(500),
-	DeaccelerationFactor(.002),
-	AccelerationFactor(.03),
-	CloakingSpeed(7),
-	DebrisTypes(),
-	DebrisMaximums(),
-	Locomotor(CLSID_TeleportLocomotion),
-	VoxelCenterY(0),
-	VoxelCenterX(0),
-	Weight(1),
-	PhysicalSize(2),
-	InitialMission(MISSION_HUNT),
-	RollAngle(DEG_TO_RAD(30)),
-	PitchSpeed(.25),
-	PitchAngle(DEG_TO_RAD(20)),
-	BuildLimit(0x7FFFFFFF),
-	Category(CATEGORY_NONE),
-	Unused2(0),
-	DeployTime(0),
-	FireAngle(8),
-	PipScale(PIPSCALE_NONE),
-	Dock(),
-	DeploysInto(NULL),
-	UndeploysInto(NULL),
-	VoiceSelect(),
-	VoiceMove(),
-	VoiceAttack(),
-	VoiceDie(),
-	VoiceFeedback(),
-	AuxSound1(VOC_NONE),
-	AuxSound2(VOC_NONE),
-	MaxDebris(0),
-	FlightLevel(-1),
-	IsAllowedToStartInMultiplayer(true),
-	CameoFilename(""),
-	TurretOffset(0),
-	Explosion(),
-	NaturalParticleSystem(NULL),
-	NaturalParticleLocation(0,0,0),
-	DamageParticleSystems(),
-	DamageSmokeOffset(0,0,0),
-	ShadowIndex(0),
-	Capacity(0),
-	TurretNotExportedOnGround(false),
-	IsTypeImmune(false),
-	IsMoveToShroud(true),
-	IsTrainable(true),
-	IsDamageSparks(true),
-	IsTargetLaser(false),
-	IsImmuneToVeins(false),
-	IsTiberiumHeal(false),
-	IsCloakStop(false),
-	IsTrain(false),
-	IsDropship(false),
-	IsToProtect(false),
-	IsDisableable(true),
-	IsUnbuildable(false),
-	IsRadarVisible(false),
-	IsNoAutoFire(false),
-	IsRadarEquipped(false),
-	IsRegulated(false),
-	IsManualReload(false),
-	IsVisibleLoad(false),
-	IsLightningRod(false),
-	IsHunterSeeker(false),
-	IsCrusher(false),
-	IsTiltsWhenCrushes(true),
-	IsSubterranean(false),
-	IsAutoCrush(false),
-	IsAccelerates(true),
-	ZFudgeCliff(10),
-	ZFudgeColumn(5),
-	ZFudgeTunnel(10),
-	ZFudgeBridge(0)
-{
-	IsSentient = true;
-
-	DebrisTypes.Clear();
-	DebrisMaximums.Clear();
-	Dock.Clear();
-
-	for (int i = 0; i < WEAPON_SLOT_COUNT; i++) {
-		Weapons[i].Weapon = NULL;
-		Weapons[i].BarrelLength = 0;
-		Weapons[i].BarrelThickness = 0;
-		Weapons[i].FireFLH = Point3D(0,0,0);
-	}
-
-	AbstractTypePtrTracker.Add(this);
-	TechnoTypes.Add(this);
-}
-
-
-/// <summary>
-/// Creates an object type without initializing it.
-/// This constructor is used when a save game is about to be loaded over the object type,
-/// so nothing is set up that the load would only overwrite. The type still makes itself
-/// known to the master techno type list, but only if it is not listed there already.
-/// </summary>
 TechnoTypeClass::TechnoTypeClass(NoInitClass const & x) :
 	BASECLASS(x),
 	VeteranAbilities(x),
@@ -252,6 +113,12 @@ TechnoTypeClass::~TechnoTypeClass(void)
 	AbstractTypePtrTracker.Delete(this);
 	TechnoTypes.Delete(this);
 }
+
+
+
+
+
+
 
 
 /***********************************************************************************************
@@ -346,6 +213,34 @@ int TechnoTypeClass::Cost_Of(HouseClass * house) const
 }
 
 
+/// <summary>
+/// RA2: the money a sold object of this type returns: Soylent when set, else the cost scaled by the rules' refund
+/// percentage (all of it when full); a computer house gets the full cost.
+/// </summary>
+int TechnoTypeClass::GetRefund(HouseClass * house, bool full) const // RA2: at 0x6DAD80 (YR's name)
+{
+	float refund = Rule->RefundPercent;
+	if (full) {
+		refund = 1.0f;
+	}
+	if (house != NULL) {
+		float factor = house->Cost_Multiplier(this);
+		if (Soylent) {
+			return(Soylent * factor);
+		}
+		int cost = Raw_Cost() * factor;
+		if (house->Is_Human_Player()) {
+			cost = cost * refund;
+		}
+		return(cost);
+	}
+	return(Raw_Cost() * refund);
+}
+
+
+
+
+
 /***********************************************************************************************
  * TechnoTypeClass::Get_Cameo_Data -- Fetches the cameo image for this object type.            *
  *                                                                                             *
@@ -430,13 +325,13 @@ int TechnoTypeClass::Repair_Step(void) const
  *=============================================================================================*/
 bool TechnoTypeClass::Is_Two_Shooter(void) const
 {
-	WeaponTypeClass *pri = Get_Weapon(0)->Weapon;
+	WeaponTypeClass *pri = Weapons[0].Weapon; // RA2: Is_Two_Shooter at 0x6DAF20 matches only so
 
 	if (pri != NULL) {
-		WeaponTypeClass *sec = Get_Weapon(1)->Weapon;
+		WeaponTypeClass *sec = Weapons[1].Weapon; // RA2: as above
 
 		if (pri == sec || pri->Burst > 1) {
-				return(true);
+			return(true); // RA2: as above
 		}
 
 		if (sec != NULL && sec->Burst > 1) {
@@ -468,7 +363,7 @@ static inline int _Scale_To_256(int val)
 	val = MAX(val, 0);
 	val = ((val * (MPH_LIGHT_SPEED + 1)) / 100);
 	val = MIN(val, MPH_LIGHT_SPEED);
-	return(val);
+	return (val);
 }
 
 
@@ -504,16 +399,12 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 			/// This routine runs before InfantryTypeClass reads its own flags, so IsCyborg is
 			/// still false on the first pass through the rules.
 			if (((InfantryTypeClass *)this)->IsCyborg) {
-				CollateralDamageCoefficient = 0.33f;
-			} else {
-				CollateralDamageCoefficient = 0.66f;
-			}
+			} else { // RA2: no CollateralDamageCoefficient (not in RA2's layout)
+			} // RA2: no CollateralDamageCoefficient (not in RA2's layout)
 		} else {
-			CollateralDamageCoefficient = 1.0;
-		}
-		CollateralDamageCoefficient = ini.Get_Float(Name(), "CollateralDamageCoefficient", CollateralDamageCoefficient);
+		} // RA2: no CollateralDamageCoefficient (not in RA2's layout)
 
-		if (strcmp(Name(), "GAFSDF") == 0 || strcmp(Name(), "GAWALL") == 0 || strcmp(Name(), "NAWALL") == 0) {
+		if (strcmp(Name(), "GAFSDF") == 0 || strcmp(Name(), "GAWALL") == 0 || strcmp(Name(), "NAWALL") == 0) { // RA2: no CollateralDamageCoefficient (not in RA2's layout)
 			ThreatRange = (CELL_LEPTON*5); /// 1280
 		}
 
@@ -565,8 +456,7 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 		UndeploysInto = TGet_Class(ini, Name(), "UndeploysInto", UndeploysInto);
 		IsLightningRod = ini.Get_Bool(Name(), "LightningRod", IsLightningRod);
 		IsManualReload = ini.Get_Bool(Name(), "ManualReload", IsManualReload);
-		IsRadarEquipped = ini.Get_Bool(Name(), "TurretSpins", IsRadarEquipped);
-		IsTurretEquipped = ini.Get_Bool(Name(), "Turret", IsTurretEquipped);
+		IsTurretEquipped = ini.Get_Bool(Name(), "Turret", IsTurretEquipped); // RA2: no IsRadarEquipped (not in RA2's layout)
 		Explosion = TGet_TypeList<AnimTypeClass>(ini, Name(), "Explosion", Explosion);
 		NaturalParticleSystem = TGet_Class(ini, Name(), "NaturalParticleSystem", NaturalParticleSystem);
 		NaturalParticleLocation = ini.Get_Offset(Name(), "NaturalParticleLocation", NaturalParticleLocation);
@@ -643,8 +533,7 @@ bool TechnoTypeClass::Read_INI(CCINIClass const & ini)
 		TurretOffset = ArtINI.Get_Int(Graphic_Name(), "TurretOffset", TurretOffset);
 		Rotation = ArtINI.Get_Int(Graphic_Name(), "RotCount", Rotation);
 		IsRemappable = ArtINI.Get_Bool(Graphic_Name(), "Remapable", IsRemappable);
-		IsRegulated = ArtINI.Get_Bool(Graphic_Name(), "Normalized", IsRegulated);
-		IsVisibleLoad = ArtINI.Get_Bool(Graphic_Name(), "VisibleLoad", IsVisibleLoad);
+		IsVisibleLoad = ArtINI.Get_Bool(Graphic_Name(), "VisibleLoad", IsVisibleLoad); // RA2: no IsRegulated (not in RA2's layout)
 		ShadowIndex = ArtINI.Get_Int(Graphic_Name(), "ShadowIndex", ShadowIndex);
 
 		char cameo[32];
@@ -707,13 +596,8 @@ bool TechnoTypeClass::Legal_Placement(Cell const & pos, HouseClass * house) cons
 {
 	if (pos == CELL_NONE) return(0);
 
-	/*
-	**	Normal buildings must check to see that every foundation square is free of
-	**	obstacles. If this check passes for all foundation squares, only then does the
-	**	routine return that it is legal to place.
-	*/
 	Cell const * offset = Occupy_List(true);
-	bool build = (RTTI == RTTI_BUILDINGTYPE);
+	bool build = (Fetch_RTTI() == RTTI_BUILDINGTYPE); // RA2: Legal_Placement at 0x6DE0E0 matches only so
 	bool any_blocked = false;
 	bool any_clear = false;
 
@@ -772,102 +656,6 @@ int TechnoTypeClass::Max_Pips(void) const
 }
 
 
-/***********************************************************************************************
- * TechnoClass::In_Range -- Determines if specified target is within weapon range.             *
- *                                                                                             *
- *    This routine is used to compare the distance to the specified target with the range      *
- *    of the weapon. If the target is outside of weapon range, then false is returned.         *
- *                                                                                             *
- * INPUT:   target   -- The target to check if it is within weapon range.                      *
- *                                                                                             *
- *          which    -- Which weapon to use in determining range. 0=primary, 1=secondary.      *
- *                                                                                             *
- * OUTPUT:  bool; Is the specified target within weapon range?                                 *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   11/14/1994 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool TechnoTypeClass::In_Range(Coord const & coord, AbstractClass * target, WeaponTypeClass * weapon) const
-{
-//	//assert(IsActive);
-
-	bool is_within_ground_firing_angle;
-
-	if (target != NULL && weapon != NULL) {
-		int range = weapon->Range - CELL_LEPTON / 3;
-		Coord tcoord = target->Center_Coord();
-		int minrange = weapon->MinimumRange;
-
-		if (minrange && (coord - tcoord).Length() < minrange) {
-			return(false);
-		}
-
-		if (weapon->Bullet->IsArcing) {
-			int dist = (Point2D(coord) - Point2D(tcoord)).Length();
-			int height = tcoord.Z - coord.Z;
-			double gravity = weapon->Bullet->IsFloater ? Get_Floater_Gravity() : Rule->Gravity;
-			if (!Is_Projectile_Trajectory_Valid(weapon->MaxSpeed, dist, height, gravity) || (Map[tcoord].IsUnderBridge && tcoord.Z - coord.Z >= 3 * LEVEL_LEPTON_H)) {
-				return(false);
-			}
-			Coord dist2d = Coord(coord.X - tcoord.X, coord.Y - tcoord.Y, 0);
-			is_within_ground_firing_angle = coord.Z - tcoord.Z < dist2d.Length();
-		} else {
-
-			BuildingClass const * building = target->As_BuildingClass();
-			if (building != NULL) {
-				range += ((building->Class->Width() + building->Class->Height()) * (CELL_LEPTON_W / 4));
-			}
-
-			int cdist;
-			if (RTTI != RTTI_AIRCRAFTTYPE) {
-				cdist = (coord - tcoord).Length();
-			} else {
-				cdist = (Coord(Point2D(coord) - Point2D(tcoord), 0)).Length();
-			}
-
-			if (cdist > range) {
-				return(false);
-			}
-
-			if (Map[coord].IsUnderBridge) {
-				int height = BRIDGE_LEPTON_HEIGHT + Map.Get_Height_GL(coord);
-				if (coord.Z < height && tcoord.Z >= height) {
-					return(false);
-				}
-			}
-
-			/*
-			 * A ground weapon cannot hit a target that is too high above it -- the
-			 * target must be no higher than the horizontal distance to it.
-			 */
-			Coord coord1 = coord;
-			Coord coord2 = tcoord;
-			if (!weapon->Bullet->IsAntiAircraft) {
-				Point2D dist2d = Point2D(coord1 - coord2);
-				if (tcoord.Z - coord.Z >= dist2d.Length()) {
-					return(false);
-				}
-			}
-
-			Point2D dist2d = Point2D(coord1 - coord2);
-			is_within_ground_firing_angle = coord.Z - tcoord.Z < dist2d.Length();
-		}
-
-		if (!is_within_ground_firing_angle) {
-			int hoffset = Map[coord].IsUnderBridge ? BRIDGE_LEPTON_HEIGHT : 0;
-			if (coord.Z <= hoffset + Map.Get_Height_GL(coord)) {
-				return(false);
-			}
-		}
-		return(true);
-	}
-
-	return(false);
-}
-
-
 /// <summary>
 /// Loads this object type from a save game stream.
 /// The variable length lists are read back behind the flat data and every pointer is
@@ -881,9 +669,8 @@ HRESULT STDMETHODCALLTYPE TechnoTypeClass::Load(IStream *stream)
 {
 	int i;
 
-	int size = Fetch_Object_Size(false);
 
-	Dock.Clear();
+	Dock.Clear(); // RA2: no Fetch_Object_Size (TibSun's use does not compile against RA2's declaration)
 	DebrisTypes.Clear();
 	VoiceSelect.Clear();
 	VoiceMove.Clear();
@@ -896,12 +683,8 @@ HRESULT STDMETHODCALLTYPE TechnoTypeClass::Load(IStream *stream)
 
 	HRESULT result = BASECLASS::Load(stream);
 	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&WalkRate, &CollateralDamageCoefficient, size - offsetof(TechnoTypeClass, WalkRate));
-			CollateralDamageCoefficient = 0.0;
-		}
 
-		Swizzle_Pointer(&DeploysInto);
+		Swizzle_Pointer(&DeploysInto); // RA2: no CollateralDamageCoefficient, IsOldSaveGame (TibSun's use does not compile against RA2's declaration)
 		Swizzle_Pointer(&UndeploysInto);
 		Swizzle_Pointer(&NaturalParticleSystem);
 
@@ -1087,9 +870,7 @@ void TechnoTypeClass::Compute_CRC(class CRCEngine & crc) const
 	crc(IsSelfHealing);
 	crc(IsExploding);
 	crc(IsNoAutoFire);
-	crc(IsRadarEquipped);
-	crc(IsRegulated);
-	crc(IsManualReload);
+	crc(IsManualReload); // RA2: no IsRegulated, IsRadarEquipped (not in RA2's layout)
 	crc(IsVisibleLoad);
 	crc(IsLightningRod);
 }
@@ -1112,12 +893,11 @@ WeaponDataStruct const * TechnoTypeClass::Get_Weapon(int which) const
 
 
 /// <summary>
-/// Sets one of this object type's weapon slots.
+/// RA2: the elite weapon of the slot specified.
 /// </summary>
-/// <param name="which">The weapon slot to fill in.</param>
-void TechnoTypeClass::Set_Weapon(WeaponDataStruct const & weapon, int which)
+WeaponDataStruct const * TechnoTypeClass::Get_Elite_Weapon(int which) const // RA2: at 0x6DF5E0
 {
-	Weapons[which] = weapon;
+	return(&EliteWeapons[which]);
 }
 
 
@@ -1134,3 +914,134 @@ int TechnoTypeClass::Flight_Level(void) const
 	}
 	return(FlightLevel);
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/***********************************************************************************************
+ * TechnoClass::In_Range -- Determines if specified target is within weapon range.             *
+ *                                                                                             *
+ *    This routine is used to compare the distance to the specified target with the range      *
+ *    of the weapon. If the target is outside of weapon range, then false is returned.         *
+ *                                                                                             *
+ * INPUT:   target   -- The target to check if it is within weapon range.                      *
+ *                                                                                             *
+ *          which    -- Which weapon to use in determining range. 0=primary, 1=secondary.      *
+ *                                                                                             *
+ * OUTPUT:  bool; Is the specified target within weapon range?                                 *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   11/14/1994 JLB : Created.                                                                 *
+ *=============================================================================================*/
+bool TechnoTypeClass::In_Range(Coord const & coord, AbstractClass * target, WeaponTypeClass * weapon) const
+{
+//	//assert(IsActive);
+
+	bool is_within_ground_firing_angle;
+
+	if (target != NULL && weapon != NULL) {
+		int range = weapon->Range - CELL_LEPTON / 3;
+		Coord tcoord = target->Center_Coord();
+		int minrange = weapon->MinimumRange;
+
+		if (minrange && (coord - tcoord).Length() < minrange) {
+			return(false);
+		}
+
+		if (weapon->Bullet->IsArcing) {
+			int dist = (Point2D(coord) - Point2D(tcoord)).Length();
+			int height = tcoord.Z - coord.Z;
+			double gravity = weapon->Bullet->IsFloater ? Get_Floater_Gravity() : Rule->Gravity;
+			if (!Is_Projectile_Trajectory_Valid(weapon->MaxSpeed, dist, height, gravity) || (Map[tcoord].IsUnderBridge && tcoord.Z - coord.Z >= 3 * LEVEL_LEPTON_H)) {
+				return(false);
+			}
+			Coord dist2d = Coord(coord.X - tcoord.X, coord.Y - tcoord.Y, 0);
+			is_within_ground_firing_angle = coord.Z - tcoord.Z < dist2d.Length();
+		} else {
+
+			BuildingClass const * building = target->As_BuildingClass();
+			if (building != NULL) {
+				range += ((building->Class->Width() + building->Class->Height()) * (CELL_LEPTON_W / 4));
+			}
+
+			int cdist;
+			if (RTTI != RTTI_AIRCRAFTTYPE) {
+				cdist = (coord - tcoord).Length();
+			} else {
+				cdist = (Coord(Point2D(coord) - Point2D(tcoord), 0)).Length();
+			}
+
+			if (cdist > range) {
+				return(false);
+			}
+
+			if (Map[coord].IsUnderBridge) {
+				int height = BRIDGE_LEPTON_HEIGHT + Map.Get_Height_GL(coord);
+				if (coord.Z < height && tcoord.Z >= height) {
+					return(false);
+				}
+			}
+
+			/*
+			 * A ground weapon cannot hit a target that is too high above it -- the
+			 * target must be no higher than the horizontal distance to it.
+			 */
+			Coord coord1 = coord;
+			Coord coord2 = tcoord;
+			if (!weapon->Bullet->IsAntiAircraft) {
+				Point2D dist2d = Point2D(coord1 - coord2);
+				if (tcoord.Z - coord.Z >= dist2d.Length()) {
+					return(false);
+				}
+			}
+
+			Point2D dist2d = Point2D(coord1 - coord2);
+			is_within_ground_firing_angle = coord.Z - tcoord.Z < dist2d.Length();
+		}
+
+		if (!is_within_ground_firing_angle) {
+			int hoffset = Map[coord].IsUnderBridge ? BRIDGE_LEPTON_HEIGHT : 0;
+			if (coord.Z <= hoffset + Map.Get_Height_GL(coord)) {
+				return(false);
+			}
+		}
+		return(true);
+	}
+
+	return(false);
+}
+
+
+/// <summary>
+/// Sets one of this object type's weapon slots.
+/// </summary>
+/// <param name="which">The weapon slot to fill in.</param>
+void TechnoTypeClass::Set_Weapon(WeaponDataStruct const & weapon, int which)
+{
+	Weapons[which] = weapon;
+}
+

@@ -985,6 +985,7 @@ class TechnoTypeClass : public ObjectTypeClass
 		virtual bool Read_INI(CCINIClass const & ini) override;
 
 		WeaponDataStruct const * Get_Weapon(int which) const;
+		WeaponDataStruct const * Get_Elite_Weapon(int which) const; // RA2
 		void Set_Weapon(WeaponDataStruct const & weapon, int which);
 
 		/*
