@@ -37,6 +37,8 @@
 #include "abstract.h" // RA2: INoticeSink
 #include "sidebar.h"
 
+extern int const NoAdvancedCommand; // RA2: 0x7F67F4, -1
+
 class TabClass: public SidebarClass, public INoticeSink // RA2: INoticeSink added; its vtable pointer is at +0x4EE8
 {
 		typedef SidebarClass BASECLASS;
@@ -49,6 +51,9 @@ class TabClass: public SidebarClass, public INoticeSink // RA2: INoticeSink adde
 		virtual void Draw_It(bool complete=false) override;
 		void Draw_Credits_Tab(void); // RA2: not static
 		static void Hilite_Tab(int tab);
+		static int Command_From_Name(char const * name); // RA2: 0x6A0580
+		static void Set_Command_Position(int command, int position); // RA2: 0x6A05E0
+		static void Set_Button_Count(int count); // RA2: 0x6A0670
 		void Flash_Money(void);
 
 		virtual void One_Time(void) override;							// One-time inits

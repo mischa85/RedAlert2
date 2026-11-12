@@ -49,6 +49,7 @@
 #include "always.h"
 
 #include "rules.h"
+#include "tab.h" // RA2: the advanced command bar
 
 #include "_bench.h"
 #include "_palette.h"
@@ -102,29 +103,6 @@
 
 
 void Difficulty_Get(CCINIClass const & ini, DifficultyClass & diff, char const * section);
-
-/***********************************************************************************************
- * _Scale_To_256 -- Scales a 1..100 number into a 1..255 number.                               *
- *                                                                                             *
- *    This is a helper routine that will take a decimal percentage number and convert it       *
- *    into a game based fixed point number.                                                    *
- *                                                                                             *
- * INPUT:   val   -- Decimal percent number to convert.                                        *
- *                                                                                             *
- * OUTPUT:  Returns with the decimal percent number converted to a game fixed point number.    *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/17/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-static inline int _Scale_To_256(int val)
-{
-	val = 100.0 / (MPH_LIGHT_SPEED + 1) * val;
-	val = MIN(val, MPH_LIGHT_SPEED);
-	return(val);
-}
-
 
 /// <summary>
 /// Constructor for a rules object that is about to be overwritten.
@@ -213,8 +191,7 @@ RulesClass::RulesClass(void) :
 	IsMPBasesOn(true),
 	IsMPTiberiumGrow(true),
 	IsMPCrates(true),
-	IsMPAIPlayers(false),
-	IsMPCaptureTheFlag(false),
+	IsMPCaptureTheFlag(false), // RA2: no IsMPAIPlayers (not in RA2's layout)
 	IsMPBridgeDestruction(true),
 	DropZoneRadius(4*CELL_LEPTON_W),
 	MessageDelay(.6),
@@ -224,8 +201,7 @@ RulesClass::RulesClass(void) :
 	SuspendPriority(20),
 	SuspendDelay(2),
 	SurvivorFraction(.5),
-	SurvivorDivisor(100),
-	ReloadRate(.05),
+	ReloadRate(.05), // RA2: no SurvivorDivisor (not in RA2's layout)
 	AutocreateTime(5),
 	BuildupTime(.05),
 	HarvesterLoadRate(2),
@@ -316,11 +292,8 @@ RulesClass::RulesClass(void) :
 	TotalAITeamCap(),
 	AIUseTurbineUpgradeChance(1),
 	FillEarliestTeamProbability(),
-	LightningFrequency(250),
-	LightningRandomness(75),
-	LightningDamage(500),
-	LightningDuration(20),
-	LightningDeferment(31),
+	LightningDamage(500), // RA2: no LightningFrequency, LightningRandomness (not in RA2's layout)
+	LightningDeferment(31), // RA2: no LightningDuration (not in RA2's layout)
 	CollapseChance(100),
 	WeedCapacity(0),
 	ExtraUnitLight(0),
@@ -333,14 +306,8 @@ RulesClass::RulesClass(void) :
 	AIBuildsWalls(true),
 	UseMinDefenseRule(true),
 	EMPulseSparkles(NULL),
-	WebbedInfantry(NULL),
-	JumpjetCloakDetectionRadius(0),
-	DropPodInfantryMinimum(3),
-	DropPodInfantryMaximum(5),
-	TalkBubbleTime(5 * TIMER_SECOND),
-	PrerequisiteGDIFactory(),
-	PrerequisiteNodFactory(),
-	EngineerCaptureLevel(1),
+	TalkBubbleTime(5 * TIMER_SECOND), // RA2: no JumpjetCloakDetectionRadius, DropPodInfantryMinimum, DropPodInfantryMaximum and 1 more (not in RA2's layout)
+	EngineerCaptureLevel(1), // RA2: no PrerequisiteGDIFactory, PrerequisiteNodFactory (not in RA2's layout)
 	EngineerDamage(0),
 	AmmoCrateDamage(100),
 	LargeVisceroid(NULL),
@@ -416,8 +383,7 @@ RulesClass::RulesClass(void) :
 	TiberiumStrength(10),
 	MinLowPowerProductionSpeed(.5),
 	MultipleFactory(1),
-	CraterLevel(4),
-	TreeFlammability(.1),
+	TreeFlammability(.1), // RA2: no CraterLevel (not in RA2's layout)
 	MissileSpeedVar(.25),
 	MissileROTVar(.25),
 	DropPodWeapon(NULL),
@@ -462,8 +428,7 @@ RulesClass::RulesClass(void) :
 	PlayerJoined(VOC_NONE),
 	Construction(VOC_NONE),
 	CreditTicks(),
-	CrumbleSound(VOC_NONE),
-	BuildingSlam(VOC_NONE),
+	BuildingSlam(VOC_NONE), // RA2: no CrumbleSound (not in RA2's layout)
 	RadarOn(VOC_NONE),
 	RadarOff(VOC_NONE),
 	ScoldSound(VOC_NONE),
@@ -471,17 +436,13 @@ RulesClass::RulesClass(void) :
 	TeslaZap(VOC_NONE),
 	GenericClick(VOC_NONE),
 	GenericBeep(VOC_NONE),
-	BlowupSound(VOC_NONE),
-	HealCrateSound(VOC_NONE),
+	HealCrateSound(VOC_NONE), // RA2: no BlowupSound (not in RA2's layout)
 	ChuteSound(VOC_NONE),
 	StopSound(VOC_NONE),
 	GuardSound(VOC_NONE),
 	ScatterSound(VOC_NONE),
 	DeploySound(VOC_NONE),
-	LightningSound(VOC_NONE),
-	WorstLowPowerBuildRateCoefficient(.3),
-	BestLowPowerBuildRateCoefficient(.75),
-	WallBuildSpeedCoefficient(.5),
+	WallBuildSpeedCoefficient(.5), // RA2: no LightningSound, BestLowPowerBuildRateCoefficient, WorstLowPowerBuildRateCoefficient (not in RA2's layout)
 	ChargeToDrainRatio(3),
 	DamageToFirestormDamageCoefficient(.1),
 	TrackedUphill(1),
@@ -503,8 +464,7 @@ RulesClass::RulesClass(void) :
 	Scorches2(),
 	Scorches3(),
 	Scorches4(),
-	Craters(),
-	RepairBay(NULL),
+	RepairBay(NULL), // RA2: no Craters (not in RA2's layout)
 	GDIGateOne(NULL),
 	GDIGateTwo(NULL),
 	NodGateOne(NULL),
@@ -537,7 +497,7 @@ RulesClass::RulesClass(void) :
 	GDIBaseDefenseCoefficient(1),
 	ComputerBaseDefenseResponse(3),
 	MaximumBaseDefenseValue(60),
-	BaseUnit(NULL),
+	BaseUnit(), // RA2: a list
 	HarvesterUnit(),
 	PadAircraft(),
 	OnFire(),
@@ -555,12 +515,10 @@ RulesClass::RulesClass(void) :
 	SmallFire(NULL),
 	LargeFire(NULL),
 	Paratrooper(NULL),
-	Disguise(NULL),
-	Technician(NULL),
+	Technician(NULL), // RA2: no Disguise (TibSun's use does not compile against RA2's declaration)
 	Engineer(NULL),
 	Pilot(NULL),
-	Crew(NULL),
-	FlameDamage(NULL),
+	FlameDamage(NULL), // RA2: no Crew (TibSun's use does not compile against RA2's declaration)
 	FlameDamage2(NULL),
 	NukeWarhead(NULL),
 	NukeProjectile(NULL),
@@ -571,8 +529,7 @@ RulesClass::RulesClass(void) :
 	IonCannonWarhead(NULL),
 	FirestormWarhead(NULL),
 	VeinholeWarhead(NULL),
-	IonStormWarhead(NULL),
-	VeinholeTypeClass(NULL),
+	VeinholeTypeClass(NULL), // RA2: no IonStormWarhead (not in RA2's layout)
 	DefaultLargeGreySmokeSystem(NULL),
 	DefaultSmallGreySmokeSystem(NULL),
 	DefaultSparkSystem(NULL),
@@ -611,7 +568,6 @@ RulesClass::RulesClass(void) :
 /// </summary>
 RulesClass::~RulesClass(void)
 {
-
 }
 
 
@@ -623,7 +579,7 @@ RulesClass::~RulesClass(void)
 /// </summary>
 /// <remarks>Every type object in the game is destroyed here, so nothing may be holding a
 /// pointer to one when this routine is called.</remarks>
-void RulesClass::Initialize(CCINIClass const & ini)
+void RulesClass::Initialize(CCINIClass & ini) // RA2: a writable INI
 {
 	while (ColorSchemes.Count()) {
 		delete ColorSchemes[0];
@@ -689,9 +645,6 @@ void RulesClass::Initialize(CCINIClass const & ini)
 		delete HouseTypes[0];
 	}
 
-	WebbedInfantry = NULL;
-	PrerequisiteGDIFactory.Clear();
-	PrerequisiteNodFactory.Clear();
 
 	Load_Art_INI();
 
@@ -742,7 +695,7 @@ void RulesClass::Initialize(CCINIClass const & ini)
  * HISTORY:                                                                                    *
  *   06/17/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool RulesClass::Addition(CCINIClass const & ini)
+bool RulesClass::Addition(CCINIClass & ini) // RA2: a writable INI
 {
 	BStart(BENCH_RULES);
 
@@ -792,7 +745,7 @@ bool RulesClass::Addition(CCINIClass const & ini)
 /// well, since the special weapons can redefine what the ordinary ones do.
 /// </summary>
 /// <returns>bool; Was a special weapons section found in the control file?</returns>
-bool RulesClass::Special_Weapons(CCINIClass const & ini)
+bool RulesClass::Special_Weapons(CCINIClass & ini) // RA2: a writable INI
 {
 	static char const * const SPECIALWEAPONS = "SpecialWeapons";
 	if (ini.Is_Present(SPECIALWEAPONS)) {
@@ -812,6 +765,28 @@ bool RulesClass::Special_Weapons(CCINIClass const & ini)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline int Sound_From_Name(char const * name, int fallback)
+{
+	int index = VocClass::From_Name(name); // RA2: the voice lookup
+	return index == -1 ? fallback : index;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int Read_Sound(CCINIClass const & ini, char const * section, char const * key, int fallback)
+{
+	char name[128];
+	if (ini.Get_String(section, key, "", name, sizeof(name)))
+		return Sound_From_Name(name, fallback);
+	return fallback;
+}
+
+
+/// <summary>
 /// Fetches the audio and visual control values.
 /// This is the catch-all section for presentation -- the sounds the interface plays, the
 /// animations attached to smoke, fire, parachutes and drop pods, the shroud and fog rates,
@@ -820,111 +795,7 @@ bool RulesClass::Special_Weapons(CCINIClass const & ini)
 /// <returns>bool; Was an audio visual section found in the control file?</returns>
 bool RulesClass::Audio_Visual_Rules(CCINIClass const & ini)
 {
-	static char const * const AUDIOVISUAL = "AudioVisual";
-	if (ini.Is_Present(AUDIOVISUAL)) {
-		UnloadingHarvester = TGet_Class(ini, AUDIOVISUAL, "UnloadingHarvester", UnloadingHarvester);
-		PoseDir = (Dir256)ini.Get_Int(AUDIOVISUAL, "PoseDir", PoseDir);
-		DropPodPuff = TGet_Class(ini, AUDIOVISUAL, "DropPodPuff", DropPodPuff);
-		WaypointAnimationSpeed = ini.Get_Int(AUDIOVISUAL, "WaypointAnimationSpeed", WaypointAnimationSpeed);
-		BarrelExplode = TGet_Class(ini, AUDIOVISUAL, "BarrelExplode", BarrelExplode);
-		BarrelDebris = TGet_TypeList<VoxelAnimTypeClass>(ini, AUDIOVISUAL, "BarrelDebris", BarrelDebris);
-		BarrelParticle = TGet_Class(ini, AUDIOVISUAL, "BarrelParticle", BarrelParticle);
-		Wake = TGet_Class(ini, AUDIOVISUAL, "Wake", Wake);
-		FlamingInfantry = TGet_Class(ini, AUDIOVISUAL, "FlamingInfantry", FlamingInfantry);
-		VeinAttack = TGet_Class(ini, AUDIOVISUAL, "VeinAttack", VeinAttack);
-		DropPod = TGet_TypeList<AnimTypeClass>(ini, AUDIOVISUAL, "DropPod", DropPod);
-		DigSound = ini.Get_VocType(AUDIOVISUAL, "DigSound", DigSound);
-		Dig = TGet_Class(ini, AUDIOVISUAL, "Dig", Dig);
-		IonBlast = TGet_Class(ini, AUDIOVISUAL, "IonBlast", IonBlast);
-		IonBeam = TGet_Class(ini, AUDIOVISUAL, "IonBeam", IonBeam);
-		InfantryExplode = TGet_Class(ini, AUDIOVISUAL, "InfantryExplode", InfantryExplode);
-		AtmosphereEntry = TGet_Class(ini, AUDIOVISUAL, "AtmosphereEntry", AtmosphereEntry);
-		GateUpSound = ini.Get_VocType(AUDIOVISUAL, "GateUp", GateUpSound);
-		GateDownSound = ini.Get_VocType(AUDIOVISUAL, "GateDown", GateDownSound);
-		IsShroudGrow = ini.Get_Bool(AUDIOVISUAL, "ShroudGrow", IsShroudGrow);
-		ScrollMultiplier = ini.Get_Float(AUDIOVISUAL, "ScrollMultiplier", ScrollMultiplier);
-		ShakeScreen = ini.Get_Int(AUDIOVISUAL, "ShakeScreen", ShakeScreen);
-		CloakSound = ini.Get_VocType(AUDIOVISUAL, "CloakSound", CloakSound);
-		SellSound = ini.Get_VocType(AUDIOVISUAL, "SellSound", SellSound);
-		GameClosed = ini.Get_VocType(AUDIOVISUAL, "GameClosed", GameClosed);
-		IncomingMessage = ini.Get_VocType(AUDIOVISUAL, "IncomingMessage", IncomingMessage);
-		SystemError = ini.Get_VocType(AUDIOVISUAL, "SystemError", SystemError);
-		OptionsChanged = ini.Get_VocType(AUDIOVISUAL, "OptionsChanged", OptionsChanged);
-		GameForming = ini.Get_VocType(AUDIOVISUAL, "GameForming", GameForming);
-		PlayerLeft = ini.Get_VocType(AUDIOVISUAL, "PlayerLeft", PlayerLeft);
-		PlayerJoined = ini.Get_VocType(AUDIOVISUAL, "PlayerJoined", PlayerJoined);
-		Construction = ini.Get_VocType(AUDIOVISUAL, "Construction", Construction);
-		CreditTicks = ini.Get_VocType_List(ini, AUDIOVISUAL, "CreditTicks", CreditTicks);
-		CrumbleSound = ini.Get_VocType(AUDIOVISUAL, "CrumbleSound", CrumbleSound);
-		BuildingSlam = ini.Get_VocType(AUDIOVISUAL, "BuildingSlam", BuildingSlam);
-		RadarOn = ini.Get_VocType(AUDIOVISUAL, "RadarOn", RadarOn);
-		RadarOff = ini.Get_VocType(AUDIOVISUAL, "RadarOff", RadarOff);
-		ScoldSound = ini.Get_VocType(AUDIOVISUAL, "ScoldSound", ScoldSound);
-		TeslaCharge = ini.Get_VocType(AUDIOVISUAL, "TeslaCharge", TeslaCharge);
-		TeslaZap = ini.Get_VocType(AUDIOVISUAL, "TeslaZap", TeslaZap);
-		BlowupSound = ini.Get_VocType(AUDIOVISUAL, "BlowupSound", BlowupSound);
-		ChuteSound = ini.Get_VocType(AUDIOVISUAL, "ChuteSound", ChuteSound);
-		GenericClick = ini.Get_VocType(AUDIOVISUAL, "GenericClick", GenericClick);
-		GenericBeep = ini.Get_VocType(AUDIOVISUAL, "GenericBeep", GenericBeep);
-		BuildingDrop = ini.Get_VocType(AUDIOVISUAL, "BuildingDrop", BuildingDrop);
-		StopSound = ini.Get_VocType(AUDIOVISUAL, "StopSound", StopSound);
-		GuardSound = ini.Get_VocType(AUDIOVISUAL, "GuardSound", GuardSound);
-		ScatterSound = ini.Get_VocType(AUDIOVISUAL, "ScatterSound", ScatterSound);
-		DeploySound = ini.Get_VocType(AUDIOVISUAL, "DeploySound", DeploySound);
-		LightningSound = ini.Get_VocType(AUDIOVISUAL, "LightningSound", LightningSound);
-		TreeFire = TGet_TypeList<AnimTypeClass>(ini, AUDIOVISUAL, "TreeFire", TreeFire);
-		DeadBodies = TGet_TypeList<AnimTypeClass>(ini, AUDIOVISUAL, "DeadBodies", DeadBodies);
-		MetallicDebris = TGet_TypeList<AnimTypeClass>(ini, AUDIOVISUAL, "MetallicDebris", MetallicDebris);
-		BridgeExplosions = TGet_TypeList<AnimTypeClass>(ini, AUDIOVISUAL, "BridgeExplosions", BridgeExplosions);
-		OnFire = TGet_TypeList<AnimTypeClass>(ini, AUDIOVISUAL, "OnFire", OnFire);
-		Smoke1 = TGet_Class(ini, AUDIOVISUAL, "Smoke", Smoke1);
-		Smoke2 = TGet_Class(ini, AUDIOVISUAL, "Smoke", Smoke2);
-		FirestormActiveAnim = TGet_Class(ini, AUDIOVISUAL, "FirestormActiveAnim", FirestormActiveAnim);
-		FirestormIdleAnim = TGet_Class(ini, AUDIOVISUAL, "FirestormIdleAnim", FirestormIdleAnim);
-		FirestormAirAnim = TGet_Class(ini, AUDIOVISUAL, "FirestormAirAnim", FirestormAirAnim);
-		FirestormGroundAnim = TGet_Class(ini, AUDIOVISUAL, "FirestormGroundAnim", FirestormGroundAnim);
-		MoveFlash = TGet_Class(ini, AUDIOVISUAL, "MoveFlash", MoveFlash);
-		Parachute = TGet_Class(ini, AUDIOVISUAL, "Parachute", Parachute);
-		BombParachute = TGet_Class(ini, AUDIOVISUAL, "BombParachute", BombParachute);
-		SmallFire = TGet_Class(ini, AUDIOVISUAL, "SmallFire", SmallFire);
-		LargeFire = TGet_Class(ini, AUDIOVISUAL, "LargeFire", LargeFire);
-		IsAllyReveal = ini.Get_Bool(AUDIOVISUAL, "AllyReveal", IsAllyReveal);
-		ConditionGreen = 1;
-		ConditionRed = ini.Get_Float(AUDIOVISUAL, "ConditionRed", ConditionRed);
-		ConditionYellow = ini.Get_Float(AUDIOVISUAL, "ConditionYellow", ConditionYellow);
-		DropZoneRadius = ini.Get_Lepton(AUDIOVISUAL, "DropZoneRadius", DropZoneRadius);
-		FlareAnim = TGet_Class(ini, AUDIOVISUAL, "DropZoneAnim", FlareAnim);
-		IsHealthBar = ini.Get_Bool(AUDIOVISUAL, "EnemyHealth", IsHealthBar);
-		Gravity = ini.Get_Int(AUDIOVISUAL, "Gravity", Gravity);
-		RandomAnimateTime = ini.Get_Float(AUDIOVISUAL, "IdleActionFrequency", RandomAnimateTime);
-		MessageDelay = ini.Get_Float(AUDIOVISUAL, "MessageDelay", MessageDelay);
-		MovieTime = ini.Get_Float(AUDIOVISUAL, "MovieTime", MovieTime);
-		IsNamed = ini.Get_Bool(AUDIOVISUAL, "NamedCivilians", IsNamed);
-
-		SavourDelay = ini.Get_Float(AUDIOVISUAL, "SavourDelay", SavourDelay);
-		ShroudRate = ini.Get_Float(AUDIOVISUAL, "ShroudRate", ShroudRate);
-		FogRate = ini.Get_Float(AUDIOVISUAL, "FogRate", FogRate);
-		VeinGrowthRate = ini.Get_Float(AUDIOVISUAL, "VeinGrowthRate", VeinGrowthRate);
-		IceGrowthRate = ini.Get_Float(AUDIOVISUAL, "IceGrowthRate", IceGrowthRate);
-		IceSolidifyDelay = ini.Get_Int(AUDIOVISUAL, "IceSolidifyFrameTime", IceSolidifyDelay);
-
-		IceCrackSounds.Clear();
-		IceCrackSounds = ini.Get_VocType_List(ini, AUDIOVISUAL, "IceCrackSounds", IceCrackSounds);
-
-		AmbientLightChangeRate = ini.Get_Float(AUDIOVISUAL, "AmbientChangeRate", AmbientLightChangeRate);
-		AmbientLightChangeStep = ini.Get_Float(AUDIOVISUAL, "AmbientChangeStep", AmbientLightChangeStep);
-		SpeakDelay = ini.Get_Float(AUDIOVISUAL, "SpeakDelay", SpeakDelay);
-		TimerWarning = ini.Get_Float(AUDIOVISUAL, "TimerWarning", TimerWarning);
-
-		ExtraUnitLight = (int)(NORMAL_LIGHT * ini.Get_Float(AUDIOVISUAL, "ExtraUnitLight", ExtraUnitLight / NORMAL_LIGHT));
-		ExtraInfantryLight = (int)(NORMAL_LIGHT * ini.Get_Float(AUDIOVISUAL, "ExtraInfantryLight", ExtraInfantryLight / NORMAL_LIGHT));
-		ExtraAircraftLight = (int)(NORMAL_LIGHT * ini.Get_Float(AUDIOVISUAL, "ExtraAircraftLight", ExtraAircraftLight / NORMAL_LIGHT) );
-
-		EMPulseSparkles = TGet_Class(ini, AUDIOVISUAL, "EMPulseSparkles", EMPulseSparkles);
-		WebbedInfantry = TGet_Class(ini, AUDIOVISUAL, "WebbedInfantry", WebbedInfantry);
-		return(true);
-	}
-	return(false);
+	return(false); // RA2: no AUDIOVISUAL (not in RA2's layout)
 }
 
 
@@ -937,11 +808,12 @@ bool RulesClass::Audio_Visual_Rules(CCINIClass const & ini)
 /// <returns>bool; Was a crate rules section found in the control file?</returns>
 bool RulesClass::Crate_Rules(CCINIClass const & ini)
 {
-	static char const * const CRATERULES = "CrateRules";
+	static char const * CRATERULES = "CrateRules"; // RA2: a plain pointer (the Do_ readers match only so)
 	if (ini.Is_Present(CRATERULES)) {
 		IsFreeMCV = ini.Get_Bool(CRATERULES, "FreeMCV", IsFreeMCV);
 		WoodCrateImg = TGet_Class(ini, CRATERULES, "WoodCrateImg", WoodCrateImg);
 		CrateImg = TGet_Class(ini, CRATERULES, "CrateImg", CrateImg);
+		WaterCrateImg = TGet_Class(ini, CRATERULES, "WaterCrateImg", WaterCrateImg); // RA2: Crate_Rules at 0x6469B0 matches only so
 		HealCrateSound = ini.Get_VocType(CRATERULES, "HealCrateSound", HealCrateSound);
 		CrateMinimum = ini.Get_Int(CRATERULES, "CrateMinimum", CrateMinimum);
 		CrateMaximum = ini.Get_Int(CRATERULES, "CrateMaximum", CrateMaximum);
@@ -951,7 +823,7 @@ bool RulesClass::Crate_Rules(CCINIClass const & ini)
 		SoloCrateMoney = ini.Get_Int(CRATERULES, "SoloCrateMoney", SoloCrateMoney);
 		SilverCrate = ini.Get_CrateType(CRATERULES, "SilverCrate", SilverCrate);
 		WoodCrate = ini.Get_CrateType(CRATERULES, "WoodCrate", WoodCrate);
-		//WaterCrate = ini.Get_CrateType(CRATERULES, "WaterCrate", WaterCrate);
+		WaterCrate = ini.Get_CrateType(CRATERULES, "WaterCrate", WaterCrate); // RA2: as above
 		return(true);
 	}
 	return(false);
@@ -979,8 +851,7 @@ bool RulesClass::Combat_Damage(CCINIClass const & ini)
 		Scorches2 = TGet_TypeList<SmudgeTypeClass>(ini, COMBATDAMAGE, "Scorches2", Scorches2);
 		Scorches3 = TGet_TypeList<SmudgeTypeClass>(ini, COMBATDAMAGE, "Scorches3", Scorches3);
 		Scorches4 = TGet_TypeList<SmudgeTypeClass>(ini, COMBATDAMAGE, "Scorches4", Scorches4);
-		Craters = TGet_TypeList<SmudgeTypeClass>(ini, COMBATDAMAGE, "Craters", Craters);
-		SplashList = TGet_TypeList<AnimTypeClass>(ini, COMBATDAMAGE, "SplashList", SplashList);
+		SplashList = TGet_TypeList<AnimTypeClass>(ini, COMBATDAMAGE, "SplashList", SplashList); // RA2: no Craters (not in RA2's layout)
 		FlameDamage = TGet_Class(ini, COMBATDAMAGE, "FlameDamage", FlameDamage);
 		FlameDamage2 = TGet_Class(ini, COMBATDAMAGE, "FlameDamage2", FlameDamage2);
 		C4Warhead = TGet_Class(ini, COMBATDAMAGE, "C4Warhead", C4Warhead);
@@ -1022,6 +893,36 @@ bool RulesClass::Combat_Damage(CCINIClass const & ini)
 }
 
 
+
+
+
+
+
+
+
+
+
+/***********************************************************************************************
+ * Difficulty_Get -- Fetch the difficulty bias values.                                         *
+ *                                                                                             *
+ *    This will fetch the difficulty bias values for the section specified.                    *
+ *                                                                                             *
+ * INPUT:   ini   -- Reference the INI database to fetch the values from.                      *
+ *                                                                                             *
+ *          diff  -- Reference to the difficulty class object to fill in with the values.      *
+ *                                                                                             *
+ *          section  -- The section identifier to lift the values from.                        *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/11/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+
+
+
 /// <summary>
 /// Creates the color schemes declared in the control file.
 /// Each entry names a scheme and gives the hue, saturation and value that the game palette
@@ -1043,6 +944,9 @@ bool RulesClass::Color_Schemes(CCINIClass const & ini)
 	}
 	return(false);
 }
+
+
+
 
 
 /***********************************************************************************************
@@ -1074,16 +978,13 @@ bool RulesClass::General(CCINIClass const & ini)
 		PrerequisiteBarracks = ini.Get_BuildingType_List(ini, GENERAL, "PrerequisiteBarracks", PrerequisiteBarracks);
 		PrerequisiteRadar = ini.Get_BuildingType_List(ini, GENERAL, "PrerequisiteRadar", PrerequisiteRadar);
 		PrerequisiteTech = ini.Get_BuildingType_List(ini, GENERAL, "PrerequisiteTech", PrerequisiteTech);
-		PrerequisiteGDIFactory = ini.Get_BuildingType_List(ini, GENERAL, "PrerequisiteGDIFactory", PrerequisiteGDIFactory);
-		PrerequisiteNodFactory = ini.Get_BuildingType_List(ini, GENERAL, "PrerequisiteNodFactory", PrerequisiteNodFactory);
-		ZoomInFactor = ini.Get_Float(GENERAL, "ZoomInFactor", ZoomInFactor);
+		ZoomInFactor = ini.Get_Float(GENERAL, "ZoomInFactor", ZoomInFactor); // RA2: no PrerequisiteNodFactory, PrerequisiteGDIFactory (not in RA2's layout)
 		IsRevealByHeight = ini.Get_Bool(GENERAL, "RevealByHeight", IsRevealByHeight);
 		IsShroudedSubteranneanMovesAllowed = ini.Get_Bool(GENERAL, "AllowShroudedSubteranneanMoves", IsShroudedSubteranneanMovesAllowed);
 		AircraftFogReveal = ini.Get_Int(GENERAL, "AircraftFogReveal", AircraftFogReveal);
 		MinLowPowerProductionSpeed = ini.Get_Float(GENERAL, "MinProductionSpeed", MinLowPowerProductionSpeed);
 		MultipleFactory = ini.Get_Float(GENERAL, "MultipleFactory", MultipleFactory);
-		CraterLevel = ini.Get_Int(GENERAL, "CraterLevel", CraterLevel);
-		TreeFlammability = ini.Get_Float(GENERAL, "TreeFlammability", TreeFlammability);
+		TreeFlammability = ini.Get_Float(GENERAL, "TreeFlammability", TreeFlammability); // RA2: no CraterLevel (not in RA2's layout)
 		MissileROTVar = ini.Get_Float(GENERAL, "MissileROTVar", MissileROTVar);
 		MissileSpeedVar = ini.Get_Float(GENERAL, "MissileSpeedVar", MissileSpeedVar);
 		DropPodWeapon = TGet_Class(ini, GENERAL, "DropPodWeapon", DropPodWeapon);
@@ -1136,16 +1037,14 @@ bool RulesClass::General(CCINIClass const & ini)
 		GDIFirestormGenerator = TGet_Class(ini, GENERAL, "GDIFirestormGenerator", GDIFirestormGenerator);
 		GDIHunterSeeker = TGet_Class(ini, GENERAL, "GDIHunterSeeker", GDIHunterSeeker);
 		NodHunterSeeker = TGet_Class(ini, GENERAL, "NodHunterSeeker", NodHunterSeeker);
-		BaseUnit = TGet_Class(ini, GENERAL, "BaseUnit", BaseUnit);
+		BaseUnit = TGet_TypeList<UnitTypeClass>(ini, GENERAL, "BaseUnit", BaseUnit); // RA2: a list
 		HarvesterUnit = TGet_TypeList<UnitTypeClass>(ini, GENERAL, "HarvesterUnit", HarvesterUnit);
 		PadAircraft = TGet_TypeList<AircraftTypeClass>(ini, GENERAL, "PadAircraft", PadAircraft);
 		Paratrooper = TGet_Class(ini, GENERAL, "Paratrooper", Paratrooper);
-		Disguise = TGet_Class(ini, GENERAL, "Disguise", Disguise);
-		Engineer = TGet_Class(ini, GENERAL, "Engineer", Engineer);
+		Engineer = TGet_Class(ini, GENERAL, "Engineer", Engineer); // RA2: no Disguise (TibSun's use does not compile against RA2's declaration)
 		Technician = TGet_Class(ini, GENERAL, "Technician", Technician);
 		Pilot = TGet_Class(ini, GENERAL, "Pilot", Pilot);
-		Crew = TGet_Class(ini, GENERAL, "Crew", Crew);
-		IsCurleyShuffle = ini.Get_Bool(GENERAL, "CurleyShuffle", IsCurleyShuffle);
+		IsCurleyShuffle = ini.Get_Bool(GENERAL, "CurleyShuffle", IsCurleyShuffle); // RA2: no Crew (TibSun's use does not compile against RA2's declaration)
 		IsFineDifficulty = ini.Get_Bool(GENERAL, "FineDiffControl", IsFineDifficulty);
 		TeamDelays = ini.Get_IntList(GENERAL, "TeamDelays", TeamDelays);
 		AIHateDelays = ini.Get_IntList(GENERAL, "AIHateDelays", AIHateDelays);
@@ -1180,8 +1079,7 @@ bool RulesClass::General(CCINIClass const & ini)
 		SuspendPriority = ini.Get_Int(GENERAL, "SuspendPriority", SuspendPriority);
 		SuspendDelay = ini.Get_Float(GENERAL, "SuspendDelay", SuspendDelay);
 		SurvivorFraction = ini.Get_Float(GENERAL, "SurvivorRate", SurvivorFraction);
-		SurvivorDivisor = ini.Get_Int(GENERAL, "SurvivorDivisor", SurvivorDivisor);
-		ReloadRate = ini.Get_Float(GENERAL, "ReloadRate", ReloadRate);
+		ReloadRate = ini.Get_Float(GENERAL, "ReloadRate", ReloadRate); // RA2: no SurvivorDivisor (not in RA2's layout)
 		BuildupTime = ini.Get_Float(GENERAL, "BuildupTime", BuildupTime);
 		HarvesterDumpRate = ini.Get_Float(GENERAL, "HarvesterDumpRate", HarvesterDumpRate);
 		HarvesterLoadRate = ini.Get_Int(GENERAL, "HarvesterLoadRate", HarvesterLoadRate);
@@ -1201,13 +1099,9 @@ bool RulesClass::General(CCINIClass const & ini)
 		AttackingAircraftSightRange = ini.Get_Int(GENERAL, "AttackingAircraftSightRange", AttackingAircraftSightRange);
 		LeptonsPerSightIncrease = ini.Get_Int(GENERAL, "LeptonsPerSightIncrease", LeptonsPerSightIncrease);
 		TiberiumTransmogrify = ini.Get_Int(GENERAL, "TiberiumTransmogrify", TiberiumTransmogrify);
-		LightningFrequency = int(ini.Get_Float(GENERAL, "IonLightningFrequency", LightningFrequency / 10) * 10);
-		LightningRandomness = ini.Get_Int(GENERAL, "IonLightningRandomness", LightningRandomness);
-		LightningDamage = ini.Get_Int(GENERAL, "IonLightningDamage", LightningDamage);
-		LightningDuration = ini.Get_Int(GENERAL, "IonStormDuration", LightningDuration);
-		LightningDeferment = ini.Get_Int(GENERAL, "IonStormWarning", LightningDeferment);
-		IonStormWarhead = TGet_Class(ini, GENERAL, "IonStormWarhead", IonStormWarhead);
-		SpotlightMovementRadius = ini.Get_Int(GENERAL, "SpotlightMovementRadius", SpotlightMovementRadius);
+		LightningDamage = ini.Get_Int(GENERAL, "IonLightningDamage", LightningDamage); // RA2: no LightningFrequency, LightningRandomness (not in RA2's layout)
+		LightningDeferment = ini.Get_Int(GENERAL, "IonStormWarning", LightningDeferment); // RA2: no LightningDuration (not in RA2's layout)
+		SpotlightMovementRadius = ini.Get_Int(GENERAL, "SpotlightMovementRadius", SpotlightMovementRadius); // RA2: no IonStormWarhead (not in RA2's layout)
 		SpotlightLocationRadius = ini.Get_Int(GENERAL, "SpotlightLocationRadius", SpotlightLocationRadius);
 		SpotlightSpeed = ini.Get_Float(GENERAL, "SpotlightSpeed", SpotlightSpeed);
 		SpotlightAcceleration = ini.Get_Float(GENERAL, "SpotlightAcceleration", SpotlightAcceleration);
@@ -1217,9 +1111,7 @@ bool RulesClass::General(CCINIClass const & ini)
 		ChargeToDrainRatio = ini.Get_Float(GENERAL, "ChargeToDrainRatio", ChargeToDrainRatio);
 		DamageToFirestormDamageCoefficient = ini.Get_Float(GENERAL, "DamageToFirestormDamageCoefficient", DamageToFirestormDamageCoefficient);
 		WallBuildSpeedCoefficient = ini.Get_Float(GENERAL, "WallBuildSpeedCoefficient", WallBuildSpeedCoefficient);
-		WorstLowPowerBuildRateCoefficient = ini.Get_Float(GENERAL, "WorstLowPowerBuildRateCoefficient", WorstLowPowerBuildRateCoefficient);
-		BestLowPowerBuildRateCoefficient = ini.Get_Float(GENERAL, "BestLowPowerBuildRateCoefficient", BestLowPowerBuildRateCoefficient);
-		ConditionYellowSparkingProbability = ini.Get_Float(GENERAL, "ConditionYellowSparkingProbability", ConditionYellowSparkingProbability);
+		ConditionYellowSparkingProbability = ini.Get_Float(GENERAL, "ConditionYellowSparkingProbability", ConditionYellowSparkingProbability); // RA2: no WorstLowPowerBuildRateCoefficient, BestLowPowerBuildRateCoefficient (not in RA2's layout)
 		ConditionRedSparkingProbability = ini.Get_Float(GENERAL, "ConditionRedSparkingProbability", ConditionRedSparkingProbability);
 		AITriggerSuccessWeightDelta = ini.Get_Float(GENERAL, "AITriggerSuccessWeightDelta", AITriggerSuccessWeightDelta);
 		AITriggerFailureWeightDelta = ini.Get_Float(GENERAL, "AITriggerFailureWeightDelta", AITriggerFailureWeightDelta);
@@ -1259,9 +1151,7 @@ bool RulesClass::General(CCINIClass const & ini)
 		MaximumQueuedObjects = ini.Get_Int(GENERAL, "MaximumQueuedObjects", MaximumQueuedObjects);
 		MaxWaypointPathLength = ini.Get_Int(GENERAL, "MaxWaypointPathLength", MaxWaypointPathLength);
 		TreeStrength = ini.Get_Int(GENERAL, "TreeStrength", TreeStrength);
-		DropPodInfantryMinimum = ini.Get_Int(GENERAL, "DropPodInfantryMinimum", DropPodInfantryMinimum);
-		DropPodInfantryMaximum = ini.Get_Int(GENERAL, "DropPodInfantryMaximum", DropPodInfantryMaximum);
-		LevitateLocomotionClass::Read_INI(ini);
+		LevitateLocomotionClass::Read_INI(ini); // RA2: no DropPodInfantryMaximum, DropPodInfantryMinimum (not in RA2's layout)
 		EngineerCaptureLevel = (float)ini.Get_Float(GENERAL, "EngineerCaptureLevel", EngineerCaptureLevel);
 		EngineerDamage = (float)ini.Get_Float(GENERAL, "EngineerCaptureLevel", EngineerDamage);
 		TalkBubbleTime = int(TIMER_SECOND * ini.Get_Float(GENERAL, "TalkBubbleTime", TalkBubbleTime * (1.0f/TIMER_SECOND)));
@@ -1323,14 +1213,10 @@ bool RulesClass::MPlayer(CCINIClass const & ini)
  *=============================================================================================*/
 bool RulesClass::Heap_Maximums(CCINIClass const & ini)
 {
-	/*
-	**	Heap maximum values.
-	*/
-	static char const * const MAXIMUMS = "Maximums";
+	static char const * MAXIMUMS = "Maximums"; // RA2: a plain pointer (the Do_ readers match only so)
 	if (ini.Is_Present(MAXIMUMS)) {
 		MaxPlayers = ini.Get_Int(MAXIMUMS, "Players", MaxPlayers);
 	}
-
 	return(true);
 }
 
@@ -1343,7 +1229,7 @@ bool RulesClass::Heap_Maximums(CCINIClass const & ini)
 /// <returns>bool; Were any infantry declared?</returns>
 bool RulesClass::Do_InfantryTypes(CCINIClass const & ini)
 {
-	static char const * const INFANTRYTYPES = "InfantryTypes";
+	static char const * INFANTRYTYPES = "InfantryTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(INFANTRYTYPES);
 	for (int i = 0; i < count; i++) {
@@ -1363,7 +1249,7 @@ bool RulesClass::Do_InfantryTypes(CCINIClass const & ini)
 /// <returns>bool; Were any houses declared?</returns>
 bool RulesClass::Do_HouseTypes(CCINIClass const & ini)
 {
-	static char const * const HOUSES = "Houses";
+	static char const * HOUSES = "Countries"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(HOUSES);
 	for (int i = 0; i < count; i++) {
@@ -1383,7 +1269,7 @@ bool RulesClass::Do_HouseTypes(CCINIClass const & ini)
 /// <returns>bool; Were any vehicles declared?</returns>
 bool RulesClass::Do_VehicleTypes(CCINIClass const & ini)
 {
-	static char const * const VEHICLETYPES = "VehicleTypes";
+	static char const * VEHICLETYPES = "VehicleTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(VEHICLETYPES);
 	for (int i = 0; i < count; i++) {
@@ -1403,7 +1289,7 @@ bool RulesClass::Do_VehicleTypes(CCINIClass const & ini)
 /// <returns>bool; Were any aircraft declared?</returns>
 bool RulesClass::Do_AircraftTypes(CCINIClass const & ini)
 {
-	static char const * const AIRCRAFTTYPES = "AircraftTypes";
+	static char const * AIRCRAFTTYPES = "AircraftTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(AIRCRAFTTYPES);
 	for (int i = 0; i < count; i++) {
@@ -1424,7 +1310,7 @@ bool RulesClass::Do_AircraftTypes(CCINIClass const & ini)
 /// <returns>bool; Were any sides declared?</returns>
 bool RulesClass::Do_Sides(CCINIClass const & ini)
 {
-	static char const * const SIDES = "Sides";
+	static char const * SIDES = "Sides"; // RA2: a plain pointer (the Do_ readers match only so)
 	int count = ini.Entry_Count(SIDES);
 	DebugString("Processing sides.\n");
 	for (int i = 0; i < count; i++) {
@@ -1456,7 +1342,7 @@ bool RulesClass::Do_Sides(CCINIClass const & ini)
 /// <returns>bool; Were any super weapons declared?</returns>
 bool RulesClass::Do_SuperWeaponTypes(CCINIClass const & ini)
 {
-	static char const * const SUPERWEAPONTYPES = "SuperWeaponTypes";
+	static char const * SUPERWEAPONTYPES = "SuperWeaponTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(SUPERWEAPONTYPES);
 	for (int i = 0; i < count; i++) {
@@ -1476,7 +1362,7 @@ bool RulesClass::Do_SuperWeaponTypes(CCINIClass const & ini)
 /// <returns>bool; Were any buildings declared?</returns>
 bool RulesClass::Do_BuildingTypes(CCINIClass const & ini)
 {
-	static char const * const BUILDINGTYPES = "BuildingTypes";
+	static char const * BUILDINGTYPES = "BuildingTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(BUILDINGTYPES);
 	for (int i = 0; i < count; i++) {
@@ -1496,7 +1382,7 @@ bool RulesClass::Do_BuildingTypes(CCINIClass const & ini)
 /// <returns>bool; Were any terrain objects declared?</returns>
 bool RulesClass::Do_TerrainTypes(CCINIClass const & ini)
 {
-	static char const * const TERRAINTYPES = "TerrainTypes";
+	static char const * TERRAINTYPES = "TerrainTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(TERRAINTYPES);
 	for (int i = 0; i < count; i++) {
@@ -1514,7 +1400,7 @@ bool RulesClass::Do_TerrainTypes(CCINIClass const & ini)
 /// team declaration carries its whole roster and script assignment with it.
 /// </summary>
 /// <returns>bool; Were any teams declared?</returns>
-bool RulesClass::Do_TeamTypes(CCINIClass const & ini)
+bool RulesClass::Do_TeamTypes(CCINIClass & ini) // RA2: a writable INI
 {
 	static char const * const TEAMS = "Teams";
 	int count = ini.Entry_Count(TEAMS);
@@ -1534,7 +1420,7 @@ bool RulesClass::Do_TeamTypes(CCINIClass const & ini)
 /// <returns>bool; Were any smudges declared?</returns>
 bool RulesClass::Do_SmudgeTypes(CCINIClass const & ini)
 {
-	static char const * const SMUDGETYPES = "SmudgeTypes";
+	static char const * SMUDGETYPES = "SmudgeTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(SMUDGETYPES);
 	for (int i = 0; i < count; i++) {
@@ -1554,7 +1440,7 @@ bool RulesClass::Do_SmudgeTypes(CCINIClass const & ini)
 /// <returns>bool; Were any overlays declared?</returns>
 bool RulesClass::Do_OverlayTypes(CCINIClass const & ini)
 {
-	static char const * const OVERLAYTYPES = "OverlayTypes";
+	static char const * OVERLAYTYPES = "OverlayTypes"; // RA2: a plain pointer (the Do_ readers match only so)
 	char buffer[32];
 	int count = ini.Entry_Count(OVERLAYTYPES);
 	for (int i = 0; i < count; i++) {
@@ -1757,50 +1643,7 @@ bool RulesClass::AI(CCINIClass const & ini)
  * HISTORY:                                                                                    *
  *   08/08/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool RulesClass::Powerups(CCINIClass const & ini)
-{
-	static char const * const POWERUPS = "Powerups";
-	if (ini.Is_Present(POWERUPS)) {
-		for (int crate = CRATE_FIRST; crate < CRATE_COUNT; crate++) {
-			char buffer[128];
-			if (ini.Get_String(POWERUPS, CrateNames[crate], "0,NONE", buffer, sizeof(buffer))) {
 
-				/*
-				**	Share odds.
-				*/
-				char * token = strtok(buffer, ",");
-				if (token) {
-					strtrim(token);
-					CrateShares[crate] = atoi(token);
-				}
-
-				/*
-				**	Animation to use.
-				*/
-				token = strtok(NULL, ",");
-				if (token) {
-					strtrim(token);
-					CrateAnims[crate] = Anim_From_Name(token);
-				}
-
-				/*
-				**	Optional data number.
-				*/
-				token = strtok(NULL, ",");
-				if (token != NULL) {
-					if (strchr(token, '%') != NULL) {
-						CrateData[crate] = atof(token) / 100;
-					} else {
-						strtrim(token);
-						CrateData[crate] = atof(token);
-					}
-				}
-			}
-		}
-		return(true);
-	}
-	return(false);
-}
 
 
 /***********************************************************************************************
@@ -1819,43 +1662,22 @@ bool RulesClass::Powerups(CCINIClass const & ini)
  *=============================================================================================*/
 bool RulesClass::Land_Types(CCINIClass const & ini)
 {
-	/*
-	**	Fetch the movement characteristic data for terrain types.
-	*/
+	static char const * _lands[LAND_COUNT] = { // RA2: Land_Types at 0x64D610 matches only so
+		"Clear", "Road", "Water", "Rock", "Wall", "Tiberium", // RA2: as above
+		"Beach", "Rough", "Ice", "Railroad", "Tunnel", "Weeds", // RA2: as above
+	}; // RA2: as above
 	for (int land = LAND_FIRST; land < LAND_COUNT; land++) {
-		static char const * _lands[LAND_COUNT] = {
-			"Clear",
-			"Road",
-			"Water",
-			"Rock",
-			"Wall",
-			"Tiberium",
-			"Beach",
-			"Rough",
-			"Ice",
-			"Railroad",
-			"Tunnel",
-			"Weeds",
-		};
-
-		static char const * _speeds[SPEED_COUNT] = {
-			"Foot",
-			"Track",
-			"Wheel",
-			"Hover",
-			"Winged",
-			"Float",
-			"Amphibious",
-			"Creep",
-		};
-
-		GroundType * gptr = &Ground[land];
-
+		GroundType * gptr = &Ground[land]; // RA2: Land_Types at 0x64D610 has no static char const * _lands[LAND_COUNT] =
 		if (ini.Is_Present(_lands[land])) {
-			for (int speed = 0; speed < SPEED_COUNT; speed++) {
-				gptr->Cost[speed] = MIN(ini.Get_Float(_lands[land], _speeds[speed], gptr->Cost[speed]), 1.0);
-			}
-			gptr->Build = ini.Get_Bool(_lands[land], "Buildable", gptr->Build);
+			gptr->Cost[SPEED_HOVER] = MIN(ini.Get_Float(_lands[land], "Hover", 1.0), 1.0); // RA2: as above
+			gptr->Cost[SPEED_FOOT] = MIN(ini.Get_Float(_lands[land], "Foot", 1.0), 1.0); // RA2: as above
+			gptr->Cost[SPEED_TRACK] = MIN(ini.Get_Float(_lands[land], "Track", 1.0), 1.0); // RA2: as above
+			gptr->Cost[SPEED_WHEEL] = MIN(ini.Get_Float(_lands[land], "Wheel", 1.0), 1.0); // RA2: as above
+			gptr->Cost[SPEED_WINGED] = 1.0f; // RA2: as above
+			gptr->Cost[SPEED_FLOAT] = MIN(ini.Get_Float(_lands[land], "Float", 1.0), 1.0); // RA2: as above
+			gptr->Cost[SPEED_AMPHIBIOUS] = MIN(ini.Get_Float(_lands[land], "Amphibious", 1.0), 1.0); // RA2: as above
+			gptr->Cost[SPEED_CREEP] = MIN(ini.Get_Float(_lands[land], "FloatBeach", 1.0), 1.0); // RA2: as above
+			gptr->Build = ini.Get_Bool(_lands[land], "Buildable", false); // RA2: as above
 		}
 	}
 	return(true);
@@ -1880,7 +1702,7 @@ bool RulesClass::Land_Types(CCINIClass const & ini)
  *=============================================================================================*/
 bool RulesClass::IQ(CCINIClass const & ini)
 {
-	static char const * const IQCONTROL = "IQ";
+	static char const * IQCONTROL = "IQ"; // RA2: a plain pointer (the Do_ readers match only so)
 	if (ini.Is_Present(IQCONTROL)) {
 		MaxIQ = ini.Get_Int(IQCONTROL, "MaxIQLevels", MaxIQ);
 		IQSuperWeapons = ini.Get_Int(IQCONTROL, "SuperWeapons", IQSuperWeapons);
@@ -1907,7 +1729,7 @@ bool RulesClass::IQ(CCINIClass const & ini)
 /// <returns>bool; Was a jumpjet control section found in the control file?</returns>
 bool RulesClass::Jumpjet_Controls(CCINIClass const & ini)
 {
-	static char const * const SECTION = "JumpjetControls";
+	static char const * SECTION = "JumpjetControls"; // RA2: a plain pointer (the Do_ readers match only so)
 	if (ini.Is_Present(SECTION)) {
 		JumpjetTurnRate = ini.Get_Int(SECTION, "TurnRate", JumpjetTurnRate);
 		JumpjetSpeed = ini.Get_Int(SECTION, "Speed", JumpjetSpeed);
@@ -1916,8 +1738,7 @@ bool RulesClass::Jumpjet_Controls(CCINIClass const & ini)
 		JumpjetAcceleration = ini.Get_Float(SECTION, "Acceleration", JumpjetAcceleration);
 		JumpjetWobblesPerSecond = ini.Get_Float(SECTION, "WobblesPerSecond", JumpjetWobblesPerSecond);
 		JumpjetWobbleDeviation = ini.Get_Int(SECTION, "WobbleDeviation", JumpjetWobbleDeviation);
-		JumpjetCloakDetectionRadius = ini.Get_Int(SECTION, "CloakDetectionRadius", JumpjetCloakDetectionRadius);
-		return(true);
+		return(true); // RA2: Jumpjet_Controls at 0x64D9E0 has no JumpjetCloakDetectionRadius, SECTION
 	}
 	return(false);
 }
@@ -1946,25 +1767,7 @@ bool RulesClass::Difficulty(CCINIClass const & ini)
 }
 
 
-/***********************************************************************************************
- * Difficulty_Get -- Fetch the difficulty bias values.                                         *
- *                                                                                             *
- *    This will fetch the difficulty bias values for the section specified.                    *
- *                                                                                             *
- * INPUT:   ini   -- Reference the INI database to fetch the values from.                      *
- *                                                                                             *
- *          diff  -- Reference to the difficulty class object to fill in with the values.      *
- *                                                                                             *
- *          section  -- The section identifier to lift the values from.                        *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/11/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-static void Difficulty_Get(CCINIClass const & ini, DifficultyClass & diff, char const * section)
+static void Difficulty_Get(CCINIClass const & ini, DifficultyClass & diff, char const * section) // RA2: defined after Difficulty, at 0x64DB60
 {
 	if (ini.Is_Present(section)) {
 		diff.FirepowerBias = ini.Get_Float(section, "FirePower", 1);
@@ -2007,6 +1810,44 @@ bool RulesClass::Do_Movies(CCINIClass const & ini)
 	}
 	return(false);
 }
+/// <summary>
+/// RA2: lays out the advanced command bar from the ButtonList of [AdvancedCommandBar] ([MultiplayerAdvancedCommandBar]
+/// in a multiplayer game): every command loses its place, then each listed command takes the next one.
+/// </summary>
+bool RulesClass::Read_AdvancedCommandBar(CCINIClass const & ini, bool multiplayer) // RA2: at 0x64DD90 (YR's body)
+{
+	static char const * BAR = "AdvancedCommandBar"; // RA2: a plain pointer (the Do_ readers match only so)
+	static char const * MPBAR = "MultiplayerAdvancedCommandBar"; // RA2: a plain pointer (the Do_ readers match only so)
+	static char const * BUTTONLIST = "ButtonList"; // RA2: a plain pointer (the Do_ readers match only so)
+	static char const * NONE = "";
+	char const * section = multiplayer ? MPBAR : BAR;
+	char buffer[512];
+	if (ini.Is_Present(section)) {
+		for (int i = 0; i < 25; i++) {
+			TabClass::Set_Command_Position(i, NoAdvancedCommand);
+		}
+		if (ini.Get_String(section, BUTTONLIST, NONE, buffer, sizeof(buffer))) {
+			int count = 0;
+			int slot = 0;
+			for (char * token = strtok(buffer, ","); token; token = strtok(NULL, ",")) {
+				int button = TabClass::Command_From_Name(token);
+				if (button != NoAdvancedCommand) {
+					TabClass::Set_Command_Position(button, slot);
+				}
+				count++;
+				slot++;
+			}
+			TabClass::Set_Button_Count(count);
+		}
+		return(true);
+	}
+	return(false);
+}
+
+
+
+
+
 
 
 /// <summary>
@@ -2053,8 +1894,7 @@ void RulesClass::Save(IStream * stream)
 	Scorches2.Save(stream);
 	Scorches3.Save(stream);
 	Scorches4.Save(stream);
-	Craters.Save(stream);
-	BuildConst.Save(stream);
+	BuildConst.Save(stream); // RA2: no Craters (not in RA2's layout)
 	BuildPower.Save(stream);
 	BuildRefinery.Save(stream);
 	BuildBarracks.Save(stream);
@@ -2079,9 +1919,7 @@ void RulesClass::Save(IStream * stream)
 	BridgeExplosions.Save(stream);
 	IceCrackSounds.Save(stream);
 	HSBuilding.Save(stream);
-	PrerequisiteGDIFactory.Save(stream);
-	PrerequisiteNodFactory.Save(stream);
-}
+} // RA2: no PrerequisiteNodFactory, PrerequisiteGDIFactory (not in RA2's layout)
 
 
 /// <summary>
@@ -2129,8 +1967,7 @@ void RulesClass::Load(IStream * stream)
 	Scorches2.Clear();
 	Scorches3.Clear();
 	Scorches4.Clear();
-	Craters.Clear();
-	BuildConst.Clear();
+	BuildConst.Clear(); // RA2: no Craters (not in RA2's layout)
 	BuildPower.Clear();
 	BuildRefinery.Clear();
 	BuildBarracks.Clear();
@@ -2152,36 +1989,16 @@ void RulesClass::Load(IStream * stream)
 	IceCrackSounds.Clear();
 	HSBuilding.Clear();
 
-	PrerequisiteGDIFactory.Clear();
-	PrerequisiteNodFactory.Clear();
 
-	int size = sizeof(RulesClass);
-	int delta = sizeof(WebbedInfantry) +
-				sizeof(PrerequisiteGDIFactory) +
-				sizeof(PrerequisiteNodFactory) +
-				sizeof(EngineerCaptureLevel) +
-				sizeof(JumpjetCloakDetectionRadius) +
-				sizeof(DropPodInfantryMinimum) +
-				sizeof(DropPodInfantryMaximum) +
-				sizeof(EngineerDamage) +
-				sizeof(TalkBubbleTime) +
-				sizeof(int); /// padding after EngineerDamage
+	int size = sizeof(RulesClass); // RA2: no PrerequisiteNodFactory, PrerequisiteGDIFactory (not in RA2's layout)
 
-	stream->Read(this, size - (IsOldSaveGame ? delta : 0), NULL);
 
-	if (IsOldSaveGame) {
-		DebugString("RulesClass: Oldsize %ld, Newsize %ld\n", size - delta, size);
+	if (IsOldSaveGame) { // RA2: no DropPodInfantryMaximum, JumpjetCloakDetectionRadius, WebbedInfantry and 4 more (TibSun's use does not compile against RA2's declaration)
 
-		WebbedInfantry = NULL;
 
-		new (&PrerequisiteGDIFactory) TypeList<int>;
-		new (&PrerequisiteNodFactory) TypeList<int>;
 
-		EngineerCaptureLevel = 1.0;
-		JumpjetCloakDetectionRadius = 0;
-		DropPodInfantryMinimum = 0;
-		DropPodInfantryMaximum = 0;
-		EngineerDamage = 0;
+		EngineerCaptureLevel = 1.0; // RA2: no delta (TibSun's use does not compile against RA2's declaration)
+		EngineerDamage = 0; // RA2: no DropPodInfantryMaximum, JumpjetCloakDetectionRadius, DropPodInfantryMinimum (not in RA2's layout)
 		TalkBubbleTime = 5 * TIMER_SECOND;
 	}
 
@@ -2222,8 +2039,7 @@ void RulesClass::Load(IStream * stream)
 	Scorches2.Load(stream);
 	Scorches3.Load(stream);
 	Scorches4.Load(stream);
-	Craters.Load(stream);
-	BuildConst.Load(stream);
+	BuildConst.Load(stream); // RA2: no Craters (not in RA2's layout)
 	BuildPower.Load(stream);
 	BuildRefinery.Load(stream);
 	BuildBarracks.Load(stream);
@@ -2249,9 +2065,7 @@ void RulesClass::Load(IStream * stream)
 	IceCrackSounds.Load(stream);
 	HSBuilding.Load(stream);
 	if (!IsOldSaveGame) {
-		PrerequisiteGDIFactory.Load(stream);
-		PrerequisiteNodFactory.Load(stream);
-	}
+	} // RA2: no PrerequisiteNodFactory, PrerequisiteGDIFactory (not in RA2's layout)
 
 	Swizzle_Pointer(&NukeWarhead);
 	Swizzle_Pointer(&FlameDamage);
@@ -2284,15 +2098,13 @@ void RulesClass::Load(IStream * stream)
 	Swizzle_Pointer(&SmallFire);
 	Swizzle_Pointer(&LargeFire);
 	Swizzle_Pointer(&FlareAnim);
-	Swizzle_Pointer(&BaseUnit);
+	for (int bu = 0; bu < BaseUnit.Count(); bu++) Swizzle_Pointer(&BaseUnit[bu]); // RA2: a list
 	Swizzle_Pointer(&UnitCrateType);
 	Swizzle_Pointer(&Paratrooper);
-	Swizzle_Pointer(&Disguise);
-	Swizzle_Pointer(&Technician);
+	Swizzle_Pointer(&Technician); // RA2: no Disguise (TibSun's use does not compile against RA2's declaration)
 	Swizzle_Pointer(&Engineer);
 	Swizzle_Pointer(&Pilot);
-	Swizzle_Pointer(&Crew);
-	Swizzle_Pointer(&RepairBay);
+	Swizzle_Pointer(&RepairBay); // RA2: no Crew (TibSun's use does not compile against RA2's declaration)
 	Swizzle_Pointer(&GDIGateOne);
 	Swizzle_Pointer(&GDIGateTwo);
 	Swizzle_Pointer(&NodGateOne);
@@ -2326,12 +2138,10 @@ void RulesClass::Load(IStream * stream)
 	Swizzle_Pointer(&BarrelExplode);
 	Swizzle_Pointer(&BarrelParticle);
 	Swizzle_Pointer(&DropPodPuff);
-	Swizzle_Pointer(&IonStormWarhead);
-	Swizzle_Pointer(&WoodCrateImg);
+	Swizzle_Pointer(&WoodCrateImg); // RA2: no IonStormWarhead (not in RA2's layout)
 	Swizzle_Pointer(&CrateImg);
-	Swizzle_Pointer(&WebbedInfantry);
 
-	int index;
+	int index; // RA2: no WebbedInfantry (not in RA2's layout)
 	for (index = 0; index < BarrelDebris.Count(); index++) {
 		Swizzle_Pointer(&BarrelDebris[index]);
 	}
@@ -2358,10 +2168,7 @@ void RulesClass::Load(IStream * stream)
 	}
 	for (index = 0; index < Scorches4.Count(); index++) {
 		Swizzle_Pointer(&Scorches4[index]);
-	}
-	for (index = 0; index < Craters.Count(); index++) {
-		Swizzle_Pointer(&Craters[index]);
-	}
+	} // RA2: no Craters (not in RA2's layout)
 	for (index = 0; index < HarvesterUnit.Count(); index++) {
 		Swizzle_Pointer(&HarvesterUnit[index]);
 	}
@@ -2544,18 +2351,13 @@ void RulesClass::Detach(AbstractClass const * target, bool all)
 	if (target == FlareAnim) {
 		FlareAnim = NULL;
 	}
-	if (target == BaseUnit) {
-		BaseUnit = NULL;
-	}
+	BaseUnit.Delete((UnitTypeClass const *)target); // RA2: a list
 	if (target == UnitCrateType) {
 		UnitCrateType = NULL;
 	}
 	if (target == Paratrooper) {
 		Paratrooper = NULL;
-	}
-	if (target == Disguise) {
-		Disguise = NULL;
-	}
+	} // RA2: no Disguise (TibSun's use does not compile against RA2's declaration)
 	if (target == Technician) {
 		Technician = NULL;
 	}
@@ -2564,10 +2366,7 @@ void RulesClass::Detach(AbstractClass const * target, bool all)
 	}
 	if (target == Pilot) {
 		Pilot = NULL;
-	}
-	if (target == Crew) {
-		Crew = NULL;
-	}
+	} // RA2: no Crew (TibSun's use does not compile against RA2's declaration)
 	if (target == RepairBay) {
 		RepairBay = NULL;
 	}
@@ -2658,14 +2457,8 @@ void RulesClass::Detach(AbstractClass const * target, bool all)
 	if (target == DropPodPuff) {
 		DropPodPuff = NULL;
 	}
-	if (target == IonStormWarhead) {
-		IonStormWarhead = NULL;
-	}
-	if (target == WebbedInfantry) {
-		WebbedInfantry = NULL;
-	}
 
-	BarrelDebris.Delete((VoxelAnimTypeClass const *)target);
+	BarrelDebris.Delete((VoxelAnimTypeClass const *)target); // RA2: no IonStormWarhead, WebbedInfantry (not in RA2's layout)
 
 	OnFire.Delete((AnimTypeClass const *)target);
 
@@ -2679,9 +2472,8 @@ void RulesClass::Detach(AbstractClass const * target, bool all)
 	Scorches3.Delete((SmudgeTypeClass const *)target);
 	Scorches4.Delete((SmudgeTypeClass const *)target);
 
-	Craters.Delete((SmudgeTypeClass const *)target);
 
-	HarvesterUnit.Delete((UnitTypeClass const *)target);
+	HarvesterUnit.Delete((UnitTypeClass const *)target); // RA2: no Craters (not in RA2's layout)
 
 	BuildConst.Delete((BuildingTypeClass const *)target);
 	BuildPower.Delete((BuildingTypeClass const *)target);
@@ -2729,7 +2521,7 @@ void RulesClass::Detach(AbstractClass const * target, bool all)
  * HISTORY:                                                                                    *
  *   09/10/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool RulesClass::Objects(CCINIClass const & ini)
+bool RulesClass::Objects(CCINIClass & ini) // RA2: a writable INI
 {
 	/*
 	**	Fetch the house attribute override values.
@@ -2824,6 +2616,9 @@ bool RulesClass::Objects(CCINIClass const & ini)
 }
 
 
+
+
+
 /// <summary>
 /// Fetches the identifying checksum of the main rule file.
 /// This routine is used when comparing rule versions between machines, so that a
@@ -2845,39 +2640,26 @@ int RulesClass::Get_Rule_Unique_ID(void)
 /// Fetches the identifying checksum of the art control file.
 /// This routine serves the same purpose as its rule and AI counterparts -- it lets the
 /// game tell whether two machines are working from the same art data. The Firestorm art
-/// file is folded into the result whenever that addon is enabled.
+/// file is not folded in (RA2).
 /// </summary>
 /// <returns>Returns with the unique ID of the art rules currently in force.</returns>
 int RulesClass::Get_Art_Unique_ID(void)
 {
-	int id = ArtINI.Get_Unique_ID();
-	if (Addon_Enabled(ADDON_FIRESTORM) == true) {
-		CCFileClass artfs("ARTFS.INI");
-		if (artfs.Is_Available() == true) {
-			CCINIClass artfsini;
-			artfsini.Load(artfs, false);
-			id += artfsini.Get_Unique_ID();
-		}
-	}
-	return(id);
-}
+	return ArtINI.Get_Unique_ID(); // RA2: no Firestorm add-on art (0x652710 matches only so)
+} // RA2: no return(id); (not in RA2's layout)
 
 
 /// <summary>
 /// Fetches the identifying checksum of the AI control file.
 /// This routine is used when comparing rule versions between machines, so that a
 /// multiplayer game can be refused when the players are not running the same AI rules.
-/// The Firestorm AI file is folded into the result whenever that addon is enabled.
+/// The Firestorm AI file is not folded in (RA2).
 /// </summary>
 /// <returns>Returns with the unique ID of the AI rules currently in force.</returns>
 int RulesClass::Get_AI_Unique_ID(void)
 {
-	int id = AIINI.Get_Unique_ID();
-	if (Addon_Enabled(ADDON_FIRESTORM)) {
-		id += FSAIINI.Get_Unique_ID();
-	}
-	return(id);
-}
+	return AIINI.Get_Unique_ID(); // RA2: no Firestorm add-on AI (0x652720 matches only so)
+} // RA2: no return(id); (not in RA2's layout)
 
 
 /// <summary>
@@ -2892,3 +2674,33 @@ void RulesClass::Load_Art_INI(void)
 	CCFileClass art("ART.INI");
 	ArtINI.Load(art, false);
 }
+
+
+
+
+
+
+
+
+/***********************************************************************************************
+ * _Scale_To_256 -- Scales a 1..100 number into a 1..255 number.                               *
+ *                                                                                             *
+ *    This is a helper routine that will take a decimal percentage number and convert it       *
+ *    into a game based fixed point number.                                                    *
+ *                                                                                             *
+ * INPUT:   val   -- Decimal percent number to convert.                                        *
+ *                                                                                             *
+ * OUTPUT:  Returns with the decimal percent number converted to a game fixed point number.    *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   06/17/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+static inline int _Scale_To_256(int val)
+{
+	val = 100.0 / (MPH_LIGHT_SPEED + 1) * val;
+	val = MIN(val, MPH_LIGHT_SPEED);
+	return(val);
+}
+
