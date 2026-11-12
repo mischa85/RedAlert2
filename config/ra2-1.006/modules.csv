@@ -185,7 +185,9 @@ unk_0049E870,0x0049E870,0x0049EE00,unknown,code not assigned to a module
 dllver,0x0049EE00,0x0049EE80,tibsun,"functions compiled from src/dllver.cpp, matched, without gaps"
 unk_0049EE80,0x0049EE80,0x0049EEA0,unknown,code not assigned to a module
 draw,0x0049EEA0,0x0049F430,tibsun,"functions compiled from src/draw.cpp, matched, without gaps"
-unk_0049F430,0x0049F430,0x004A4DC0,unknown,code not assigned to a module
+unk_0049F430,0x0049F430,0x0049F710,unknown,code not assigned to a module
+drive,0x0049F710,0x004A4C80,tibsun,"functions compiled from src/drive.cpp, without gaps; matched except ?Process@DriveLocomotionClass@@UAGEXZ and ?While_Moving@DriveLocomotionClass@@AAE_N_N@Z and ?Start_Of_Move@DriveLocomotionClass@@AAE_NAA_N_N1@Z and ?Abandon_Navigation@DriveLocomotionClass@@QAE_NXZ and ?Draw_Matrix@DriveLocomotionClass@@UAG?AUMatrix3DStruct@@PAH@Z; ?Abandon_Navigation@DriveLocomotionClass@@QAE_NXZ and ?Draw_Matrix@DriveLocomotionClass@@UAG?AUMatrix3DStruct@@PAH@Z and ?Process@DriveLocomotionClass@@UAGEXZ and ?Start_Of_Move@DriveLocomotionClass@@AAE_NAA_N_N1@Z and ?While_Moving@DriveLocomotionClass@@AAE_N_N@Z placed at their function starts; ??0DriveLocomotionClass@@QAE@XZ not placed; ??1DriveLocomotionClass@@UAE@XZ not placed; inline ?IsDirty@LocomotionClass@@UAGJXZ at 0x004A4BF0; inline ?Is_Really_Moving_Now@LocomotionClass@@UAGEXZ at 0x004A4C10; inline ?Get_Status@LocomotionClass@@UAGHXZ at 0x004A4C20; inline ?Acquire_Hunter_Seeker_Target@LocomotionClass@@UAGXXZ at 0x004A4C30; inline ?Is_Surfacing@LocomotionClass@@UAGEXZ at 0x004A4C40; inline ?Acquire_Hunter_Seeker_Target@LocomotionClass@@UAGXXZ at 0x004A4C50"
+unk_004A4C80,0x004A4C80,0x004A4DC0,unknown,code not assigned to a module
 drop,0x004A4DC0,0x004A5550,tibsun,"functions compiled from src/drop.cpp, matched, without gaps; two placed by the gap"
 unk_004A5550,0x004A5550,0x004A5A40,unknown,code not assigned to a module
 droppod,0x004A5A40,0x004A6590,tibsun,"functions compiled from src/droppod.cpp, matched, without gaps; five placed by the gap"
