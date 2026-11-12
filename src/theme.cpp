@@ -48,6 +48,10 @@
 #include "always.h"
 
 #include "theme.h"
+#include "audplay.h" // RA2
+#include "goptions.h" // RA2
+
+int __fastcall AudioDeviceAvailable(void); // RA2: 0x00406F30
 
 #include "ccfile.h"
 #include "ccini.h"
@@ -90,12 +94,19 @@ ThemeControl::ThemeControl(void) :
 bool ThemeControl::Fill_In(CCINIClass const & ini)
 {
 	if (ini.Is_Present(Name)) {
-		ini.Get_String(Name, "Name", Fullname, Fullname, sizeof(Fullname));
+		ini.Get_String(Name, "Sound", "", Sound, sizeof(Sound)); // RA2: the sound file
+		char * sound = Sound; // RA2: as above
+		while (*sound == '$' || *sound == '#') { // RA2: as above
+			sound++; // RA2: Fill_In at 0x6E7780 matches only so
+		}
+		strcpy(Sound, sound); // RA2: as above
 		Scenario = ini.Get_Int(Name, "Scenario", Scenario);
-		Duration = ini.Get_Float(Name, "Length", Duration);
-		Normal = ini.Get_Bool(Name, "Normal", Normal);
+		Normal = ini.Get_Bool(Name, "Normal", Normal); // RA2: no Length
 		Repeat = ini.Get_Bool(Name, "Repeat", Repeat);
 		Owner = ini.Get_Side(Name, "Side", (SideType)Owner);
+		if (Normal) { // RA2: a normal theme's name from the string table (0x6E7780)
+			ini.ReadStringtableEntry(Name, "Name", Fullname, ARRAY_SIZE(Fullname)); // RA2: as above
+		}
 		return(true);
 	}
 	return(false);
@@ -221,7 +232,9 @@ ThemeClass::ThemeClass(void) :
 	Pending(THEME_NONE),
 	Volume(255),
 	IsRepeat(false),
-	IsShuffle(false)
+	IsFading(false), // RA2: ThemeClass at 0x6E7C60 matches only so
+	IsShuffle(false), // RA2: as above
+	Stream(NULL) // RA2: as above
 {
 }
 
@@ -242,7 +255,7 @@ ThemeClass::ThemeClass(void) :
  * HISTORY:                                                                                    *
  *   01/16/1995 JLB : Created.                                                                 *
  *=============================================================================================*/
-char const * ThemeClass::Full_Name(ThemeType theme) const
+wchar_t const * ThemeClass::Full_Name(ThemeType theme) const // RA2: wide
 {
 	if ((unsigned)theme < (unsigned)Themes.Count()) {
 		return(Themes[theme]->Fullname);
@@ -316,11 +329,6 @@ ThemeType ThemeClass::Next_Song(ThemeType theme) const
 
 	if (theme > THEME_NONE && (!Themes[theme]->Repeat && !IsRepeat) || theme < THEME_FIRST) {
 		if (IsShuffle == true) {
-
-			/*
-			**	Shuffle the theme, but never pick the same theme that was just
-			**	playing.
-			*/
 			ThemeType newtheme;
 			i = 0;
 			do {
@@ -335,11 +343,8 @@ ThemeType ThemeClass::Next_Song(ThemeType theme) const
 		} else {
 			i = Themes.Count();
 			i++;
-			/*
-			**	Sequential score playing.
-			*/
 			do {
-				theme = ThemeType(theme + 1);//theme++;
+				theme = ThemeType(theme + 1); // RA2: Next_Song at 0x6E7D80 matches only so
 				if (theme >= Themes.Count()) {
 					theme = THEME_FIRST;
 				}
@@ -491,10 +496,25 @@ char const * ThemeClass::Theme_File_Name(ThemeType theme)
 int ThemeClass::Track_Length(ThemeType theme) const
 {
 	if ((unsigned)theme < (unsigned)Themes.Count()) {
-		return(Themes[theme]->Duration * 60);
+		return (int)Themes[theme]->Duration; // RA2: Track_Length at 0x6E8150 matches only so
 	}
-	return(0);
+	return 0; // RA2: as above
 }
+
+
+/// <summary>
+/// RA2: fades the score being played out.
+/// </summary>
+void ThemeClass::Fade_Stream(void) // RA2: at 0x6E8180
+{
+	if (Stream) {
+		AudioStreamerFadeOut(Stream);
+	}
+	IsFading = true;
+}
+
+
+
 
 
 /***********************************************************************************************
@@ -514,14 +534,14 @@ int ThemeClass::Track_Length(ThemeType theme) const
  *=============================================================================================*/
 void ThemeClass::Stop(bool fade)
 {
-	if (ScoresPresent && Audio_Available() && !Debug_Quiet && Current != -1) {
+	if (ScoresPresent && AudioDeviceAvailable() && !Debug_Quiet && Current != -1) { // RA2: the audio device
 
 		if (fade && Still_Playing() == true) {
 			DebugString("Theme::Stop(%d) - Fading\n", Score);
-			Audio.Fade_Sample(Current, THEME_DELAY);
+			Fade_Stream(); // RA2: the streamer fades
 		} else {
 			DebugString("Theme::Stop(%d)\n", Score);
-			Audio.Stop_Sample(Current);
+			if (Stream) AudioStreamerStop(Stream); // RA2: the streamer stops
 		}
 		Current = -1;
 		Score = THEME_NONE;
@@ -537,9 +557,9 @@ void ThemeClass::Stop(bool fade)
 /// </summary>
 void ThemeClass::Suspend(void)
 {
-	if (ScoresPresent && Audio_Available() && !Debug_Quiet && Current != -1) {
+	if (ScoresPresent && AudioDeviceAvailable() && !Debug_Quiet && Current != -1) { // RA2: the audio device
 		DebugString("Theme::Suspend(%d)\n", Score);
-		Audio.Stop_Sample(Current);
+		if (Stream) AudioStreamerStop(Stream); // RA2: the streamer stops
 		Current = -1;
 		Pending = Score;
 		Score = THEME_NONE;
@@ -563,11 +583,50 @@ void ThemeClass::Suspend(void)
  *=============================================================================================*/
 bool ThemeClass::Still_Playing(void) const
 {
-	if (ScoresPresent && Audio_Available() && Volume > 0 && Current != -1 && !Debug_Quiet) {
-		return(Audio.Sample_Status(Current));
+	if (Stream) { // RA2: the streamer, at 0x6E82D0
+		if (IsFading && !AudioStreamerIsFading(Stream)) { // RA2: a finished fade stops it
+			AudioStreamerStop(Stream); // RA2: as above
+		}
+		return(AudioStreamerIsPlaying(Stream) != 0); // RA2: as above
 	}
 	return(false);
 }
+
+
+/// <summary>
+/// RA2: writes the playing and the pending score to a save game.
+/// </summary>
+void ThemeClass::Save(IStream * stream) // RA2: at 0x6E8310
+{
+	if (SUCCEEDED(stream->Write(&Score, sizeof(Score), NULL))) {
+		stream->Write(&Pending, sizeof(Pending), NULL);
+	}
+}
+
+
+/// <summary>
+/// RA2: reads the playing and the pending score from a save game and, with in-game music on, plays them again.
+/// </summary>
+long ThemeClass::Load(IStream * stream) // RA2: at 0x6E8340
+{
+	ThemeType score;
+	ThemeType pending;
+	HRESULT hr = stream->Read(&score, sizeof(score), NULL);
+	if (SUCCEEDED(hr)) {
+		hr = stream->Read(&pending, sizeof(pending), NULL);
+		if (SUCCEEDED(hr) && Options.IsInGameMusic) {
+			Theme.Play_Song(score);
+			Theme.Queue_Song(pending);
+		}
+	}
+	return(hr);
+}
+
+
+
+
+
+
 
 
 /***********************************************************************************************
@@ -589,38 +648,30 @@ bool ThemeClass::Still_Playing(void) const
  *=============================================================================================*/
 bool ThemeClass::Is_Allowed(ThemeType index) const
 {
-	if (index == THEME_QUIET || index == THEME_PICK_ANOTHER) return(true);
-
-	if ((unsigned)index >= (unsigned)Themes.Count()) return(false);
-
-	/*
-	**	If the theme is not present, then it certainly isn't allowed.
-	*/
-	if (!Themes[index]->Available) return(false);
-
-	/*
-	**	Only normal themes (playable during battle) are considered allowed.
-	*/
-	if (!Themes[index]->Normal) return(false);
-
-	/*
-	**	If the theme is not allowed to be played by the player's house, then don't allow
-	**	it. If the player's house hasn't yet been determined, then presume this test
-	**	passes.
-	*/
-	if (PlayerPtr != NULL && Themes[index]->Owner != -1 && PlayerPtr->Class->Side != Themes[index]->Owner) return(false);
-
-	/*
-	**	If the scenario doesn't allow this theme yet, then return the failure flag. The
-	**	scenario check only makes sense for solo play.
-	*/
-	if (Session.Type == GAME_NORMAL && Scen->Scenario < Themes[index]->Scenario) return(false);
-
-	/*
-	**	Since all tests passed, return with the "is allowed" flag.
-	*/
-	return(true);
+	if (index == THEME_QUIET || index == THEME_PICK_ANOTHER) return true; // RA2: Is_Allowed at 0x6E8440 matches only so
+	if ((unsigned)index >= (unsigned)Themes.Count()) return false; // RA2: as above
+	if (!Themes[index]->Available) return false; // RA2: as above
+	if (!Themes[index]->Normal) return false; // RA2: as above
+	if (PlayerPtr != NULL && Themes[index]->Owner != -1 && PlayerPtr->Class->Side != Themes[index]->Owner) return false; // RA2: as above
+	if (Session.Type == GAME_NORMAL && Scen->Scenario < Themes[index]->Scenario) return false; // RA2: as above
+	return true; // RA2: as above
 }
+
+
+/// <summary>
+/// RA2: is the theme one of the normal ones (picked in the regular rotation)?
+/// </summary>
+bool ThemeClass::Is_Normal(ThemeType index) const // RA2: at 0x6E84E0 (YR's IsNormal)
+{
+	if (index != THEME_QUIET && index != THEME_PICK_ANOTHER && (unsigned)index < (unsigned)Themes.Count()) {
+		if (Themes[index]->Normal) return true;
+		return false;
+	}
+	return false;
+}
+
+
+
 
 
 /***********************************************************************************************
@@ -645,31 +696,30 @@ bool ThemeClass::Is_Allowed(ThemeType index) const
 ThemeType ThemeClass::From_Name(char const * name) const
 {
 	if (name && strlen(name) > 0) {
-		/*
-		**	First search for an exact name match with the filename
-		**	of the theme. This is guaranteed to be unique.
-		*/
 		ThemeType theme;
 		for (theme = THEME_FIRST; theme < Themes.Count(); theme = ThemeType(theme + 1)) {
 			if (stricmp(Themes[theme]->Name, name) == 0) {
 				return(theme);
 			}
 		}
-
-		/*
-		**	If the filename scan failed to find a match, then scan for
-		**	a substring within the full name of the score. This might
-		**	yield a match, but is not guaranteed to be unique.
-		*/
-		for (theme = THEME_FIRST; theme < Themes.Count(); theme = ThemeType(theme + 1)) {
-			if (strstr(Themes[theme]->Fullname, name) != NULL) {
-				return(theme);
-			}
-		}
-	}
-
+	} // RA2: From_Name at 0x6E8510 has no Themes, Count, ThemeType and 1 more
 	return(THEME_NONE);
 }
+
+
+/// <summary>
+/// RA2: the theme's INI name ("none" for one out of range).
+/// </summary>
+char const * ThemeClass::INI_Name(ThemeType index) const // RA2: at 0x6E8570 (YR's GetID)
+{
+	if (index >= 0 && index < Themes.Count()) {
+		return Themes[index]->Name;
+	}
+	return "none";
+}
+
+
+
 
 
 /// <summary>
@@ -682,8 +732,5 @@ ThemeType ThemeClass::From_Name(char const * name) const
 void ThemeClass::Set_Volume(int volume)
 {
 	Volume = MIN(volume, 255);
+} // RA2: Set_Volume at 0x6E8590 has no Current, Audio, Volume
 
-	if (Current != -1) {
-		Audio.Set_Handle_Volume(Current, Volume);
-	}
-}

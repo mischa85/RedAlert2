@@ -39,7 +39,8 @@
 #include "side.hh"
 #include "theme.hh"
 
-class AudioStream;
+struct AudioStreamer; // RA2
+struct IStream; // RA2
 class CCINIClass;
 
 struct ThemeControl {
@@ -93,7 +94,7 @@ class ThemeClass
 		 */
 		DynamicVectorClass<ThemeControl *> Themes;
 
-		AudioStream * Stream; // RA2: +0x2C, the score being played
+		AudioStreamer * Stream; // RA2: +0x2C, the score being played
 
 		enum {
 			THEME_DELAY=TIMER_SECOND
@@ -106,6 +107,8 @@ class ThemeClass
 		ThemeType Next_Song(ThemeType index) const;
 		ThemeType What_Is_Playing(void) const {return(Score == THEME_NONE ? Pending : Score);} // RA2: the pending song when none plays
 		bool Is_Allowed(ThemeType index) const;
+		bool Is_Normal(ThemeType index) const; // RA2
+		char const * INI_Name(ThemeType index) const; // RA2
 		bool Is_Regular(ThemeType theme) const {return(theme != THEME_NONE && Themes[theme]->Normal);}
 		char const * Base_Name(ThemeType index) const;
 		wchar_t const * Full_Name(ThemeType index) const; // RA2: wide
@@ -113,6 +116,9 @@ class ThemeClass
 		int Play_Song(ThemeType index);
 		bool Still_Playing(void) const;
 		int Track_Length(ThemeType index) const;
+		void Fade_Stream(void); // RA2
+		void Save(IStream * stream); // RA2
+		long Load(IStream * stream); // RA2: an HRESULT
 		void Scan(void);
 		void AI(void);
 		void Fade_Out(void) {Queue_Song(THEME_QUIET);}
