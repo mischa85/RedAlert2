@@ -275,33 +275,7 @@ hsv,0x004FEF70,0x004FF170,tibsun,"functions compiled from src/hsv.cpp, matched, 
 unk_004FF170,0x004FF170,0x00509B20,unknown,code not assigned to a module
 infatype,0x00509B20,0x0050AF90,tibsun,"functions compiled from src/infatype.cpp, matched, without gaps; seven placed by the gap"
 unk_0050AF90,0x0050AF90,0x0050B8D0,unknown,code not assigned to a module
-unk_0050B8D0,0x0050B8D0,0x0050B9A0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050B9A0,0x0050B9A0,0x0050BBE0,unknown,code not assigned to a module
-unk_0050BBE0,0x0050BBE0,0x0050CAF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050CAF0,0x0050CAF0,0x0050CFC0,unknown,code not assigned to a module
-unk_0050CFC0,0x0050CFC0,0x0050D0F0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050D0F0,0x0050D0F0,0x0050D310,unknown,code not assigned to a module
-unk_0050D310,0x0050D310,0x0050D400,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050D400,0x0050D400,0x0050D6E0,unknown,code not assigned to a module
-unk_0050D6E0,0x0050D6E0,0x0050D760,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050D760,0x0050D760,0x0050DC20,unknown,code not assigned to a module
-unk_0050DC20,0x0050DC20,0x0050DCF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050DCF0,0x0050DCF0,0x0050E180,unknown,code not assigned to a module
-unk_0050E180,0x0050E180,0x0050E1D0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050E1D0,0x0050E1D0,0x0050E540,unknown,code not assigned to a module
-unk_0050E540,0x0050E540,0x0050E590,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050E590,0x0050E590,0x0050F380,unknown,code not assigned to a module
-unk_0050F380,0x0050F380,0x0050F3C0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050F3C0,0x0050F3C0,0x0050F5D0,unknown,code not assigned to a module
-unk_0050F5D0,0x0050F5D0,0x0050F610,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050F610,0x0050F610,0x0050F990,unknown,code not assigned to a module
-unk_0050F990,0x0050F990,0x0050F9E0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050F9E0,0x0050F9E0,0x0050FD90,unknown,code not assigned to a module
-unk_0050FD90,0x0050FD90,0x0050FDF0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0050FDF0,0x0050FDF0,0x005101D0,unknown,code not assigned to a module
-unk_005101D0,0x005101D0,0x00510460,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_00510460,0x00510460,0x005106B0,unknown,code not assigned to a module
-unk_005106B0,0x005106B0,0x005109B0,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
+ini,0x0050B8D0,0x005109B0,tibsun,"functions compiled from src/ini.cpp, without gaps; matched except ?ReadStringtableEntry@INIClass@@QBEHPBD0PAGH@Z and ?ReadStringtableEntry@INIClass@@QBEHPBD0PAG0H@Z; three placed by the gap; ?ReadStringtableEntry@INIClass@@QBEHPBD0PAG0H@Z and ?ReadStringtableEntry@INIClass@@QBEHPBD0PAGH@Z placed at their function starts"
 unk_005109B0,0x005109B0,0x00513080,unknown,code not assigned to a module
 unk_00513080,0x00513080,0x00513260,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
 unk_00513260,0x00513260,0x00515A80,unknown,code not assigned to a module
