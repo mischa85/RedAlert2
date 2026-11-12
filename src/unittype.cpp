@@ -108,8 +108,7 @@ UnitTypeClass::UnitTypeClass(char const * ininame) :
 	IsTilter(true),
 	DeathFrameRate(1),
 	IsLockTurret(false),
-	IsNoFireWhileMoving(false),
-	IsDeployToFire(false),
+	IsDeployToFire(false), // RA2: no IsNoFireWhileMoving (not in RA2's layout)
 	IsUseTurretShadow(false),
 	IsTooBigToFitUnderBridge(false),
 	IsSmallVisceroid(false),
@@ -117,15 +116,9 @@ UnitTypeClass::UnitTypeClass(char const * ininame) :
 	IsCarriesCrate(false),
 	AltImageData(NULL),
 	IsNonVehicle(false),
-	IsJellyfish(false),
-	IsLimpetDrone(false),
-	IsMobileEMP(false),
-	IsCoreDefender(false),
-	StandingFrames(0),
+	StandingFrames(0), // RA2: no IsLimpetDrone, IsCoreDefender, IsJellyfish and 1 more (not in RA2's layout)
 	DeathFrames(0),
-	MaxCharge(0),
-	StartCharge(0),
-	StartStandFrame(-1),
+	StartStandFrame(-1), // RA2: no StartCharge, MaxCharge (not in RA2's layout)
 	StartWalkFrame(-1),
 	StartFiringFrame(-1),
 	StartDeathFrame(-1),
@@ -197,6 +190,12 @@ UnitType UnitTypeClass::From_Name(char const * name)
 	}
 	return(UNIT_NONE);
 }
+
+
+
+
+
+
 
 
 /***********************************************************************************************
@@ -304,13 +303,10 @@ ObjectClass * UnitTypeClass::Create_One_Of(HouseClass * house) const
  *=============================================================================================*/
 Point3D UnitTypeClass::Pixel_Dimensions(void) const
 {
-	int width;
-	int height;
-
-	width = MaxSize-(MaxSize/4);
-	width = min(width, CELL_PIXEL_H);
-	height = MaxSize-(MaxSize/4);
-	height = min(height, CELL_PIXEL_H);
+	int width = MaxSize - (MaxSize / 4); // RA2: Pixel_Dimensions at 0x70AAB0 matches only so
+	width = min(width, 60); // RA2: as above
+	int height = MaxSize - (MaxSize / 4); // RA2: as above
+	height = min(height, 60); // RA2: as above
 	return(Point3D(width, width, height));
 }
 
@@ -324,7 +320,7 @@ Point3D UnitTypeClass::Pixel_Dimensions(void) const
 /// <returns>Returns with the width, depth and height of the unit, in leptons.</returns>
 Point3D UnitTypeClass::Lepton_Dimensions(void) const
 {
-	return(Point3D(CELL_LEPTON, CELL_LEPTON, 200 + (IsCoreDefender ? 500 : 0)));
+	return(Point3D(CELL_LEPTON_W, CELL_LEPTON_H, LEVEL_LEPTON_H * 2)); // RA2: no core defender height; Lepton_Dimensions at 0x70AAF0 matches only so
 }
 
 
@@ -371,8 +367,7 @@ bool UnitTypeClass::Read_INI(CCINIClass const & ini)
 {
 	if (BASECLASS::Read_INI(ini)) {
 		IsCrateGoodie = ini.Get_Bool(Name(), "CrateGoodie", IsCrateGoodie);
-		IsNoFireWhileMoving = ini.Get_Bool(Name(), "NoMovingFire", IsNoFireWhileMoving);
-		IsDeployToFire = ini.Get_Bool(Name(), "DeployToFire", IsDeployToFire);
+		IsDeployToFire = ini.Get_Bool(Name(), "DeployToFire", IsDeployToFire); // RA2: no IsNoFireWhileMoving (not in RA2's layout)
 		IsToHarvest = ini.Get_Bool(Name(), "Harvester", IsToHarvest);
 		IsToVeinHarvest = ini.Get_Bool(Name(), "Weeder", IsToVeinHarvest);
 
@@ -404,20 +399,14 @@ bool UnitTypeClass::Read_INI(CCINIClass const & ini)
 		MovementRestrictedTo = ini.Get_LandType(Name(), "MovementRestrictedTo", MovementRestrictedTo);
 		IsSmallVisceroid = ini.Get_Bool(Name(), "SmallVisceroid", IsSmallVisceroid);
 		IsLargeVisceroid = ini.Get_Bool(Name(), "LargeVisceroid", IsLargeVisceroid);
-		IsJellyfish = ini.Get_Bool(Name(), "Jellyfish", IsJellyfish);
-		IsNonVehicle = ini.Get_Bool(Name(), "NonVehicle", IsNonVehicle);
+		IsNonVehicle = ini.Get_Bool(Name(), "NonVehicle", IsNonVehicle); // RA2: no IsJellyfish (not in RA2's layout)
 
 		if (IsSmallVisceroid || IsLargeVisceroid) {
 			IsNonVehicle = true;
 		}
 
-		IsLimpetDrone = ini.Get_Bool(Name(), "IsLimpetDrone", IsLimpetDrone);
-		IsCoreDefender = ini.Get_Bool(Name(), "IsCoreDefender", IsCoreDefender);
-		IsMobileEMP = ini.Get_Bool(Name(), "IsMobileEMP", IsMobileEMP);
-		MaxCharge = ini.Get_Int(Name(), "MaxCharge", MaxCharge);
-		StartCharge = ini.Get_Int(Name(), "StartCharge", StartCharge);
 
-		if (FiringFrames > 0) {
+		if (FiringFrames > 0) { // RA2: no IsLimpetDrone, IsCoreDefender, IsMobileEMP and 2 more (not in RA2's layout)
 			StandingFrames = 1;
 		}
 
@@ -528,8 +517,7 @@ void UnitTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(IsToVeinHarvest);
 	crc(IsFireAnim);
 	crc(IsLockTurret);
-	crc(IsNoFireWhileMoving);
-	crc(IsTilter);
+	crc(IsTilter); // RA2: no IsNoFireWhileMoving (not in RA2's layout)
 	crc(IsUseTurretShadow);
 }
 
@@ -544,34 +532,10 @@ void UnitTypeClass::Compute_CRC(CRCEngine & crc) const
 /// <returns>Returns with S_OK if the unit type was read successfully.</returns>
 HRESULT STDMETHODCALLTYPE UnitTypeClass::Load(IStream *stream)
 {
-	int size = Fetch_Object_Size(false);
-	HRESULT result = BASECLASS::Load(stream);
+	HRESULT result = BASECLASS::Load(stream); // RA2: Load at 0x70B480 has no int size = Fetch_Object_Size(false);
 	if (SUCCEEDED(result)) {
-		if (IsOldSaveGame) {
-			memmove(&WalkFrames, &IsNonVehicle, size - offsetof(UnitTypeClass, WalkFrames));
-			int facings = 1;
-			IsNonVehicle = false;
-			IsJellyfish = false;
-			IsLimpetDrone = false;
-			IsCoreDefender = false;
-			IsMobileEMP = false;
-			MaxCharge = 0;
-			StartCharge = 0;
-			DeathFrames = 0;
-			DeathFrameRate = 1;
-			if (FiringFrames != 0 || IsTurretEquipped) {
-				facings = FACING_COUNT;
-			}
-			Facings = facings;
-			StartStandFrame = facings * WalkFrames;
-			StartWalkFrame = 0;
-			StartFiringFrame = facings * (WalkFrames + 1);
-			StartDeathFrame = facings * (WalkFrames + 1);
-			MaxDeathCounter = facings * (WalkFrames + 1);
-			FiringSyncFrame[0] = FiringSyncFrame[1] = -1;
-		}
 
-		new (this) UnitTypeClass(NoInitClass());
+		new (this) UnitTypeClass(NoInitClass()); // RA2: Load at 0x70B480 has no IsOldSaveGame, WalkFrames, IsNonVehicle and 18 more
 
 		Fetch_Voxel_Image();
 		Fetch_Normal_Image();
@@ -597,7 +561,6 @@ HRESULT STDMETHODCALLTYPE UnitTypeClass::Save(IStream *stream, int cleardirty)
 {
 	HRESULT result = BASECLASS::Save(stream, cleardirty);
 	if (SUCCEEDED(result)) {
-
 		result = S_OK;
 	}
 	return(result);
@@ -622,10 +585,9 @@ UnitTypeClass * UnitTypeClass::Find_Or_Make(char const * name)
 /// </summary>
 /// <param name="oldsave">Is this for a save game written in the older format?</param>
 /// <returns>Returns with the number of bytes this object occupies in the save game.</returns>
-int UnitTypeClass::Fetch_Object_Size(bool oldsave) const
+int UnitTypeClass::Fetch_Object_Size(void) const
 {
-	int delta = oldsave ? Get_Object_Size_Delta() : 0;
-	return(sizeof(*this) - delta);
+	return(sizeof(UnitTypeClass));
 }
 
 
@@ -635,29 +597,6 @@ int UnitTypeClass::Fetch_Object_Size(bool oldsave) const
 /// members existed can still be read into the tail of the current object.
 /// </summary>
 /// <returns>Returns with the number of bytes by which this object has grown.</returns>
-int UnitTypeClass::Get_Object_Size_Delta(void) const
-{
-	return	(BASECLASS::Get_Object_Size_Delta() +
-			sizeof(IsNonVehicle) +
-			sizeof(IsJellyfish) +
-			sizeof(IsLimpetDrone) +
-			sizeof(IsMobileEMP) +
-			sizeof(IsCoreDefender) +
-			sizeof(StandingFrames) +
-			sizeof(DeathFrames) +
-			sizeof(DeathFrameRate) +
-			sizeof(MaxCharge) +
-			sizeof(StartCharge) +
-			sizeof(FiringSyncFrame) +
-			sizeof(StartStandFrame) +
-			sizeof(StartWalkFrame) +
-			sizeof(StartFiringFrame) +
-			sizeof(StartDeathFrame) +
-			sizeof(MaxDeathCounter) +
-			sizeof(Facings));
-}
-
-
 /// <summary>
 /// Fetches the RTTI identifier of this class.
 /// </summary>
@@ -675,3 +614,4 @@ int UnitTypeClass::Fetch_Heap_ID(void) const
 {
 	return(HeapID);
 }
+
