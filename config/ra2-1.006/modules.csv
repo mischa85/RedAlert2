@@ -645,9 +645,9 @@ unk_006E5AD0,0x006E5AD0,0x006E5DE0,unknown,code not assigned to a module
 tevent,0x006E5DE0,0x006E6CD0,tibsun,"functions compiled from src/tevent.cpp, without gaps; matched except ??RTEventClass@@QAE_NW4TEventType@@PBVHouseClass@@PBVObjectClass@@AAV?$CDTimerClass@VFrameTimerClass@@@@AA_NPAVTechnoClass@@@Z and ?Event_Needs@@YI?AW4NeedType@@W4TEventType@@@Z and ?Attaches_To@@YI?AW4AttachType@@W4TEventType@@@Z; one placed by the gap; ?Event_Needs@@YI?AW4NeedType@@W4TEventType@@@Z to ?Attaches_To@@YI?AW4AttachType@@W4TEventType@@@Z share the room between their neighbours; ?Save@TEventClass@@UAGJPAUIStream@@H@Z not placed; ?Is_Time_Based@TEventClass@@QBE_NXZ not placed; ?Is_To_Flag_As_Tripped@TEventClass@@QBE_NXZ not placed"
 unk_006E6CD0,0x006E6CD0,0x006E7240,unknown,code not assigned to a module
 textbtn,0x006E7240,0x006E7520,tibsun,"functions compiled from src/textbtn.cpp, matched, without gaps"
-unk_006E7520,0x006E7520,0x006E7C40,unknown,code not assigned to a module
-unk_006E7C40,0x006E7C40,0x006E7C60,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_006E7C60,0x006E7C60,0x006E89A0,unknown,code not assigned to a module
+unk_006E7520,0x006E7520,0x006E7780,unknown,code not assigned to a module
+theme,0x006E7780,0x006E85B0,tibsun,"functions compiled from src/theme.cpp, without gaps; matched except ?Init_Themes@ThemeClass@@QAEXABVCCINIClass@@@Z and ?Free_Themes@ThemeClass@@QAEXXZ and ?Scan@ThemeClass@@QAEXXZ and ?AI@ThemeClass@@QAEXXZ and ?Queue_Song@ThemeClass@@QAEXW4ThemeType@@@Z and ?Play_Song@ThemeClass@@QAEHW4ThemeType@@@Z and ?Theme_File_Name@ThemeClass@@AAEPBDW4ThemeType@@@Z and ?Load@ThemeClass@@QAEJPAUIStream@@@Z; ?AI@ThemeClass@@QAEXXZ and ?Free_Themes@ThemeClass@@QAEXXZ and ?Init_Themes@ThemeClass@@QAEXABVCCINIClass@@@Z and ?Load@ThemeClass@@QAEJPAUIStream@@@Z and ?Play_Song@ThemeClass@@QAEHW4ThemeType@@@Z and ?Queue_Song@ThemeClass@@QAEXW4ThemeType@@@Z and ?Scan@ThemeClass@@QAEXXZ and ?Theme_File_Name@ThemeClass@@AAEPBDW4ThemeType@@@Z placed at their function starts; ??0ThemeControl@@QAE@XZ not placed"
+unk_006E85B0,0x006E85B0,0x006E89A0,unknown,code not assigned to a module
 tiberium,0x006E89A0,0x006EA9B0,tibsun,"functions compiled from src/tiberium.cpp, matched, without gaps; one placed by the gap; ?Post_Load_Game@TiberiumClass@@SIXXZ not placed"
 unk_006EA9B0,0x006EA9B0,0x006EAF60,unknown,code not assigned to a module
 tmission,0x006EAF60,0x006EB100,tibsun,"functions compiled from src/tmission.cpp, matched, without gaps"
