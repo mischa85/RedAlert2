@@ -220,6 +220,7 @@ public:
 		bool Connect_Regions_With_Bridge(MapRegionClass * region1, MapRegionClass * region2);
 		bool Is_Bridge_Allowed(Rect const & rect) const;
 		bool Place_Bridge_Hut(Rect const & rect) const;
+		void Place_Neutral_Tech_Building(void); // RA2: 0x576CD0
 		bool Connect_Regions_With_Ramp(Cell const & cell, int region_id, bool allow_fallback);
 		bool Build_South_Ramp(Cell const & cell1, Cell const & cell2, int region_id);
 		bool Build_East_Ramp(Cell const & cell1, Cell const & cell2, int region_id);
@@ -286,6 +287,8 @@ public:
 		/// Unused
 		int SplitCount;
 
+		int StartCount; // RA2: +0x20, the player start points in this region
+
 		/*
 		 * If the region has been folded into a neighbor and is only waiting to be deleted,
 		 * then this flag will be true. The merge pass steps over it from then on.
@@ -342,7 +345,7 @@ class MapSeedClass : public LoadOptionsClass
 		bool Delete(void);
 
 		virtual bool Load_File(const char * file_name) override;
-		virtual bool Save_File(const char * file_name, const char * descr) override;
+		virtual bool Save_File(const char * file_name, wchar_t const * descr) override; // RA2: a wide description
 		virtual bool Delete_File(const char * file_name) override;
 		virtual bool Read_File(FileEntryClass * entry, WIN32_FIND_DATAA * ff) override;
 
@@ -484,6 +487,8 @@ class MapGeneratorClass
 		 * Region bookkeeping.
 		 */
 		void Init_Regions(void);
+		IsometricTileType Pick_Alternate_Cliff(IsometricTileType type); // RA2: 0x582B30
+		void Vary_Cliff_Runs(void); // RA2: 0x582FD0
 		bool Make_Regions(void);
 		bool Expand_All_High_Ground(void);
 		bool Grow_Region(int id, int rings, Rect rect, char set_height, char height);
@@ -523,8 +528,22 @@ class MapGeneratorClass
 		void Seed_Vegetation(void);
 		void Seed_Arctic_Vegetation(void);
 		void Generate_Vegetation(void);
+		void Read_RMG_INI(void); // RA2: 0x579960
+		void Seed_Land(void); // RA2: 0x57BEA0
+		void Partition_Rect(DynamicVectorClass<Rect> & rects, int count, Rect const & area); // RA2: 0x57C0D0
+		void Seed_Land_Type0(void); // RA2: 0x57C4F0
+		void Seed_Land_Type1(void); // RA2: 0x57C780
+		void Seed_Land_Type2(void); // RA2: 0x57C9E0
+		void Green_Shores(void); // RA2: 0x57CEB0
+		void Scatter_Green_Tiles(void); // RA2: 0x57CF20
+		double Direction_Weighted_Cell_Distance(Cell const & from, Cell const & to, Rect const & rect, Cell const & center, float weight_x, float weight_y); // RA2: 0x57D120
+		bool Cell_In_Generation_Shape(Cell const & cell, Rect const & rect, bool shaped, double scale_x, double scale_y); // RA2: 0x57D290
+		int Spread_Land(int count, Rect const & bounds, Point2D const & seed, bool shaped, Cell const & center, double wander, bool weighted); // RA2: 0x57D3A0
+		void Clear_Shore_Tiles(void); // RA2: 0x57DD10
+		void Vary_Water_Tiles(void); // RA2: 0x57DE10
+		bool Green_Region_Tiles(int region_id); // RA2: 0x57DFE0
 		void Generate_Arctic_Vegetation(void);
-		void Place_Forest(CellClass const * cellptr, int count, double density);
+		int Place_Forest(CellClass const * cellptr, int count, double density); // RA2: returns the count placed (0x5852C0 subtracts it)
 		void Place_Tile_Patch(CellClass * cellptr, IsometricTileType ittype, int count, int origin_id, bool on_pavement);
 		void Generate_Mold(void);
 		void Generate_Crystals(const Cell & cell);
@@ -549,6 +568,7 @@ class MapGeneratorClass
 		void Generate_Rural_Units(const Cell & cell);
 		bool Generate_Rural_Roads(const Cell & cell);
 		void Generate_Lights(void);
+		void Generate_Neutral_Buildings(void); // RA2: 0x58AD90
 		void Generate_Veinholes(void);
 
 		/*

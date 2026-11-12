@@ -66,6 +66,8 @@
 #include "ramp.hh"
 
 
+
+
 bool (*RMGCallback)() = MapGen_Call_Back;
 
 BOOL CALLBACK Map_Seed_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
@@ -123,6 +125,68 @@ struct DirtRoadNode {
 
 
 extern DirtRoadTile DirtRoadTiles[];
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Three_Or_Four(int value)
+{
+	return value == 3 || value == 4;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// Gaussian (normal) random number generator using the Marsaglia polar form of the Box-Muller transform.
@@ -240,6 +304,7 @@ MapRegionClass::MapRegionClass(Cell cell) :
 	Unsplittable(false),
 	HasConnections(true),
 	SplitCount(0),
+	StartCount(0), // RA2: as YR's
 	Discardable(false),
 	Cells(),
 	RegionBounds(0,0,0,0)
@@ -257,29 +322,6 @@ MapRegionClass::MapRegionClass(Cell cell) :
 MapRegionClass::~MapRegionClass(void)
 {
 	MapRegions.Delete(this);
-}
-
-
-/// <summary>
-/// Removes every map region the generator has built.
-/// This routine wipes the slate between generation attempts, so that a fresh run starts
-/// with no regions at all and its region numbering back at zero.
-/// </summary>
-void MapRegionClass::Delete_All_Regions(void)
-{
-	MapRegionClass::TotalCount = 0;
-
-	if (TiberiumLayoutCells != NULL) {
-		delete TiberiumLayoutCells;
-		TiberiumLayoutCells = NULL;
-	}
-
-	for (int i = MapRegionClass::MapRegions.Count() - 1; i >= 0; i--) {
-		MapRegionClass * region = MapRegionClass::MapRegions[i];
-		if (region != NULL) {
-			delete region;
-		}
-	}
 }
 
 
@@ -352,7 +394,7 @@ void MapRegionClass::CellData::Clear_Inviolates(void)
 /// <returns>Returns with a reference to the cell's working record.</returns>
 MapRegionClass::CellData & MapRegionClass::Get_Cell_Data(Cell const & cell)
 {
-	return(RMGCellData[cell.X + cell.Y * MapCellStride]);
+	return(RMGCellData[cell.X + cell.Y * (int)MapCellStride]); // RA2: Get_Cell_Data at 0x56DBA0 matches only so
 }
 
 
@@ -469,22 +511,19 @@ Cell MapRegionClass::Pick_Random_Clear_Cell_In_Zone(int zone, int region_id)
 	MapRegionClass::CellData & data = RMGCellData[0];
 	int grid_size = MapCellStride * MapCellStride;
 	int tries = 0;
-	Cell c(0,0);
-	while (true) {
+	CellClass * cellptr; // RA2: Pick_Random_Clear_Cell_In_Zone at 0x56DEA0 matches only so
+	do { // RA2: as above
 		data = RMGCellData[Pick_Random_UInt(0, grid_size - 1)];
 		if (++tries >= 100) {
-			return(c);
+			return(Cell(0,0)); // RA2: as above
 		}
-		CellClass & cellref = Map[data.CellID];
-		if (data.CellID != c
-				&& Map.Get_Cell_Zone(cellref.CellID, MZONE_NORMAL, false) == zone
-				&& cellref.Is_Tile_Clear()
-				&& (region_id == -1 || data.RegionID == region_id)) {
-			return(data.CellID);
-		}
-	}
-	return(c);
-}
+		cellptr = &Map[data.CellID]; // RA2: as above
+	} while (data.CellID == Cell(0,0) // RA2: as above
+			|| Map.Get_Cell_Zone(cellptr->CellID, MZONE_NORMAL, false) != zone // RA2: the cell by reference
+			|| !cellptr->Is_Tile_Clear() // RA2: as above
+			|| (region_id != -1 && data.RegionID != region_id)); // RA2: as above
+	return(data.CellID); // RA2: as above
+} // RA2: Pick_Random_Clear_Cell_In_Zone at 0x56DEA0 has no return(c);
 
 
 /// <summary>
@@ -539,6 +578,15 @@ double MapRegionClass::Get_Angle_Score(const Cell & cell1, const Cell & cell2, d
 
 	return(RMG_RANDOM_DOUBLE2(2.5) + _length_weight * length + _angle_weight * angle_diff);
 }
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -2984,6 +3032,21 @@ MapRegionClass * MapRegionClass::From_ID(int id)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline bool In_Zone_Map_Bounds(Cell const & cell)
+{
+	int x = cell.X;
+	int y = cell.Y;
+	int diagonal = y + cell.X;
+	return diagonal > MapRegionClass::MapStartDiagonal &&
+		x - y < MapRegionClass::MapStartDiagonal &&
+		y - x < MapRegionClass::MapStartDiagonal &&
+		diagonal <= MapRegionClass::MapEndDiagonal;
+}
+
+
+/// <summary>
 /// Picks the player start locations for a random map.
 /// This routine hunts for open buildable ground on the larger land masses, and only on the
 /// ones the players can actually reach one another across. The starts are then spread as far
@@ -3168,15 +3231,72 @@ DynamicVectorClass<Cell> * Pick_Spread_Cells(DynamicVectorClass<Cell> & cells)
 
 
 /// <summary>
+/// RA2: puts one of the rules' neutral tech buildings on a random spot of this region where its whole footprint is
+/// clear, level, inside the map and not reserved; gives up after 100 tries.
+/// </summary>
+void MapRegionClass::Place_Neutral_Tech_Building(void)
+{
+	HouseClass * neutral = House_From_HousesType(HouseTypeClass::From_Name("Neutral"));
+	bool placed = false;
+	int tries = 0;
+	BuildingClass * building = new BuildingClass(Rule->NeutralTechBuildings[Pick_Random_UInt(0, Rule->NeutralTechBuildings.Count() - 1)], neutral);
+
+	for (; !placed; ++tries) {
+		if (tries >= 100) {
+			break;
+		}
+
+		Cell building_cell = Cells[Pick_Random_UInt(0, Cells.Count() - 1)];
+		int height = Map[building_cell].Height;
+
+		Cell const * list = building->Class->Occupy_List(true);
+		bool ok = true;
+		while (*list != REFRESH_EOL) {
+			CellClass * cellptr = &Map[building_cell + *list];
+			if (cellptr->Cell_Occupier() != NULL || !cellptr->Is_Tile_Clear() || cellptr->Height != height || cellptr->Land_Type() == LAND_ROCK || !Map.In_Local_Radar(cellptr) || !MapRegionClass::CellData::Is_Not_Inviolate(cellptr->CellID)) {
+				ok = false;
+			}
+			list++;
+			if (!ok) break;
+		}
+
+		if (ok) {
+			if (building->Unlimbo(Coord(building_cell, 0))) {
+				placed = true;
+			}
+		}
+	}
+
+	if (!placed) {
+		delete building;
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+/// <summary>
 /// Creates a random map seed with the default settings.
 /// This routine establishes the map parameters the random map dialog offers the player
 /// before anything has been chosen, and gives the seed the file extension and description
 /// that the load and save dialogs list it under.
 /// </summary>
 MapSeedClass::MapSeedClass(void) :
-	Biome(BIOME_TUNDRA),
+	Biome(0), // RA2: RA2's seed settings (YR's form: map type and resources; TibSun's Firestorm settings are not in RA2's MapSeedClass)
+	MapType(1), // RA2: as above
+	Resources(1), // RA2: as above
 	Hills(0),
-	Time(TIME_OF_DAY_AFTERNOON),
+	Time(1), // RA2: as above
 	WaterAmount(0),
 	NumPlayers(2),
 	Tiberium(0),
@@ -3187,18 +3307,15 @@ MapSeedClass::MapSeedClass(void) :
 	Height(0),
 	Accessibility(0),
 	Cliffs(0),
-	Seed(-1),
-	TiberiumWildlife(0),
-	VeinholeMonsters(0),
-	UseIonStorms(0),
-	UseBlueTiberium(0),
-	UseTransitions(0)
+	Seed(-1) // RA2: as above
 {
 	Extension = "SED";
-	memset(MapDescription, 0, sizeof(MapDescription));
-	strcpy(MapDescription, Fetch_String(TXT_RANDOM_MAP_DESCRIPTION));
+	MapDescription[0] = L'\0'; // RA2: as above
 	Description = MapDescription;
 }
+
+
+
 
 
 /// <summary>
@@ -3212,11 +3329,40 @@ MapGeneratorClass::MapGeneratorClass(void) :
 	MapPreview(NULL),
 	LocalWidth(0),
 	LocalHeight(0),
+	RMGMinimumTiberium(2500), // RA2: MapGeneratorClass at 0x577010 matches only so
+	RMGMaximumTiberium(5500), // RA2: as above
+	MaxTrees(500), // RA2: as above
+	PreviewStale(true), // RA2: as above
 	SeededWaterAmount(0),
-	PlaceWaterfall(0),
-	CellHeight(4)
+	CellHeight(4), // RA2: as above
+	PlaceWaterfall(false) // RA2: as above
 {
-	//nothing
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Reset_Cell_Data(void)
+{
+	if (RMGCellData != NULL) {
+		int grid_size = MapCellStride * MapCellStride;
+		for (int i = 0; i < grid_size; i++) {
+			RMGCellData[i].RegionID = -1;
+			RMGCellData[i].SpreadID = -1;
+		}
+	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Delete_Regions(void)
+{
+	for (int i = MapRegionClass::MapRegions.Count() - 1; i >= 0; i--) {
+		delete MapRegionClass::MapRegions[i];
+	}
 }
 
 
@@ -3227,7 +3373,9 @@ MapGeneratorClass::MapGeneratorClass(void) :
 /// </summary>
 MapGeneratorClass::~MapGeneratorClass(void)
 {
-	MapRegionClass::Destroy_Cell_Regions();
+	Reset_Cell_Data(); // RA2: ~MapGeneratorClass at 0x5771B0 matches only so
+	Delete_Regions(); // RA2: as above
+	MapRegionClass::TotalCount = 0; // RA2: as above
 
 	if (RMGCellData != NULL) {
 		delete [] RMGCellData;
@@ -3257,17 +3405,12 @@ MapGeneratorClass::~MapGeneratorClass(void)
 /// dialog was canceled, and 0 if it could not be opened at all.</returns>
 int Do_Random_Map_Dialog(bool (*callback)())
 {
-	WDTTerritory *wdt = NULL;
-	LONG res = 0;
+	LONG res = 0; // RA2: no WDTTerritory, wdt (TibSun's use does not compile against RA2's declaration)
 
-	if (Session.Type == GAME_INTERNET && Session.IsWDT) {
-		wdt = WDT_Get_Territory(Session.WDTTerritory);
-	}
 
-	HWND dialog;
+	HWND dialog; // RA2: no IsWDT, WDTTerritory, wdt (TibSun's use does not compile against RA2's declaration)
 	if (Addon_Enabled(ADDON_FIRESTORM)) {
-		dialog = OwnerDraw::Begin_Dialog(wdt != NULL ? IDD_MAPGEN_WDT : IDD_MAPGEN_FS, Map_Seed_Dialog_Proc);
-	} else {
+	} else { // RA2: no wdt (a local of the dropped code)
 		dialog = OwnerDraw::Begin_Dialog(IDD_MAPGEN, Map_Seed_Dialog_Proc);
 	}
 
@@ -3334,16 +3477,8 @@ void Clean_Up_RMCache(void)
 		FindClose(handle);
 	}
 
-	/*
-	 * The last record was allocated but never added to the list (the
-	 * enumeration ended). Free it here.
-	 */
 	delete ff;
 
-	/*
-	 * Limit the cache to a fixed number of entries. While there are too many
-	 * cached maps, repeatedly find the oldest file and delete it.
-	 */
 	while (files.Count() > 70) {
 		FILETIME oldesttime;
 		oldesttime.dwLowDateTime = 0xFFFFFFFF;
@@ -3404,10 +3539,7 @@ void Clean_Up_RMCache(void)
 /// <param name="callback">Progress callback to run while the map is being built.</param>
 void Do_Random_Map(HWND dialog, bool (*callback)())
 {
-	if (Session.Type == GAME_INTERNET && Session.IsWDT && WDT_Get_Territory(Session.WDTTerritory) != NULL) {
-		RandomMapGen.SeedData.NumPlayers = 4;
-	}
-	char *digest = CalcRandomMapDigest();
+	char *digest = CalcRandomMapDigest(); // RA2: no IsWDT, WDTTerritory (TibSun's use does not compile against RA2's declaration)
 	char name[128];
 	memset(name, 0, sizeof(name));
 	strncpy(name, "rmcache\\", sizeof(name));
@@ -3471,6 +3603,8 @@ void Do_Random_Map(HWND dialog, bool (*callback)())
 		RandomMapGen.MapSeeder = NULL;
 	}
 }
+
+
 
 
 /// <summary>
@@ -3663,91 +3797,61 @@ BOOL CALLBACK Map_Seed_Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPA
 /// <param name="dialog">The map generator dialog to read.</param>
 void MapSeedClass::Get_Settings(HWND dialog)
 {
-	WDTTerritory * wdt = NULL;
-	if (Session.Type == GAME_INTERNET && Session.IsWDT) {
-		wdt = WDT_Get_Territory(Session.WDTTerritory);
+	HWND handle; // RA2: RA2's dialog controls - map type, resources, a stale preview (YR's form; TibSun's does not compile against RA2's declaration)
+	int old; // RA2: as above
+
+	old = MapType; // RA2: as above
+	handle = GetDlgItem(dialog, 0x405); // RA2: as above
+	MapType = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle)); // RA2: as above
+	if (old != MapType) { // RA2: as above
+		RandomMapGen.PreviewStale = true; // RA2: as above
 	}
 
-	HWND handle;
-	char str[30];
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_ENVIRONMENT);
+	old = Biome; // RA2: as above
+	handle = GetDlgItem(dialog, 0x407); // RA2: as above
 	Biome = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle));
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_TIME_OF_DAY);
-	Time = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle));
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_MAP_WIDTH);
-	Width = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle));
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_MAP_HEIGHT);
-	Height = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle));
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_DIMENSION_EDIT);
-	GetWindowText(handle, str, ARRAY_SIZE(str));
-	Seed = atoi(str);
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_TIBERIUM_AMOUNT);
-	Tiberium = Slider_GetPos(handle);
-
-	if (wdt != NULL) {
-		NumPlayers = 4;
-	} else {
-		handle = GetDlgItem(dialog, IDC_MAPGEN_PLAYERS);
-		NumPlayers = Slider_GetPos(handle);
+	if (old != Biome) { // RA2: as above
+		RandomMapGen.PreviewStale = true; // RA2: as above
 	}
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_HILLS);
-	Hills = Slider_GetPos(handle);
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_WATER);
-	WaterAmount = Slider_GetPos(handle);
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_CLIFFS);
-	Cliffs = Slider_GetPos(handle);
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_VEGETATION);
-	Vegetation = Slider_GetPos(handle);
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_CITIES);
-	Cities = Slider_GetPos(handle);
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_ACCESSIBILITY);
-	Accessibility = Slider_GetPos(handle);
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_TIBERIUM_FIELDS);
-	TiberiumLayout = Slider_GetPos(handle);
-
-	TiberiumWildlife = 0;
-	VeinholeMonsters = 0;
-	UseIonStorms = false;
-	UseTransitions = false;
-	UseBlueTiberium = false;
-
-	if (Addon_Enabled(ADDON_FIRESTORM)) {
-		handle = GetDlgItem(dialog, IDC_MAPGEN_LIFEFORMS);
-		if (handle != NULL) {
-			TiberiumWildlife = Button_GetCheck(handle) == BST_CHECKED ? 30 : 0;
-		}
-
-		handle = GetDlgItem(dialog, IDC_MAPGEN_VEINHOLES);
-		if (handle != NULL) {
-			VeinholeMonsters = Slider_GetPos(handle);
-		}
-
-		handle = GetDlgItem(dialog, IDC_MAPGEN_ION_STORMS);
-		if (handle != NULL) {
-			UseIonStorms = Button_GetCheck(handle) == BST_CHECKED;
-		}
-
-		handle = GetDlgItem(dialog, IDC_MAPGEN_TRANSITIONS);
-		if (handle != NULL) {
-			UseTransitions = Button_GetCheck(handle) == BST_CHECKED;
-		}
-
-		UseBlueTiberium = (double)Tiberium > 0.75;
+	old = Resources; // RA2: as above
+	handle = GetDlgItem(dialog, 0x408); // RA2: as above
+	Resources = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle)); // RA2: as above
+	if (old != Resources) { // RA2: as above
+		RandomMapGen.PreviewStale = true; // RA2: as above
 	}
 
+	old = Time; // RA2: as above
+	handle = GetDlgItem(dialog, 0x3EA); // RA2: as above
+	Time = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle)); // RA2: as above
+	if (old != Time) { // RA2: as above
+		RandomMapGen.PreviewStale = true; // RA2: as above
+	}
+
+	old = Width; // RA2: as above
+	handle = GetDlgItem(dialog, 0x406); // RA2: as above
+	Height = Width = ComboBox_GetItemData(handle, ComboBox_GetCurSel(handle)); // RA2: as above
+	if (old != Width) { // RA2: as above
+		RandomMapGen.PreviewStale = true; // RA2: as above
+	}
+
+	int old_players = NumPlayers; // RA2: as above
+	handle = GetDlgItem(dialog, 0x3EB); // RA2: as above
+	NumPlayers = SendMessageA(handle, WM_USER, 0, 0); // RA2: as above
+	if (old_players != NumPlayers) { // RA2: as above
+		RandomMapGen.PreviewStale = true; // RA2: as above
+	} else if (!RandomMapGen.PreviewStale) { // RA2: as above
+		goto done; // RA2: as above
+	}
+
+	Randomize(); // RA2: no argument
+	if (RandomMapGen.MapPreview != NULL) { // RA2: as above
+		delete RandomMapGen.MapPreview; // RA2: as above
+	}
+	RandomMapGen.MapPreview = NULL; // RA2: as above
+	RandomMapGen.PreviewStale = false; // RA2: as above
+
+done: // RA2: as above
 	Fixup_Settings();
 }
 
@@ -3786,12 +3890,8 @@ void MapSeedClass::Set_Settings(HWND dialog)
 		TXT_MAPSIZE_VERY_LARGE
 	};
 
-	WDTTerritory *wdt = NULL;
-	if (Session.Type == GAME_INTERNET && Session.IsWDT) {
-		wdt = WDT_Get_Territory(Session.WDTTerritory);
-	}
 
-	Fixup_Settings();
+	Fixup_Settings(); // RA2: no WDTTerritory, wdt, IsWDT (TibSun's use does not compile against RA2's declaration)
 
 	HWND handle;
 	LRESULT item;
@@ -3846,344 +3946,51 @@ void MapSeedClass::Set_Settings(HWND dialog)
 	handle = GetDlgItem(dialog, IDC_MAPGEN_DIMENSION_EDIT);
 	sprintf(_win_name, "%d", Seed);
 	SetWindowTextA(handle, _win_name);
-	if (wdt != NULL) {
-		EnableWindow(handle, wdt->UserModSeed ? TRUE : FALSE);
-	}
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_TIBERIUM_AMOUNT);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->TiberiumAmountMin, wdt->TiberiumAmountMax, Tiberium, wdt->UserModTiberiumAmount);
+	handle = GetDlgItem(dialog, IDC_MAPGEN_TIBERIUM_AMOUNT); // RA2: no wdt (a local of the dropped code)
 
-		CheckDlgButton(dialog, IDC_WDT_1ON1, FALSE);
-		CheckDlgButton(dialog, IDC_WDT_2ON2, TRUE);
-		EnableWindow(GetDlgItem(dialog, IDC_WDT_1ON1), FALSE);
-		EnableWindow(GetDlgItem(dialog, IDC_WDT_2ON2), FALSE);
-	} else {
-		Set_Scroll_Bar(handle, 1, 100, Tiberium, TRUE);
+	handle = GetDlgItem(dialog, IDC_MAPGEN_HILLS); // RA2: no wdt (a local of the dropped code)
 
-		handle = GetDlgItem(dialog, IDC_MAPGEN_PLAYERS);
-		Set_Scroll_Bar(handle, 2, MAX_PLAYERS, NumPlayers, TRUE);
-	}
+	handle = GetDlgItem(dialog, IDC_MAPGEN_WATER); // RA2: no wdt (a local of the dropped code)
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_HILLS);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->HillsMin, wdt->HillsMax, Hills, wdt->UserModHills);
-	} else {
-		Set_Scroll_Bar(handle, 0, 100, Hills, TRUE);
-	}
+	handle = GetDlgItem(dialog, IDC_MAPGEN_CLIFFS); // RA2: no wdt (a local of the dropped code)
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_WATER);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->WaterMin, wdt->WaterMax, WaterAmount, wdt->UserModWater);
-	} else {
-		Set_Scroll_Bar(handle, 0, 100, WaterAmount, TRUE);
-	}
+	handle = GetDlgItem(dialog, IDC_MAPGEN_VEGETATION); // RA2: no wdt (a local of the dropped code)
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_CLIFFS);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->CliffsMin, wdt->CliffsMax, Cliffs, wdt->UserModCliffs);
-	} else {
-		Set_Scroll_Bar(handle, 0, 100, Cliffs, TRUE);
-	}
+	handle = GetDlgItem(dialog, IDC_MAPGEN_CITIES); // RA2: no wdt (a local of the dropped code)
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_VEGETATION);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->VegetationMin, wdt->VegetationMax, Vegetation, wdt->UserModVegetation);
-	} else {
-		Set_Scroll_Bar(handle, 0, 100, Vegetation, TRUE);
-	}
+	handle = GetDlgItem(dialog, IDC_MAPGEN_TIBERIUM_FIELDS); // RA2: no wdt (a local of the dropped code)
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_CITIES);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->CitiesMin, wdt->CitiesMax, Cities, wdt->UserModCities);
-	} else {
-		Set_Scroll_Bar(handle, 0, 100, Cities, TRUE);
-	}
+	handle = GetDlgItem(dialog, IDC_MAPGEN_ACCESSIBILITY); // RA2: no wdt (a local of the dropped code)
 
-	handle = GetDlgItem(dialog, IDC_MAPGEN_TIBERIUM_FIELDS);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->TiberiumFieldsMin, wdt->TiberiumFieldsMax, TiberiumLayout, wdt->UserModTiberiumFields);
-	} else {
-		Set_Scroll_Bar(handle, 0, 100, TiberiumLayout, TRUE);
-	}
-
-	handle = GetDlgItem(dialog, IDC_MAPGEN_ACCESSIBILITY);
-	if (wdt != NULL) {
-		Set_Scroll_Bar(handle, wdt->AccessibilityMin, wdt->AccessibilityMax, Accessibility, wdt->UserModAccessability);
-
-		EnableWindow(GetDlgItem(dialog, IDC_MAPGEN_ENVIRONMENT), wdt->UserModBiome ? TRUE : FALSE);
-		EnableWindow(GetDlgItem(dialog, IDC_MAPGEN_TIME_OF_DAY), wdt->UserModTime ? TRUE : FALSE);
-		EnableWindow(GetDlgItem(dialog, IDC_MAPGEN_MAP_WIDTH), wdt->UserModWidth ? TRUE : FALSE);
-		EnableWindow(GetDlgItem(dialog, IDC_MAPGEN_MAP_HEIGHT), wdt->UserModHeight ? TRUE : FALSE);
-
-		Set_Checkbox(GetDlgItem(dialog, IDC_MAPGEN_LIFEFORMS), TiberiumWildlife > 0, wdt->UserModTiberiumCreatures);
-
-		Set_Scroll_Bar(GetDlgItem(dialog, IDC_MAPGEN_VEINHOLES), 0, 5, VeinholeMonsters, wdt->UserModVeinholeMonsters);
-
-		Set_Checkbox(GetDlgItem(dialog, IDC_MAPGEN_TRANSITIONS), UseTransitions, wdt->UserModTimeTransitions);
-
-		Set_Checkbox(GetDlgItem(dialog, IDC_MAPGEN_ION_STORMS), UseIonStorms, TRUE);
-
-		if (!wdt->UserModBiome && !wdt->UserModTime && !wdt->UserModCliffs && !wdt->UserModAccessability &&
-			!wdt->UserModHills && !wdt->UserModTiberiumAmount && !wdt->UserModTiberiumFields && !wdt->UserModWater &&
-			!wdt->UserModVegetation && !wdt->UserModCities && !wdt->UserModWidth && !wdt->UserModHeight &&
-			!wdt->UserModVeinholeMonsters) {
-			EnableWindow(GetDlgItem(dialog, IDC_MAPGEN_SURPRISE), FALSE);
-		}
-
-	} else {
-
-		Set_Scroll_Bar(handle, 0, 100, Accessibility, TRUE);
-
-		Set_Checkbox(GetDlgItem(dialog, IDC_MAPGEN_LIFEFORMS), TiberiumWildlife > 0, TRUE);
-
-		Set_Scroll_Bar(GetDlgItem(dialog, IDC_MAPGEN_VEINHOLES), 0, 5, VeinholeMonsters, TRUE);
-
-		Set_Checkbox(GetDlgItem(dialog, IDC_MAPGEN_TRANSITIONS), UseTransitions, TRUE);
-
-		Set_Checkbox(GetDlgItem(dialog, IDC_MAPGEN_ION_STORMS), UseIonStorms, TRUE);
-	}
-
-	InvalidateRect(dialog, 0, 0);
+	InvalidateRect(dialog, 0, 0); // RA2: no TiberiumWildlife, VeinholeMonsters, wdt and 2 more (TibSun's use does not compile against RA2's declaration)
 }
 
 
-/// <summary>
-/// Sets up one of the map generation sliders.
-/// This routine is used by Set_Settings to point a slider at the span of values its setting
-/// is permitted to take. A setting with nothing left to choose between is shown disabled
-/// rather than hidden, so the dialog keeps its shape.
-/// </summary>
-/// <param name="handle">The slider control to set up.</param>
-/// <param name="min">The lowest value the slider may be dragged to.</param>
-/// <param name="max">The highest value the slider may be dragged to.</param>
-/// <param name="position">Where the thumb should sit.</param>
-/// <param name="enable">Should the player be allowed to move this slider?</param>
-void MapSeedClass::Set_Scroll_Bar(HWND handle, unsigned int min, unsigned int max, int position, bool enable)
-{
-	if (max <= min) {
-		EnableWindow(handle, FALSE);
-		Slider_SetRange(handle, 0, 100);
-		Slider_SetPos(handle, position);
-	} else {
-		EnableWindow(handle, enable);
-		Slider_SetRange(handle, min, max);
-		Slider_SetPos(handle, position);
-	}
-}
+
 
 
 /// <summary>
-/// Sets up one of the map generation checkboxes.
-/// This routine is the companion of Set_Scroll_Bar, and is used by Set_Settings to show a
-/// setting the dialog offers as a simple yes or no. A setting the player is not allowed to
-/// touch is shown disabled rather than hidden, so the dialog keeps its shape.
-/// </summary>
-/// <param name="handle">The checkbox control to set up.</param>
-/// <param name="state">Should the box be shown checked?</param>
-/// <param name="enable">Should the player be allowed to change this setting?</param>
-void MapSeedClass::Set_Checkbox(HWND handle, bool state, bool enable)
-{
-	Button_SetCheck(handle, state != 0);
-	Button_Enable(handle, enable);
-}
-
-
-/// <summary>
-/// Rolls a fresh set of map generation settings.
-/// This routine is what the dialog's randomize button calls, handing the player a whole new
-/// map to consider for the price of one click. A tournament territory may forbid the player
-/// to touch some of the settings; those are left alone, and the rest are rolled within
-/// whatever range the territory allows.
+/// RA2
 /// </summary>
 void MapSeedClass::Randomize(void)
 {
-	WDTTerritory *wdt = NULL;
 
-	if (Session.Type == GAME_INTERNET && Session.IsWDT) {
 
-		wdt = WDT_Get_Territory(Session.WDTTerritory);
-		if (wdt == NULL || wdt->UserModBiome) {
-			Biome = Sim_Random_Pick<unsigned int>(BIOME_FIRST, BIOME_COUNT - 1);
-		}
-
-	} else {
-		Biome = Sim_Random_Pick<unsigned int>(BIOME_FIRST, BIOME_COUNT - 1);
-	}
-
-	if (!Addon_Enabled(ADDON_FIRESTORM) && Biome == BIOME_MUTATED) {
+	if (!Addon_Enabled(ADDON_FIRESTORM) && Biome == BIOME_MUTATED) { // RA2: no WDTTerritory, wdt (TibSun's use does not compile against RA2's declaration)
 		Biome = BIOME_TEMPERATE;
 	}
 
-	if (wdt == NULL || wdt->UserModTime) {
-		Time = Sim_Random_Pick<unsigned int>(TIME_OF_DAY_FIRST, TIME_OF_DAY_COUNT - 1);
-	}
-
-	if (wdt != NULL) {
-		Hills = Sim_Random_Pick(wdt->HillsMin, wdt->HillsMax);
-		WaterAmount = Sim_Random_Pick(wdt->WaterMin, wdt->WaterMax);
-		Tiberium = Sim_Random_Pick(wdt->TiberiumAmountMin, wdt->TiberiumAmountMax);
-		TiberiumLayout = Sim_Random_Pick(wdt->TiberiumFieldsMin, wdt->TiberiumFieldsMax);
-		Vegetation = Sim_Random_Pick(wdt->VegetationMin, wdt->VegetationMax);
-		Cities = Sim_Random_Pick(wdt->CitiesMin, wdt->CitiesMax);
-		Accessibility = Sim_Random_Pick(wdt->AccessibilityMin, wdt->AccessibilityMax);
-		Cliffs = Sim_Random_Pick(wdt->CliffsMin, wdt->CliffsMax);
-	} else {
-		Hills = Sim_Random_Pick(0U, 100U);
-		WaterAmount = Sim_Random_Pick(0U, 100U);
-		Tiberium = Sim_Random_Pick(0U, 100U);
-		TiberiumLayout = Sim_Random_Pick(0U, 100U);
-		Vegetation = Sim_Random_Pick(0U, 100U);
-		Cities = Sim_Random_Pick(0U, 100U);
-		Accessibility = Sim_Random_Pick(0U, 100U);
-		Cliffs = Sim_Random_Pick(0U, 100U);
-	}
-
-	if (wdt == NULL || wdt->UserModWidth) {
-		Width = Sim_Random_Pick(0U, 3U);
-	}
-
-	if (wdt == NULL || wdt->UserModHeight) {
-		Height = Sim_Random_Pick(0U, 3U);
-	}
-
-	if (wdt == NULL || wdt->UserModVeinholeMonsters) {
-		VeinholeMonsters = Sim_Random_Pick(0U, 5U);
-	}
-
-	if (wdt == NULL || wdt->UserModTiberiumCreatures) {
-		TiberiumWildlife = Sim_Random_Pick(0U, 100U) > 0.5 ? Sim_Random_Pick(0U, 100U) : 0U;
-	}
-
-	UseIonStorms = (Sim_Random_Pick(0U, 1000U) < 500 && Addon_Enabled(ADDON_FIRESTORM)) ? true : false;
-
-	if (wdt == NULL || wdt->UserModBlueTiberium) {
-		UseBlueTiberium = Sim_Random_Pick(0U, 1000U) >= 500;
-	}
-
-	if (wdt == NULL || wdt->UserModTimeTransitions) {
-		UseTransitions = (Sim_Random_Pick(0U, 1000U) < 500U && Addon_Enabled(ADDON_FIRESTORM)) ? true : false;
-	}
-
-	if (wdt == NULL || wdt->UserModSeed) {
-		Seed = Sim_Random_Pick(0U, 65535U);
-	}
-	Fixup_Settings();
-}
 
 
-/// <summary>
-/// Imposes the tournament territory's map settings.
-/// A Worldwide Domination Tournament game does not let the players design the battlefield --
-/// the territory being fought over dictates what it looks like. This routine replaces the
-/// generator settings with that territory's own, and does nothing at all in any other game.
-/// </summary>
-void MapSeedClass::Fixup_WDT_Settings(void)
-{
-	if (Session.Type == GAME_INTERNET && Session.IsWDT) {
-		WDTTerritory *wdt = WDT_Get_Territory(Session.WDTTerritory);
-		if (wdt != NULL) {
 
-			UseTransitions = wdt->TimeTransitions;
 
-			if (wdt->Seed == 0) {
-				Seed = Sim_Random_Pick(0U, 65535U);
-			} else {
-				Seed = wdt->Seed;
-			}
 
-			switch (wdt->Width) {
-				case 0:
-					Width = 0;
-					break;
-				case 1:
-					Width = 1;
-					break;
-				case 2:
-					Width = 2;
-					break;
-				case 3:
-					Width = 3;
-					break;
-				default:
-					Width = 1;
-					break;
 
-			}
 
-			switch (wdt->Height) {
-				case 0:
-					Height = 0;
-					break;
-				case 1:
-					Height = 1;
-					break;
-				case 2:
-					Height = 2;
-					break;
-				case 3:
-					Height = 3;
-					break;
-				default:
-					Height = 1;
-					break;
-			}
 
-			NumPlayers = 4;
 
-			switch (wdt->Biome) {
-				case 1:
-					Biome = BIOME_DESERT;
-					break;
-				case 3:
-					Biome = BIOME_TEMPERATE;
-					break;
-				case 2:
-					Biome = BIOME_TAIGA;
-					break;
-				case 0:
-					Biome = BIOME_TUNDRA;
-					break;
-				case 4:
-					Biome = BIOME_MUTATED;
-					break;
-				default:
-					Biome = BIOME_TEMPERATE;
-					break;
-			}
-
-			switch (wdt->Time) {
-				case 2:
-					Time = TIME_OF_DAY_MORNING;
-					break;
-				case 0:
-					Time = TIME_OF_DAY_AFTERNOON;
-					break;
-				case 1:
-					Time = TIME_OF_DAY_DUSK;
-					break;
-				case 3:
-					Time = TIME_OF_DAY_NIGHT;
-					break;
-				default:
-					Time = TIME_OF_DAY_AFTERNOON;
-					break;
-			}
-
-			Cliffs = wdt->CliffsDefault;
-			Accessibility = wdt->AccessibilityDefault;
-			Hills = wdt->HillsDefault;
-			WaterAmount = wdt->WaterDefault;
-			Tiberium = wdt->TiberiumAmountDefault;
-			TiberiumLayout = wdt->TiberiumFieldsDefault;
-			Vegetation = wdt->VegetationDefault;
-			Cities = wdt->CitiesDefault;
-			TiberiumWildlife = wdt->TiberiumCreatures ? 30 : 0;
-			VeinholeMonsters = wdt->Veinholes;
-			UseIonStorms = false;
-			UseBlueTiberium = wdt->BlueTiberium ? true : false;
-		}
-	}
+	Fixup_Settings(); // RA2: no wdt (a local of the dropped code)
 }
 
 
@@ -4196,152 +4003,82 @@ void MapSeedClass::Fixup_WDT_Settings(void)
 /// </summary>
 void MapSeedClass::Fixup_Settings(void)
 {
-	if (Session.Type == GAME_INTERNET && Session.IsWDT) {
-		WDTTerritory *wdt = WDT_Get_Territory(Session.WDTTerritory);
-		if (wdt != NULL) {
-			Clamp_Setting(Cliffs, wdt->CliffsMin, wdt->CliffsMax, true);
-			Clamp_Setting(Accessibility, wdt->AccessibilityMin, wdt->AccessibilityMax, true);
-			Clamp_Setting(Hills, wdt->HillsMin, wdt->HillsMax, true);
-			Clamp_Setting(WaterAmount, wdt->WaterMin, wdt->WaterMax, true);
-			Clamp_Setting(Tiberium, wdt->TiberiumAmountMin, wdt->TiberiumAmountMax, true);
-			Clamp_Setting(TiberiumLayout, wdt->TiberiumFieldsMin, wdt->TiberiumFieldsMax, true);
-			Clamp_Setting(Vegetation, wdt->VegetationMin, wdt->VegetationMax, true);
-			Clamp_Setting(Cities, wdt->CitiesMin, wdt->CitiesMax, true);
-		}
+	if (Resources >= 4) { // RA2: Fixup_Settings at 0x578D80 matches only so
+		Resources = 3; // RA2: as above
+	} else if (Resources < 0) { // RA2: as above
+		Resources = 0; // RA2: as above
 	}
-
-	if (Biome >= BIOME_COUNT) {
-		Biome = BIOME_COUNT - 1;
-	} else if (Biome < BIOME_FIRST) {
-		Biome = BIOME_FIRST;
+	if (MapType >= 5) { // RA2: as above
+		MapType = 4; // RA2: as above
+	} else if (MapType < 0) { // RA2: as above
+		MapType = 0; // RA2: as above
 	}
-
-	if (Biome == BIOME_MUTATED && !Addon_Enabled(ADDON_FIRESTORM)) {
-		Biome = BIOME_TEMPERATE;
+	if (Time >= 4) { // RA2: as above
+		Time = 3; // RA2: as above
+	} else if (Time < 0) { // RA2: as above
+		Time = 0; // RA2: as above
 	}
-
-	if (Time >= TIME_OF_DAY_COUNT) {
-		Time = TIME_OF_DAY_COUNT - 1;
-	} else if (Time < TIME_OF_DAY_FIRST) {
-		Time = TIME_OF_DAY_FIRST;
-	}
-
-	if (Hills > 100) {
+	if (Hills > 100) { // RA2: Fixup_Settings at 0x578D80 has no Biome, Time
 		Hills = 100;
 	} else if (Hills < 0) {
 		Hills = 0;
 	}
-
 	if (WaterAmount > 100) {
 		WaterAmount = 100;
 	} else if (WaterAmount < 0) {
 		WaterAmount = 0;
 	}
-
-	if (NumPlayers > MAX_PLAYERS) {
-		NumPlayers = MAX_PLAYERS;
+	if (NumPlayers > 8) { // RA2: as above
+		NumPlayers = 8; // RA2: as above
 	} else if (NumPlayers < 2) {
 		NumPlayers = 2;
 	}
-
 	if (Tiberium > 100) {
 		Tiberium = 100;
 	} else if (Tiberium < 1) {
 		Tiberium = 1;
 	}
-
 	if (TiberiumLayout > 100) {
 		TiberiumLayout = 100;
 	} else if (TiberiumLayout < 0) {
 		TiberiumLayout = 0;
 	}
-
 	if (Vegetation > 100) {
 		Vegetation = 100;
 	} else if (Vegetation < 0) {
 		Vegetation = 0;
 	}
-
 	if (Cities > 100) {
 		Cities = 100;
 	} else if (Cities < 0) {
 		Cities = 0;
 	}
-
 	if (Width >= 4) {
-		Width = 4 - 1;
+		Width = 3; // RA2: as above
 	} else if (Width < 0) {
 		Width = 0;
 	}
-
 	if (Height >= 4) {
-		Height = 4 - 1;
+		Height = 3; // RA2: as above
 	} else if (Height < 0) {
 		Height = 0;
 	}
-
 	if (Accessibility > 100) {
 		Accessibility = 100;
 	} else if (Accessibility < 0) {
 		Accessibility = 0;
 	}
-
 	if (Cliffs > 100) {
 		Cliffs = 100;
 	} else if (Cliffs < 0) {
 		Cliffs = 0;
 	}
-
 	if (Seed > 65535) {
 		Seed = 65535;
 	} else if (Seed < 0) {
 		Seed = 0;
 	}
-
-	if (VeinholeMonsters < 0) {
-		VeinholeMonsters = 0;
-	} else if (VeinholeMonsters > 5) {
-		VeinholeMonsters = 5;
-	}
-
-	if (TiberiumWildlife < 0) {
-		TiberiumWildlife = 0;
-	} else if (TiberiumWildlife > 100) {
-		TiberiumWildlife = 100;
-	}
-}
-
-
-/// <summary>
-/// Forces a setting back within its legal range.
-/// This routine is used to hold a single map generation setting to the limits imposed upon
-/// it. A setting that is already legal is left exactly as it is.
-/// </summary>
-/// <param name="setting">The setting to police. It is only written when found out of range.</param>
-/// <param name="min">The lowest legal value.</param>
-/// <param name="max">The highest legal value.</param>
-/// <param name="use_midpoint">Should an illegal value land in the middle of the range rather
-/// than on the boundary it broke?</param>
-void MapSeedClass::Clamp_Setting(int & setting, int min, int max, bool use_midpoint) const
-{
-	int value = setting;
-
-	if (value > max) {
-		if (use_midpoint) {
-			value = (max + min) >> 1;
-		} else {
-			value = max;
-		}
-		setting = value;
-	} else if (value < min) {
-		if (use_midpoint) {
-			value = (max + min) >> 1;
-		} else {
-			value = min;
-		}
-		setting = value;
-	}
-}
+} // RA2: Fixup_Settings at 0x578D80 has no VeinholeMonsters
 
 
 /// <summary>
@@ -4357,7 +4094,6 @@ bool MapSeedClass::Save(const char * name)
 		return(Save_File(name, MapDescription));
 	}
 
-	MapDescription[0] = 0;
 	if (BASECLASS::Save(MapDescription)) {
 		return(true);
 	}
@@ -4374,19 +4110,22 @@ bool MapSeedClass::Save(const char * name)
 /// <param name="descr">Description to keep with the settings. This is the text the load
 /// dialog lists the map under.</param>
 /// <returns>bool; Were the settings written?</returns>
-bool MapSeedClass::Save_File(const char * file_name, const char * descr)
+bool MapSeedClass::Save_File(const char * file_name, const wchar_t * descr)
 {
 	if (file_name != NULL) {
-		DebugString("Saving random map: %s - %s\n", file_name, descr);
+		DebugString("Saving random map: %s - %ls\n", file_name, descr);
 		CCFileClass file(file_name);
 		INIClass ini;
-		ini.Put_String("RandomMap", "Description", descr);
+		if (descr) {
+			wcscpy(MapDescription, descr);
+		}
 		ini.Put_Int("RandomMap", "Width", Width, 0);
 		ini.Put_Int("RandomMap", "Height", Height, 0);
 		ini.Put_Int("RandomMap", "NumPlayers", NumPlayers, 0);
 		ini.Put_Int("RandomMap", "Seed", Seed, 0);
-		ini.Put_Int("RandomMap", "Biome", Biome, BIOME_FIRST);
-		ini.Put_Int("RandomMap", "Time", Time, TIME_OF_DAY_FIRST);
+		ini.Put_Int("RandomMap", "MapType", MapType, 0);
+		ini.Put_Int("RandomMap", "Theater", Biome, 0);
+		ini.Put_Int("RandomMap", "Time", Time, 0);
 		ini.Put_Int("RandomMap", "RegionSize", Cliffs, 0);
 		ini.Put_Int("RandomMap", "Ruggedness", Hills, 0);
 		ini.Put_Int("RandomMap", "Accessibility", Accessibility, 0);
@@ -4395,11 +4134,7 @@ bool MapSeedClass::Save_File(const char * file_name, const char * descr)
 		ini.Put_Int("RandomMap", "TiberiumLayout", TiberiumLayout, 0);
 		ini.Put_Int("RandomMap", "Vegetation", Vegetation, 0);
 		ini.Put_Int("RandomMap", "UrbanPresence", Cities, 0);
-		ini.Put_Int("RandomMap", "VeinholeMonsters", VeinholeMonsters, 0);
-		ini.Put_Int("RandomMap", "TiberiumWildlife", TiberiumWildlife, 0);
-		ini.Put_Bool("RandomMap", "UseIonStorms", UseIonStorms);
-		ini.Put_Bool("RandomMap", "UseBlueTiberium", UseBlueTiberium);
-		ini.Put_Bool("RandomMap", "UseTransitions", UseTransitions);
+		ini.Put_Int("RandomMap", "Resources", Resources, 0);
 		ini.Save(file);
 		return(true);
 	}
@@ -4441,14 +4176,13 @@ bool MapSeedClass::Load_File(const char * file_name)
 		CCFileClass file(file_name);
 		INIClass ini;
 
-		if (ini.Load(file)) {
-			memset(MapDescription, 0, sizeof(MapDescription));
-			ini.Get_String("RandomMap", "Description", Fetch_String(TXT_RANDOM_MAP_DESCRIPTION), MapDescription, sizeof(MapDescription));
+		if (ini.Load(file, false)) { // RA2: RA2's seed file keys (YR's form; TibSun's does not compile against RA2's declaration)
 			Width = ini.Get_Int("RandomMap", "Width", Width);
 			Height = ini.Get_Int("RandomMap", "Height", Height);
 			NumPlayers = ini.Get_Int("RandomMap", "NumPlayers", NumPlayers);
 			Seed = ini.Get_Int("RandomMap", "Seed", Seed);
-			Biome = ini.Get_Int("RandomMap", "Biome", Biome);
+			MapType = ini.Get_Int("RandomMap", "MapType", MapType); // RA2: as above
+			Biome = ini.Get_Int("RandomMap", "Theater", Biome); // RA2: as above
 			Time = ini.Get_Int("RandomMap", "Time", Time);
 			Cliffs = ini.Get_Int("RandomMap", "RegionSize", Cliffs);
 			Hills = ini.Get_Int("RandomMap", "Ruggedness", Hills);
@@ -4458,39 +4192,12 @@ bool MapSeedClass::Load_File(const char * file_name)
 			TiberiumLayout = ini.Get_Int("RandomMap", "TiberiumLayout", TiberiumLayout);
 			Vegetation = ini.Get_Int("RandomMap", "Vegetation", Vegetation);
 			Cities = ini.Get_Int("RandomMap", "UrbanPresence", Cities);
-			VeinholeMonsters = ini.Get_Int("RandomMap", "VeinholeMonsters", VeinholeMonsters);
-			TiberiumWildlife = ini.Get_Int("RandomMap", "TiberiumWildlife", TiberiumWildlife);
-			UseIonStorms = ini.Get_Bool("RandomMap", "UseIonStorms", UseIonStorms);
-			UseBlueTiberium = ini.Get_Bool("RandomMap", "UseBlueTiberium", UseBlueTiberium);
-			UseTransitions = ini.Get_Bool("RandomMap", "UseTransitions", UseTransitions);
+			Resources = ini.Get_Int("RandomMap", "Resources", Resources); // RA2: as above
 			return(true);
 		}
+		return(false); // RA2: as above
 	}
 	return(false);
-}
-
-
-/// <summary>
-/// Discards a saved set of map generator settings.
-/// The standard delete dialog asks the player which of the saved maps to throw away.
-/// </summary>
-/// <returns>bool; Were the settings deleted?</returns>
-bool MapSeedClass::Delete(void)
-{
-	return(BASECLASS::Delete());
-}
-
-
-/// <summary>
-/// Removes a saved settings file from the disk.
-/// This routine is what the delete dialog calls once the player has settled on which of the
-/// saved maps is to go.
-/// </summary>
-/// <param name="file_name">Name of the settings file to remove.</param>
-/// <returns>bool; Was the file removed?</returns>
-bool MapSeedClass::Delete_File(const char * file_name)
-{
-	return(BASECLASS::Delete_File(file_name));
 }
 
 
@@ -4506,28 +4213,18 @@ bool MapSeedClass::Delete_File(const char * file_name)
 /// <returns>bool; Was the entry filled in from a readable random map file?</returns>
 bool MapSeedClass::Read_File(FileEntryClass * entry, WIN32_FIND_DATAA * ff)
 {
-	char buffer[128];
+	wchar_t buffer[128]; // RA2: a wide description, lastmap.sed skipped (YR's form; TibSun's does not compile against RA2's declaration)
 
 	if (entry != NULL && ff != NULL) {
-		if (stricmp(ff->cFileName, RANDOM_MAP_FILE_NAME)) {
+		if (stricmp(ff->cFileName, RANDOM_MAP_FILE_NAME) && stricmp(ff->cFileName, "lastmap.sed")) { // RA2: as above
 			CCFileClass file(ff->cFileName);
 			INIClass ini;
-			if (ini.Load(file)) {
-				if (ini.Get_String("RandomMap", "Description", 0, buffer, sizeof(buffer)) > 0 )
-				{
-					strncpy(entry->Descr, buffer, sizeof(buffer));
-					entry->Old = false;
-					entry->Valid = true;
-				} else {
-					entry->Descr[0] = 0;
-					entry->Old = true;
-					entry->Valid = false;
-				}
+			if (ini.Load(file, false)) { // RA2: as above
 				entry->Scenario = 0;
 				entry->House = HOUSE_FIRST;
-				strncpy(entry->Filename, ff->cFileName, sizeof(entry->Filename));
+				strncpy(entry->Filename, ff->cFileName, 32); // RA2: as above
 				if (!strlen(entry->Filename)) {
-					strncpy(entry->Filename, ff->cAlternateFileName, sizeof(entry->Filename));
+					strncpy(entry->Filename, ff->cAlternateFileName, 32); // RA2: as above
 				}
 				entry->DateTime.dwHighDateTime = ff->ftLastWriteTime.dwHighDateTime;
 				entry->DateTime.dwLowDateTime = ff->ftLastWriteTime.dwLowDateTime;
@@ -4537,6 +4234,18 @@ bool MapSeedClass::Read_File(FileEntryClass * entry, WIN32_FIND_DATAA * ff)
 	}
 	return(false);
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 /// <summary>
@@ -4599,10 +4308,6 @@ double NormalDistribution::operator ()(void)
 {
 	if (HasSpare) {
 		HasSpare = false;
-		/*
-		 * The parentheses are deliberately left off here; adding them swaps the
-		 * order of the generated instructions.
-		 */
 		return Spare;
 	}
 
@@ -4617,10 +4322,12 @@ double NormalDistribution::operator ()(void)
 	} while (s >= 1.0 || s == 0.0);
 
 	double l = log(s);
-	s = fastmath::sqrt((-l - l) / s);
-	Spare = s * v;
+	double f = fastmath::sqrt((-l - l) / s); // RA2: YR's form: TibSun's matches at 0x579830 by itself, but VC6 then inlines it into Sample_Normal 0x5798D0, which in RA2 calls it
+	double r1 = f * u; // RA2: as above
+	double r2 = f * v; // RA2: as above
+	Spare = r2; // RA2: as above
 	HasSpare = true;
-	return(s * u);
+	return(r1); // RA2: as above
 }
 
 
@@ -4659,13 +4366,86 @@ double Sample_Truncated_Normal(double mean, double scale, double lower_bound, do
 	}
 	do {
 		do {
-			//value = scale * RMGGaussian() + mean;
 			value = Sample_Normal(mean, scale);
 		}
 		while (value < lower_bound);
 	}
 	while (value > upper_bound);
 	return(value);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+inline double Sample_Truncated_Normal_Inline(double mean, double scale, double lower_bound, double upper_bound)
+{
+	double value;
+
+	if (mean - scale > upper_bound || mean + scale < lower_bound) {
+		scale = (upper_bound - lower_bound) * 0.5;
+		mean = scale + lower_bound;
+	}
+	do {
+		value = Sample_Normal(mean, scale);
+	} while (value < lower_bound || value > upper_bound);
+	return(value);
+}
+
+
+/// <summary>
+/// Reads the random map generator's settings from RMG.INI's General section: the tiberium limits, the level light
+/// and theater ambient light lists, the vegetation limits, the tree count and the buildings that light ore patches.
+/// </summary>
+void MapGeneratorClass::Read_RMG_INI(void) // RA2: not in TibSun, at 0x579960
+{
+	CCFileClass file("RMG.INI");
+	CCINIClass * ini = new CCINIClass;
+	ini->Load(file, false);
+
+	RMGLevelLightSettings.Clear();
+	RMGVegetationMinimums.Clear();
+	RMGVegetationMaximums.Clear();
+	TemperateOrePatchLamps.Clear();
+	SnowOrePatchLamps.Clear();
+	TemperateAmbientLight.Clear();
+	SnowAmbientLight.Clear();
+
+	RMGMinimumTiberium = ini->Get_Int("General", "RMGMinimumTiberium", RMGMinimumTiberium);
+	RMGMaximumTiberium = ini->Get_Int("General", "RMGMaximumTiberium", RMGMaximumTiberium);
+	RMGLevelLightSettings = ini->Get_IntList("General", "RMGLevelLightSettings", RMGLevelLightSettings);
+	RMGVegetationMinimums = ini->Get_IntList("General", "RMGVegetationMinimums", RMGVegetationMinimums);
+	RMGVegetationMaximums = ini->Get_IntList("General", "RMGVegetationMaximums", RMGVegetationMaximums);
+	TemperateAmbientLight = ini->Get_IntList("General", "TemperateAmbientLight", TemperateAmbientLight);
+	SnowAmbientLight = ini->Get_IntList("General", "SnowAmbientLight", SnowAmbientLight);
+	TemperateAmbientRed = ini->Get_IntList("General", "TemperateAmbientRed", TemperateAmbientRed);
+	TemperateAmbientGreen = ini->Get_IntList("General", "TemperateAmbientGreen", TemperateAmbientGreen);
+	TemperateAmbientBlue = ini->Get_IntList("General", "TemperateAmbientBlue", TemperateAmbientBlue);
+	SnowAmbientRed = ini->Get_IntList("General", "SnowAmbientRed", SnowAmbientRed);
+	SnowAmbientGreen = ini->Get_IntList("General", "SnowAmbientGreen", SnowAmbientGreen);
+	SnowAmbientBlue = ini->Get_IntList("General", "SnowAmbientBlue", SnowAmbientBlue);
+	MaxTrees = ini->Get_Int("General", "MaxTrees", MaxTrees);
+
+	char buffer[1024];
+	if (ini->Get_String("General", "TemperateOrePatchLamps", "", buffer, sizeof(buffer))) {
+		for (char const * name = strtok(buffer, ","); name != NULL && *name; name = strtok(NULL, ",")) {
+			BuildingTypeClass * lamp = BuildingTypeClass::Find_Or_Make(name);
+			if (lamp != NULL) {
+				TemperateOrePatchLamps.Add(lamp);
+			}
+		}
+	}
+	if (ini->Get_String("General", "SnowOrePatchLamps", "", buffer, sizeof(buffer))) {
+		for (char const * name = strtok(buffer, ","); name != NULL && *name; name = strtok(NULL, ",")) {
+			BuildingTypeClass * lamp = BuildingTypeClass::Find_Or_Make(name);
+			if (lamp != NULL) {
+				SnowOrePatchLamps.Add(lamp);
+			}
+		}
+	}
+
+	delete ini;
+	file.Close();
 }
 
 
@@ -4969,7 +4749,7 @@ void MapGeneratorClass::Cleanup(void)
 	}
 
 	MapRegionClass::TotalCount = 0;
-	Map.Overpass();
+	Map.Overpass(); // RA2: no argument
 	DebugString("RMG: Compute Radar Image\n");
 	Map.Set_Local_Dimensions(Map.LocalRect);
 	Map.Compute_Radar_Image();
@@ -5310,48 +5090,9 @@ void MapGeneratorClass::Init_Map(bool full_init)
 	Scen->AmbientLight = tod * 100.0;
 	Scen->LevelLight = 1;
 
-	if (SeedData.UseTransitions) {
-		CCINIClass ini;
-		switch (SeedData.Time) {
-		case TIME_OF_DAY_MORNING: {
-			CCFileClass file("MORNING.INI");
-			ini.Load(file, false);
-		} break;
-		case TIME_OF_DAY_AFTERNOON: {
-			CCFileClass file("DAY.INI");
-			ini.Load(file, false);
-		} break;
-		case TIME_OF_DAY_DUSK: {
-			CCFileClass file("DUSK.INI");
-			ini.Load(file, false);
-		} break;
-		case TIME_OF_DAY_NIGHT: {
-			CCFileClass file("NIGHT.INI");
-			ini.Load(file, false);
-		} break;
-		}
-		Scen->Read_Local_INI(ini);
-		TriggerTypeClass::Read_All(ini);
-		TagTypeClass::Read_All(ini);
-	}
 
-	if (SeedData.UseIonStorms) {
-		CCFileClass file("ION.INI");
-		CCINIClass ini;
-		ini.Load(file, false);
-		Rule->General(ini);
-		char const * const LIGHTING = "Lighting";
-		Scen->IonAmbientLight= (int) (100.0 * ini.Get_Float(LIGHTING, "IonAmbient", Scen->AmbientLight / 100.0));
-		Scen->IonRedTint     = (int) (100.0 * ini.Get_Float(LIGHTING, "IonRed",  Scen->RedTint / 100.0));
-		Scen->IonGreenTint   = (int) (100.0 * ini.Get_Float(LIGHTING, "IonGreen",Scen->GreenTint / 100.0));
-		Scen->IonBlueTint    = (int) (100.0 * ini.Get_Float(LIGHTING, "IonBlue", Scen->BlueTint / 100.0));
-		Scen->IonGroundLight = (int) (NORMAL_LIGHT * ini.Get_Float(LIGHTING, "IonGround", Scen->GroundLight / NORMAL_LIGHT));
-		Scen->IonLevelLight  = (int) (NORMAL_LIGHT * ini.Get_Float(LIGHTING, "IonLevel", Scen->LevelLight / NORMAL_LIGHT));
-		TriggerTypeClass::Read_All(ini);
-		TagTypeClass::Read_All(ini);
-	}
 
-	Update_Progress(50);
+	Update_Progress(50); // RA2: no UseTransitions (not in RA2's layout)
 }
 
 
@@ -5371,6 +5112,613 @@ void MapGeneratorClass::Update_Progress(int percent_progress)
 }
 
 
+void MapGeneratorClass::Seed_Land(void) // RA2: not in TibSun, at 0x57BEA0
+{
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		cptr->ITType = IsometricTileTypeClass::WaterSet;
+		cptr = Map.Iterate();
+	}
+
+	switch (SeedData.MapType) {
+		case 0:
+			Seed_Land_Type0();
+			break;
+		case 1:
+			Seed_Land_Type1();
+			break;
+		case 2:
+			Seed_Land_Type2();
+			break;
+	}
+
+	Map.Reset_Iterator();
+	cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (cptr->ITType == IsometricTileTypeClass::WaterSet) {
+			bool inland = true;
+			for (int facing = FACING_N; facing < FACING_COUNT; facing += 2) {
+				if (!cptr->Adjacent_Cell((FacingType)facing).Is_Tile_Clear()) {
+					inland = false;
+				}
+			}
+			if (inland) {
+				cptr->ITType = ISOTILE_CLEAR;
+			}
+		}
+		cptr = Map.Iterate();
+	}
+
+	Map.Build_All_Shores(0, 0); // RA2: 0x55C2C0 (meastes MapClass_Build_All_Shores)
+
+	if (RMGCellData != NULL) {
+		int grid_size = MapCellStride * MapCellStride;
+		for (int i = 0; i < grid_size; i++) {
+			MapRegionClass::Get_Cell_Data(i).RegionID = -1;
+			MapRegionClass::Get_Cell_Data(i).SpreadID = -1;
+		}
+	}
+
+	for (int i = MapRegionClass::MapRegions.Count() - 1; i >= 0; i--) {
+		MapRegionClass * region = MapRegionClass::MapRegions[i];
+		if (region != NULL) {
+			delete region;
+		}
+	}
+
+	MapRegionClass::TotalCount = 0;
+
+	Green_Shores();
+}
+
+
+void MapGeneratorClass::Partition_Rect(DynamicVectorClass<Rect> & rects, int count, Rect const & area) // RA2: not in TibSun, at 0x57C0D0
+{
+	int root = (int)fastmath::sqrt((double)count);
+	int cols = (root * root == count) ? root : root + 1;
+	int rows = (cols * root >= count) ? root : cols;
+	int cell_w = area.Width / cols;
+	int cell_h = area.Height / cols;
+	int step_x = 0;
+	int step_y = 0;
+	int skip_x = 0;
+	int skip_y = 0;
+
+	if (Random_Fraction() < 0.5) {
+		cell_w = area.Width / rows;
+		skip_y = cell_h;
+		step_x = cell_w;
+	} else {
+		cell_h = area.Height / rows;
+		skip_x = cell_w;
+		step_y = cell_h;
+	}
+
+	int empty = rows * cols - count;
+	Point2D pos = area.Top_Left();
+
+	DynamicVectorClass<int> lengths;
+	DynamicVectorClass<int> open;
+	for (int i = 0; i < rows; i++) {
+		lengths.Add(cols);
+		open.Add(i);
+	}
+
+	for (int n = 0; n < empty; n++) {
+		unsigned int last = open.Count() - 1;
+		unsigned int pick;
+		do {
+			pick = (unsigned int)(RMG_RANDOM_DOUBLE(last + 1));
+		} while (pick > last);
+		lengths[open[pick]] = root;
+		open.Delete_Index(pick);
+	}
+
+	for (int row = 0; row < rows; row++) {
+		int length = lengths[row];
+		if (length < cols) {
+			if (skip_x > 0) {
+				pos.X += cell_w / 2;
+			} else {
+				pos.Y += cell_h / 2;
+			}
+		}
+		for (int j = 0; j < length; j++) {
+			rects.Add(Rect(pos.X + 2, pos.Y + 2, cell_w - 4, cell_h - 4));
+			pos.X += skip_x;
+			pos.Y += skip_y;
+		}
+		pos.X += step_x;
+		pos.Y += step_y;
+		if (skip_x > 0) {
+			pos.X = area.X;
+		} else {
+			pos.Y = area.Y;
+		}
+	}
+}
+
+
+/// <summary>
+/// RA2: lays the land down as one chunk per player plus a few spare ones, each grown from the middle of its share
+/// of the map.
+/// </summary>
+void MapGeneratorClass::Seed_Land_Type0(void)
+{
+	WorkingRegionID = 1;
+	DynamicVectorClass<Rect> regions;
+
+	unsigned int range = MAX(2U, (unsigned int)SeedData.NumPlayers / 2);
+	unsigned int selected;
+	do {
+		selected = (unsigned int)(RMG_RANDOM_DOUBLE2(range) + 1.0);
+	} while (selected > range);
+
+	Partition_Rect(regions, SeedData.NumPlayers + selected, Map.LocalRect);
+
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID()).SpreadID = 0;
+		cptr = Map.Iterate();
+	}
+
+	while (regions.Count() > 0) {
+		Rect region = regions[0];
+		int count = (int)((RMG_RANDOM_DOUBLE2(0.05) + 0.45) * (region.Width * region.Height * 2));
+		Point2D center(region.Width / 2 + region.Height / 2 + region.X + 1 + region.Y,
+					   region.Height / 2 - region.Width / 2 - region.X + Map.PlayRect.Width + region.Y);
+		int result = 0;
+		for (int attempt = 0; attempt < 10 && result == 0; attempt++) {
+			result = Spread_Land(count, region, center, true, Cell(center.X, center.Y), 0.25, false);
+			if (result == 0) {
+				WorkingRegionID++;
+			}
+		}
+		regions.Delete_Index(0);
+	}
+}
+
+
+/// <summary>
+/// RA2: lays the land down as one mass grown from the middle of the map until the water setting's share of land is
+/// met.
+/// </summary>
+void MapGeneratorClass::Seed_Land_Type1(void)
+{
+	WorkingRegionID = 1;
+	int total = Map_Cell_Count();
+	int placed = 0;
+	int tries = 0;
+	double current = 0.0;
+	double target = (1.0 - SeedData.WaterAmount * 0.01) * (0.5 - 0.45) + 0.45;
+	int maximum = (int)((double)total * 0.03 * target);
+	Point2D origin(Map.PlayRect.Width / 2 + Map.PlayRect.Height / 2 + 1,
+				   Map.PlayRect.Width / 2 + Map.PlayRect.Height / 2);
+	Point2D seed = origin;
+
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID()).SpreadID = 0;
+		cptr = Map.Iterate();
+	}
+
+	Rect bounds = Map.LocalRect;
+	bounds.X++;
+	bounds.Y++;
+	bounds.Width -= 2;
+	bounds.Height -= 2;
+	while (current < target && tries < 100) {
+		int size = (int)((target - current) * (double)total);
+		size = MIN(size, maximum);
+		current = (double)(placed += Spread_Land(size, bounds, seed, true, Cell(origin.X, origin.Y), 0.75, true)) / (double)total;
+		tries++;
+
+		int nearest = 50000;
+		Cell closest(0, 0);
+		Map.Reset_Iterator();
+		cptr = Map.Iterate();
+		while (cptr != NULL) {
+			if (MapRegionClass::Get_Cell_Data(cptr->CellID).SpreadID == 0) {
+				int distance = abs(cptr->CellID.X - origin.X) + abs(cptr->CellID.Y - origin.Y);
+				if (distance < nearest) {
+					nearest = distance;
+					closest = cptr->CellID;
+				}
+			}
+			cptr = Map.Iterate();
+		}
+		seed = Point2D(closest.X, closest.Y);
+	}
+}
+
+
+/// <summary>
+/// RA2: lays the land down as two masses, one in each half of the map, each grown until its half has the water
+/// setting's share of land.
+/// </summary>
+void MapGeneratorClass::Seed_Land_Type2(void)
+{
+	WorkingRegionID = 1;
+	int total = Map_Cell_Count();
+	int tries = 0;
+	double target = (1.0 - SeedData.WaterAmount * 0.01) * (0.2 - 0.15) + 0.15;
+	int maximum = (int)((double)total * 0.06 * target);
+
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID()).SpreadID = 0;
+		cptr = Map.Iterate();
+	}
+
+	Rect halves[2];
+	if (Random_Fraction() < 0.5) {
+		halves[0] = Rect(Map.LocalRect.X, Map.LocalRect.Y, Map.LocalRect.Width / 2 - 1, Map.LocalRect.Height);
+		halves[1] = Rect(Map.LocalRect.X + Map.LocalRect.Width / 2 + 1, Map.LocalRect.Y, Map.LocalRect.Width / 2 - 1, Map.LocalRect.Height);
+	} else {
+		halves[0] = Rect(Map.LocalRect.X, Map.LocalRect.Y, Map.LocalRect.Width, Map.LocalRect.Height / 2 - 1);
+		halves[1] = Rect(Map.LocalRect.X, Map.LocalRect.Y + Map.LocalRect.Height / 2 + 1, Map.LocalRect.Width, Map.LocalRect.Height / 2 - 1);
+	}
+
+	for (int half = 0; half < 2; half++) {
+		int placed = 0;
+		double current = 0.0;
+		Rect bounds = halves[half];
+		Point2D origin(bounds.X + bounds.Width / 2 + bounds.Height / 2 + bounds.Y + 1,
+					   bounds.Y + Map.PlayRect.Width + bounds.Height / 2 - bounds.Width / 2 - bounds.X);
+		Point2D seed = origin;
+		double x_scale;
+		double y_scale;
+		if (bounds.Height > bounds.Width) {
+			x_scale = (double)bounds.Height / (double)bounds.Width * 1.2;
+			y_scale = 1.0;
+		} else {
+			x_scale = 1.0;
+			y_scale = (double)bounds.Width / (double)bounds.Height * 1.2;
+		}
+		double half_width = (double)bounds.Width * 0.5;
+		double inverse_x = 1.0 / (half_width * half_width);
+		double half_height = (double)bounds.Height * 0.5;
+		double inverse_y = 1.0 / (half_height * half_height);
+
+		while (current < target && tries < 100) {
+			int size = (int)((target - current) * (double)total);
+			size = MIN(size, maximum);
+			current = (double)(placed += Spread_Land(size, bounds, seed, true, Cell(origin.X, origin.Y), 0.75, true)) / (double)total;
+			tries++;
+
+			int nearest = 50000;
+			Cell closest(0, 0);
+			int count = MapCellStride * MapCellStride;
+			int minimum_diagonal = bounds.X * 2 - Map.PlayRect.Width + 1;
+			int maximum_diagonal = minimum_diagonal + bounds.Width * 2 + 2;
+			int minimum_sum = Map.PlayRect.Width + bounds.Y * 2 + 1;
+			int maximum_sum = minimum_sum + bounds.Height * 2 + 2;
+			for (int index = 0; index < count; index++) {
+				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(index);
+				Cell const & candidate = data.CellID;
+				int sum = candidate.X + candidate.Y;
+				int diagonal = candidate.X - candidate.Y;
+				if (sum >= minimum_sum && sum <= maximum_sum && diagonal >= minimum_diagonal && diagonal <= maximum_diagonal && data.SpreadID == 0 && Cell_In_Generation_Shape(candidate, bounds, true, inverse_x, inverse_y)) {
+					double dy = (double)abs(candidate.Y - origin.Y) * y_scale;
+					double dx = (double)abs(candidate.X - origin.X) * x_scale;
+					int distance = (int)(dy + dx);
+					if (distance < nearest) {
+						nearest = distance;
+						closest = candidate;
+					}
+				}
+			}
+			seed = Point2D(closest.X, closest.Y);
+		}
+	}
+}
+
+
+void MapGeneratorClass::Green_Shores(void) // RA2: not in TibSun, at 0x57CEB0
+{
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (cptr->Is_Tile_Shore()) {
+			for (int facing = FACING_N; facing < FACING_COUNT; facing += 2) {
+				CellClass * adjacent = &cptr->Adjacent_Cell((FacingType)facing);
+				if (adjacent->Is_Tile_Clear()) {
+					adjacent->ITType = IsometricTileTypeClass::GreenTile;
+				}
+			}
+		}
+		cptr = Map.Iterate();
+	}
+}
+
+
+void MapGeneratorClass::Scatter_Green_Tiles(void) // RA2: not in TibSun, at 0x57CF20
+{
+	DynamicVectorClass<CellClass *> candidates;
+	candidates.Set_Growth_Step(10000);
+
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (cptr->Is_Tile_Clear_To_Green_LAT()) {
+			for (int facing = FACING_N; facing < FACING_COUNT; facing += 2) {
+				CellClass * adjacent = &cptr->Adjacent_Cell((FacingType)facing);
+				if (adjacent->Is_Tile_Clear()) {
+					candidates.Add(adjacent);
+				}
+			}
+		}
+		cptr = Map.Iterate();
+	}
+
+	int passes = candidates.Count() / 3;
+	if (passes > 1000) {
+		passes = 1000;
+	}
+	for (int pass = passes; pass > 0; pass--) {
+		int index = Pick_Random_UInt(0, candidates.Count() - 1);
+		CellClass * chosen = candidates[index];
+		candidates.Delete_Index(index);
+		chosen->ITType = IsometricTileTypeClass::GreenTile;
+		for (int facing = FACING_N; facing < FACING_COUNT; facing += 2) {
+			CellClass * adjacent = &chosen->Adjacent_Cell((FacingType)facing);
+			if (adjacent->Is_Tile_Clear()) {
+				candidates.Add(adjacent);
+			}
+		}
+	}
+}
+
+
+/// <summary>
+/// RA2: the spreader's score for stepping to a cell. Inside a shaped area it is the step's length weighted by how
+/// far the cell lies from the area's centre along each diagonal; otherwise the plain distance.
+/// </summary>
+double MapGeneratorClass::Direction_Weighted_Cell_Distance(Cell const & from, Cell const & to, Rect const & rect, Cell const & center, float weight_x, float weight_y)
+{
+	if (!(rect == RECT_NONE)) {
+		int u = abs(((to.X - to.Y) >> 1) - ((center.X - center.Y) >> 1));
+		int v = abs(((to.X + to.Y) >> 1) - ((center.X + center.Y) >> 1));
+		if (u == 0 && v == 0) {
+			static const float zero = 0.0f;
+			return zero;
+		}
+		double length = fastmath::sqrt((double)(v * v + u * u));
+		double ratio_u = u / length;
+		double ratio_v = v / length;
+		int x = from.X - to.X;
+		int y = from.Y - to.Y;
+		double steps = MAX(abs(x), abs(y));
+		return (weight_x * ratio_u + ratio_v * weight_y) * steps;
+	}
+	int dx = from.X - to.X;
+	int dy = from.Y - to.Y;
+	return fastmath::sqrt((double)(dy * dy + dx * dx));
+}
+
+
+/// <summary>
+/// RA2: whether a cell lies in the area the spreader may grow over: the ellipse inscribed in the area when shaped,
+/// else the area itself; anywhere when there is no area.
+/// </summary>
+bool MapGeneratorClass::Cell_In_Generation_Shape(Cell const & cell, Rect const & rect, bool shaped, double scale_x, double scale_y)
+{
+	if (rect == RECT_NONE) {
+		return true;
+	}
+	if (shaped) {
+		int a = cell.X - rect.X * 2 - cell.Y + Map.PlayRect.Width - 1;
+		int b = cell.X - rect.Y * 2 - Map.PlayRect.Width + cell.Y - 1;
+		double u = a * 0.5 - rect.Width * 0.5;
+		double v = b * 0.5 - rect.Height * 0.5;
+		return (u * u) * scale_x + (v * v) * scale_y < 1.0;
+	}
+	return rect.Is_Point_Within(Point2D(cell.X, cell.Y));
+}
+
+
+/// <summary>
+/// RA2: grows a patch of land (clear tiles in the water) of about count cells as a priority-queue flood fill from
+/// the seed point, or from a random clear unclaimed cell when the seed is (0,0). Candidate cells are scored by their
+/// distance from a point that wanders off by a normal sample of the wander scale every step -- or, when weighted,
+/// by Direction_Weighted_Cell_Distance -- so the patch comes out ragged. The cells taken become the working region;
+/// the region's shores are then built. If the shores cannot be built, the region is flooded again.
+/// </summary>
+/// <returns>The number of cells taken, or 0 when no seed was found or the region was flooded again.</returns>
+int MapGeneratorClass::Spread_Land(int count, Rect const & bounds, Point2D const & seed, bool shaped, Cell const & center, double wander, bool weighted)
+{
+	if (count <= 400) {
+		count = 400;
+	}
+	int heap_size = MAX((8 * count) + 2, 100);
+	CellNode * nodes = new CellNode[heap_size];
+	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(heap_size);
+
+	/*
+	 * Without a seed, pick a clear cell that no region has claimed yet.
+	 */
+	Cell start;
+	if (seed.X == 0 && seed.Y == 0) {
+		int tries = 0;
+		do {
+			do {
+				unsigned int x;
+				do {
+					x = (unsigned int)RMG_RANDOM_DOUBLE2(Map.PlayRect.Width);
+				} while (x > (unsigned int)Map.PlayRect.Width - 1);
+				unsigned int y;
+				do {
+					y = (unsigned int)RMG_RANDOM_DOUBLE2(Map.PlayRect.Height);
+				} while (y > (unsigned int)Map.PlayRect.Height - 1);
+				start = Cell(x + 1 + y, Map.PlayRect.Width - x + y);
+				if (++tries >= 200) {
+					return(0);
+				}
+			} while (RMGCellData == NULL || MapRegionClass::Get_Cell_Data(start).RegionID != 0);
+		} while (!Map[start].Is_Tile_Clear());
+		if (tries >= 200) {
+			return(0);
+		}
+	} else {
+		start = Cell(seed.X, seed.Y);
+	}
+
+	/*
+	 * A shaped area weights the steps along its longer side less.
+	 */
+	float weight_x = 0.0f;
+	float weight_y = 0.0f;
+	if (!(bounds == RECT_NONE)) {
+		if (bounds.Height < bounds.Width) {
+			weight_x = 1.0f;
+			weight_y = (float)bounds.Width / (float)bounds.Height * 1.2;
+		} else {
+			weight_y = 1.0f;
+			weight_x = (float)bounds.Height / (float)bounds.Width * 1.2;
+		}
+	}
+
+	double wander_x = start.X;
+	double wander_y = start.Y;
+	int spread_count = 0;
+
+	queue->Clear();
+	int marker_index = 0;
+	nodes[marker_index].Element = start;
+	nodes[marker_index].Score = 0;
+	marker_index++;
+	MapRegionClass::Get_Cell_Data(start).SpreadID = WorkingRegionID;
+	queue->Insert(nodes[0]);
+	CellNode * node = queue->Extract_Min();
+
+	double inverse_x = 1.0 / ((double)bounds.Width * 0.5 * (double)bounds.Width * 0.5);
+	double inverse_y = 1.0 / ((double)bounds.Height * 0.5 * (double)bounds.Height * 0.5);
+
+	while (spread_count < count && node != NULL) {
+		if (RMGCellData != NULL) {
+			MapRegionClass::Get_Cell_Data(node->Element).RegionID = WorkingRegionID;
+		}
+		Map[node->Element].ITType = ISOTILE_CLEAR;
+
+		CellNode * newnode = &nodes[marker_index];
+		for (int facing = FACING_N; facing < FACING_COUNT; facing += 2) {
+			Cell adjacent = Adjacent_Cell(node->Element, (FacingType)facing);
+			if (My_In_Radar(adjacent)) {
+				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(adjacent);
+				if (data.RegionID == 0 && data.SpreadID != WorkingRegionID && Map[adjacent].Is_Tile_Clear() && marker_index < heap_size &&
+					Cell_In_Generation_Shape(adjacent, bounds, shaped, inverse_x, inverse_y)) {
+
+					newnode->Element = adjacent;
+					Cell wander_cell((int)wander_x, (int)wander_y);
+					if (!weighted) {
+						int dx = adjacent.X - wander_cell.X;
+						int dy = adjacent.Y - wander_cell.Y;
+						newnode->Score = fastmath::sqrt((double)(dx * dx + dy * dy)) + RMG_RANDOM_DOUBLE(5.0);
+					} else {
+						newnode->Score = Direction_Weighted_Cell_Distance(wander_cell, adjacent, bounds, center, weight_x, weight_y);
+					}
+					marker_index++;
+					data.SpreadID = WorkingRegionID;
+					queue->Insert(*newnode++);
+				}
+			}
+		}
+
+		wander_x += RMGGaussian() * wander;
+		wander_y += RMGGaussian() * wander;
+		spread_count++;
+		node = queue->Extract_Min();
+	}
+
+	/*
+	 * The cells still waiting in the queue join the region too.
+	 */
+	CellNode * remaining = queue->Extract_Min();
+	while (remaining != NULL) {
+		CellClass & cell = Map[remaining->Element];
+		MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(remaining->Element);
+		if (data.RegionID == 0 && cell.Is_Tile_Clear()) {
+			cell.ITType = ISOTILE_CLEAR;
+			data.RegionID = WorkingRegionID;
+		}
+		remaining = queue->Extract_Min();
+		spread_count++;
+	}
+
+	delete [] nodes;
+	delete queue;
+
+	bool built = Map.Build_All_Shores(WorkingRegionID, 1) != 0;
+
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (cptr->ITType >= IsometricTileTypeClass::ShorePieces && cptr->ITType < IsometricTileTypeClass::ShorePieces + 42) {
+			cptr->ITType = ISOTILE_CLEAR;
+			cptr->SubTile = 0;
+		}
+		cptr = Map.Iterate();
+	}
+
+	if (built) {
+		WorkingRegionID++;
+		return(spread_count);
+	}
+
+	/*
+	 * The shores would not fit: flood the region again.
+	 */
+	int id = WorkingRegionID;
+	Map.Reset_Iterator();
+	cptr = Map.Iterate();
+	while (cptr != NULL) {
+		MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(cptr->CellID);
+		if (data.RegionID == id) {
+			data.RegionID = 0;
+			data.CanExpand = false;
+			cptr->ITType = IsometricTileTypeClass::WaterSet;
+			cptr->SubTile = 0;
+			cptr->Height = CellHeight;
+		}
+		cptr = Map.Iterate();
+	}
+	return(0);
+}
+
+
+void MapGeneratorClass::Clear_Shore_Tiles(void) // RA2: not in TibSun, at 0x57DD10
+{
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (cptr->ITType >= IsometricTileTypeClass::ShorePieces && cptr->ITType < IsometricTileTypeClass::ShorePieces + 42) {
+			cptr->ITType = ISOTILE_CLEAR;
+			cptr->SubTile = 0;
+		}
+		cptr = Map.Iterate();
+	}
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 /// <summary>
 /// Puts the map's water onto the terrain.
 /// This routine is the water phase of generation. A river is attempted first on any map wet
@@ -5386,15 +5734,11 @@ void MapGeneratorClass::Seed_Water(void)
 	int i;
 	int j;
 
-	if (SeedData.Biome != BIOME_DESERT && SeedData.WaterAmount > 20) {
+	if ((SeedData.MapType == 3 || SeedData.MapType == 4) && SeedData.WaterAmount > 20) { // RA2: Seed_Water at 0x57DD60 matches only so
 		i = 0;
 		river_seeded = false;
 		while (!river_seeded && i < 10) {
-			if (SeedData.Biome <= BIOME_TUNDRA) {
-				river_seeded = Seed_Arctic_River(Cell(0, 0), 0.0);
-			} else {
-				river_seeded = Seed_River(Cell(0, 0), 0.0, 0);
-			}
+			river_seeded = Seed_River(Cell(0, 0), 0.0, 0); // RA2: as above
 			i++;
 		}
 		if (river_seeded) {
@@ -5405,17 +5749,98 @@ void MapGeneratorClass::Seed_Water(void)
 	j = 0;
 	lake_seeded = false;
 	while (!lake_seeded && j < 10) {
-		if (SeedData.Biome <= BIOME_TUNDRA) {
-			lake_seeded = Seed_Arctic_Lake(Cell(0, 0));
-		} else {
-			lake_seeded = Seed_Lake(Cell(0, 0));
-		}
+		lake_seeded = Seed_Lake(Cell(0, 0)); // RA2: as above
 		j++;
 	}
 	if (lake_seeded) {
 		WorkingRegionID++;
 	}
 }
+
+
+void MapGeneratorClass::Vary_Water_Tiles(void) // RA2: not in TibSun, at 0x57DE10
+{
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (cptr->ITType == IsometricTileTypeClass::WaterSet && cptr->SubTile == 0) {
+			CellClass * east = &cptr->Adjacent_Cell(FACING_E);
+			CellClass * south = &cptr->Adjacent_Cell(FACING_S);
+			CellClass * southeast = &cptr->Adjacent_Cell(FACING_SE);
+			if (east->ITType == IsometricTileTypeClass::WaterSet && east->SubTile == 0
+				&& south->ITType == IsometricTileTypeClass::WaterSet && south->SubTile == 0
+				&& southeast->ITType == IsometricTileTypeClass::WaterSet && southeast->SubTile == 0
+				&& Pick_Random_UInt(1, 10) != 1) {
+				int pick = Pick_Random_UInt(0, 241);
+				int tile_index;
+				if (pick >= 240) {
+					tile_index = 247 - pick;
+				} else {
+					tile_index = pick / 40;
+				}
+				MapGeneratorClass::Place_Tile((IsometricTileType)(IsometricTileTypeClass::WaterSet + tile_index), cptr->CellID, MapRegionClass::CellData::Get_Region(cptr->CellID), -1);
+			} else {
+				cptr->ITType = (IsometricTileType)(IsometricTileTypeClass::WaterSet + 8 + Pick_Random_UInt(0, 200) / 40);
+			}
+		}
+		cptr = Map.Iterate();
+	}
+}
+
+
+bool MapGeneratorClass::Green_Region_Tiles(int region_id) // RA2: not in TibSun, at 0x57DFE0
+{
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (MapRegionClass::CellData::Get_Region(cptr->CellID) == region_id) {
+			if (cptr->ITType == ISOTILE_CLEAR || cptr->ITType == 0xFFFF) {
+				cptr->ITType = IsometricTileTypeClass::GreenTile;
+			}
+		}
+		cptr = Map.Iterate();
+	}
+	return true;
+}
+
+
+
+
+
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline double Random_Scale(void)
+{
+	return RMG_RANDOM_DOUBLE2(0.05) + 0.45;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int Double_Area(Rect const & rect)
+{
+	return rect.Width * rect.Height * 2;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline int Double_Area(int width, int height)
+{
+	return width * height * 2;
+}
+
+
+
+
+
+
 
 
 /// <summary>
@@ -5664,401 +6089,6 @@ bool MapGeneratorClass::Seed_Lake(const Cell & cell)
 
 
 /// <summary>
-/// Turns part of a water body into swamp.
-/// This routine is used on a mutated map to spoil an otherwise respectable lake. The water is
-/// soured out from a seed cell, the transitions along the new shore are tidied, and a little
-/// foliage is dropped on top to finish the job.
-/// </summary>
-/// <param name="cells">The water cells the swamp may claim.</param>
-/// <param name="last">The size of the water body, which decides how far the swamp may
-/// spread.</param>
-/// <param name="nodes">Scratch storage for the spread.</param>
-/// <param name="queue">The queue that orders the spread.</param>
-void MapGeneratorClass::Generate_Swamp(DynamicVectorClass<Cell> &cells, int last, CellNode *nodes, PriorityQueueClass<CellNode> *queue)
-{
-	Cell swamp_origin = CELL_NONE;
-	int tries = 0;
-
-	DebugString("Generating swamp\n");
-
-	while (swamp_origin == CELL_NONE) {
-		Cell c = cells[Pick_Random_UInt(0, cells.Count() - 1)];
-		if (!Map[c].Is_Tile_Swamp()) {
-			swamp_origin = c;
-		}
-
-		tries++;
-		if (tries >= 200) {
-			break;
-		}
-	}
-
-	if (swamp_origin == CELL_NONE) {
-		return;
-	}
-
-	DynamicVectorClass<Cell> swamp_cells;
-	swamp_cells.Set_Growth_Step(500);
-
-	int max_spread = MIN(last / 2, 200);
-	int min_spread = MIN(last / 8, 50);
-
-	int spread_count = Pick_Random_UInt(min_spread, max_spread);
-	queue->Clear();
-
-	int marker_index = 1;
-	nodes[0].Element = swamp_origin;
-	nodes[0].Score = 0;
-	queue->Insert(nodes[0]);
-
-	CellNode * node = queue->Extract_Min();
-	int spread_step = 0;
-	while (spread_step < spread_count && node != NULL) {
-		CellClass * cptr = &Map[node->Element];
-		cptr->ITType = IsometricTileTypeClass::SwampTile;
-		cptr->SubTile = 0;
-		swamp_cells.Add(cptr->CellID);
-
-		CellNode * newnode = &nodes[marker_index];
-		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
-			Cell newcell = Adjacent_Cell(node->Element, dir);
-			if (My_In_Radar(newcell)) {
-				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
-				CellClass * newcellptr = &Map[newcell];
-				if (newcellptr->ITType >= IsometricTileTypeClass::WaterSet && newcellptr->ITType < IsometricTileTypeClass::WaterSet + WATER_COUNT) {
-					newnode->Element = newcell;
-					newnode->Score = Get_Spread_Score(swamp_origin, newcell, spread_step);
-					data.SpreadID = WorkingRegionID;
-					marker_index++;
-					queue->Insert(*newnode++);
-				}
-			}
-		}
-
-		spread_step++;
-		node = queue->Extract_Min();
-	}
-
-	int i;
-	for (i = 0; i < swamp_cells.Count(); i++) {
-		Map[swamp_cells[i]].Fixup_LAT();
-	}
-
-	DynamicVectorClass<unsigned short> swamp_tiles;
-
-	for (i = 0; i < SWAMP_COUNT - 1; i++) {
-		swamp_tiles.Add((unsigned short)(IsometricTileTypeClass::SwampTile + i + 1));
-	}
-
-	int patch_count = Pick_Random_UInt(1, 8);
-	for (i = 0; i < patch_count; i++) {
-		int patch_index = Pick_Random_UInt(0, swamp_tiles.Count() - 1);
-		IsometricTileTypeClass * itype = IsometricTileTypes[swamp_tiles[patch_index]];
-		int width = itype->Width;
-		int height = itype->Height;
-
-		Cell patch_cell = CELL_NONE;
-		int patch_tries = 0;
-		while (patch_cell == CELL_NONE) {
-			Cell base = swamp_cells[Pick_Random_UInt(0, swamp_cells.Count() - 1)];
-			patch_cell = base;
-			for (int y = 0; y < height; y++) {
-				for (int x = 0; x < width; x++) {
-					if (Map[base + Cell(x, y)].ITType != IsometricTileTypeClass::SwampTile) {
-						patch_cell = CELL_NONE;
-					}
-				}
-			}
-
-			patch_tries++;
-			if (patch_tries >= 200) {
-				break;
-			}
-		}
-
-		if (patch_cell == CELL_NONE) {
-			break;
-		}
-
-		for (int y = 0; y < height; y++) {
-			char subtile = width * y;
-			for (int x = 0; x < width; x++) {
-				Cell c = patch_cell + Cell(x, y);
-				Map[c].ITType = (IsometricTileType)swamp_tiles[patch_index];
-				Map[c].SubTile = subtile + x;
-			}
-		}
-
-		swamp_tiles.Delete_Index(patch_index);
-	}
-
-	int foliage_count = Pick_Random_UInt(0, 4);
-	for (i = 0; i < foliage_count; i++) {
-		Cell c = swamp_cells[Pick_Random_UInt(0, swamp_cells.Count() - 1)];
-		if (Map[c].Cell_Terrain(false) == NULL) {
-			char terrain_name[8];
-			int terrain_index = Pick_Random_UInt(1, 5);
-			sprintf(terrain_name, "FONA0%d", terrain_index);
-			new TerrainClass(TerrainTypes[TerrainTypeClass::From_Name(terrain_name)], c);
-		}
-	}
-
-	DebugString("Swamp heap size:?? -- Marker Index:%d\n", marker_index);
-}
-
-
-/// <summary>
-/// Seeds a frozen lake on an arctic map.
-/// This is the tundra counterpart of Seed_Lake. The sheet spreads out from a seed cell until the
-/// map's water budget is spent and is then given its edge variants. A lake that cannot be grown
-/// to a worthwhile size is abandoned and the ground put back the way it was found.
-/// </summary>
-/// <param name="cell">The cell to grow the lake from, or Cell(0,0) to let the routine choose
-/// one.</param>
-/// <returns>bool; Was a lake of usable size seeded?</returns>
-bool MapGeneratorClass::Seed_Arctic_Lake(const Cell & cell)
-{
-	float ratios[BIOME_COUNT] = {
-		0.40f,
-		0.35f,
-		0.35f,
-		0.10f,
-		0.30f,
-	};
-
-	int water_value;
-	if (SeedData.WaterAmount == 0) {
-		water_value = 0;
-	} else {
-		water_value = (int)(ratios[SeedData.Biome] * (double)LocalWidth * (double)LocalHeight * (double)SeedData.WaterAmount * 0.02 + 100.0);
-	}
-
-	int spread_limit = water_value - SeededWaterAmount;
-	IsometricTileType ice1 = IsometricTileTypeClass::Ice1Set;
-	if (spread_limit <= 0) {
-		return(false);
-	}
-
-	CellNode *nodes = new CellNode[MAX((2 * spread_limit) + 2, 100)];
-	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(MAX((2 * spread_limit) + 2, 100));
-
-	Map.Reset_Iterator();
-	CellClass *cptr = Map.Iterate();
-	while (cptr != NULL) {
-		Set_Cell_Data_Spread(cptr->Fetch_CellID(), 0);
-		cptr = Map.Iterate();
-	}
-
-	Cell seed_cell;
-	if (cell == Cell(0, 0)) {
-		int tries = 0;
-		while (true) {
-			unsigned int x = Pick_Random_UInt(0, Map.PlayRect.Width - 1);
-			unsigned int y = Pick_Random_UInt(0, Map.PlayRect.Height - 1);
-
-			seed_cell = Cell(1, Map.PlayRect.Width) + Cell(x, -x) + Cell(y, y);
-
-			tries++;
-			if (tries >= 200) {
-				return(false);
-			}
-
-			if (MapRegionClass::CellData::Get_Region(seed_cell) == 0 && Map[seed_cell].Is_Tile_Clear()) {
-				if (tries < 200) {
-					break;
-				}
-				return(false);
-			}
-		}
-	} else {
-		seed_cell = cell;
-	}
-
-	bool success = true;
-	int seeded_count = 0;
-
-	int max_spread = MAX(spread_limit, 76);
-	double scale = (double)(spread_limit / 6);
-	double mean = (double)(spread_limit / 4);
-
-	int spread_count = (int)Sample_Truncated_Normal(mean, scale, 75.0, (double)max_spread);
-
-	queue->Clear();
-
-	int marker_index = 1;
-	nodes[0].Element = seed_cell;
-	nodes[0].Score = 0.0f;
-	Set_Cell_Data_Spread(seed_cell, WorkingRegionID);
-	queue->Insert(nodes[0]);
-
-	CellNode *node = queue->Extract_Min();
-
-	DynamicVectorClass<Cell> *ice_cells = new DynamicVectorClass<Cell>();
-	ice_cells->Set_Growth_Step(spread_count + 1);
-
-	while (seeded_count < spread_count && node != NULL) {
-		Set_Cell_Data_Region(node->Element, WorkingRegionID);
-
-		CellClass *node_cellptr = &Map[node->Element];
-		node_cellptr->ITType = ice1;
-		node_cellptr->SubTile = 0;
-		node_cellptr->IsIceGrowthAllowed = true;
-		ice_cells->Add(node_cellptr->Fetch_CellID());
-
-		CellNode *newnode = &nodes[marker_index];
-		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
-			Cell newcell = Adjacent_Cell(node->Element, dir);
-
-			if (My_In_Radar(newcell)) {
-
-				if (RMGCellData != NULL) {
-					MapRegionClass::CellData &data = MapRegionClass::Get_Cell_Data(newcell);
-					if (!data.RegionID && data.SpreadID != WorkingRegionID) {
-						CellClass *newcellptr = &Map[newcell];
-						if (newcellptr->Is_Tile_Clear()) {
-							newnode->Element = newcell;
-							newnode->Score = Get_Spread_Score(seed_cell, newcell, seeded_count);
-							Set_Cell_Data_Spread(newcell, WorkingRegionID);
-							marker_index++;
-							queue->Insert(*newnode++);
-						}
-					}
-				}
-			}
-		}
-
-		seeded_count++;
-		node = queue->Extract_Min();
-	}
-
-	CellNode *remaining = queue->Extract_Min();
-	while (remaining != NULL) {
-		if (!success) {
-			break;
-		}
-
-		MapRegionClass::CellData &data = MapRegionClass::Get_Cell_Data(remaining->Element);
-		if (data.RegionID || !Map[remaining->Element].Is_Tile_Clear()) {
-			success = false;
-		} else {
-			CellClass *cellptr = &Map[remaining->Element];
-			cellptr->ITType = IsometricTileTypeClass::Ice1Set;
-			cellptr->SubTile = 0;
-			cellptr->IsIceGrowthAllowed = true;
-			data.RegionID = WorkingRegionID;
-			//ice_cells->Add(cellptr->Fetch_CellID());
-			ice_cells->Add(cellptr->CellID);
-		}
-
-		remaining = queue->Extract_Min();
-		seeded_count++;
-	}
-
-	Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_CRACKED));
-	Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_EDGE));
-
-	delete queue;
-	delete[] nodes;
-	delete ice_cells;
-
-	if (success) {
-		SeededWaterAmount += seeded_count;
-		return(true);
-	}
-
-	Clear_Region_Cells(WorkingRegionID, 0, -1);
-	return(false);
-}
-
-
-/// <summary>
-/// Scatters an edge variant over a sheet of ice.
-/// This routine is run over an ice sheet once it has been laid down, dabbing blotches of one of
-/// the ice variants here and there so that the sheet does not read as one flat expanse. It is
-/// called once per variant.
-/// </summary>
-/// <param name="cells">The ice cells that may be painted.</param>
-/// <param name="last">The ice variant to paint with.</param>
-void MapGeneratorClass::Seed_Ice(DynamicVectorClass<Cell> & cells, IsometricTileType last)
-{
-	double rand_scale = last == IsometricTileTypeClass::Ice1Set + ICE_CRACKED ? ICE_CRACKED - 1 : 1;
-
-	int seed_count = Pick_Random_UInt(0, 15);
-
-	CellNode * nodes = new CellNode[MAX(cells.Count() * 2, 64)];
-	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(MAX(cells.Count() * 2, 64));
-
-	for (int i = cells.Count() - 1; i >= 0; i--) {
-		MapRegionClass::Get_Cell_Data(cells[i]).Iced = false;
-	}
-
-	while (seed_count > 0) {
-		int spread_step = 0;
-		int spread_limit = MAX(4, cells.Count() / 20);
-		int spread_count = Pick_Random_UInt(3, spread_limit);
-		queue->Clear();
-
-		int seed_index = Pick_Random_UInt(0, cells.Count() - 1);
-		int node_count = 1;
-		Cell seed_cell = cells[seed_index];
-		nodes[0].Element = seed_cell;
-		nodes[0].Score = 0.0f;
-
-		MapRegionClass::Get_Cell_Data(seed_cell).Iced = true;
-		queue->Insert(nodes[0]);
-
-		CellNode * node = queue->Extract_Min();
-		while (spread_step < spread_count && node != NULL) {
-			Map[node->Element].ITType = (IsometricTileType)last;
-
-			CellNode * newnode = &nodes[node_count];
-			for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
-				Cell newcell = Adjacent_Cell(node->Element, dir);
-				if (My_In_Radar(newcell)) {
-					CellClass * newcellptr = &Map[newcell];
-					MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
-					if (newcellptr->Is_Tile_Ice() && !data.Iced) {
-						newnode->Element = newcell;
-						newnode->Score = Get_Ice_Score(seed_cell, newcell, rand_scale);
-						data.Iced = true;
-						node_count++;
-						queue->Insert(*newnode++);
-					}
-				}
-			}
-
-			spread_step++;
-			node = queue->Extract_Min();
-		}
-
-		seed_count--;
-	}
-
-	delete[] nodes;
-
-	delete queue;
-}
-
-
-/// <summary>
-/// Scores a candidate cell for a spreading patch of ice.
-/// This is the ice counterpart of Get_Spread_Score. Ground near the seed is claimed first, and
-/// the weight given to the random term decides how ragged the edge of the patch turns out.
-/// </summary>
-/// <param name="cell1">The cell the patch is spreading from.</param>
-/// <param name="cell2">The candidate cell being scored.</param>
-/// <param name="random_range">How much randomness to allow into the score.</param>
-/// <returns>Returns with the candidate's priority. Lower is claimed first.</returns>
-double MapGeneratorClass::Get_Ice_Score(const Cell & cell1, const Cell & cell2, double random_range) const
-{
-	int x = cell1.X - cell2.X;
-	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
-	return(RMG_RANDOM_DOUBLE(random_range) + dist);
-}
-
-
-/// <summary>
 /// Fetches how much water this map is meant to hold.
 /// The figure follows from the water setting the player chose, the biome, and the size of the
 /// playable area. The seeding routines treat it as a budget and stop once they have spent it.
@@ -6067,18 +6097,10 @@ double MapGeneratorClass::Get_Ice_Score(const Cell & cell1, const Cell & cell2, 
 /// water at all.</returns>
 int MapGeneratorClass::Get_Target_Water_Amount(void)
 {
-	float ratios[BIOME_COUNT] = {
-		0.40,
-		0.35,
-		0.35,
-		0.10,
-		0.30,
-	};
-
-	if (SeedData.WaterAmount == 0) {
+	if (SeedData.WaterAmount == 0) { // RA2: Get_Target_Water_Amount at 0x57EC20 has no float ratios[BIOME_COUNT] = {
 		return(0);
 	}
-	return(ratios[SeedData.Biome] * 0.02 * SeedData.WaterAmount * LocalWidth * LocalHeight + 100.0);
+	return(0.008 * SeedData.WaterAmount * LocalWidth * LocalHeight + 100.0); // RA2: Get_Target_Water_Amount at 0x57EC20 matches only so
 }
 
 
@@ -6377,155 +6399,6 @@ bool MapGeneratorClass::Seed_River(const Cell & cell, double start_angle, bool i
 
 
 /// <summary>
-/// Draws a wandering "river of ice" polyline of Ice1Set tiles across the map.
-/// Each step perturbs the heading and length, occasionally recurses to spawn a
-/// branch, and finally scatters ice-edge variants via Seed_Ice. This is the
-/// arctic sibling of Seed_River.
-/// </summary>
-/// <param name="cell">Seed cell, or Cell(0, 0) to pick a random edge seed.</param>
-/// <param name="start_angle">Initial heading angle in radians (used when cell is given).</param>
-/// <returns>True if enough ice was painted, false otherwise.</returns>
-bool MapGeneratorClass::Seed_Arctic_River(const Cell & cell, double start_angle)
-{
-	bool success = true;
-
-	Cell seed_cell;
-	double angle;
-
-	if (cell == Cell(0, 0)) {
-		Cell corner(1, Map.PlayRect.Width);
-		Cell far_corner = corner + Cell(Map.PlayRect.Width, -Map.PlayRect.Width) + Cell(Map.PlayRect.Height, Map.PlayRect.Height) + Cell(-2, 0);
-
-		int dir4 = (int)Pick_Random_UInt(0, 3);
-		int x = (int)Pick_Random_UInt(0, Map.PlayRect.Width - 1);
-		int y = (int)Pick_Random_UInt(0, Map.PlayRect.Height - 1);
-
-		Cell candidates[4];
-		candidates[0] = corner + Cell(x, -x);
-		candidates[1] = far_corner - Cell(y, y);
-		candidates[2] = far_corner - Cell(x, -x);
-		candidates[3] = corner + Cell(y, y);
-
-		double base_angle = DEG_TO_RAD(315) - (double)dir4 * M_PI_2;
-
-		seed_cell = candidates[dir4];
-		angle = Sample_Truncated_Normal(base_angle, DEG_TO_RAD(60),
-				base_angle - M_PI_2, base_angle + M_PI_2);
-	} else {
-		seed_cell = cell;
-		angle = start_angle;
-	}
-
-	if (!My_In_Radar(seed_cell)) {
-		return(false);
-	}
-
-	int seeded_count = 0;
-
-	double length_d = (double)SeedData.WaterAmount * 0.09;
-	if (4.0 > length_d) {
-		length_d = 4.0;
-	}
-	int length_top = (int)length_d;
-	double length = (double)Pick_Random_UInt(3, length_top);
-	int half = (int)length / 2;
-
-	double cur_angle = angle;
-	double length_hi = length + (double)half;
-	double length_lo = length - (double)half;
-	double cur_x = (double)seed_cell.X + 0.5;
-	double cur_y = (double)seed_cell.Y + 0.5;
-	double angle_hi = angle + M_PI_2;
-	double angle_lo = angle - M_PI_2;
-
-	double stop_roll = 1.0;
-
-	DynamicVectorClass<Cell> *ice_cells = new DynamicVectorClass<Cell>();
-	ice_cells->Set_Growth_Step(5000);
-
-	while (My_In_Radar(Cell((int)cur_x, (int)cur_y)) && success) {
-
-		double step_y = fastmath::cos(cur_angle);
-		double step_x = fastmath::sin(cur_angle);
-
-		int span = (int)(length + 0.5);
-		double px = cur_x - step_x * (double)(span - 1) * 0.5;
-		double py = cur_y - step_y * (double)(span - 1) * 0.5;
-
-		for (int i = span; i > 0; i--) {
-			if (My_In_Radar(Cell((int)px, (int)py))) {
-				if (RMGCellData != NULL) {
-					MapRegionClass::Get_Cell_Data(Cell((int)px, (int)py)).RegionID = WorkingRegionID;
-				}
-
-				CellClass *cellptr = &Map[Cell((int)px, (int)py)];
-				Cell id = cellptr->CellID;
-				cellptr->ITType = IsometricTileTypeClass::Ice1Set;
-				cellptr->SubTile = 0;
-				ice_cells->Add(id);
-			}
-
-			px += step_x;
-			py += step_y;
-		}
-
-		cur_x += step_y;
-		cur_y -= step_x;
-
-		if (Random_Fraction() < 0.01) {
-			double branch_base = cur_angle + M_PI_2;
-			double branch_angle = Sample_Truncated_Normal(branch_base, DEG_TO_RAD(30),
-					cur_angle + DEG_TO_RAD(30), cur_angle + DEG_TO_RAD(150));
-
-			Cell branch_cell((int)px, (int)py);
-			success = Seed_Arctic_River(branch_cell, branch_angle);
-		}
-
-		double delta_angle = Sample_Truncated_Normal(0.0, DEG_TO_RAD(18),
-				angle_lo - cur_angle, angle_hi - cur_angle);
-		cur_angle += delta_angle;
-
-		if (half > 0) {
-			double delta_len = Sample_Truncated_Normal(0.0, 0.5,
-					length_lo - length, length_hi - length);
-			length += delta_len;
-		}
-
-		stop_roll = Random_Fraction();
-		seeded_count++;
-		if (stop_roll < 0.005) {
-			break;
-		}
-	}
-
-	if (seeded_count < 40) {
-		success = false;
-	}
-
-	if (stop_roll < 0.005) {
-		if (My_In_Radar(Cell((int)cur_x, (int)cur_y)) && success) {
-			Seed_Arctic_Lake(Cell((int)cur_x, (int)cur_y));
-		}
-	}
-
-	if (success) {
-		Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_CRACKED));
-		Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_EDGE));
-	}
-
-	delete ice_cells;
-
-	if (success) {
-		SeededWaterAmount += seeded_count;
-		return(true);
-	}
-
-	Clear_Region_Cells(WorkingRegionID, 0, -1);
-	return(false);
-}
-
-
-/// <summary>
 /// Levels a region to a single height.
 /// Every cell the region owns is forced to the height given, which is how the generator makes a
 /// plateau or a basin out of ground that was grown at whatever height it happened to find.
@@ -6535,10 +6408,9 @@ bool MapGeneratorClass::Seed_Arctic_River(const Cell & cell, double start_angle)
 void MapGeneratorClass::Set_Height_Of_ID(int id, char cell_height)
 {
 	Map.Reset_Iterator();
-	CellClass *cptr = Map.Iterate();
+	CellClass * cptr = Map.Iterate(); // RA2: Set_Height_Of_ID at 0x57FE20 matches only so
 	while (cptr != NULL) {
-		int rid = Get_Cell_Data_Region(cptr->Fetch_CellID());
-		if (rid == id) {
+		if (MapRegionClass::CellData::Get_Region(cptr->Fetch_CellID()) == id) { // RA2: as above
 			cptr->Height = cell_height;
 		}
 		cptr = Map.Iterate();
@@ -6556,10 +6428,9 @@ void MapGeneratorClass::Set_Height_Of_ID(int id, char cell_height)
 void MapGeneratorClass::Increase_Height_Of_ID(int id, char cell_height)
 {
 	Map.Reset_Iterator();
-	CellClass *cptr = Map.Iterate();
+	CellClass * cptr = Map.Iterate(); // RA2: Increase_Height_Of_ID at 0x57FEA0 matches only so
 	while (cptr != NULL) {
-		int rid = Get_Cell_Data_Region(cptr->Fetch_CellID());
-		if (rid == id) {
+		if (MapRegionClass::CellData::Get_Region(cptr->Fetch_CellID()) == id) { // RA2: as above
 			cptr->Height += cell_height;
 		}
 		cptr = Map.Iterate();
@@ -7153,8 +7024,7 @@ bool MapGeneratorClass::Clear_Region_Border(int id, int rings, int new_id)
 		Map.Reset_Iterator();
 		CellClass *cptr = Map.Iterate();
 		while (cptr != NULL) {
-			int grid_size = MapCellStride * MapCellStride;
-			MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID()).SpreadID = 0;
+			MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID()).SpreadID = 0; // RA2: Clear_Region_Border at 0x581BF0 has no MapCellStride
 			cptr = Map.Iterate();
 		}
 	}
@@ -7181,8 +7051,8 @@ DynamicVectorClass<Cell> *MapGeneratorClass::Build_Region_Border_Cell_List(int i
 		Cell cell = RMGCellData[i].CellID;
 		if (cell != Cell(0, 0) && MapRegionClass::CellData::Get_Region(cell) == id) {
 			bool add = false;
-			for (int facing = FACING_FIRST; facing < FACING_COUNT; facing++) {
-				Cell ncell = Adjacent_Cell(cell, (FacingType)facing);
+			for (FacingType facing = FACING_FIRST; facing < FACING_COUNT; facing++) { // RA2: Build_Region_Border_Cell_List at 0x581EE0 matches only so
+				Cell ncell = Adjacent_Cell(cell, facing); // RA2: as above
 				if (My_In_Radar(ncell)) {
 					if (MapRegionClass::CellData::Get_Region(ncell) != id) {
 						add = true;
@@ -7440,45 +7310,123 @@ void MapGeneratorClass::Increase_Height_Except_ID(int cell_height, int id)
 }
 
 
-/// <summary>
-/// Rebuilds the generator's regions from scratch.
-/// Whatever regions an earlier pass left behind are thrown away and derived afresh from the
-/// terrain as it now stands. The water regions are settled first and given room to breathe, so
-/// that the land regions fill in around them.
-/// </summary>
-void MapGeneratorClass::Init_Regions(void)
+IsometricTileType MapGeneratorClass::Pick_Alternate_Cliff(IsometricTileType type) // RA2: not in TibSun, at 0x582B30
 {
-	int i;
-
-	MapRegionClass::Destroy_Cell_Regions();
-	MapRegionClass::Create_Water_Regions();
-
-	for (i = 0; i < MapRegionClass::MapRegions.Count(); i++) {
-		MapRegionClass *ptr = MapRegionClass::MapRegions[i];
-		if (ptr->ContainsWater) {
-			ptr->Grow(4);
-			ptr->Claim_Expandable_Cells();
-		}
+	int cliff = type - IsometricTileTypeClass::CliffSet;
+	switch (cliff) {
+		case 4:
+			cliff = 4 + Pick_Random_UInt(1, 2);
+			break;
+		case 5:
+			cliff = 4 + Pick_Random_UInt(0, 1) * 2;
+			break;
+		case 6:
+			cliff = 4 + Pick_Random_UInt(0, 1);
+			break;
+		case 8:
+			cliff = 8 + Pick_Random_UInt(1, 2);
+			break;
+		case 9:
+			cliff = 8 + Pick_Random_UInt(0, 1) * 2;
+			break;
+		case 10:
+			cliff = 8 + Pick_Random_UInt(0, 1);
+			break;
+		case 11:
+			cliff = 11 + Pick_Random_UInt(1, 2);
+			break;
+		case 12:
+			cliff = 11 + Pick_Random_UInt(0, 1) * 2;
+			break;
+		case 13:
+			cliff = 11 + Pick_Random_UInt(0, 1);
+			break;
+		case 14:
+			cliff = 14 + Pick_Random_UInt(1, 2);
+			break;
+		case 15:
+			cliff = 14 + Pick_Random_UInt(0, 1) * 2;
+			break;
+		case 16:
+			cliff = 14 + Pick_Random_UInt(0, 1);
+			break;
+		case 22:
+			cliff = 22 + Pick_Random_UInt(1, 2);
+			break;
+		case 23:
+			cliff = 22 + Pick_Random_UInt(0, 1) * 2;
+			break;
+		case 24:
+			cliff = 22 + Pick_Random_UInt(0, 1);
+			break;
+		case 28:
+			cliff = 29;
+			break;
+		case 29:
+			cliff = 28;
+			break;
+		case 34:
+			cliff = 34 + Pick_Random_UInt(1, 2);
+			break;
+		case 35:
+			cliff = 34 + Pick_Random_UInt(0, 1) * 2;
+			break;
+		case 36:
+			cliff = 34 + Pick_Random_UInt(0, 1);
+			break;
 	}
-
-	MapRegionClass::Create_Land_Regions(false);
+	return (IsometricTileType)(IsometricTileTypeClass::CliffSet + cliff);
 }
 
 
 /// <summary>
-/// Builds the region map for the generated terrain.
-/// This routine runs once the ground itself has settled. Ice regions are gathered first on any
-/// biome that has ice, then the general regions, and finally the map's own height regions are
-/// rebuilt so that placement and pathfinding agree with the new landscape.
+/// RA2: where a cliff piece continues into the same piece to the south or east, gives the continuation a random
+/// variant of the piece so long cliff runs do not repeat.
 /// </summary>
-/// <returns>bool; Were the height regions built?</returns>
-bool MapGeneratorClass::Make_Regions(void)
+void MapGeneratorClass::Vary_Cliff_Runs(void)
 {
-	if (SeedData.Biome != BIOME_TUNDRA) {
-		MapRegionClass::Make_Ice_Regions();
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		if (cptr->ITType >= IsometricTileTypeClass::CliffSet && cptr->ITType < IsometricTileTypeClass::CliffSet + 40) {
+			CellClass & south = (CellClass &)cptr->Adjacent_Cell(FACING_S);
+			CellClass & east = (CellClass &)cptr->Adjacent_Cell(FACING_E);
+			if (cptr->ITType == south.ITType && cptr->SubTile > south.SubTile) {
+				IsometricTileType tile = Pick_Alternate_Cliff(cptr->ITType);
+				if (tile != cptr->ITType) {
+					int subtile = south.SubTile;
+					IsometricTileTypeClass * type = IsometricTileTypes[cptr->ITType];
+					Cell origin(south.CellID.X - subtile % type->Width, south.CellID.Y - subtile / type->Width);
+					Place_Tile(tile, origin, Get_Cell_Data_Region(origin), -1);
+				}
+			}
+			if (cptr->ITType == east.ITType && cptr->SubTile > east.SubTile) {
+				IsometricTileType tile = Pick_Alternate_Cliff(cptr->ITType);
+				if (tile != cptr->ITType) {
+					IsometricTileTypeClass * type = IsometricTileTypes[cptr->ITType];
+					int subtile = east.SubTile;
+					Cell origin(east.CellID.X - subtile % type->Width, east.CellID.Y - subtile / type->Width);
+					Place_Tile(tile, origin, Get_Cell_Data_Region(origin), -1);
+				}
+			}
+		}
+		cptr = Map.Iterate();
 	}
-	MapRegionClass::Make_Regions();
-	return(Map.Build_All_Cliffs(0, -1));
+}
+
+
+
+
+
+
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline bool Is_Special_Map_Type(MapSeedClass const & seed)
+{
+	return(seed.MapType == 3 || seed.MapType == 4);
 }
 
 
@@ -7550,37 +7498,30 @@ bool MapGeneratorClass::Init_Start_Points(void)
 	int player_index = 0;
 
 	if (SeedData.NumPlayers > 0) {
-		while (true) {
+		do { // RA2: Init_Start_Points at 0x583790 matches only so
 			Cell seed = Scen->Get_Waypoint_Cell((WAYPOINT)player_index);
 
 			CellNode * nodes = new CellNode[800];
 			PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(800);
 
 			Clear_Cell_Data_Spreads();
+			int spread_count = 0; // RA2: as above
+			player_index++; // RA2: as above
 			queue->Clear();
 
-			int patch_id = player_index + 1;
-			int node_count = 1;
-			int spread_count = 0;
-			nodes[0].Element = seed;
+			int node_count = 1; // RA2: Init_Start_Points at 0x583790 has no int patch_id = player_index + 1;
+			nodes[0].Element = seed; // RA2: Init_Start_Points at 0x583790 has no int spread_count = 0;
 			nodes[0].Score = 0.0f;
-			MapRegionClass::Get_Cell_Data(seed).SpreadID = patch_id;
+			MapRegionClass::Get_Cell_Data(seed).SpreadID = player_index; // RA2: as above
 			queue->Insert(nodes[0]);
 
 			CellNode * node = queue->Extract_Min();
-			if (node == NULL) {
-				break;
-			}
-
-			while (true) {
-				if (spread_count >= 400) {
-					break;
-				}
-
+			while (node != NULL && spread_count < 400) { // RA2: as above
 				MapRegionClass::Get_Cell_Data(node->Element).Inviolate = true;
 
+				FacingType dir = FACING_FIRST; // RA2: as above
 				CellNode * newnode = &nodes[node_count];
-				for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir++) {
+				for (; dir < FACING_COUNT; dir++) { // RA2: as above
 					Cell ncell = Adjacent_Cell(node->Element, dir);
 					if (My_In_Radar(ncell) && MapRegionClass::Get_Cell_Data(ncell).SpreadID == 0) {
 						if (Map[ncell].Is_Tile_Clear()) {
@@ -7588,7 +7529,7 @@ bool MapGeneratorClass::Init_Start_Points(void)
 							int dx = ncell.X - seed.X;
 							int dy = ncell.Y - seed.Y;
 							newnode->Score = fastmath::sqrt((double)(dx * dx + dy * dy));
-							MapRegionClass::Get_Cell_Data(ncell).SpreadID = patch_id;
+							MapRegionClass::Get_Cell_Data(ncell).SpreadID = player_index; // RA2: as above
 							node_count++;
 							queue->Insert(*newnode++);
 						}
@@ -7597,26 +7538,12 @@ bool MapGeneratorClass::Init_Start_Points(void)
 
 				spread_count++;
 				node = queue->Extract_Min();
-				if (node == NULL) {
-					break;
-				}
-			}
-
-			if (spread_count != 400) {
-				break;
-			}
+			} // RA2: Init_Start_Points at 0x583790 has no if (node == NULL) {
 
 			delete[] nodes;
 			delete queue;
 
-			player_index = patch_id;
-			if (patch_id >= SeedData.NumPlayers) {
-				return(true);
-			}
-		}
-
-		MapRegionClass::CellData::Clear_Inviolates();
-		return(false);
+		} while (player_index < SeedData.NumPlayers); // RA2: as above
 	}
 	return(true);
 }
@@ -7640,12 +7567,7 @@ void MapGeneratorClass::Create_Tiberium(void)
 			int amount = (int)((double)tiberium_count + Sample_Truncated_Normal(0.0, 50.0, -100.0, 100.0));
 			bool use_blue_tiberium;
 			bool use_tiberium_tree;
-			if (SeedData.UseBlueTiberium) {
-				use_blue_tiberium = Pick_Random_UInt(0, 100) < 70;
-			} else {
-				use_blue_tiberium = true;
-			}
-			if (use_blue_tiberium) {
+			if (use_blue_tiberium) { // RA2: no UseBlueTiberium (not in RA2's layout)
 				use_tiberium_tree = Pick_Random_UInt(0, 100) < 25;
 			} else {
 				use_tiberium_tree = false;
@@ -7690,11 +7612,8 @@ void MapGeneratorClass::Create_Tiberium(void)
 	}
 
 	bool use_blue_tiberium = false;
-	if (!SeedData.UseBlueTiberium || Pick_Random_UInt(0, 100) < 75) {
-		use_blue_tiberium = true;
-	}
 
-	static const double _distance_scale = 15.0;
+	static const double _distance_scale = 15.0; // RA2: no UseBlueTiberium (not in RA2's layout)
 
 	if (SeedData.NumPlayers > 0) {
 		do {
@@ -7748,11 +7667,8 @@ void MapGeneratorClass::Create_Tiberium_Patch(Cell const &cell, int count, int p
 	int restart_count = 0;
 	Cell first_placed_cell = CELL_NONE;
 
-	float tib_wildlife_factor = (float)SeedData.TiberiumWildlife * 0.01f;
-	int wildlife_count = (int)((double)(unsigned int)(Pick_Random_UInt(0, 4) - 2) * tib_wildlife_factor);
-	if (!Addon_Enabled(ADDON_FIRESTORM)) {
-		wildlife_count = 0;
-	}
+	if (!Addon_Enabled(ADDON_FIRESTORM)) { // RA2: no TiberiumWildlife, tib_wildlife_factor, wildlife_count (not in RA2's layout)
+	} // RA2: no wildlife_count (a local of the dropped code)
 
 	int wildlife_trigger = Pick_Random_UInt(0, count);
 	HouseClass *neutral = House_From_HousesType(HouseTypeClass::From_Name("Neutral"));
@@ -7827,27 +7743,7 @@ void MapGeneratorClass::Create_Tiberium_Patch(Cell const &cell, int count, int p
 				first_placed_cell = node->Element;
 			}
 
-			if (placed_count == wildlife_trigger && wildlife_count > 0 && spawn_wildlife) {
-				int creature_index = Pick_Random_UInt(0, 3);
-				FootClass *foot = NULL;
-				if (creature_index < 3) {
-					foot = new UnitClass(UnitTypes[UnitTypeClass::From_Name(_tib_creature_names[creature_index])], neutral);
-				} else {
-					foot = new InfantryClass(InfantryTypes[InfantryTypeClass::From_Name(_tib_creature_names[creature_index])], neutral);
-				}
-
-				if (foot != NULL) {
-					if (!foot->Unlimbo(node->Element.As_Coord(), DIR_N)) {
-						delete foot;
-					}
-				}
-
-				wildlife_count--;
-				if (visited < count) {
-					wildlife_trigger = Pick_Random_UInt(visited, count);
-				}
-			}
-		}
+		} // RA2: no wildlife_count (a local of the dropped code)
 
 		CellNode *newnode = &nodes[marker_index];
 		for (int dir = FACING_FIRST; dir < FACING_COUNT; dir++) {
@@ -7883,25 +7779,6 @@ void MapGeneratorClass::Create_Tiberium_Patch(Cell const &cell, int count, int p
 
 
 /// <summary>
-/// Fetches the spread priority of a candidate tiberium cell.
-/// Create_Tiberium_Patch grows in cheapest first order, so this score is what keeps a field
-/// gathered about its origin while leaving the edge irregular.
-/// </summary>
-/// <param name="cell1">The cell the field is growing out from.</param>
-/// <param name="cell2">The candidate cell being considered.</param>
-/// <returns>Returns with the score, where a lower score means the cell is reached sooner.</returns>
-double MapGeneratorClass::Get_Tiberium_Score(const Cell & cell1, const Cell & cell2) const
-{
-	static const double _random_range = 5.0;
-
-	int x = cell1.X - cell2.X;
-	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
-	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
-}
-
-
-/// <summary>
 /// Works out how high the hills of the map should stand.
 /// This routine sweeps the map giving each cell a height drawn from its already settled
 /// neighbors, which is what makes the terrain roll rather than jump. The seed's hills setting
@@ -7910,19 +7787,20 @@ double MapGeneratorClass::Get_Tiberium_Score(const Cell & cell1, const Cell & ce
 /// </summary>
 void MapGeneratorClass::Seed_Hill_Heights(void)
 {
-	static const double scale = 0.005;
+	static const double scale = 0.025; // RA2: Seed_Hill_Heights at 0x584730 matches only so
 
 	int i;
 	int grid_size = MapCellStride * MapCellStride;
-	double height_step = SeedData.Hills * 0.001 + 0.1;
+	double height_step = SeedData.Hills * 0.0001 + 0.1; // RA2: as above
 	double min_volatility = SeedData.Hills * 0.0025;
 	double max_volatility = SeedData.Hills * 0.005;
 
 	if (min_volatility >= scale) {
 		for (i = 0; i < grid_size; i++) {
-			MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(i);
+			MapRegionClass::CellData * pdata = &MapRegionClass::Get_Cell_Data(i); // RA2: as above
+			MapRegionClass::CellData & data = *pdata; // RA2: as above
 			Cell cell = data.CellID;
-			if (cell != Cell(0, 0)) {
+			if (cell.X != 0 || cell.Y != 0) { // RA2: as above
 				data.HillVolatility = 0;
 				double up_height = 0.0;
 				double height_trend = 0.0;
@@ -7934,23 +7812,24 @@ void MapGeneratorClass::Seed_Hill_Heights(void)
 				Cell newcell = cell - Cell(1, 0);
 				if (My_In_Radar(newcell)) {
 					MapRegionClass::CellData & data2 = MapRegionClass::Get_Cell_Data(newcell);
-					data.HillHeight += data2.HillHeight;
+					pdata->HillHeight += data2.HillHeight; // RA2: as above
 					data.HillVolatility = data2.HillVolatility;
 					height_trend += data2.HillHeight - up_height;
 				} else {
-					data.HillHeight = data.HillHeight;
+					pdata->HillHeight = data.HillHeight; // RA2: as above
 					data.HillVolatility = min_volatility;
 				}
 
 				newcell = cell - Cell(0, 1);
 				if (My_In_Radar(newcell)) {
 					MapRegionClass::CellData & data2 = MapRegionClass::Get_Cell_Data(newcell);
-					data.HillHeight += data2.HillHeight;
-					data.HillVolatility += data2.HillVolatility;
+					double height2 = data2.HillHeight; // RA2: as above
+					data.HillHeight = height2 + data.HillHeight; // RA2: as above
+					data.HillVolatility = data2.HillVolatility + data.HillVolatility; // RA2: as above
 					height_trend += data2.HillHeight - up_height;
 				} else {
-					data.HillHeight = data.HillHeight;
-					data.HillVolatility += min_volatility;
+					pdata->HillHeight = data.HillHeight; // RA2: as above
+					data.HillVolatility = min_volatility + data.HillVolatility; // RA2: as above
 				}
 
 				data.HillHeight *= 0.5;
@@ -7960,22 +7839,24 @@ void MapGeneratorClass::Seed_Hill_Heights(void)
 				} else if (height_trend < 0.0) {
 					height_trend = -height_step;
 				}
-				const double mean = 0.0;
-				data.HillVolatility += Sample_Truncated_Normal(mean, scale, -data.HillVolatility, max_volatility - data.HillVolatility);
-
-				if (!data.Inviolate) {
-					double min_height = -2.0 - data.HillHeight;
-					double max_height = 2.0 - data.HillHeight;
-					double trend;
-					if (height_trend < min_height) {
-						trend = min_height;
-					} else if (height_trend > max_height) {
-						trend = max_height;
-					} else {
-						trend = height_trend;
-					}
-					data.HillHeight += Sample_Truncated_Normal(trend, data.HillVolatility, min_height, max_height);
+				if (data.Inviolate) { // RA2: as above
+					data.HillHeight = (data.HillHeight <= 0.0) ? 0.0 : data.HillHeight; // RA2: as above
+					data.HillVolatility = 0.0025; // RA2: as above
 				}
+				const double mean = 0.0;
+				data.HillVolatility += Sample_Truncated_Normal_Inline(mean, scale, -data.HillVolatility, max_volatility - data.HillVolatility); // RA2: as above
+
+				double min_height = -2.0 - data.HillHeight; // RA2: as above
+				double max_height = 2.0 - data.HillHeight; // RA2: as above
+				double trend; // RA2: as above
+				if (height_trend < min_height) { // RA2: as above
+					trend = min_height; // RA2: as above
+				} else if (height_trend > max_height) { // RA2: as above
+					trend = max_height; // RA2: as above
+				} else {
+					trend = height_trend; // RA2: as above
+				}
+				data.HillHeight += Sample_Truncated_Normal_Inline(trend, data.HillVolatility, min_height, max_height); // RA2: as above
 			}
 		}
 
@@ -7983,8 +7864,7 @@ void MapGeneratorClass::Seed_Hill_Heights(void)
 			MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(i);
 			if (data.HillHeight < 0) {
 				data.HillHeight = (int)(data.HillHeight - 0.5);
-			}
-			if (data.HillHeight > 0) {
+			} else if (data.HillHeight > 0) { // RA2: as above
 				data.HillHeight = (int)(data.HillHeight + 0.5);
 			}
 		}
@@ -8109,34 +7989,27 @@ void MapGeneratorClass::Seed_Vegetation(void)
 	Map.Reset_Iterator();
 	CellClass * cptr = Map.Iterate();
 
-	int index = SeedData.Biome - 2;
+	static const double rough = 0.005; // RA2: Seed_Vegetation at 0x5850A0 matches only so
+	static const double green = 0.02; // RA2: as above
+	static const double sand = 0.005; // RA2: as above
 	double density = SeedData.Vegetation * 0.01;
 
-	double chances[3][4] = {
-		/// rough, green, sand, forest
-		{0.005,   0.02,  0.0,  0.003}, /// Temperate
-		{0.01,    0.0,   0.03, 0.001}, /// Desert
-		{0.005,   0.02,  0.0,  0.003}  /// Mutated
-	};
-
-	while (cptr != NULL) {
+	while (cptr != NULL) { // RA2: Seed_Vegetation at 0x5850A0 has no double chances[3][4] = {
 		MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID());
 		if (cptr->Is_Tile_Shore()) {
 			for (int x = cptr->Fetch_CellID().X - 2; x < cptr->Fetch_CellID().X + 3; x++) {
 				for (int y = cptr->Fetch_CellID().Y - 2; y < cptr->Fetch_CellID().Y + 3; y++) {
 					if (My_In_Radar(Cell(x, y))) {
-						data.RoughTileChance = chances[index][0];
-						data.GreenTileChance = density * chances[index][1] * 10.0;
+						data.RoughTileChance = rough; // RA2: as above
+						data.GreenTileChance = density * green * 10.0; // RA2: as above
 						data.SandTileChance = 0;
-						data.ForestChance = density * chances[index][3] * 10.0;
-					}
+					} // RA2: Seed_Vegetation at 0x5850A0 has no ForestChance
 				}
 			}
 		} else if (data.RoughTileChance == 0.0) {
-			data.RoughTileChance = chances[index][0];
-			data.GreenTileChance = density * chances[index][1];
-			data.SandTileChance = chances[index][2];
-			data.ForestChance = density * chances[index][3];
+			data.RoughTileChance = rough; // RA2: as above
+			data.GreenTileChance = density * green; // RA2: as above
+			data.SandTileChance = sand; // RA2: as above
 		}
 		cptr = Map.Iterate();
 	}
@@ -8150,23 +8023,16 @@ void MapGeneratorClass::Seed_Vegetation(void)
 /// </summary>
 void MapGeneratorClass::Seed_Arctic_Vegetation(void)
 {
-	int index = SeedData.Biome;
-
-	double chances[2][3] = {
-		/// rough, forest, sand
-		{0.005,   0.0005, 0.002}, /// Tundra
-		{0.005,   0.0015, 0.001}  /// Taiga
-	};
+	static const double rough = 0.005; // RA2: Seed_Arctic_Vegetation at 0x585240 matches only so
+	static const double sand = 0.001; // RA2: as above
 
 	Map.Reset_Iterator();
 	CellClass * cptr = Map.Iterate();
 
-	double density = SeedData.Vegetation * 0.01;
-	while (cptr != NULL) {
+	while (cptr != NULL) { // RA2: Seed_Arctic_Vegetation at 0x585240 has no SeedData, Vegetation
 		MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID());
-		data.RoughTileChance = chances[index][0];
-		data.ForestChance = density * chances[index][1];
-		data.SandTileChance = chances[index][2];
+		data.RoughTileChance = rough; // RA2: as above
+		data.SandTileChance = sand; // RA2: as above
 		cptr = Map.Iterate();
 	}
 }
@@ -8182,65 +8048,14 @@ void MapGeneratorClass::Generate_Vegetation(void)
 {
 	CellClass * cptr;
 
-	if (SeedData.Biome == BIOME_MUTATED) {
-		int map_size = ((SeedData.Width + 1) * (SeedData.Height + 1));
-
-		int mold_count = Pick_Random_UInt(3, (map_size / 4) + 4);
-		while (mold_count > 0) {
-			Generate_Mold();
-			mold_count--;
-		}
-
-		DynamicVectorClass<Cell> crystal_cliffs;
-		Map.Reset_Iterator();
-		cptr = Map.Iterate();
-		while (cptr != NULL) {
-			if (cptr->Is_Tile_Cliff() && cptr->SubTile == 0) {
-				int cliff = cptr->ITType - IsometricTileTypeClass::CliffSet;
-				if ((cliff >= 4 && cliff <= 6 || cliff >= 14 && cliff <= 16)) {
-					crystal_cliffs.Add(cptr->CellID);
-				}
-			}
-			cptr = Map.Iterate();
-		}
-
-		int crystal_count = Pick_Random_UInt(6, (SeedData.Width + 1) * (SeedData.Height + 1) + 8);
-		while (crystal_count > 0) {
-			if (Pick_Random_UInt(0, 1) == 0 && crystal_cliffs.Count() > 0) {
-				int cell_index = Pick_Random_UInt(0, crystal_cliffs.Count() - 1);
-				Generate_Crystals(crystal_cliffs[cell_index]);
-				crystal_cliffs.Delete_Index(cell_index);
-			} else {
-				Generate_Crystals(MapRegionClass::Pick_Random_Clear_Map_Cell());
-			}
-			crystal_count--;
-		}
-	}
-
-	if (SeedData.Biome == BIOME_MUTATED || SeedData.Biome == BIOME_DESERT) {
-		int rough_count = Pick_Random_UInt(5, 30);
-		int placed = 0;
-		for (int tries = 0; tries < rough_count * 20 && placed < rough_count; tries++) {
-			IsometricTileType rough_tile = IsometricTileType(IsometricTileTypeClass::RoughGround + Pick_Random_UInt(0, 9));
-			Cell c = MapRegionClass::Pick_Random_Map_Cell();
-			if (Can_Place_Tile(rough_tile, c, false, false)) {
-				Place_Tile(rough_tile, c);
-				placed++;
-			}
-		}
-	}
-
-	Clear_Cell_Data_Spreads();
+	Clear_Cell_Data_Spreads(); // RA2: Generate_Vegetation at 0x5852C0 has no SeedData, Biome, Width and 15 more
 
 	Map.Reset_Iterator();
 	cptr = Map.Iterate();
 
-	int mean_index = SeedData.Biome - 2;
-	int means[3][3] = {
-		{30, 20, 20}, /// Temperate
-		{20, 20, 40}, /// Desert
-		{30, 20, 20}  /// Mutated
-	};
+	int rough_mean = Pick_Random_UInt(20, 40); // RA2: Generate_Vegetation at 0x5852C0 matches only so
+	int sand_mean = Pick_Random_UInt(20, 40); // RA2: as above
+	int green_mean = Pick_Random_UInt(20, 40); // RA2: as above
 
 	while (cptr != NULL) {
 		MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID());
@@ -8248,17 +8063,13 @@ void MapGeneratorClass::Generate_Vegetation(void)
 			Cell cell = cptr->Fetch_CellID();
 			int origin_id = cell.X + cell.Y * MAP_CELL_W;
 			if (Random_Fraction() < data.GreenTileChance) {
-				Place_Tile_Patch(cptr, IsometricTileTypeClass::GreenTile, Sample_Truncated_Normal(means[mean_index][0], 20, 4, 80), origin_id, false);
+				Place_Tile_Patch(cptr, IsometricTileTypeClass::RoughTile, Sample_Truncated_Normal_Inline(rough_mean, 20, 4, 80), origin_id, false); // RA2: as above
 			} else {
 				if (Random_Fraction() < data.RoughTileChance) {
-					Place_Tile_Patch(cptr, IsometricTileTypeClass::RoughTile, Sample_Truncated_Normal(means[mean_index][1], 20, 4, 80), origin_id, false);
+					Place_Tile_Patch(cptr, IsometricTileTypeClass::SandTile, Sample_Truncated_Normal_Inline(sand_mean, 20, 4, 80), origin_id, false); // RA2: as above
 				} else {
 					if (Random_Fraction() < data.SandTileChance) {
-						Place_Tile_Patch(cptr, IsometricTileTypeClass::SandTile, Sample_Truncated_Normal(means[mean_index][2], 20, 4, 80), origin_id, false);
-					} else {
-						if (Random_Fraction() < data.ForestChance) {
-							Place_Forest(cptr, Sample_Truncated_Normal(25, 10, 10, 35), Sample_Truncated_Normal(0.2, 0.1, 0.05, 0.4));
-						}
+						Place_Tile_Patch(cptr, IsometricTileTypeClass::GreenTile, Sample_Truncated_Normal_Inline(green_mean, 20, 4, 80), origin_id, false); // RA2: as above
 					}
 				}
 			}
@@ -8273,14 +8084,19 @@ void MapGeneratorClass::Generate_Vegetation(void)
 		cptr = Map.Iterate();
 	}
 
-	int overlay_count = Pick_Random_UInt(0, Map_Cell_Count() / 100);
-	if (SeedData.Biome == BIOME_TEMPERATE) {
-		overlay_count /= 2;
+	int tree_count = (int)((SeedData.Width * 0.1 + 0.7) * (SeedData.Vegetation * 0.01) * MaxTrees); // RA2: as above
+	for (int tries = 0; tree_count > 0 && tries < 100; tries++) { // RA2: as above
+		Cell cell = MapRegionClass::Pick_Random_Clear_Map_Cell(); // RA2: as above
+		tree_count -= Place_Forest(&Map[cell], Sample_Truncated_Normal_Inline(25, 10, 10, 35), Sample_Truncated_Normal_Inline(0.2, 0.1, 0.05, 0.4)); // RA2: as above
 	}
 
+	int overlay_count = Pick_Random_UInt(0, Map_Cell_Count() / 200); // RA2: as above
+
 	int placed = 0;
-	for (int tries = 0; tries < overlay_count * 5 && placed < overlay_count; tries++) {
-		CellClass * cellptr = &Map[MapRegionClass::Pick_Random_Map_Cell()];
+	for (tries = 0; tries < overlay_count * 5 && placed < overlay_count; tries++) { // RA2: as above
+		Cell cell = MapRegionClass::Pick_Random_Map_Cell(); // RA2: as above
+		CellClass * cellptr = &Map[cell]; // RA2: as above
+		MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(cell); // RA2: as above
 		if (cellptr->Overlay == OVERLAY_NONE) {
 			if (cellptr->Is_Tile_Clear_To_Sand_LAT()) {
 				cellptr->Overlay = OverlayType(Pick_Random_UInt(0, 4) + OVERLAY_SAND_ROCK_01);
@@ -8307,42 +8123,19 @@ void MapGeneratorClass::Generate_Arctic_Vegetation(void)
 {
 	CellClass * cptr;
 
-	int rough_count = Pick_Random_UInt(5, 30);
-	int placed = 0;
-	for (int tries = 0; tries < rough_count * 20 && placed < rough_count; tries++) {
-		IsometricTileType rough_tile = IsometricTileType(IsometricTileTypeClass::RoughGround + Pick_Random_UInt(0, 9));
-		Cell c = MapRegionClass::Pick_Random_Map_Cell();
-		if (Can_Place_Tile(rough_tile, c, false, false)) {
-			Place_Tile(rough_tile, c);
-			placed++;
-		}
-	}
-
-	Clear_Cell_Data_Spreads();
+	Clear_Cell_Data_Spreads(); // RA2: Generate_Arctic_Vegetation at 0x585A60 has no IsometricTileType, IsometricTileTypeClass, RoughGround and 2 more
 
 	Map.Reset_Iterator();
 	cptr = Map.Iterate();
 
-	int mean_index = SeedData.Biome;
-	int means[3] = {
-		20, /// Tundra
-		20, /// Taiga
-		0,  /// Temperate
-	};
-
-	while (cptr != NULL) {
+	while (cptr != NULL) { // RA2: Generate_Arctic_Vegetation at 0x585A60 has no SeedData, Biome
 		MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(cptr->Fetch_CellID());
 		if (cptr->Is_Tile_Clear() && cptr->Ramp == RAMP_NONE && !data.Inviolate) {
-			Cell cell = cptr->CellID;
+			Cell cell = cptr->Fetch_CellID(); // RA2: Generate_Arctic_Vegetation at 0x585A60 matches only so
 			int origin_id = cell.X + cell.Y * MAP_CELL_W;
-			if (Random_Fraction() < data.RoughTileChance) {
-				Place_Tile_Patch(cptr, IsometricTileTypeClass::RoughTile, Sample_Truncated_Normal(means[mean_index], 15, 4, 60), origin_id, false);
-			}
-			if (Random_Fraction() < data.ForestChance && !data.Forested && !data.Inviolate) {
-				Place_Forest(cptr, Sample_Truncated_Normal(30, 10, 10, 45), Sample_Truncated_Normal(0.2, 0.1, 0.05, 0.4));
-			}
-			if (Random_Fraction() < data.SandTileChance) {
-				Place_Tile_Patch(cptr, IsometricTileTypeClass::Rocks, Sample_Truncated_Normal(means[mean_index], 11, 3, 30), origin_id, false);
+			if ((unsigned int)RMGRandom() * (1.0 / UINT_MAX) < data.RoughTileChance) { // RA2: as above
+				double patch_size = Sample_Truncated_Normal_Inline(20, 15, 4, 60); // RA2: as above
+				Place_Tile_Patch(cptr, IsometricTileTypeClass::RoughTile, patch_size, origin_id, false); // RA2: as above
 			}
 		}
 		cptr = Map.Iterate();
@@ -8354,6 +8147,22 @@ void MapGeneratorClass::Generate_Arctic_Vegetation(void)
 		cptr->Fixup_LAT();
 		cptr = Map.Iterate();
 	}
+
+	int tree_count = (int)((SeedData.Width * 0.1 + 0.7) * (SeedData.Vegetation * 0.01) * MaxTrees); // RA2: as above
+	for (int tries = 0; tree_count > 0 && tries < 100; tries++) { // RA2: as above
+		Cell cell = MapRegionClass::Pick_Random_Clear_Map_Cell(); // RA2: as above
+		tree_count -= Place_Forest(&Map[cell], Sample_Truncated_Normal_Inline(25, 10, 10, 35), Sample_Truncated_Normal_Inline(0.2, 0.1, 0.05, 0.4)); // RA2: as above
+	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Delete_Forest_Search(CellNode * nodes, PriorityQueueClass<CellNode> * queue)
+{
+	delete[] nodes;
+	delete queue;
 }
 
 
@@ -8366,17 +8175,18 @@ void MapGeneratorClass::Generate_Arctic_Vegetation(void)
 /// <param name="cellptr">The cell the wood grows out from.</param>
 /// <param name="count">The number of cells the wood may spread over.</param>
 /// <param name="density">The chance, from 0 to 1, that a cell reached is given a tree.</param>
-void MapGeneratorClass::Place_Forest(CellClass const * cellptr, int count, double density)
+int MapGeneratorClass::Place_Forest(CellClass const * cellptr, int count, double density) // RA2: Place_Forest at 0x585DC0 matches only so
 {
-	CellNode * nodes = new CellNode[10 * count];
-	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(10 * count);
-	int i = 0;
+	CellNode * nodes = new CellNode[25 * count]; // RA2: as above
+	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(25 * count); // RA2: as above
+
 	queue->Clear();
 
-	int node_count = 1;
+	int node_count = 0; // RA2: as above
 	Cell cell = cellptr->Fetch_CellID();
-	nodes->Element = cell;
-	nodes->Score = 0;
+	nodes[node_count].Element = cell; // RA2: as above
+	nodes[node_count].Score = 0; // RA2: as above
+	node_count++; // RA2: as above
 
 	MapRegionClass::Get_Cell_Data(cellptr->Fetch_CellID()).Forested = true;
 
@@ -8384,33 +8194,27 @@ void MapGeneratorClass::Place_Forest(CellClass const * cellptr, int count, doubl
 
 	CellNode * node = queue->Extract_Min();
 
-	int min_tree = 1;
-	int max_tree = 25;
-	if (SeedData.Biome != BIOME_DESERT && SeedData.Biome != BIOME_MUTATED) {
-		if (SeedData.Biome == BIOME_TEMPERATE) {
-			max_tree = 20;
-		}
-	} else {
-		min_tree = 21;
-	}
-
-	while (i < count && node != NULL) {
+	int i = 0; // RA2: as above
+	while (i < count && node != NULL && node_count < 25 * count) { // RA2: as above
 		CellClass * cptr = &Map[node->Element];
 		if (cptr->Is_Tile_Clear() && cptr->Cell_Occupier() == NULL && cptr->Overlay == OVERLAY_NONE && cptr->Land_Type() != LAND_ROCK) {
 			if (Random_Fraction() < density) {
 				char tree_name[20];
-				int tree_index = Pick_Random_UInt(min_tree, max_tree);
+				int tree_index = Pick_Random_UInt(1, 25); // RA2: as above
 				sprintf(tree_name, "TREE%d%d", tree_index / 10, tree_index % 10);
 				new TerrainClass(TerrainTypes[TerrainTypeClass::From_Name(tree_name)], cptr->Fetch_CellID());
+				i++; // RA2: as above
 			}
 		}
 
+		FacingType dir = FACING_FIRST; // RA2: as above
 		CellNode * newnode = &nodes[node_count];
-		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir++) {
-			Cell newcell = Adjacent_Cell(node->Element, dir);
+		for (; dir < FACING_COUNT; dir++) { // RA2: as above
+			Cell const & offset = AdjacentCell[(int)dir & 7]; // RA2: as above
+			Cell newcell(offset.X + node->Element.X, offset.Y + node->Element.Y); // RA2: as above
 			if (My_In_Radar(newcell)) {
 				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
-				if (!data.Forested && !data.Inviolate) {
+				if (!data.Forested && !data.Inviolate && node_count < 25 * count) { // RA2: as above
 					newnode->Element = newcell;
 					newnode->Score = Get_Forest_Score(cellptr->Fetch_CellID(), newcell);
 					data.Forested = true;
@@ -8420,31 +8224,11 @@ void MapGeneratorClass::Place_Forest(CellClass const * cellptr, int count, doubl
 			}
 		}
 
-		i++;
-		node = queue->Extract_Min();
+		node = queue->Extract_Min(); // RA2: Place_Forest at 0x585DC0 has no i++;
 	}
 
-	delete[] nodes;
-	delete queue;
-}
-
-
-/// <summary>
-/// Fetches the spread priority of a candidate forest cell.
-/// Place_Forest plants in cheapest first order, so this score is what gives a wood its rounded
-/// shape and its uneven treeline.
-/// </summary>
-/// <param name="cell1">The cell the forest is growing out from.</param>
-/// <param name="cell2">The candidate cell being considered.</param>
-/// <returns>Returns with the score, where a lower score means the cell is reached sooner.</returns>
-double MapGeneratorClass::Get_Forest_Score(const Cell & cell1, const Cell & cell2) const
-{
-	static const double _random_range = 5.0;
-
-	int x = cell1.X - cell2.X;
-	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
-	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
+	Delete_Forest_Search(nodes, queue); // RA2: as above
+	return i; // RA2: as above
 }
 
 
@@ -8462,27 +8246,30 @@ double MapGeneratorClass::Get_Forest_Score(const Cell & cell1, const Cell & cell
 /// <param name="on_pavement">May the patch spread over pavement as well as open ground?</param>
 void MapGeneratorClass::Place_Tile_Patch(CellClass * cellptr, IsometricTileType ittype, int count, int origin_id, bool on_pavement)
 {
+	CellNode * node = NULL; // RA2: Place_Tile_Patch at 0x586340 matches only so
 	CellNode * nodes = new CellNode[10 * count];
 	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(10 * count);
 	int i = 0;
 	queue->Clear();
 
-	int node_count = 1;
+	int node_count = 0; // RA2: as above
 	Cell cell = cellptr->Fetch_CellID();
-	nodes->Element = cell;
-	nodes->Score = 0;
+	nodes[node_count].Element = cell; // RA2: as above
+	nodes[node_count].Score = 0; // RA2: as above
+	node_count++; // RA2: as above
 
 	MapRegionClass::Get_Cell_Data(cellptr->Fetch_CellID()).SpreadID = origin_id;
 
 	queue->Insert(*nodes);
 
-	CellNode * node = queue->Extract_Min();
+	node = queue->Extract_Min(); // RA2: as above
 	while (i < count && node != NULL) {
 		CellClass * cptr = &Map[node->Element];
 		cptr->ITType = ittype;
 
+		FacingType dir = FACING_FIRST; // RA2: as above
 		CellNode * newnode = &nodes[node_count];
-		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir++) {
+		for (; dir < FACING_COUNT; dir++) { // RA2: as above
 			Cell newcell = Adjacent_Cell(node->Element, dir);
 			if (My_In_Radar(newcell)) {
 				CellClass * newcellptr = &Map[newcell];
@@ -8506,297 +8293,6 @@ void MapGeneratorClass::Place_Tile_Patch(CellClass * cellptr, IsometricTileType 
 	delete queue;
 }
 
-
-/// <summary>
-/// Fetches the spread priority of a candidate patch cell.
-/// Place_Tile_Patch fills in cheapest first order, so this score is what keeps a patch roughly
-/// round while leaving its edge ragged.
-/// </summary>
-/// <param name="cell1">The cell the patch is growing out from.</param>
-/// <param name="cell2">The candidate cell being considered.</param>
-/// <returns>Returns with the score, where a lower score means the cell is filled sooner.</returns>
-double MapGeneratorClass::Get_Tile_Patch_Score(const Cell & cell1, const Cell & cell2) const
-{
-	static const double _random_range = 5.0;
-
-	int x = cell1.X - cell2.X;
-	int y = cell1.Y - cell2.Y;
-	double dist = fastmath::sqrt(x * x + y * y);
-	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
-}
-
-
-/// <summary>
-/// Grows one patch of blue mold on a mutated map.
-/// This routine hunts for an unobstructed spot, spreads mold outward from it, then blends the
-/// patch into the surrounding ground and dresses it with a little foliage. If nowhere suitable
-/// turns up it does nothing rather than force a patch into a bad place.
-/// </summary>
-void MapGeneratorClass::Generate_Mold(void)
-{
-	Cell mold_origin = CELL_NONE;
-	int tries = 0;
-
-	DebugString("Generating mold\n");
-
-	while (mold_origin == CELL_NONE) {
-		Cell c = MapRegionClass::Pick_Random_Clear_Map_Cell();
-		if (Is_Cell_Area_Clear(Rect(c.X - 1, c.Y - 1, 3, 3), true)) {
-			mold_origin = c;
-		}
-		if (++tries >= 200) {
-			break;
-		}
-	}
-
-	if (mold_origin == CELL_NONE) {
-		return;
-	}
-
-	DynamicVectorClass<Cell> cells;
-	cells.Set_Growth_Step(500);
-
-	int spread_count = Pick_Random_UInt(30, 150);
-	int heap_size = MAX(100, 6 * spread_count);
-
-	CellNode * nodes = new CellNode[heap_size];
-	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(heap_size);
-	queue->Clear();
-
-	int marker_index = 1;
-	nodes[0].Element = mold_origin;
-	nodes[0].Score = 0;
-	queue->Insert(nodes[0]);
-
-	CellNode * node = queue->Extract_Min();
-	int spread_step = 0;
-	while (spread_step < spread_count && node != NULL) {
-		CellClass * cptr = &Map[node->Element];
-		cptr->ITType = IsometricTileTypeClass::BlueMoldTile;
-		cptr->SubTile = 0;
-		cells.Add(cptr->CellID);
-
-		CellNode * newnode = &nodes[marker_index];
-		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
-			Cell newcell = Adjacent_Cell(node->Element, dir);
-			if (My_In_Radar(newcell)) {
-				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
-
-				bool can_spread = true;
-				for (FacingType dir2 = FACING_FIRST; dir2 < FACING_COUNT; dir2 = FacingType(dir2 + FACING_90)) {
-					Cell adj = Adjacent_Cell(newcell, dir2);
-					CellClass * adjptr = &Map[adj];
-					if (!adjptr->Is_Tile_Clear() && adjptr->ITType != IsometricTileTypeClass::BlueMoldTile) {
-						can_spread = false;
-						break;
-					}
-				}
-
-				if (can_spread && !data.Inviolate && marker_index < heap_size) {
-					newnode->Element = newcell;
-					newnode->Score = Get_Spread_Score(mold_origin, newcell, spread_step);
-					data.SpreadID = WorkingRegionID;
-					marker_index++;
-					queue->Insert(*newnode++);
-				}
-			}
-		}
-
-		spread_step++;
-		node = queue->Extract_Min();
-	}
-
-	int i;
-	for (i = 0; i < cells.Count(); i++) {
-		Map[cells[i]].Fixup_LAT();
-	}
-
-	int foliage_count = Pick_Random_UInt(0, 4);
-	for (i = 0; i < foliage_count; i++) {
-		Cell c = CELL_NONE;
-		int local_tries = 0;
-		while (c == CELL_NONE) {
-			c = cells[Pick_Random_UInt(0, cells.Count() - 1)];
-			if (Map[c].ITType != IsometricTileTypeClass::BlueMoldTile) {
-				c = CELL_NONE;
-			}
-			if (++local_tries >= 200) {
-				break;
-			}
-		}
-
-		if (c == CELL_NONE) {
-			break;
-		}
-
-		if (Map[c].Cell_Terrain(false) == NULL && Map[c].Overlay == OVERLAY_NONE) {
-			if (Random_Fraction() < 0.75) {
-				char terrain_name[8];
-				int terrain_index = Pick_Random_UInt(1, 5);
-				sprintf(terrain_name, "FONA0%d", terrain_index);
-				new TerrainClass(TerrainTypes[TerrainTypeClass::From_Name(terrain_name)], c);
-			} else {
-				Map[c].Overlay = OVERLAY_LARGE_TIBERIUM01;
-				Map[c].OverlayData = 0;
-			}
-		}
-	}
-
-	DebugString("Mold heap size: %d -- Marker Index: %d\n", heap_size, marker_index);
-
-	delete queue;
-	delete[] nodes;
-}
-
-
-/// <summary>
-/// Grows one crystal deposit on a mutated map.
-/// The seed may be open ground or a cliff face; on a cliff the routine hangs a crystal
-/// formation off the rock and spreads out from the foot of it. The finished patch is blended
-/// into its surroundings and dressed with a little foliage.
-/// </summary>
-/// <param name="cell">The cell to seed the deposit at.</param>
-void MapGeneratorClass::Generate_Crystals(const Cell & cell)
-{
-	bool on_cliff = false;
-
-	Cell cliff_seed = CELL_NONE;
-	Cell crystal_origin;
-
-	DebugString("Generating crystal\n");
-
-	if (!Map[cell].Is_Tile_Clear()) {
-		on_cliff = true;
-
-		int cliff = Map[cell].ITType - IsometricTileTypeClass::CliffSet;
-		if (cliff >= 4 && cliff <= 6) {
-			if (Is_Cell_Area_Clear(Rect(cell.X, cell.Y - 1, 2, 1), false) && Pick_Random_UInt(0, 1) == 0) {
-				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff), cell, -1, Map[Cell(cell.X, cell.Y + 1)].Height + 4);
-				crystal_origin = Cell(cell.X, cell.Y - 1);
-				cliff_seed = Cell(cell.X + 1, cell.Y - 1);
-			} else {
-				if (!Is_Cell_Area_Clear(Rect(cell.X, cell.Y + 2, 2, 1), false)) {
-					return;
-				}
-				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff + 1), cell, -1, Map[Cell(cell.X, cell.Y + 1)].Height + 4);
-				crystal_origin = Cell(cell.X, cell.Y + 2);
-				cliff_seed = Cell(cell.X + 1, cell.Y + 2);
-			}
-		} else if (cliff >= 14 && cliff <= 16) {
-			if (Is_Cell_Area_Clear(Rect(cell.X - 1, cell.Y, 1, 2), false) && Pick_Random_UInt(0, 1) == 0) {
-				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff + 4), cell, -1, Map[Cell(cell.X + 1, cell.Y)].Height + 4);
-				crystal_origin = Cell(cell.X - 1, cell.Y);
-				cliff_seed = Cell(cell.X - 1, cell.Y + 1);
-			} else {
-				if (!Is_Cell_Area_Clear(Rect(cell.X + 2, cell.Y, 1, 2), false)) {
-					return;
-				}
-				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff + 5), cell, -1, Map[Cell(cell.X + 1, cell.Y)].Height + 4);
-				crystal_origin = Cell(cell.X + 2, cell.Y);
-				cliff_seed = Cell(cell.X + 2, cell.Y + 1);
-			}
-		} else {
-			return;
-		}
-	} else {
-		crystal_origin = cell;
-	}
-
-	if (crystal_origin == CELL_NONE) {
-		return;
-	}
-
-	DynamicVectorClass<Cell> cells;
-	cells.Set_Growth_Step(500);
-	int spread_count = Pick_Random_UInt(30, 150);
-	int heap_size = 6 * spread_count;
-	if (heap_size < 100) {
-		heap_size = 100;
-	}
-
-	CellNode *nodes = new CellNode[heap_size];
-	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(heap_size);
-	queue->Clear();
-
-	int marker_index = 0;
-	if (on_cliff) {
-		nodes[0].Element = cliff_seed;
-		nodes[0].Score = 0;
-		marker_index = 1;
-		queue->Insert(nodes[0]);
-	}
-
-	CellNode *seed = &nodes[marker_index++];
-	seed->Element = crystal_origin;
-	seed->Score = 0;
-	queue->Insert(*seed);
-
-	CellNode *node = queue->Extract_Min();
-	int spread_step = 0;
-	while (spread_step < spread_count) {
-		if (node == NULL) {
-			break;
-		}
-		CellClass *cptr = &Map[node->Element];
-		cptr->ITType = IsometricTileTypeClass::CrystalTile;
-		cptr->SubTile = 0;
-		cells.Add(cptr->CellID);
-
-		CellNode *newnode = &nodes[marker_index];
-		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
-			Cell newcell = Adjacent_Cell(node->Element, dir);
-			if (My_In_Radar(newcell)) {
-				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
-				if (Map[newcell].Is_Tile_Clear() && Map[newcell].Overlay == OVERLAY_NONE && marker_index < heap_size) {
-					newnode->Element = newcell;
-					newnode->Score = Get_Spread_Score(crystal_origin, newcell, spread_step);
-					data.SpreadID = WorkingRegionID;
-					marker_index++;
-					queue->Insert(*newnode++);
-				}
-			}
-		}
-
-		spread_step++;
-		node = queue->Extract_Min();
-	}
-
-	int i;
-	for (i = 0; i < cells.Count(); i++) {
-		Map[cells[i]].Fixup_LAT();
-	}
-
-	int foliage_count = Pick_Random_UInt(0, 5);
-	for (i = 0; i < foliage_count; i++) {
-		Cell c = CELL_NONE;
-		int local_tries = 0;
-		while (c == CELL_NONE) {
-			c = cells[Pick_Random_UInt(0, cells.Count() - 1)];
-			if (Map[c].ITType != IsometricTileTypeClass::CrystalTile || MapRegionClass::Get_Cell_Data(c).Inviolate) {
-				c = CELL_NONE;
-			}
-			if (++local_tries >= 200) {
-				break;
-			}
-		}
-
-		if (c == CELL_NONE) {
-			break;
-		}
-
-		if (Map[c].Cell_Terrain(false) == NULL) {
-			char terrain_name[8];
-			int terrain_index = Pick_Random_UInt(6, 15);
-			sprintf(terrain_name, "FONA%d%d", terrain_index / 10, terrain_index % 10);
-			new TerrainClass(TerrainTypes[TerrainTypeClass::From_Name(terrain_name)], c);
-		}
-	}
-
-	DebugString("Mold heap size: %d -- Marker Index: %d\n", heap_size, marker_index);
-
-	delete queue;
-	delete[] nodes;
-}
 
 double ConditionRedChances[BIOME_COUNT] = {0.5, 0.2, 0.2, 0.6, 0.8};
 double ConditionYellowChances[BIOME_COUNT] = {0.5, 0.3, 0.2, 0.5, 0.95};
@@ -8839,7 +8335,7 @@ void MapGeneratorClass::Generate_Urban_Areas(void)
 			}
 		} else {
 			if (tries_here != 20) {
-				int size = Sample_Truncated_Normal(2 * Map.PlayRect.Width * Map.PlayRect.Height / 30, 300, 100, 2000);
+				int size = Sample_Truncated_Normal_Inline(2 * Map.PlayRect.Width * Map.PlayRect.Height / 30, 300, 100, 2000); // RA2: Generate_Urban_Areas at 0x586800 matches only so
 				DynamicVectorClass<Cell> * cells = Create_Urban_Area(cell, size);
 				if (cells != NULL) {
 					Generate_Urban_Roads(*cells);
@@ -8870,13 +8366,13 @@ void MapGeneratorClass::Generate_Urban_Areas(void)
 /// <returns>The collected urban area cells, or NULL if the area is too small or sparse.</returns>
 DynamicVectorClass<Cell> * MapGeneratorClass::Create_Urban_Area(Cell const & cell, int size)
 {
+	DynamicVectorClass<Cell> * cells; // RA2: Create_Urban_Area at 0x586B40 matches only so
 	CellNode * nodes = new CellNode[10 * size];
 	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(10 * size);
+	int processed = 0; // RA2: as above
 	queue->Clear();
 
-	int processed = 0;
-
-	Map.Reset_Iterator();
+	Map.Reset_Iterator(); // RA2: Create_Urban_Area at 0x586B40 has no int processed = 0;
 	CellClass * cptr = Map.Iterate();
 	while (cptr != NULL) {
 		Cell c = cptr->CellID;
@@ -8884,18 +8380,19 @@ DynamicVectorClass<Cell> * MapGeneratorClass::Create_Urban_Area(Cell const & cel
 		cptr = Map.Iterate();
 	}
 
-	nodes[0].Element = (Cell &)cell;
-	nodes[0].Score = 0;
+	int node_count = 0; // RA2: as above
+	nodes[node_count].Element = cell; // RA2: as above
+	nodes[node_count].Score = 0; // RA2: as above
 	Set_Cell_Data_Spread(cell, 1);
-	int node_count = 1;
+	node_count++; // RA2: as above
 	queue->Insert(nodes[0]);
 
 	CellNode * node = queue->Extract_Min();
 
-	DynamicVectorClass<Cell> * cells = new DynamicVectorClass<Cell>;
+	cells = new DynamicVectorClass<Cell>; // RA2: as above
 	cells->Set_Growth_Step(size + 2);
 
-	while (size > processed && node != NULL) {
+	while (processed < size && node != NULL) { // RA2: as above
 		Map[node->Element].ITType = IsometricTileTypeClass::PaveTile;
 		cells->Add(node->Element);
 
@@ -8905,8 +8402,7 @@ DynamicVectorClass<Cell> * MapGeneratorClass::Create_Urban_Area(Cell const & cel
 			if (My_In_Radar(newcell)) {
 				CellClass * newcellptr = &Map[newcell];
 				if (newcellptr->Is_Tile_Clear() && newcellptr->Overlay == OVERLAY_NONE) {
-					MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
-					if (data.SpreadID != 1 && !data.Inviolate) {
+					if (Get_Cell_Data_Spread(newcell) != 1 && MapRegionClass::CellData::Is_Not_Inviolate(newcell)) { // RA2: as above
 						newnode->Element = newcell;
 						newnode->Score = Get_Urban_Score(cell, newcell);
 						Set_Cell_Data_Spread(newcell, 1);
@@ -8957,7 +8453,7 @@ DynamicVectorClass<Cell> * MapGeneratorClass::Create_Urban_Area(Cell const & cel
 		if (tile_variant > 3) {
 			for (int m = 0; m < 2; m++) {
 				for (int n = 0; n < 2; n++) {
-					Cell c(base.X + m, base.Y + n);
+					Cell c = base + Cell(m, n); // RA2: as above
 					if (!MapRegionClass::Get_Cell_Data(c).Inviolate || Map[c].ITType != IsometricTileTypeClass::PaveTile) {
 						place = false;
 					}
@@ -9479,7 +8975,7 @@ Cell MapGeneratorClass::Plan_Paved_Road_Junction(Cell const & cell, Rect const &
 	int margin_y = 0;
 	int margin_width = 0;
 	int margin_height = 0;
-	Rect tile_size(0, 0, 0, 0);
+	Rect tile_size; // RA2: Plan_Paved_Road_Junction at 0x588560 matches only so
 
 	bool south = dir == FACING_S;
 
@@ -9539,25 +9035,28 @@ Cell MapGeneratorClass::Plan_Paved_Road(Cell const & cell, Rect const & rect, Fa
 	bool south = dir == FACING_S;
 	Cell wcell = cell;
 
-	Rect margins(0, 0, 0, 0);
-	Rect tile_size(0, 0, 0, 0);
+	int margin_x = 0; // RA2: Plan_Paved_Road at 0x588850 matches only so
+	int margin_y = 0; // RA2: as above
+	int margin_width = 0; // RA2: as above
+	int margin_height = 0; // RA2: as above
+	Rect tile_size; // RA2: as above
 
 	if (dir == FACING_E) {
 		tile_size = Rect(0, 0, 1, 3);
-		margins.Y = -3;
-		margins.Height = 6;
+		margin_y = -3; // RA2: as above
+		margin_height = 6; // RA2: as above
 	} else {
 		tile_size = Rect(0, 0, 3, 1);
-		margins.X = -3;
-		margins.Width = 6;
+		margin_x = -3; // RA2: as above
+		margin_width = 6; // RA2: as above
 	}
 
 	while (true) {
 		if (!(wcell.X < rect.X + rect.Width + 1 && wcell.Y < rect.Y + rect.Height + 1)) break;
-		if (!Can_Place_Paved_Road(Rect(margins.X + wcell.X, margins.Y + wcell.Y, margins.Width + tile_size.Width, margins.Height + tile_size.Height), south, south)) {
+		if (!Can_Place_Paved_Road(Rect(margin_x + wcell.X, margin_y + wcell.Y, margin_width + tile_size.Width, margin_height + tile_size.Height), south, south)) { // RA2: as above
 			break;
 		}
-		wcell = Adjacent_Cell(wcell, dir);
+		{ Cell next = Adjacent_Cell(wcell, dir); wcell = next; } // RA2: as above
 	}
 
 	wcell = Adjacent_Cell(wcell, Facing_Sub(dir, FACING_180));
@@ -9577,41 +9076,6 @@ Cell MapGeneratorClass::Plan_Paved_Road(Cell const & cell, Rect const & rect, Fa
 
 
 /// <summary>
-/// Determines if an area of the map is clear ground.
-/// This routine is used before dropping down something that needs elbow room -- a mold seed,
-/// or the ground beside a crystal cliff face. Any part of the area lying off the map counts
-/// against it.
-/// </summary>
-/// <param name="rect">The area of cells to examine.</param>
-/// <param name="check_data">Should cells the generator has protected be rejected too?</param>
-/// <returns>bool; Is the whole area clear?</returns>
-bool MapGeneratorClass::Is_Cell_Area_Clear(Rect const & rect, bool check_data)
-{
-	if (My_In_Radar(Cell(rect.X, rect.Y)) &&
-		My_In_Radar(Cell(rect.X + rect.Width - 1, rect.Y)) &&
-		My_In_Radar(Cell(rect.X, rect.Y + rect.Height - 1)) &&
-		My_In_Radar(Cell(rect.X + rect.Width - 1,rect.Y + rect.Height - 1))) {
-		for (int y = rect.Y; y < rect.Y + rect.Height; y++) {
-			for (int x = rect.X; x < rect.X + rect.Width; x++) {
-				CellClass *cptr = &Map[Cell(x,y)];
-				if (!cptr->Is_Tile_Clear()) {
-					return(false);
-				}
-				if (check_data && !MapRegionClass::CellData::Is_Not_Inviolate(cptr->CellID)) {
-					return(false);
-				}
-				if (cptr->Overlay != OVERLAY_NONE) {
-					return(false);
-				}
-			}
-		}
-		return(true);
-	}
-	return(false);
-}
-
-
-/// <summary>
 /// Determines if a paved road may be laid over an area.
 /// The urban road planner uses this routine both to walk a road out to its full length and to
 /// decide whether a junction or a cap will fit, so the caller states which kinds of road tile
@@ -9627,7 +9091,6 @@ bool MapGeneratorClass::Can_Place_Paved_Road(Rect const & rect, bool overlap_roa
 		My_In_Radar(Cell(rect.X + rect.Width - 1, rect.Y)) &&
 		My_In_Radar(Cell(rect.X, rect.Y + rect.Height - 1)) &&
 		My_In_Radar(Cell(rect.X + rect.Width - 1, rect.Y + rect.Height - 1))) {
-
 		for (int y = rect.Y; y < rect.Y + rect.Height; y++) {
 			for (int x = rect.X; x < rect.X + rect.Width; x++) {
 				CellClass * cptr = &Map[Cell(x, y)];
@@ -9771,7 +9234,7 @@ void MapGeneratorClass::Generate_Urban_Pavement(DynamicVectorClass<Cell> & cells
 		int size = 0;
 		bool place = false;
 		Rect area(cell.X, cell.Y, 0, 0);
-		while (true) {
+		while (!place) { // RA2: Generate_Urban_Pavement at 0x5890B0 matches only so
 			if (size >= 5) {
 				break;
 			}
@@ -9781,10 +9244,7 @@ void MapGeneratorClass::Generate_Urban_Pavement(DynamicVectorClass<Cell> & cells
 				place = true;
 			}
 			size++;
-			if (place) {
-				break;
-			}
-		}
+		} // RA2: Generate_Urban_Pavement at 0x5890B0 has no if (place) {
 		if (place) {
 			IsometricTileType tile = (IsometricTileType)(Pick_Random_UInt(0, 5) + IsometricTileTypeClass::MiscPaveTile + 8);
 			for (int y = 0; y < area.Height / 2; y++) {
@@ -9946,9 +9406,7 @@ void MapGeneratorClass::Generate_Rural_Areas(void)
 		if (placed >= count) {
 			break;
 		}
-		Cell cell;
-		cell.X = 0;
-		cell.Y = 0;
+		Cell cell(0, 0); // RA2: Generate_Rural_Areas at 0x589890 matches only so
 		int tries_here = 0;
 		while (true) {
 			cell = MapRegionClass::Pick_Random_Clear_Map_Cell();
@@ -10027,11 +9485,12 @@ void MapGeneratorClass::Generate_Rural_Buildings(const Cell & cell)
 	int tries = 0;
 	int placed = 0;
 
-	int height = Map[cell].Height;
+	CellClass & center = Map[cell]; // RA2: Generate_Rural_Buildings at 0x589AC0 matches only so
+	int height = center.Height; // RA2: as above
 
 	int min_building = 0;
 	int max_building = ARRAY_SIZE(_names) - 1;
-	if (SeedData.Biome == BIOME_DESERT || SeedData.Biome == BIOME_TEMPERATE || SeedData.Biome == BIOME_MUTATED) {
+	if (SeedData.Biome == BIOME_TUNDRA) { // RA2: as above
 		min_building = 15;
 	}
 
@@ -10043,7 +9502,7 @@ void MapGeneratorClass::Generate_Rural_Buildings(const Cell & cell)
 	HouseClass * neutral = House_From_HousesType(HouseTypeClass::From_Name("Neutral"));
 
 	if (count > 0) {
-		while (true) {
+		while (placed < count) { // RA2: as above
 			if (tries >= 2 * count) {
 				break;
 			}
@@ -10088,10 +9547,7 @@ void MapGeneratorClass::Generate_Rural_Buildings(const Cell & cell)
 				}
 
 				tries++;
-				if (placed >= count) {
-					break;
-				}
-			}
+			} // RA2: Generate_Rural_Buildings at 0x589AC0 has no if (placed >= count) {
 		}
 	}
 }
@@ -10114,16 +9570,8 @@ void MapGeneratorClass::Generate_Rural_Units(const Cell & cell)
 		"CAR"
 	};
 
-	static int _max_counts[BIOME_COUNT] = {
-		4, /// Tundra
-		6, /// Taiga
-		6, /// Temperate
-		3, /// Desert
-		1  /// Mutated
-	};
-
-	HouseClass * neutral = House_From_HousesType(HouseTypeClass::From_Name("Neutral"));
-	int count = Pick_Random_UInt(1, _max_counts[SeedData.Biome]);
+	HouseClass * neutral = House_From_HousesType(HouseTypeClass::From_Name("Neutral")); // RA2: Generate_Rural_Units at 0x589F00 has no static int _max_counts[BIOME_COUNT] = {
+	int count = Pick_Random_UInt(1, 4); // RA2: Generate_Rural_Units at 0x589F00 matches only so
 
 	int tries = 0;
 	int placed = 0;
@@ -10133,12 +9581,12 @@ void MapGeneratorClass::Generate_Rural_Units(const Cell & cell)
 			break;
 		}
 
-		int name_index = Pick_Random_UInt(0, ARRAY_SIZE(_names) - 1);
+		int unit_index = Pick_Random_UInt(0, ARRAY_SIZE(_names) - 1); // RA2: as above
 		FootClass * foot = NULL;
-		if (name_index <= 2) {
-			foot = new InfantryClass(InfantryTypes[InfantryTypeClass::From_Name(_names[name_index])], neutral);
+		if (unit_index <= 2) { // RA2: as above
+			foot = new InfantryClass(InfantryTypes[InfantryTypeClass::From_Name(_names[unit_index])], neutral); // RA2: as above
 		} else {
-			foot = new UnitClass(UnitTypes[UnitTypeClass::From_Name(_names[name_index])], neutral);
+			foot = new UnitClass(UnitTypes[UnitTypeClass::From_Name(_names[unit_index])], neutral); // RA2: as above
 		}
 
 		int tries_here = 0;
@@ -10149,19 +9597,9 @@ void MapGeneratorClass::Generate_Rural_Units(const Cell & cell)
 			}
 			Cell unit_cell = cell + Cell(Pick_Random_UInt(0, 16) - 8, Pick_Random_UInt(0, 16) - 8);
 			if (Map.In_Local_Radar(unit_cell) && Map[unit_cell].Cell_Occupier() == NULL) {
-				if (foot->Unlimbo(Coord(unit_cell), (Dir256)(Pick_Random_UInt(FACING_FIRST, FACING_COUNT - 1) * DIR_STEP_8))) {
-
-					double condition_red_chance = ConditionRedChances[SeedData.Biome];
-					double condition_yellow_chance = ConditionYellowChances[SeedData.Biome];
-
-					double health_ratio = 1.0;
-					if (Random_Fraction() < condition_red_chance) {
-						health_ratio = Rule->ConditionRed;
-					} else if (Random_Fraction() < condition_yellow_chance) {
-						health_ratio = Rule->ConditionYellow;
-					}
-					foot->Strength = foot->TClass->MaxStrength * health_ratio;
-
+				if (foot->Unlimbo(Coord(unit_cell), (Dir256)(Pick_Random_UInt(0, 7) * 32))) { // RA2: as above
+					foot->Strength = foot->Techno_Type_Class()->MaxStrength; // RA2: as above
+					foot->EstimatedHealth = foot->Strength; // RA2: as above
 					foot->Mark(MARK_CHANGE);
 					was_placed = true;
 					placed++;
@@ -10349,6 +9787,7 @@ bool MapGeneratorClass::Generate_Rural_Roads(const Cell & cell)
 	return(processed > 1);
 }
 
+
 // --- FACING 0 (NORTH) ---
 static int Road_N_1Way[] = {95, 96, 97};
 static int Road_N_2Way[] = {0, 1, 2, 3, 4, 5, 11, 84, 85, 86, 87, 88, 89, 90, 91, 98, 99};
@@ -10503,28 +9942,6 @@ bool MapGeneratorClass::Find_Dirt_Road_Tile(FacingType facing, Cell const & targ
 
 
 /// <summary>
-/// Blends the edges of the ice laid down on the map.
-/// This routine runs once the ice is in place, so that every sheet of it meets the ground
-/// around it with the proper transition tiles rather than a hard edge.
-/// </summary>
-void MapGeneratorClass::Smooth_Ice(void)
-{
-	int frst = IsometricTileTypeClass::Ice1Set;
-	int last = IsometricTileTypeClass::Ice3Set + ICE_COUNT-1;
-	Map.Reset_Iterator();
-	CellClass * cptr = Map.Iterate();
-	while (cptr != NULL) {
-		int ittype = cptr->ITType;
-		if (ittype >= frst && ittype <= last) {
-			Cell cell = cptr->CellID;
-			Map.Smoothen_Ice(cell, true);
-		}
-		cptr = Map.Iterate();
-	}
-}
-
-
-/// <summary>
 /// Rings each player's start position with floodlights.
 /// This routine is used to light the starting positions on maps set at dusk or at night.
 /// The ring is turned to whatever angle clears the terrain, and the lights are tagged so
@@ -10532,12 +9949,7 @@ void MapGeneratorClass::Smooth_Ice(void)
 /// </summary>
 void MapGeneratorClass::Generate_Lights(void)
 {
-	TagTypeClass * onoff = NULL;
-	if (SeedData.UseTransitions) {
-		onoff = TagTypeClass::From_Name("Light On/Off");
-	}
-
-	StructType glite = BuildingTypeClass::From_Name("GALITE");
+	StructType glite = BuildingTypeClass::From_Name("GALITE"); // RA2: Generate_Lights at 0x58A9C0 has no TagTypeClass, SeedData, UseTransitions
 	if (glite != STRUCT_NONE) {
 		HouseClass * hptr = House_From_HousesType(HouseTypeClass::From_Name("Special"));
 		if (hptr != NULL) {
@@ -10550,18 +9962,16 @@ void MapGeneratorClass::Generate_Lights(void)
 
 				static const int _light_counts[] = {0, 0, 2, 4};
 				int light_count = _light_counts[SeedData.Time];
-				if (SeedData.UseTransitions) {
-					light_count = 4;
-				}
 
-				bool can_place = false;
+				bool can_place = false; // RA2: Generate_Lights at 0x58A9C0 has no SeedData, UseTransitions
 				int j;
 				while (tries >= 0 && !can_place) {
 					double angle = Random_Fraction() * DEG_TO_RAD(360);
 					can_place = true;
 
 					for (j = 0; j < light_count; j++) {
-						Cell place_cell = Move_Coord(Coord(waypoint), j * DEG_TO_RAD(360) / light_count + angle, 8 * CELL_LEPTON);
+						Coord pc = Move_Coord(Coord(waypoint), j * DEG_TO_RAD(360) / light_count + angle, 8 * CELL_LEPTON); // RA2: Generate_Lights at 0x58A9C0 matches only so
+						Cell place_cell = pc.As_Cell(); // RA2: as above
 						if (!BuildingTypes[glite]->Legal_Placement(place_cell, hptr) || !Map.In_Radar(place_cell)) {
 							can_place = false;
 							break;
@@ -10570,16 +9980,12 @@ void MapGeneratorClass::Generate_Lights(void)
 
 					if (can_place) {
 						for (j = 0; j < light_count; j++) {
-							Cell place_cell = Move_Coord(Coord(waypoint), j * DEG_TO_RAD(360) / light_count + angle, 8 * CELL_LEPTON);
+							Coord pc = Move_Coord(Coord(waypoint), j * DEG_TO_RAD(360) / light_count + angle, 8 * CELL_LEPTON); // RA2: as above
+						Cell place_cell = pc.As_Cell(); // RA2: as above
 							BuildingClass * light = new BuildingClass(BuildingTypes[glite], hptr);
 							if (!light->Unlimbo(Coord(place_cell))) {
 								delete light;
-							} else {
-								if (light != NULL && SeedData.UseTransitions) {
-									light->Attach_Tag(Find_Or_Make(onoff));
-								}
-							}
-
+							} // RA2: Generate_Lights at 0x58A9C0 has no SeedData, UseTransitions
 						}
 					}
 
@@ -10592,78 +9998,76 @@ void MapGeneratorClass::Generate_Lights(void)
 }
 
 
-/// <summary>
-/// Plants the veinhole monsters the map calls for.
-/// This routine looks for flat open ground with room for a monster and the patch of veins
-/// it starts out with. A crowded map simply gets fewer monsters rather than holding the
-/// generator up.
-/// </summary>
-void MapGeneratorClass::Generate_Veinholes(void)
+void MapGeneratorClass::Generate_Neutral_Buildings(void) // RA2: not in TibSun, at 0x58AD90
 {
-	int tries = 0;
-	int placed = 0;
-	int count = SeedData.VeinholeMonsters;
-
-	int save_init = ScenarioInit;
-	ScenarioInit = 0;
-
-	while (tries < 200 && placed < count) {
-
-		Cell cell = MapRegionClass::Pick_Random_Clear_Map_Cell();
-
-		Rect area(cell.X - 2, cell.Y - 2, 5, 5);
-
-		if (Map.In_Local_Radar(Cell(area.X - 1, area.Y - 1))) {
-			if (Map.In_Local_Radar(Cell(area.X + area.Width, area.Y - 1))) {
-				if (Map.In_Local_Radar(Cell(area.X - 1, area.Y + area.Height))) {
-					if (Map.In_Local_Radar(Cell(area.X + area.Width, area.Y + area.Height))) {
-						bool valid = true;
-						int height = Map[cell].Height;
-						for (int y = area.Y; y < area.Y + area.Height; y++) {
-							for (int x = area.X; x < area.X + area.Width; x++) {
-								CellClass * cptr = &Map[Cell(x, y)];
-								if (!MapRegionClass::CellData::Is_Not_Inviolate(cptr->CellID)) {
-									valid = false;
-								}
-								if (!cptr->Is_Tile_Clear() || cptr->Height != height || cptr->Overlay != OVERLAY_NONE) {
-									valid = false;
-								}
-							}
-						}
-
-						if (valid && VeinholeMonsterClass::Can_Monster_Go_Here(cell) && valid) {
-							CellClass * cellptr = &Map[cell];
-							for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir++) {
-								CellClass * adjacent = &cellptr->Adjacent_Cell(dir);
-								adjacent->Overlay = OVERLAY_VEINHOLE_DUMMY;
-								adjacent->OverlayData = 0;
-							}
-							cellptr->Overlay = OVERLAY_VEINHOLE;
-							cellptr->OverlayData = 0;
-
-							new VeinholeMonsterClass(cellptr->CellID);
-							for (int y = -2; y <= 2; y++) {
-								for (int x = -2; x <= 2; x++) {
-									CellClass * vein_cell = &Map[cell + Cell(x, y)];
-									if (abs(y) == 2 || abs(x) == 2) {
-										vein_cell->Place_Veins();
-									}
-									vein_cell->Recalc_Attributes();
-								}
-							}
-
-							placed++;
-						}
+	MapRegionClass * region;
+	int j;
+	if (SeedData.MapType == 2) {
+		int count = Pick_Random_UInt(0, 2);
+		int i = 0;
+		while (i < count) {
+			j = 0;
+			if (MapRegionClass::MapRegions.Count() > 0) {
+				do {
+					region = MapRegionClass::MapRegions[j];
+					MapRegionClass * same = region;
+					region = same;
+					if (MapRegionClass::MapRegions[j]->StartCount > 0) {
+						region->Place_Neutral_Tech_Building();
 					}
+					j++;
+				} while (j < MapRegionClass::MapRegions.Count());
+			}
+			i++;
+		}
+		return;
+	}
+
+	HouseClass * neutral = House_From_HousesType(HouseTypeClass::From_Name("Neutral"));
+	int count = Pick_Random_UInt(0, 4);
+
+	for (int i = 0; i < count; i++) {
+		bool placed = false;
+		int tries = 0;
+
+		BuildingClass * building = new BuildingClass(Rule->NeutralTechBuildings[Pick_Random_UInt(0, Rule->NeutralTechBuildings.Count() - 1)], neutral);
+
+		for (; !placed; ++tries) {
+			if (tries >= 100) {
+				break;
+			}
+
+			Cell building_cell = MapRegionClass::Pick_Random_Clear_Map_Cell();
+			int height = Map[building_cell].Height;
+
+			Cell const * list = building->Class->Occupy_List(true);
+			bool ok = true;
+			while (*list != REFRESH_EOL) {
+				CellClass * cellptr = &Map[building_cell + *list];
+				if (cellptr->Cell_Occupier() != NULL || !cellptr->Is_Tile_Clear() || cellptr->Height != height || cellptr->Land_Type() == LAND_ROCK || !Map.In_Local_Radar(cellptr) || !MapRegionClass::CellData::Is_Not_Inviolate(cellptr->CellID)) {
+					ok = false;
+				}
+				list++;
+				if (!ok) break;
+			}
+
+			if (ok) {
+				if (building->Unlimbo(Coord(building_cell, 0))) {
+					placed = true;
 				}
 			}
 		}
 
-		tries++;
+		if (!placed) {
+			if (building != NULL) {
+				delete building;
+			}
+		}
 	}
-
-	ScenarioInit = save_init;
 }
+
+
+
 
 
 /// <summary>
@@ -10675,7 +10079,6 @@ DirtRoadLink::DirtRoadLink(Cell const & cell, FacingType dir) :
 	Offset(cell),
 	Facing(dir)
 {
-
 }
 
 
@@ -10686,7 +10089,6 @@ DirtRoadLink::DirtRoadLink(void) :
 	Offset(0, 0),
 	Facing(FACING_NONE)
 {
-
 }
 
 
@@ -10698,7 +10100,6 @@ DirtRoadLink::DirtRoadLink(DirtRoadLink const & that) :
 	Offset(that.Offset),
 	Facing(that.Facing)
 {
-
 }
 
 
@@ -10721,7 +10122,6 @@ DirtRoadNode::DirtRoadNode(IsometricTileType road_tile, Cell const & origin, Iso
 	CapOrigin(cap_origin),
 	BackLinkIndex(link_index)
 {
-
 }
 
 
@@ -10735,7 +10135,6 @@ DirtRoadNode::DirtRoadNode(void) :
 	CapOrigin(Cell(0, 0)),
 	BackLinkIndex(-1)
 {
-
 }
 
 
@@ -10750,7 +10149,6 @@ DirtRoadNode::DirtRoadNode(DirtRoadNode const & that) :
 	CapOrigin(that.CapOrigin),
 	BackLinkIndex(that.BackLinkIndex)
 {
-
 }
 
 
@@ -10953,13 +10351,13 @@ DirtRoadTile DirtRoadTiles[] = {
 /// <returns>Returns with the index of the matching dirt road entry.</returns>
 int Dirt_Road_Tile_Index(IsometricTileType ittype)
 {
-	if (ittype >= IsometricTileTypeClass::DirtRoadCurve && ittype < IsometricTileTypeClass::DirtRoadCurve + DIRT_ROAD_TILE_TOTAL) {
+	if (ittype >= IsometricTileTypeClass::DirtRoadCurve && ittype < IsometricTileTypeClass::DirtRoadCurve + 101) { // RA2: Dirt_Road_Tile_Index at 0x58D9A0 matches only so
 		return(ittype - IsometricTileTypeClass::DirtRoadCurve);
 	}
-	if (ittype < IsometricTileTypeClass::DirtRoadSlopes || ittype >= IsometricTileTypeClass::DirtRoadSlopes + DIRT_ROAD_SLOPES_COUNT) {
+	if (ittype < IsometricTileTypeClass::DirtRoadSlopes || ittype >= IsometricTileTypeClass::DirtRoadSlopes + 8) { // RA2: as above
 		return(0);
 	}
-	return(ittype - IsometricTileTypeClass::DirtRoadSlopes + DIRT_ROAD_TILE_TOTAL);
+	return(ittype - IsometricTileTypeClass::DirtRoadSlopes + 101); // RA2: as above
 }
 
 
@@ -10972,10 +10370,1129 @@ int Dirt_Road_Tile_Index(IsometricTileType ittype)
 void Init_Dirt_Roads(void)
 {
 	int i;
-	for (i = 0; i < DIRT_ROAD_TILE_TOTAL; i++) {
+	for (i = 0; i < 101; i++) { // RA2: Init_Dirt_Roads at 0x58D9D0 matches only so
 		DirtRoadTiles[i].ITType = IsometricTileType(IsometricTileTypeClass::DirtRoadCurve + i);
 	}
-	for (i = 0; i < DIRT_ROAD_SLOPES_COUNT; i++) {
-		DirtRoadTiles[i + DIRT_ROAD_TILE_TOTAL].ITType = IsometricTileType(IsometricTileTypeClass::DirtRoadSlopes + i);
+	for (i = 0; i < FACING_COUNT; i++) { // RA2: as above
+		DirtRoadTiles[i + 101].ITType = IsometricTileType(IsometricTileTypeClass::DirtRoadSlopes + i); // RA2: as above
 	}
 }
+
+
+/// <summary>
+/// Removes every map region the generator has built.
+/// This routine wipes the slate between generation attempts, so that a fresh run starts
+/// with no regions at all and its region numbering back at zero.
+/// </summary>
+void MapRegionClass::Delete_All_Regions(void)
+{
+	MapRegionClass::TotalCount = 0;
+
+	for (int i = MapRegionClass::MapRegions.Count() - 1; i >= 0; i--) { // RA2: no TiberiumLayoutCells (not in RA2's layout)
+		MapRegionClass * region = MapRegionClass::MapRegions[i];
+		if (region != NULL) {
+			delete region;
+		}
+	}
+}
+
+
+/// <summary>
+/// Imposes the tournament territory's map settings.
+/// A Worldwide Domination Tournament game does not let the players design the battlefield --
+/// the territory being fought over dictates what it looks like. This routine replaces the
+/// generator settings with that territory's own, and does nothing at all in any other game.
+/// </summary>
+void MapSeedClass::Fixup_WDT_Settings(void)
+{
+} // RA2: no WDTTerritory, IsWDT (TibSun's use does not compile against RA2's declaration)
+
+
+/// <summary>
+/// Discards a saved set of map generator settings.
+/// The standard delete dialog asks the player which of the saved maps to throw away.
+/// </summary>
+/// <returns>bool; Were the settings deleted?</returns>
+bool MapSeedClass::Delete(void)
+{
+	return(BASECLASS::Delete());
+}
+
+
+/// <summary>
+/// Removes a saved settings file from the disk.
+/// This routine is what the delete dialog calls once the player has settled on which of the
+/// saved maps is to go.
+/// </summary>
+/// <param name="file_name">Name of the settings file to remove.</param>
+/// <returns>bool; Was the file removed?</returns>
+bool MapSeedClass::Delete_File(const char * file_name)
+{
+	return(BASECLASS::Delete_File(file_name));
+}
+
+
+/// <summary>
+/// Rebuilds the generator's regions from scratch.
+/// Whatever regions an earlier pass left behind are thrown away and derived afresh from the
+/// terrain as it now stands. The water regions are settled first and given room to breathe, so
+/// that the land regions fill in around them.
+/// </summary>
+void MapGeneratorClass::Init_Regions(void)
+{
+	int i;
+
+	MapRegionClass::Destroy_Cell_Regions();
+	MapRegionClass::Create_Water_Regions();
+
+	for (i = 0; i < MapRegionClass::MapRegions.Count(); i++) {
+		MapRegionClass *ptr = MapRegionClass::MapRegions[i];
+		if (ptr->ContainsWater) {
+			ptr->Grow(4);
+			ptr->Claim_Expandable_Cells();
+		}
+	}
+
+	MapRegionClass::Create_Land_Regions(false);
+}
+
+
+/// <summary>
+/// Builds the region map for the generated terrain.
+/// This routine runs once the ground itself has settled. Ice regions are gathered first on any
+/// biome that has ice, then the general regions, and finally the map's own height regions are
+/// rebuilt so that placement and pathfinding agree with the new landscape.
+/// </summary>
+/// <returns>bool; Were the height regions built?</returns>
+bool MapGeneratorClass::Make_Regions(void)
+{
+	if (SeedData.Biome != BIOME_TUNDRA) {
+		MapRegionClass::Make_Ice_Regions();
+	}
+	MapRegionClass::Make_Regions();
+	return(Map.Build_All_Cliffs(0, -1));
+}
+
+
+/// <summary>
+/// Fetches the spread priority of a candidate tiberium cell.
+/// Create_Tiberium_Patch grows in cheapest first order, so this score is what keeps a field
+/// gathered about its origin while leaving the edge irregular.
+/// </summary>
+/// <param name="cell1">The cell the field is growing out from.</param>
+/// <param name="cell2">The candidate cell being considered.</param>
+/// <returns>Returns with the score, where a lower score means the cell is reached sooner.</returns>
+double MapGeneratorClass::Get_Tiberium_Score(const Cell & cell1, const Cell & cell2) const
+{
+	static const double _random_range = 5.0;
+
+	int x = cell1.X - cell2.X;
+	int y = cell1.Y - cell2.Y;
+	double dist = fastmath::sqrt(x * x + y * y);
+	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
+}
+
+
+/// <summary>
+/// Fetches the spread priority of a candidate forest cell.
+/// Place_Forest plants in cheapest first order, so this score is what gives a wood its rounded
+/// shape and its uneven treeline.
+/// </summary>
+/// <param name="cell1">The cell the forest is growing out from.</param>
+/// <param name="cell2">The candidate cell being considered.</param>
+/// <returns>Returns with the score, where a lower score means the cell is reached sooner.</returns>
+double MapGeneratorClass::Get_Forest_Score(const Cell & cell1, const Cell & cell2) const
+{
+	static const double _random_range = 5.0;
+
+	int x = cell1.X - cell2.X;
+	int y = cell1.Y - cell2.Y;
+	double dist = fastmath::sqrt(x * x + y * y);
+	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
+}
+
+
+/// <summary>
+/// Fetches the spread priority of a candidate patch cell.
+/// Place_Tile_Patch fills in cheapest first order, so this score is what keeps a patch roughly
+/// round while leaving its edge ragged.
+/// </summary>
+/// <param name="cell1">The cell the patch is growing out from.</param>
+/// <param name="cell2">The candidate cell being considered.</param>
+/// <returns>Returns with the score, where a lower score means the cell is filled sooner.</returns>
+double MapGeneratorClass::Get_Tile_Patch_Score(const Cell & cell1, const Cell & cell2) const
+{
+	static const double _random_range = 5.0;
+
+	int x = cell1.X - cell2.X;
+	int y = cell1.Y - cell2.Y;
+	double dist = fastmath::sqrt(x * x + y * y);
+	return(RMG_RANDOM_DOUBLE(_random_range) + dist);
+}
+
+
+/// <summary>
+/// Sets up one of the map generation sliders.
+/// This routine is used by Set_Settings to point a slider at the span of values its setting
+/// is permitted to take. A setting with nothing left to choose between is shown disabled
+/// rather than hidden, so the dialog keeps its shape.
+/// </summary>
+/// <param name="handle">The slider control to set up.</param>
+/// <param name="min">The lowest value the slider may be dragged to.</param>
+/// <param name="max">The highest value the slider may be dragged to.</param>
+/// <param name="position">Where the thumb should sit.</param>
+/// <param name="enable">Should the player be allowed to move this slider?</param>
+void MapSeedClass::Set_Scroll_Bar(HWND handle, unsigned int min, unsigned int max, int position, bool enable)
+{
+	if (max <= min) {
+		EnableWindow(handle, FALSE);
+		Slider_SetRange(handle, 0, 100);
+		Slider_SetPos(handle, position);
+	} else {
+		EnableWindow(handle, enable);
+		Slider_SetRange(handle, min, max);
+		Slider_SetPos(handle, position);
+	}
+}
+
+
+/// <summary>
+/// Sets up one of the map generation checkboxes.
+/// This routine is the companion of Set_Scroll_Bar, and is used by Set_Settings to show a
+/// setting the dialog offers as a simple yes or no. A setting the player is not allowed to
+/// touch is shown disabled rather than hidden, so the dialog keeps its shape.
+/// </summary>
+/// <param name="handle">The checkbox control to set up.</param>
+/// <param name="state">Should the box be shown checked?</param>
+/// <param name="enable">Should the player be allowed to change this setting?</param>
+void MapSeedClass::Set_Checkbox(HWND handle, bool state, bool enable)
+{
+	Button_SetCheck(handle, state != 0);
+	Button_Enable(handle, enable);
+}
+
+
+/// <summary>
+/// Forces a setting back within its legal range.
+/// This routine is used to hold a single map generation setting to the limits imposed upon
+/// it. A setting that is already legal is left exactly as it is.
+/// </summary>
+/// <param name="setting">The setting to police. It is only written when found out of range.</param>
+/// <param name="min">The lowest legal value.</param>
+/// <param name="max">The highest legal value.</param>
+/// <param name="use_midpoint">Should an illegal value land in the middle of the range rather
+/// than on the boundary it broke?</param>
+void MapSeedClass::Clamp_Setting(int & setting, int min, int max, bool use_midpoint) const
+{
+	int value = setting;
+
+	if (value > max) {
+		if (use_midpoint) {
+			value = (max + min) >> 1;
+		} else {
+			value = max;
+		}
+		setting = value;
+	} else if (value < min) {
+		if (use_midpoint) {
+			value = (max + min) >> 1;
+		} else {
+			value = min;
+		}
+		setting = value;
+	}
+}
+
+
+/// <summary>
+/// Turns part of a water body into swamp.
+/// This routine is used on a mutated map to spoil an otherwise respectable lake. The water is
+/// soured out from a seed cell, the transitions along the new shore are tidied, and a little
+/// foliage is dropped on top to finish the job.
+/// </summary>
+/// <param name="cells">The water cells the swamp may claim.</param>
+/// <param name="last">The size of the water body, which decides how far the swamp may
+/// spread.</param>
+/// <param name="nodes">Scratch storage for the spread.</param>
+/// <param name="queue">The queue that orders the spread.</param>
+void MapGeneratorClass::Generate_Swamp(DynamicVectorClass<Cell> &cells, int last, CellNode *nodes, PriorityQueueClass<CellNode> *queue)
+{
+	Cell swamp_origin = CELL_NONE;
+	int tries = 0;
+
+	DebugString("Generating swamp\n");
+
+	while (swamp_origin == CELL_NONE) {
+		Cell c = cells[Pick_Random_UInt(0, cells.Count() - 1)];
+		if (!Map[c].Is_Tile_Swamp()) {
+			swamp_origin = c;
+		}
+
+		tries++;
+		if (tries >= 200) {
+			break;
+		}
+	}
+
+	if (swamp_origin == CELL_NONE) {
+		return;
+	}
+
+	DynamicVectorClass<Cell> swamp_cells;
+	swamp_cells.Set_Growth_Step(500);
+
+	int max_spread = MIN(last / 2, 200);
+	int min_spread = MIN(last / 8, 50);
+
+	int spread_count = Pick_Random_UInt(min_spread, max_spread);
+	queue->Clear();
+
+	int marker_index = 1;
+	nodes[0].Element = swamp_origin;
+	nodes[0].Score = 0;
+	queue->Insert(nodes[0]);
+
+	CellNode * node = queue->Extract_Min();
+	int spread_step = 0;
+	while (spread_step < spread_count && node != NULL) {
+		CellClass * cptr = &Map[node->Element];
+		cptr->ITType = IsometricTileTypeClass::SwampTile;
+		cptr->SubTile = 0;
+		swamp_cells.Add(cptr->CellID);
+
+		CellNode * newnode = &nodes[marker_index];
+		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
+			Cell newcell = Adjacent_Cell(node->Element, dir);
+			if (My_In_Radar(newcell)) {
+				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
+				CellClass * newcellptr = &Map[newcell];
+				if (newcellptr->ITType >= IsometricTileTypeClass::WaterSet && newcellptr->ITType < IsometricTileTypeClass::WaterSet + WATER_COUNT) {
+					newnode->Element = newcell;
+					newnode->Score = Get_Spread_Score(swamp_origin, newcell, spread_step);
+					data.SpreadID = WorkingRegionID;
+					marker_index++;
+					queue->Insert(*newnode++);
+				}
+			}
+		}
+
+		spread_step++;
+		node = queue->Extract_Min();
+	}
+
+	int i;
+	for (i = 0; i < swamp_cells.Count(); i++) {
+		Map[swamp_cells[i]].Fixup_LAT();
+	}
+
+	DynamicVectorClass<unsigned short> swamp_tiles;
+
+	for (i = 0; i < SWAMP_COUNT - 1; i++) {
+		swamp_tiles.Add((unsigned short)(IsometricTileTypeClass::SwampTile + i + 1));
+	}
+
+	int patch_count = Pick_Random_UInt(1, 8);
+	for (i = 0; i < patch_count; i++) {
+		int patch_index = Pick_Random_UInt(0, swamp_tiles.Count() - 1);
+		IsometricTileTypeClass * itype = IsometricTileTypes[swamp_tiles[patch_index]];
+		int width = itype->Width;
+		int height = itype->Height;
+
+		Cell patch_cell = CELL_NONE;
+		int patch_tries = 0;
+		while (patch_cell == CELL_NONE) {
+			Cell base = swamp_cells[Pick_Random_UInt(0, swamp_cells.Count() - 1)];
+			patch_cell = base;
+			for (int y = 0; y < height; y++) {
+				for (int x = 0; x < width; x++) {
+					if (Map[base + Cell(x, y)].ITType != IsometricTileTypeClass::SwampTile) {
+						patch_cell = CELL_NONE;
+					}
+				}
+			}
+
+			patch_tries++;
+			if (patch_tries >= 200) {
+				break;
+			}
+		}
+
+		if (patch_cell == CELL_NONE) {
+			break;
+		}
+
+		for (int y = 0; y < height; y++) {
+			char subtile = width * y;
+			for (int x = 0; x < width; x++) {
+				Cell c = patch_cell + Cell(x, y);
+				Map[c].ITType = (IsometricTileType)swamp_tiles[patch_index];
+				Map[c].SubTile = subtile + x;
+			}
+		}
+
+		swamp_tiles.Delete_Index(patch_index);
+	}
+
+	int foliage_count = Pick_Random_UInt(0, 4);
+	for (i = 0; i < foliage_count; i++) {
+		Cell c = swamp_cells[Pick_Random_UInt(0, swamp_cells.Count() - 1)];
+		if (Map[c].Cell_Terrain(false) == NULL) {
+			char terrain_name[8];
+			int terrain_index = Pick_Random_UInt(1, 5);
+			sprintf(terrain_name, "FONA0%d", terrain_index);
+			new TerrainClass(TerrainTypes[TerrainTypeClass::From_Name(terrain_name)], c);
+		}
+	}
+
+	DebugString("Swamp heap size:?? -- Marker Index:%d\n", marker_index);
+}
+
+
+/// <summary>
+/// Seeds a frozen lake on an arctic map.
+/// This is the tundra counterpart of Seed_Lake. The sheet spreads out from a seed cell until the
+/// map's water budget is spent and is then given its edge variants. A lake that cannot be grown
+/// to a worthwhile size is abandoned and the ground put back the way it was found.
+/// </summary>
+/// <param name="cell">The cell to grow the lake from, or Cell(0,0) to let the routine choose
+/// one.</param>
+/// <returns>bool; Was a lake of usable size seeded?</returns>
+bool MapGeneratorClass::Seed_Arctic_Lake(const Cell & cell)
+{
+	float ratios[BIOME_COUNT] = {
+		0.40f,
+		0.35f,
+		0.35f,
+		0.10f,
+		0.30f,
+	};
+
+	int water_value;
+	if (SeedData.WaterAmount == 0) {
+		water_value = 0;
+	} else {
+		water_value = (int)(ratios[SeedData.Biome] * (double)LocalWidth * (double)LocalHeight * (double)SeedData.WaterAmount * 0.02 + 100.0);
+	}
+
+	int spread_limit = water_value - SeededWaterAmount;
+	IsometricTileType ice1 = IsometricTileTypeClass::Ice1Set;
+	if (spread_limit <= 0) {
+		return(false);
+	}
+
+	CellNode *nodes = new CellNode[MAX((2 * spread_limit) + 2, 100)];
+	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(MAX((2 * spread_limit) + 2, 100));
+
+	Map.Reset_Iterator();
+	CellClass *cptr = Map.Iterate();
+	while (cptr != NULL) {
+		Set_Cell_Data_Spread(cptr->Fetch_CellID(), 0);
+		cptr = Map.Iterate();
+	}
+
+	Cell seed_cell;
+	if (cell == Cell(0, 0)) {
+		int tries = 0;
+		while (true) {
+			unsigned int x = Pick_Random_UInt(0, Map.PlayRect.Width - 1);
+			unsigned int y = Pick_Random_UInt(0, Map.PlayRect.Height - 1);
+
+			seed_cell = Cell(1, Map.PlayRect.Width) + Cell(x, -x) + Cell(y, y);
+
+			tries++;
+			if (tries >= 200) {
+				return(false);
+			}
+
+			if (MapRegionClass::CellData::Get_Region(seed_cell) == 0 && Map[seed_cell].Is_Tile_Clear()) {
+				if (tries < 200) {
+					break;
+				}
+				return(false);
+			}
+		}
+	} else {
+		seed_cell = cell;
+	}
+
+	bool success = true;
+	int seeded_count = 0;
+
+	int max_spread = MAX(spread_limit, 76);
+	double scale = (double)(spread_limit / 6);
+	double mean = (double)(spread_limit / 4);
+
+	int spread_count = (int)Sample_Truncated_Normal(mean, scale, 75.0, (double)max_spread);
+
+	queue->Clear();
+
+	int marker_index = 1;
+	nodes[0].Element = seed_cell;
+	nodes[0].Score = 0.0f;
+	Set_Cell_Data_Spread(seed_cell, WorkingRegionID);
+	queue->Insert(nodes[0]);
+
+	CellNode *node = queue->Extract_Min();
+
+	DynamicVectorClass<Cell> *ice_cells = new DynamicVectorClass<Cell>();
+	ice_cells->Set_Growth_Step(spread_count + 1);
+
+	while (seeded_count < spread_count && node != NULL) {
+		Set_Cell_Data_Region(node->Element, WorkingRegionID);
+
+		CellClass *node_cellptr = &Map[node->Element];
+		node_cellptr->ITType = ice1;
+		node_cellptr->SubTile = 0;
+		node_cellptr->IsIceGrowthAllowed = true;
+		ice_cells->Add(node_cellptr->Fetch_CellID());
+
+		CellNode *newnode = &nodes[marker_index];
+		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
+			Cell newcell = Adjacent_Cell(node->Element, dir);
+
+			if (My_In_Radar(newcell)) {
+
+				if (RMGCellData != NULL) {
+					MapRegionClass::CellData &data = MapRegionClass::Get_Cell_Data(newcell);
+					if (!data.RegionID && data.SpreadID != WorkingRegionID) {
+						CellClass *newcellptr = &Map[newcell];
+						if (newcellptr->Is_Tile_Clear()) {
+							newnode->Element = newcell;
+							newnode->Score = Get_Spread_Score(seed_cell, newcell, seeded_count);
+							Set_Cell_Data_Spread(newcell, WorkingRegionID);
+							marker_index++;
+							queue->Insert(*newnode++);
+						}
+					}
+				}
+			}
+		}
+
+		seeded_count++;
+		node = queue->Extract_Min();
+	}
+
+	CellNode *remaining = queue->Extract_Min();
+	while (remaining != NULL) {
+		if (!success) {
+			break;
+		}
+
+		MapRegionClass::CellData &data = MapRegionClass::Get_Cell_Data(remaining->Element);
+		if (data.RegionID || !Map[remaining->Element].Is_Tile_Clear()) {
+			success = false;
+		} else {
+			CellClass *cellptr = &Map[remaining->Element];
+			cellptr->ITType = IsometricTileTypeClass::Ice1Set;
+			cellptr->SubTile = 0;
+			cellptr->IsIceGrowthAllowed = true;
+			data.RegionID = WorkingRegionID;
+			//ice_cells->Add(cellptr->Fetch_CellID());
+			ice_cells->Add(cellptr->CellID);
+		}
+
+		remaining = queue->Extract_Min();
+		seeded_count++;
+	}
+
+	Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_CRACKED));
+	Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_EDGE));
+
+	delete queue;
+	delete[] nodes;
+	delete ice_cells;
+
+	if (success) {
+		SeededWaterAmount += seeded_count;
+		return(true);
+	}
+
+	Clear_Region_Cells(WorkingRegionID, 0, -1);
+	return(false);
+}
+
+
+/// <summary>
+/// Scatters an edge variant over a sheet of ice.
+/// This routine is run over an ice sheet once it has been laid down, dabbing blotches of one of
+/// the ice variants here and there so that the sheet does not read as one flat expanse. It is
+/// called once per variant.
+/// </summary>
+/// <param name="cells">The ice cells that may be painted.</param>
+/// <param name="last">The ice variant to paint with.</param>
+void MapGeneratorClass::Seed_Ice(DynamicVectorClass<Cell> & cells, IsometricTileType last)
+{
+	double rand_scale = last == IsometricTileTypeClass::Ice1Set + ICE_CRACKED ? ICE_CRACKED - 1 : 1;
+
+	int seed_count = Pick_Random_UInt(0, 15);
+
+	CellNode * nodes = new CellNode[MAX(cells.Count() * 2, 64)];
+	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(MAX(cells.Count() * 2, 64));
+
+	for (int i = cells.Count() - 1; i >= 0; i--) {
+		MapRegionClass::Get_Cell_Data(cells[i]).Iced = false;
+	}
+
+	while (seed_count > 0) {
+		int spread_step = 0;
+		int spread_limit = MAX(4, cells.Count() / 20);
+		int spread_count = Pick_Random_UInt(3, spread_limit);
+		queue->Clear();
+
+		int seed_index = Pick_Random_UInt(0, cells.Count() - 1);
+		int node_count = 1;
+		Cell seed_cell = cells[seed_index];
+		nodes[0].Element = seed_cell;
+		nodes[0].Score = 0.0f;
+
+		MapRegionClass::Get_Cell_Data(seed_cell).Iced = true;
+		queue->Insert(nodes[0]);
+
+		CellNode * node = queue->Extract_Min();
+		while (spread_step < spread_count && node != NULL) {
+			Map[node->Element].ITType = (IsometricTileType)last;
+
+			CellNode * newnode = &nodes[node_count];
+			for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
+				Cell newcell = Adjacent_Cell(node->Element, dir);
+				if (My_In_Radar(newcell)) {
+					CellClass * newcellptr = &Map[newcell];
+					MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
+					if (newcellptr->Is_Tile_Ice() && !data.Iced) {
+						newnode->Element = newcell;
+						newnode->Score = Get_Ice_Score(seed_cell, newcell, rand_scale);
+						data.Iced = true;
+						node_count++;
+						queue->Insert(*newnode++);
+					}
+				}
+			}
+
+			spread_step++;
+			node = queue->Extract_Min();
+		}
+
+		seed_count--;
+	}
+
+	delete[] nodes;
+
+	delete queue;
+}
+
+
+/// <summary>
+/// Scores a candidate cell for a spreading patch of ice.
+/// This is the ice counterpart of Get_Spread_Score. Ground near the seed is claimed first, and
+/// the weight given to the random term decides how ragged the edge of the patch turns out.
+/// </summary>
+/// <param name="cell1">The cell the patch is spreading from.</param>
+/// <param name="cell2">The candidate cell being scored.</param>
+/// <param name="random_range">How much randomness to allow into the score.</param>
+/// <returns>Returns with the candidate's priority. Lower is claimed first.</returns>
+double MapGeneratorClass::Get_Ice_Score(const Cell & cell1, const Cell & cell2, double random_range) const
+{
+	int x = cell1.X - cell2.X;
+	int y = cell1.Y - cell2.Y;
+	double dist = fastmath::sqrt(x * x + y * y);
+	return(RMG_RANDOM_DOUBLE(random_range) + dist);
+}
+
+
+/// <summary>
+/// Draws a wandering "river of ice" polyline of Ice1Set tiles across the map.
+/// Each step perturbs the heading and length, occasionally recurses to spawn a
+/// branch, and finally scatters ice-edge variants via Seed_Ice. This is the
+/// arctic sibling of Seed_River.
+/// </summary>
+/// <param name="cell">Seed cell, or Cell(0, 0) to pick a random edge seed.</param>
+/// <param name="start_angle">Initial heading angle in radians (used when cell is given).</param>
+/// <returns>True if enough ice was painted, false otherwise.</returns>
+bool MapGeneratorClass::Seed_Arctic_River(const Cell & cell, double start_angle)
+{
+	bool success = true;
+
+	Cell seed_cell;
+	double angle;
+
+	if (cell == Cell(0, 0)) {
+		Cell corner(1, Map.PlayRect.Width);
+		Cell far_corner = corner + Cell(Map.PlayRect.Width, -Map.PlayRect.Width) + Cell(Map.PlayRect.Height, Map.PlayRect.Height) + Cell(-2, 0);
+
+		int dir4 = (int)Pick_Random_UInt(0, 3);
+		int x = (int)Pick_Random_UInt(0, Map.PlayRect.Width - 1);
+		int y = (int)Pick_Random_UInt(0, Map.PlayRect.Height - 1);
+
+		Cell candidates[4];
+		candidates[0] = corner + Cell(x, -x);
+		candidates[1] = far_corner - Cell(y, y);
+		candidates[2] = far_corner - Cell(x, -x);
+		candidates[3] = corner + Cell(y, y);
+
+		double base_angle = DEG_TO_RAD(315) - (double)dir4 * M_PI_2;
+
+		seed_cell = candidates[dir4];
+		angle = Sample_Truncated_Normal(base_angle, DEG_TO_RAD(60),
+				base_angle - M_PI_2, base_angle + M_PI_2);
+	} else {
+		seed_cell = cell;
+		angle = start_angle;
+	}
+
+	if (!My_In_Radar(seed_cell)) {
+		return(false);
+	}
+
+	int seeded_count = 0;
+
+	double length_d = (double)SeedData.WaterAmount * 0.09;
+	if (4.0 > length_d) {
+		length_d = 4.0;
+	}
+	int length_top = (int)length_d;
+	double length = (double)Pick_Random_UInt(3, length_top);
+	int half = (int)length / 2;
+
+	double cur_angle = angle;
+	double length_hi = length + (double)half;
+	double length_lo = length - (double)half;
+	double cur_x = (double)seed_cell.X + 0.5;
+	double cur_y = (double)seed_cell.Y + 0.5;
+	double angle_hi = angle + M_PI_2;
+	double angle_lo = angle - M_PI_2;
+
+	double stop_roll = 1.0;
+
+	DynamicVectorClass<Cell> *ice_cells = new DynamicVectorClass<Cell>();
+	ice_cells->Set_Growth_Step(5000);
+
+	while (My_In_Radar(Cell((int)cur_x, (int)cur_y)) && success) {
+
+		double step_y = fastmath::cos(cur_angle);
+		double step_x = fastmath::sin(cur_angle);
+
+		int span = (int)(length + 0.5);
+		double px = cur_x - step_x * (double)(span - 1) * 0.5;
+		double py = cur_y - step_y * (double)(span - 1) * 0.5;
+
+		for (int i = span; i > 0; i--) {
+			if (My_In_Radar(Cell((int)px, (int)py))) {
+				if (RMGCellData != NULL) {
+					MapRegionClass::Get_Cell_Data(Cell((int)px, (int)py)).RegionID = WorkingRegionID;
+				}
+
+				CellClass *cellptr = &Map[Cell((int)px, (int)py)];
+				Cell id = cellptr->CellID;
+				cellptr->ITType = IsometricTileTypeClass::Ice1Set;
+				cellptr->SubTile = 0;
+				ice_cells->Add(id);
+			}
+
+			px += step_x;
+			py += step_y;
+		}
+
+		cur_x += step_y;
+		cur_y -= step_x;
+
+		if (Random_Fraction() < 0.01) {
+			double branch_base = cur_angle + M_PI_2;
+			double branch_angle = Sample_Truncated_Normal(branch_base, DEG_TO_RAD(30),
+					cur_angle + DEG_TO_RAD(30), cur_angle + DEG_TO_RAD(150));
+
+			Cell branch_cell((int)px, (int)py);
+			success = Seed_Arctic_River(branch_cell, branch_angle);
+		}
+
+		double delta_angle = Sample_Truncated_Normal(0.0, DEG_TO_RAD(18),
+				angle_lo - cur_angle, angle_hi - cur_angle);
+		cur_angle += delta_angle;
+
+		if (half > 0) {
+			double delta_len = Sample_Truncated_Normal(0.0, 0.5,
+					length_lo - length, length_hi - length);
+			length += delta_len;
+		}
+
+		stop_roll = Random_Fraction();
+		seeded_count++;
+		if (stop_roll < 0.005) {
+			break;
+		}
+	}
+
+	if (seeded_count < 40) {
+		success = false;
+	}
+
+	if (stop_roll < 0.005) {
+		if (My_In_Radar(Cell((int)cur_x, (int)cur_y)) && success) {
+			Seed_Arctic_Lake(Cell((int)cur_x, (int)cur_y));
+		}
+	}
+
+	if (success) {
+		Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_CRACKED));
+		Seed_Ice(*ice_cells, (IsometricTileType)(IsometricTileTypeClass::Ice1Set + ICE_EDGE));
+	}
+
+	delete ice_cells;
+
+	if (success) {
+		SeededWaterAmount += seeded_count;
+		return(true);
+	}
+
+	Clear_Region_Cells(WorkingRegionID, 0, -1);
+	return(false);
+}
+
+
+/// <summary>
+/// Grows one patch of blue mold on a mutated map.
+/// This routine hunts for an unobstructed spot, spreads mold outward from it, then blends the
+/// patch into the surrounding ground and dresses it with a little foliage. If nowhere suitable
+/// turns up it does nothing rather than force a patch into a bad place.
+/// </summary>
+void MapGeneratorClass::Generate_Mold(void)
+{
+	Cell mold_origin = CELL_NONE;
+	int tries = 0;
+
+	DebugString("Generating mold\n");
+
+	while (mold_origin == CELL_NONE) {
+		Cell c = MapRegionClass::Pick_Random_Clear_Map_Cell();
+		if (Is_Cell_Area_Clear(Rect(c.X - 1, c.Y - 1, 3, 3), true)) {
+			mold_origin = c;
+		}
+		if (++tries >= 200) {
+			break;
+		}
+	}
+
+	if (mold_origin == CELL_NONE) {
+		return;
+	}
+
+	DynamicVectorClass<Cell> cells;
+	cells.Set_Growth_Step(500);
+
+	int spread_count = Pick_Random_UInt(30, 150);
+	int heap_size = MAX(100, 6 * spread_count);
+
+	CellNode * nodes = new CellNode[heap_size];
+	PriorityQueueClass<CellNode> * queue = new PriorityQueueClass<CellNode>(heap_size);
+	queue->Clear();
+
+	int marker_index = 1;
+	nodes[0].Element = mold_origin;
+	nodes[0].Score = 0;
+	queue->Insert(nodes[0]);
+
+	CellNode * node = queue->Extract_Min();
+	int spread_step = 0;
+	while (spread_step < spread_count && node != NULL) {
+		CellClass * cptr = &Map[node->Element];
+		cptr->ITType = IsometricTileTypeClass::BlueMoldTile;
+		cptr->SubTile = 0;
+		cells.Add(cptr->CellID);
+
+		CellNode * newnode = &nodes[marker_index];
+		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
+			Cell newcell = Adjacent_Cell(node->Element, dir);
+			if (My_In_Radar(newcell)) {
+				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
+
+				bool can_spread = true;
+				for (FacingType dir2 = FACING_FIRST; dir2 < FACING_COUNT; dir2 = FacingType(dir2 + FACING_90)) {
+					Cell adj = Adjacent_Cell(newcell, dir2);
+					CellClass * adjptr = &Map[adj];
+					if (!adjptr->Is_Tile_Clear() && adjptr->ITType != IsometricTileTypeClass::BlueMoldTile) {
+						can_spread = false;
+						break;
+					}
+				}
+
+				if (can_spread && !data.Inviolate && marker_index < heap_size) {
+					newnode->Element = newcell;
+					newnode->Score = Get_Spread_Score(mold_origin, newcell, spread_step);
+					data.SpreadID = WorkingRegionID;
+					marker_index++;
+					queue->Insert(*newnode++);
+				}
+			}
+		}
+
+		spread_step++;
+		node = queue->Extract_Min();
+	}
+
+	int i;
+	for (i = 0; i < cells.Count(); i++) {
+		Map[cells[i]].Fixup_LAT();
+	}
+
+	int foliage_count = Pick_Random_UInt(0, 4);
+	for (i = 0; i < foliage_count; i++) {
+		Cell c = CELL_NONE;
+		int local_tries = 0;
+		while (c == CELL_NONE) {
+			c = cells[Pick_Random_UInt(0, cells.Count() - 1)];
+			if (Map[c].ITType != IsometricTileTypeClass::BlueMoldTile) {
+				c = CELL_NONE;
+			}
+			if (++local_tries >= 200) {
+				break;
+			}
+		}
+
+		if (c == CELL_NONE) {
+			break;
+		}
+
+		if (Map[c].Cell_Terrain(false) == NULL && Map[c].Overlay == OVERLAY_NONE) {
+			if (Random_Fraction() < 0.75) {
+				char terrain_name[8];
+				int terrain_index = Pick_Random_UInt(1, 5);
+				sprintf(terrain_name, "FONA0%d", terrain_index);
+				new TerrainClass(TerrainTypes[TerrainTypeClass::From_Name(terrain_name)], c);
+			} else {
+				Map[c].Overlay = OVERLAY_LARGE_TIBERIUM01;
+				Map[c].OverlayData = 0;
+			}
+		}
+	}
+
+	DebugString("Mold heap size: %d -- Marker Index: %d\n", heap_size, marker_index);
+
+	delete queue;
+	delete[] nodes;
+}
+
+
+/// <summary>
+/// Grows one crystal deposit on a mutated map.
+/// The seed may be open ground or a cliff face; on a cliff the routine hangs a crystal
+/// formation off the rock and spreads out from the foot of it. The finished patch is blended
+/// into its surroundings and dressed with a little foliage.
+/// </summary>
+/// <param name="cell">The cell to seed the deposit at.</param>
+void MapGeneratorClass::Generate_Crystals(const Cell & cell)
+{
+	bool on_cliff = false;
+
+	Cell cliff_seed = CELL_NONE;
+	Cell crystal_origin;
+
+	DebugString("Generating crystal\n");
+
+	if (!Map[cell].Is_Tile_Clear()) {
+		on_cliff = true;
+
+		int cliff = Map[cell].ITType - IsometricTileTypeClass::CliffSet;
+		if (cliff >= 4 && cliff <= 6) {
+			if (Is_Cell_Area_Clear(Rect(cell.X, cell.Y - 1, 2, 1), false) && Pick_Random_UInt(0, 1) == 0) {
+				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff), cell, -1, Map[Cell(cell.X, cell.Y + 1)].Height + 4);
+				crystal_origin = Cell(cell.X, cell.Y - 1);
+				cliff_seed = Cell(cell.X + 1, cell.Y - 1);
+			} else {
+				if (!Is_Cell_Area_Clear(Rect(cell.X, cell.Y + 2, 2, 1), false)) {
+					return;
+				}
+				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff + 1), cell, -1, Map[Cell(cell.X, cell.Y + 1)].Height + 4);
+				crystal_origin = Cell(cell.X, cell.Y + 2);
+				cliff_seed = Cell(cell.X + 1, cell.Y + 2);
+			}
+		} else if (cliff >= 14 && cliff <= 16) {
+			if (Is_Cell_Area_Clear(Rect(cell.X - 1, cell.Y, 1, 2), false) && Pick_Random_UInt(0, 1) == 0) {
+				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff + 4), cell, -1, Map[Cell(cell.X + 1, cell.Y)].Height + 4);
+				crystal_origin = Cell(cell.X - 1, cell.Y);
+				cliff_seed = Cell(cell.X - 1, cell.Y + 1);
+			} else {
+				if (!Is_Cell_Area_Clear(Rect(cell.X + 2, cell.Y, 1, 2), false)) {
+					return;
+				}
+				Place_Tile((IsometricTileType)(IsometricTileTypeClass::CrystalCliff + 5), cell, -1, Map[Cell(cell.X + 1, cell.Y)].Height + 4);
+				crystal_origin = Cell(cell.X + 2, cell.Y);
+				cliff_seed = Cell(cell.X + 2, cell.Y + 1);
+			}
+		} else {
+			return;
+		}
+	} else {
+		crystal_origin = cell;
+	}
+
+	if (crystal_origin == CELL_NONE) {
+		return;
+	}
+
+	DynamicVectorClass<Cell> cells;
+	cells.Set_Growth_Step(500);
+	int spread_count = Pick_Random_UInt(30, 150);
+	int heap_size = 6 * spread_count;
+	if (heap_size < 100) {
+		heap_size = 100;
+	}
+
+	CellNode *nodes = new CellNode[heap_size];
+	PriorityQueueClass<CellNode> *queue = new PriorityQueueClass<CellNode>(heap_size);
+	queue->Clear();
+
+	int marker_index = 0;
+	if (on_cliff) {
+		nodes[0].Element = cliff_seed;
+		nodes[0].Score = 0;
+		marker_index = 1;
+		queue->Insert(nodes[0]);
+	}
+
+	CellNode *seed = &nodes[marker_index++];
+	seed->Element = crystal_origin;
+	seed->Score = 0;
+	queue->Insert(*seed);
+
+	CellNode *node = queue->Extract_Min();
+	int spread_step = 0;
+	while (spread_step < spread_count) {
+		if (node == NULL) {
+			break;
+		}
+		CellClass *cptr = &Map[node->Element];
+		cptr->ITType = IsometricTileTypeClass::CrystalTile;
+		cptr->SubTile = 0;
+		cells.Add(cptr->CellID);
+
+		CellNode *newnode = &nodes[marker_index];
+		for (FacingType dir = FACING_FIRST; dir < FACING_COUNT; dir = FacingType(dir + FACING_90)) {
+			Cell newcell = Adjacent_Cell(node->Element, dir);
+			if (My_In_Radar(newcell)) {
+				MapRegionClass::CellData & data = MapRegionClass::Get_Cell_Data(newcell);
+				if (Map[newcell].Is_Tile_Clear() && Map[newcell].Overlay == OVERLAY_NONE && marker_index < heap_size) {
+					newnode->Element = newcell;
+					newnode->Score = Get_Spread_Score(crystal_origin, newcell, spread_step);
+					data.SpreadID = WorkingRegionID;
+					marker_index++;
+					queue->Insert(*newnode++);
+				}
+			}
+		}
+
+		spread_step++;
+		node = queue->Extract_Min();
+	}
+
+	int i;
+	for (i = 0; i < cells.Count(); i++) {
+		Map[cells[i]].Fixup_LAT();
+	}
+
+	int foliage_count = Pick_Random_UInt(0, 5);
+	for (i = 0; i < foliage_count; i++) {
+		Cell c = CELL_NONE;
+		int local_tries = 0;
+		while (c == CELL_NONE) {
+			c = cells[Pick_Random_UInt(0, cells.Count() - 1)];
+			if (Map[c].ITType != IsometricTileTypeClass::CrystalTile || MapRegionClass::Get_Cell_Data(c).Inviolate) {
+				c = CELL_NONE;
+			}
+			if (++local_tries >= 200) {
+				break;
+			}
+		}
+
+		if (c == CELL_NONE) {
+			break;
+		}
+
+		if (Map[c].Cell_Terrain(false) == NULL) {
+			char terrain_name[8];
+			int terrain_index = Pick_Random_UInt(6, 15);
+			sprintf(terrain_name, "FONA%d%d", terrain_index / 10, terrain_index % 10);
+			new TerrainClass(TerrainTypes[TerrainTypeClass::From_Name(terrain_name)], c);
+		}
+	}
+
+	DebugString("Mold heap size: %d -- Marker Index: %d\n", heap_size, marker_index);
+
+	delete queue;
+	delete[] nodes;
+}
+
+
+/// <summary>
+/// Determines if an area of the map is clear ground.
+/// This routine is used before dropping down something that needs elbow room -- a mold seed,
+/// or the ground beside a crystal cliff face. Any part of the area lying off the map counts
+/// against it.
+/// </summary>
+/// <param name="rect">The area of cells to examine.</param>
+/// <param name="check_data">Should cells the generator has protected be rejected too?</param>
+/// <returns>bool; Is the whole area clear?</returns>
+bool MapGeneratorClass::Is_Cell_Area_Clear(Rect const & rect, bool check_data)
+{
+	if (My_In_Radar(Cell(rect.X, rect.Y)) &&
+		My_In_Radar(Cell(rect.X + rect.Width - 1, rect.Y)) &&
+		My_In_Radar(Cell(rect.X, rect.Y + rect.Height - 1)) &&
+		My_In_Radar(Cell(rect.X + rect.Width - 1,rect.Y + rect.Height - 1))) {
+		for (int y = rect.Y; y < rect.Y + rect.Height; y++) {
+			for (int x = rect.X; x < rect.X + rect.Width; x++) {
+				CellClass *cptr = &Map[Cell(x,y)];
+				if (!cptr->Is_Tile_Clear()) {
+					return(false);
+				}
+				if (check_data && !MapRegionClass::CellData::Is_Not_Inviolate(cptr->CellID)) {
+					return(false);
+				}
+				if (cptr->Overlay != OVERLAY_NONE) {
+					return(false);
+				}
+			}
+		}
+		return(true);
+	}
+	return(false);
+}
+
+
+/// <summary>
+/// Blends the edges of the ice laid down on the map.
+/// This routine runs once the ice is in place, so that every sheet of it meets the ground
+/// around it with the proper transition tiles rather than a hard edge.
+/// </summary>
+void MapGeneratorClass::Smooth_Ice(void)
+{
+	int frst = IsometricTileTypeClass::Ice1Set;
+	int last = IsometricTileTypeClass::Ice3Set + ICE_COUNT-1;
+	Map.Reset_Iterator();
+	CellClass * cptr = Map.Iterate();
+	while (cptr != NULL) {
+		int ittype = cptr->ITType;
+		if (ittype >= frst && ittype <= last) {
+			Cell cell = cptr->CellID;
+			Map.Smoothen_Ice(cell, true);
+		}
+		cptr = Map.Iterate();
+	}
+}
+
+
+/// <summary>
+/// Plants the veinhole monsters the map calls for.
+/// This routine looks for flat open ground with room for a monster and the patch of veins
+/// it starts out with. A crowded map simply gets fewer monsters rather than holding the
+/// generator up.
+/// </summary>
+void MapGeneratorClass::Generate_Veinholes(void)
+{
+	int tries = 0;
+	int placed = 0;
+
+	int save_init = ScenarioInit; // RA2: no VeinholeMonsters, count (TibSun's use does not compile against RA2's declaration)
+	ScenarioInit = 0;
+
+
+	ScenarioInit = save_init; // RA2: no count (TibSun's use does not compile against RA2's declaration)
+}
+
