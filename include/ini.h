@@ -36,6 +36,8 @@
 #include "index.h"
 #include "listnode.h"
 
+class WideWstring; // RA2
+
 #include <comdef.h>
 #include <cstdlib>
 
@@ -94,7 +96,12 @@ class INIClass {
 		**	Get the various data types from the section and entry specified.
 		*/
 		PKey Get_PKey(bool fast) const;
+		int Get_Time(char const * section, char const * entry, int defvalue) const; // RA2: hh:mm:ss as frames
+		bool Put_Time(char const * section, char const * entry, int value); // RA2
 		bool Get_Bool(char const * section, char const * entry, bool defvalue=false) const;
+		bool Put_UnicodeString(char const * section, char const * entry, wchar_t const * string); // RA2
+		int Get_UnicodeString(char const * section, char const * entry, wchar_t const * defvalue, wchar_t * buffer, int size) const; // RA2
+		int ReadStringtableEntry(char const * section, char const * entry, wchar_t * buffer, char const * deflabel, int size) const; // RA2
 		int ReadStringtableEntry(char const * section, char const * entry, wchar_t * buffer, int size) const; // RA2 (YR name): a string table label read as wide text
 		class TechnoTypeClass * GetTechnoType(char const * section, char const * entry) const; // RA2 (YR name)
 		double Get_Float(char const * section, char const * entry, double defvalue=0.0) const;
@@ -124,6 +131,16 @@ class INIClass {
 		bool Put_Float(char const * section, char const * entry, double number);
 		bool Put_Hex(char const * section, char const * entry, int number);
 		bool Put_Int(char const * section, char const * entry, int number, int format=0);
+		bool Put_Int(Wstring const & section, Wstring const & entry, int number, int format); // RA2: the Wstring overload
+		bool Put_Rect(Wstring const & section, Wstring const & entry, Rect const & value); // RA2: the Wstring overload
+		bool Put_Hex(Wstring const & section, Wstring const & entry, int number); // RA2: the Wstring overload
+		bool Put_Float(Wstring const & section, Wstring const & entry, double number); // RA2: the Wstring overload
+		bool Put_String(Wstring const & section, Wstring const & entry, Wstring const & string); // RA2: the Wstring overload
+		bool Put_UnicodeString(Wstring const & section, Wstring const & entry, WideWstring const & string); // RA2: the Wstring overload
+		bool Put_Bool(Wstring const & section, Wstring const & entry, bool value); // RA2: the Wstring overload
+		bool Put_Point(Wstring const & section, Wstring const & entry, TPoint2D<int> const & value); // RA2: the Wstring overload
+		bool Put_Point(Wstring const & section, Wstring const & entry, TPoint3D<int> const & value); // RA2: the Wstring overload
+		bool Put_Point(Wstring const & section, Wstring const & entry, TPoint3D<float> const & value); // RA2: the Wstring overload
 		bool Put_PKey(PKey const & key);
 		bool Put_String(char const * section, char const * entry, char const * string);
 		bool Put_TextBlock(char const * section, char const * text);

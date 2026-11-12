@@ -69,6 +69,8 @@
 #include "always.h"
 
 #include "ini.h"
+#include "stringtable.h" // RA2
+#include "widewstring.h" // RA2
 
 #include "b64pipe.h"
 #include "b64straw.h"
@@ -79,6 +81,7 @@
 #include "trim.h"
 #include "xpipe.h"
 #include "xstraw.h"
+#include "wstring.h"
 
 #include <cctype>
 #include <cstddef>
@@ -680,7 +683,7 @@ int INIClass::Save(Pipe & pipe) const
 INIClass::INISection * INIClass::Find_Section(char const * section) const
 {
 	if (section != NULL) {
-		int crc = CRCEngine()(section, strlen(section));
+		long crc = CRCEngine()(section, strlen(section)); // RA2: Find_Section at 0x50C9B0 matches only so
 
 		if (SectionIndex.Is_Present(crc)) {
 			return(SectionIndex[crc]);
@@ -736,6 +739,18 @@ int INIClass::Entry_Count(char const * section) const
 	}
 	return(0);
 }
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int INIClass::Entry_Count(Wstring const & section) const
+{
+	return(Entry_Count(section.text()));
+}
+
+
+
 
 
 /***********************************************************************************************
@@ -798,6 +813,15 @@ char const * INIClass::Get_Entry(char const * section, int index) const
 		}
 	}
 	return(NULL);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+Wstring INIClass::Get_Entry(Wstring const & section, int index) const
+{
+	return Wstring(Get_Entry(section.text(), index));
 }
 
 
@@ -935,17 +959,12 @@ bool INIClass::Put_TextBlock(char const * section, char const * text)
 		char b[32];
 		sprintf(b, "%d", index);
 
-		/*
-		**	Scan backward looking for a good break position.
-		*/
 		int count = strlen(buffer);
 		if (count > 0) {
 			if (count >= 75) {
 				while (count) {
 					char c = buffer[count];
-
-					//if (isspace(c)) break;
-					if (c != 0 && (unsigned char)c <= _CONTROL) break;
+					if (c != 0 && (unsigned char)c <= ' ') break; // RA2: Put_TextBlock at 0x50D310 matches only so
 					count--;
 				}
 
@@ -1001,10 +1020,6 @@ int INIClass::Get_TextBlock(char const * section, char * buffer, int len) const
 	int elen = Entry_Count(section);
 	int total = 0;
 	for (int index = 0; index < elen; index++) {
-
-		/*
-		**	Add spacers between lines of fetched text.
-		*/
 		if (index > 0) {
 			*buffer++ = ' ';
 			len--;
@@ -1072,6 +1087,33 @@ bool INIClass::Put_Int(char const * section, char const * entry, int number, int
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_Int(Wstring const & section, Wstring const & entry, int number, int format)
+{
+	char buffer[MAX_LINE_LENGTH];
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	switch (format) {
+		default:
+		case 0:
+			sprintf(buffer, "%d", number);
+			break;
+
+		case 1:
+			sprintf(buffer, "%Xh", number);
+			break;
+
+		case 2:
+			sprintf(buffer, "$%X", number);
+			break;
+	}
+	return(Put_String(sectionstr, entrystr, buffer));
+}
+
+
 /***********************************************************************************************
  * INIClass::Get_Int -- Fetch an integer entry from the specified section.                     *
  *                                                                                             *
@@ -1095,9 +1137,6 @@ bool INIClass::Put_Int(char const * section, char const * entry, int number, int
  *=============================================================================================*/
 int INIClass::Get_Int(char const * section, char const * entry, int defvalue) const
 {
-	/*
-	**	Verify that the parameters are nominally correct.
-	*/
 	if (section == NULL || entry == NULL) return(defvalue);
 
 	INIEntry * entryptr = Find_Entry(section, entry);
@@ -1113,6 +1152,15 @@ int INIClass::Get_Int(char const * section, char const * entry, int defvalue) co
 		}
 	}
 	return(defvalue);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int INIClass::Get_Int(Wstring const & section, Wstring const & entry, int defvalue) const
+{
+	return(Get_Int(section.text(), entry.text(), defvalue));
 }
 
 
@@ -1133,7 +1181,7 @@ CLSID const INIClass::Get_CLSID(char const * section, char const * entry, CLSID 
 
 	if (Get_String(section, entry, "", buffer, sizeof(buffer))) {
 		wchar_t olestr[128];
-		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, buffer, -1, olestr, ARRAY_SIZE(olestr));
+		MultiByteToWideChar(CP_ACP, MB_PRECOMPOSED, buffer, -1, olestr, sizeof(olestr) / sizeof(olestr[0])); // RA2: Get_CLSID at 0x50DA00 matches only so
 		CLSID clsid;
 		if (SUCCEEDED(CLSIDFromString(olestr, &clsid))) {
 			return(clsid);
@@ -1159,7 +1207,6 @@ bool INIClass::Put_CLSID(char const * section, char const * entry, CLSID const &
 
 	StringFromCLSID(value, &olestr);
 	if (WideCharToMultiByte(CP_ACP, 0, olestr, -1, buffer, sizeof(buffer), NULL, NULL) == 0) {
-		/// BUG, return not used
 		GetLastError();
 	}
 	SysFreeString(olestr);
@@ -1192,6 +1239,20 @@ bool INIClass::Put_Rect(char const * section, char const * entry, Rect const & v
 
 	sprintf(buffer, "%d,%d,%d,%d", value.X, value.Y, value.Width, value.Height);
 	return(Put_String(section, entry, buffer));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_Rect(Wstring const & section, Wstring const & entry, Rect const & value)
+{
+	char buffer[64];
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	sprintf(buffer, "%d,%d,%d,%d", value.X, value.Y, value.Width, value.Height);
+	return(Put_String(sectionstr, entrystr, buffer));
 }
 
 
@@ -1229,6 +1290,15 @@ Rect const INIClass::Get_Rect(char const * section, char const * entry, Rect con
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+Rect const INIClass::Get_Rect(Wstring const & section, Wstring const & entry, Rect const & defvalue) const
+{
+	return(Get_Rect(section.text(), entry.text(), defvalue));
+}
+
+
 /***********************************************************************************************
  * INIClass::Put_Hex -- Store an integer into the INI database, but use a hex format.          *
  *                                                                                             *
@@ -1258,6 +1328,20 @@ bool INIClass::Put_Hex(char const * section, char const * entry, int number)
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_Hex(Wstring const & section, Wstring const & entry, int number)
+{
+	char buffer[MAX_LINE_LENGTH];
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	sprintf(buffer, "%X", number);
+	return(Put_String(sectionstr, entrystr, buffer));
+}
+
+
 /***********************************************************************************************
  * INIClass::Get_Hex -- Fetches integer [hex format] from the section and entry specified.     *
  *                                                                                             *
@@ -1281,9 +1365,6 @@ bool INIClass::Put_Hex(char const * section, char const * entry, int number)
  *=============================================================================================*/
 int INIClass::Get_Hex(char const * section, char const * entry, int defvalue) const
 {
-	/*
-	**	Verify that the parameters are nominally correct.
-	*/
 	if (section == NULL || entry == NULL) return(defvalue);
 
 	INIEntry * entryptr = Find_Entry(section, entry);
@@ -1315,9 +1396,6 @@ int INIClass::Get_Hex(char const * section, char const * entry, int defvalue) co
  *=============================================================================================*/
 double INIClass::Get_Float(char const * section, char const * entry, double defvalue) const
 {
-	/*
-	**	Verify that the parameters are nominally correct.
-	*/
 	if (section == NULL || entry == NULL) return(defvalue);
 
 	INIEntry * entryptr = Find_Entry(section, entry);
@@ -1361,6 +1439,20 @@ bool INIClass::Put_Float(char const * section, char const * entry, double number
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_Float(Wstring const & section, Wstring const & entry, double number)
+{
+	char buffer[MAX_LINE_LENGTH];
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	sprintf(buffer, "%f", (double)(float)number);
+	return(Put_String(sectionstr, entrystr, buffer));
+}
+
+
 /***********************************************************************************************
  * INIClass::Put_String -- Output a string to the section and entry specified.                 *
  *                                                                                             *
@@ -1394,9 +1486,6 @@ bool INIClass::Put_String(char const * section, char const * entry, char const *
 		SectionIndex.Add_Index(secptr->Index_ID(), secptr);
 	}
 
-	/*
-	**	Remove the old entry if found.
-	*/
 	INIComment * cmtptr = NULL;
 	char * line_comment = NULL;
 	int comment_col = 0;
@@ -1416,9 +1505,6 @@ bool INIClass::Put_String(char const * section, char const * entry, char const *
 		delete entryptr;
 	}
 
-	/*
-	**	Create and add the new entry.
-	*/
 	if (string != NULL && strlen(string) > 0) {
 		entryptr = new INIEntry(strdup(entry), strdup(string), cmtptr, line_comment, comment_col, assign_col, value_col);
 
@@ -1438,6 +1524,15 @@ bool INIClass::Put_String(char const * section, char const * entry, char const *
 		secptr->EntryIndex.Add_Index(entryptr->Index_ID(), entryptr);
 	}
 	return(true);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_String(Wstring const & section, Wstring const & entry, Wstring const & string)
+{
+	return(Put_String(section.text(), entry.text(), string.text()));
 }
 
 
@@ -1469,26 +1564,13 @@ bool INIClass::Put_String(char const * section, char const * entry, char const *
  *=============================================================================================*/
 int INIClass::Get_String(char const * section, char const * entry, char const * defvalue, char * buffer, int size) const
 {
-	/*
-	**	Verify that the parameters are nominally legal.
-	*/
-//	if (buffer != NULL && size > 0) {
-//		buffer[0] = '\0';
-//	}
 	if (buffer == NULL || size < 2 || section == NULL || entry == NULL) return(0);
 
-	/*
-	**	Fetch the entry string if it is present. If not, then the normal default
-	**	value will be used as the entry value.
-	*/
 	INIEntry * entryptr = Find_Entry(section, entry);
 	if (entryptr != NULL && entryptr->Value != NULL) {
 		defvalue = entryptr->Value;
 	}
 
-	/*
-	**	Fill in the buffer with the entry value and return with the length of the string.
-	*/
 	if (defvalue == NULL) {
 		buffer[0] = '\0';
 		return(0);
@@ -1498,6 +1580,111 @@ int INIClass::Get_String(char const * section, char const * entry, char const * 
 		strtrim(buffer);
 		return(strlen(buffer));
 	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int INIClass::Get_String(Wstring const & section, Wstring const & entry, Wstring const & defvalue, Wstring & result) const
+{
+	char buffer[1024];
+	int count = Get_String(section.text(), entry.text(), defvalue.text(), buffer, sizeof(buffer) - 1);
+	result = buffer;
+	return(count);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_UnicodeString(char const * section, char const * entry, wchar_t const * string) // RA2: YR's, at 0x50ECF0
+{
+	bool result;
+
+	result = false;
+	if (string != NULL) {
+		int size = wcslen(string) * 8;
+		char * buffer = new char[size + 1];
+		if (buffer != NULL) {
+			char * ptr = buffer;
+			*ptr = 0;
+			while (*string != 0) {
+				itoa(*string, ptr, 16);
+				strcat(ptr, ",");
+				ptr = buffer + strlen(buffer);
+				string++;
+			}
+			result = Put_String(section, entry, buffer);
+			delete buffer;
+		}
+	}
+	return(result);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_UnicodeString(Wstring const & section, Wstring const & entry, WideWstring const & string) // RA2: YR's, at 0x50EDC0
+{
+	return(Put_UnicodeString(section.text(), entry.text(), string.text()));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int INIClass::Get_UnicodeString(char const * section, char const * entry, wchar_t const * defvalue, wchar_t * buffer, int size) const // RA2: YR's, at 0x50EDF0
+{
+	char text[20480];
+	int length = Get_String(section, entry, NULL, text, sizeof(text));
+	if (length == 0) {
+		wcsncpy(buffer, defvalue, size);
+		return(wcslen(buffer));
+	}
+
+	char * token = strtok(text, ",");
+	wchar_t * out = buffer;
+	while (token != NULL && size != 0) {
+		unsigned int code;
+		sscanf(token, "%x", &code);
+		*out++ = (wchar_t)code;
+		token = strtok(NULL, ",");
+		--size;
+	}
+	*out = L'\0';
+	return(wcslen(buffer));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int INIClass::ReadStringtableEntry(char const * section, char const * entry, wchar_t * buffer, int size) const // RA2: YR's, at 0x50F010
+{
+	char text[1024];
+	Get_String(section, entry, NULL, text, sizeof(text));
+	wcsncpy(buffer, StringTable::LoadString(text, NULL, "D:\\ra2mdpost\\Ini.CPP", 1858), size);
+	buffer[size - 1] = L'\0';
+	return(wcslen(buffer));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+int INIClass::ReadStringtableEntry(char const * section, char const * entry, wchar_t * buffer, char const * deflabel, int size) const // RA2: YR's, at 0x50F1B0
+{
+	char text[1024];
+	Get_String(section, entry, NULL, text, sizeof(text));
+	if (strlen(text) == 0) {
+		wcsncpy(buffer, StringTable::LoadString(deflabel, NULL, "D:\\ra2mdpost\\Ini.CPP", 1872), size);
+	} else {
+		wcsncpy(buffer, StringTable::LoadString(text, NULL, "D:\\ra2mdpost\\Ini.CPP", 1874), size);
+	}
+	buffer[size - 1] = L'\0';
+	return(wcslen(buffer));
 }
 
 
@@ -1530,6 +1717,22 @@ bool INIClass::Put_Bool(char const * section, char const * entry, bool value)
 }
 
 
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_Bool(Wstring const & section, Wstring const & entry, bool value)
+{
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	if (value) {
+		return(Put_String(sectionstr, entrystr, "yes"));
+	} else {
+		return(Put_String(sectionstr, entrystr, "no"));
+	}
+}
+
+
 /***********************************************************************************************
  * INIClass::Get_Bool -- Fetch a boolean value for the section and entry specified.            *
  *                                                                                             *
@@ -1555,9 +1758,6 @@ bool INIClass::Put_Bool(char const * section, char const * entry, bool value)
  *=============================================================================================*/
 bool INIClass::Get_Bool(char const * section, char const * entry, bool defvalue) const
 {
-	/*
-	**	Verify that the parameters are nominally correct.
-	*/
 	if (section == NULL || entry == NULL) return(defvalue);
 
 	INIEntry * entryptr = Find_Entry(section, entry);
@@ -1606,6 +1806,36 @@ bool INIClass::Put_Point(char const * section, char const * entry, TPoint2D<int>
 
 
 /***********************************************************************************************
+ * INIClass::Put_Point -- Stores a 3D point to the database.                                   *
+ *                                                                                             *
+ *    This routine will store the 3D point value to the database under the section and entry   *
+ *    specified.                                                                               *
+ *                                                                                             *
+ * INPUT:   section  -- The name of the section that the entry will be stored under.           *
+ *                                                                                             *
+ *          entry    -- The name of the entry that the point will be stored to.                *
+ *                                                                                             *
+ *          value    -- The 3D point value to store.                                           *
+ *                                                                                             *
+ * OUTPUT:  bool; Was the point stored to the database?                                        *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   09/19/1997 JLB : Created.                                                                 *
+ *=============================================================================================*/
+bool INIClass::Put_Point(Wstring const & section, Wstring const & entry, TPoint2D<int> const & value) // RA2: YR's Wstring overload
+{
+	char buffer[54];
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	sprintf(buffer, "%d,%d", value.X, value.Y);
+	return(Put_String(sectionstr, entrystr, buffer));
+}
+
+
+/***********************************************************************************************
  * INIClass::Get_Point -- Fetch a point value from the INI database.                           *
  *                                                                                             *
  *    This routine will retrieve a point value from the database by looking in the section and *
@@ -1638,6 +1868,33 @@ TPoint2D<int> const INIClass::Get_Point(char const * section, char const * entry
 
 
 /***********************************************************************************************
+ * INIClass::Get_Point -- Fetch a 3D point from the database.                                  *
+ *                                                                                             *
+ *    This routine will retrieve a 3D point from the database from the section and entry       *
+ *    specified.                                                                               *
+ *                                                                                             *
+ * INPUT:   section  -- The name of the section to search for th entry under.                  *
+ *                                                                                             *
+ *          entry    -- The name of the entry to search for.                                   *
+ *                                                                                             *
+ *          defvaule -- The default value to return if the section and entry could not be      *
+ *                      found.                                                                 *
+ *                                                                                             *
+ * OUTPUT:  Returns with the 3D point from the database or the default value if the section    *
+ *          and entry could not be found.                                                      *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   09/19/1997 JLB : Created.                                                                 *
+ *=============================================================================================*/
+TPoint2D<int> const INIClass::Get_Point(Wstring const & section, Wstring const & entry, TPoint2D<int> const & defvalue) const // RA2: YR's Wstring overload
+{
+	return(Get_Point(section.text(), entry.text(), defvalue));
+}
+
+
+/***********************************************************************************************
  * INIClass::Put_Point -- Stores a 3D point to the database.                                   *
  *                                                                                             *
  *    This routine will store the 3D point value to the database under the section and entry   *
@@ -1661,6 +1918,20 @@ bool INIClass::Put_Point(char const * section, char const * entry, TPoint3D<int>
 	char buffer[54];
 	sprintf(buffer, "%d,%d,%d", value.X, value.Y, value.Z);
 	return(Put_String(section, entry, buffer));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_Point(Wstring const & section, Wstring const & entry, TPoint3D<int> const & value)
+{
+	char buffer[54];
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	sprintf(buffer, "%d,%d,%d", value.X, value.Y, value.Z);
+	return(Put_String(sectionstr, entrystr, buffer));
 }
 
 
@@ -1697,25 +1968,18 @@ TPoint3D<int> const INIClass::Get_Point(char const * section, char const * entry
 }
 
 
-/***********************************************************************************************
- * INIClass::Put_Point -- Stores a 3D point to the database.                                   *
- *                                                                                             *
- *    This routine will store the 3D point value to the database under the section and entry   *
- *    specified.                                                                               *
- *                                                                                             *
- * INPUT:   section  -- The name of the section that the entry will be stored under.           *
- *                                                                                             *
- *          entry    -- The name of the entry that the point will be stored to.                *
- *                                                                                             *
- *          value    -- The 3D point value to store.                                           *
- *                                                                                             *
- * OUTPUT:  bool; Was the point stored to the database?                                        *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   09/19/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// RA2
+/// </summary>
+TPoint3D<int> const INIClass::Get_Point(Wstring const & section, Wstring const & entry, TPoint3D<int> const & defvalue) const
+{
+	return(Get_Point(section.text(), entry.text(), defvalue));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
 bool INIClass::Put_Point(char const * section, char const * entry, TPoint3D<float> const & value)
 {
 	char buffer[54];
@@ -1724,27 +1988,23 @@ bool INIClass::Put_Point(char const * section, char const * entry, TPoint3D<floa
 }
 
 
-/***********************************************************************************************
- * INIClass::Get_Point -- Fetch a 3D point from the database.                                  *
- *                                                                                             *
- *    This routine will retrieve a 3D point from the database from the section and entry       *
- *    specified.                                                                               *
- *                                                                                             *
- * INPUT:   section  -- The name of the section to search for th entry under.                  *
- *                                                                                             *
- *          entry    -- The name of the entry to search for.                                   *
- *                                                                                             *
- *          defvaule -- The default value to return if the section and entry could not be      *
- *                      found.                                                                 *
- *                                                                                             *
- * OUTPUT:  Returns with the 3D point from the database or the default value if the section    *
- *          and entry could not be found.                                                      *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   09/19/1997 JLB : Created.                                                                 *
- *=============================================================================================*/
+/// <summary>
+/// RA2
+/// </summary>
+bool INIClass::Put_Point(Wstring const & section, Wstring const & entry, TPoint3D<float> const & value)
+{
+	char buffer[54];
+	char * entrystr = entry.text();
+	char * sectionstr = section.text();
+
+	sprintf(buffer, "%f,%f,%f", (float)value.X, (float)value.Y, (float)value.Z);
+	return(Put_String(sectionstr, entrystr, buffer));
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
 TPoint3D<float> const INIClass::Get_Point(char const * section, char const * entry, TPoint3D<float> const & defvalue) const
 {
 	char buffer[64];
@@ -1754,6 +2014,15 @@ TPoint3D<float> const INIClass::Get_Point(char const * section, char const * ent
 		return(TPoint3D<float>(x, y, z));
 	}
 	return(defvalue);
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+TPoint3D<float> const INIClass::Get_Point(Wstring const & section, Wstring const & entry, TPoint3D<float> const & defvalue) const
+{
+	return(Get_Point(section.text(), entry.text(), defvalue));
 }
 
 
@@ -1840,10 +2109,6 @@ PKey INIClass::Get_PKey(bool fast) const
 	PKey key;
 	char buffer[MAX_LINE_LENGTH];
 
-	/*
-	**	When retrieving the fast key, the exponent is a known constant. Don't parse the
-	**	exponent from the database.
-	*/
 	if (fast) {
 		BigInt exp = PKey::Fast_Exponent();
 		exp.DEREncode((unsigned char *)buffer);
@@ -1858,6 +2123,39 @@ PKey INIClass::Get_PKey(bool fast) const
 
 	return(key);
 }
+
+
+int INIClass::Get_Time(char const * section, char const * entry, int defvalue) const // RA2: YR's ReadTime, at 0x510460
+{
+	if (section == NULL || entry == NULL) return(defvalue);
+	INIEntry * entptr = Find_Entry(section, entry);
+	if (entptr != NULL && entptr->Value != NULL) {
+		int hours = 0;
+		int minutes = 0;
+		int seconds = 0;
+		sscanf(entptr->Value, "%02d:%02d:%02d", &hours, &minutes, &seconds);
+		return(((hours * 60 + minutes) * 60 + seconds) * 60);
+	}
+	return(defvalue);
+}
+
+
+
+bool INIClass::Put_Time(char const * section, char const * entry, int value) // RA2: YR's WriteTime, at 0x510610
+{
+	char buffer[32];
+	int seconds = value / 60;
+	int minutes = seconds / 60;
+	int hours = minutes / 60;
+	sprintf(buffer, "%02d:%02d:%02d", hours, minutes - hours * 60, seconds - minutes * 60);
+	return(Put_String(section, entry, buffer));
+}
+
+
+
+
+
+
 
 
 /// <summary>
@@ -1884,7 +2182,6 @@ char * INIClass::Scan_Line_For_Columns(char * buffer, int & assign_col, int & va
 
 	while (*buffer != '\0') {
 		if (assign_col >= 0 && value_col < 0) {
-			//if (!isspace(*buffer)) {
 			if ((unsigned char)*buffer > _CONTROL) {
 				value_col = col;
 			}
@@ -1964,7 +2261,6 @@ bool INIClass::Is_A_Section(char * buffer)
 		return(false);
 	}
 
-	//while (isspace(*buffer)) {
 	while ((*buffer != 0) && ((unsigned char)*buffer <= _CONTROL)) {
 		buffer++;
 	}
@@ -1975,6 +2271,7 @@ bool INIClass::Is_A_Section(char * buffer)
 
 	return(false);
 }
+
 
 
 /// <summary>
