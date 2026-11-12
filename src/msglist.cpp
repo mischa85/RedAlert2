@@ -50,6 +50,8 @@
 #include "always.h"
 
 #include "msglist.h"
+#include "session.h" // RA2: the scroll-text options
+#include "bitfont.h"
 
 #include "_keyboar.h"
 #include "_rules.h"
@@ -122,7 +124,7 @@ MessageListClass::MessageListClass(void)
 		BufferAvail[i] = 1;
 	}
 
-}	// end of MessageListClass
+}
 
 
 /***************************************************************************
@@ -144,8 +146,7 @@ MessageListClass::MessageListClass(void)
 MessageListClass::~MessageListClass(void)
 {
 	Init(0,0,0,0,0,0,0,0,0,0);
-
-}	// end of ~MessageListClass
+}
 
 
 /***************************************************************************
@@ -262,7 +263,7 @@ void MessageListClass::Init(int x, int y, int max_msg, int maxchars,
 		OverflowStart = OverflowEnd - 1;
 	}
 
-}	// end of Init
+}
 
 
 /***************************************************************************
@@ -286,167 +287,52 @@ void MessageListClass::Init(int x, int y, int max_msg, int maxchars,
  *   05/05/1995 BRR : Created.                                             *
  *   10/16/1996 JLB : Audio feedback added.                                *
  *=========================================================================*/
-TextLabelClass * MessageListClass::Add_Message(char const * name, int id, char const * txt,
-	int color, TextPrintType style, int timeout)
+TextLabelClass * MessageListClass::Add_Message(wchar_t const * name, int id, wchar_t const * txt, // RA2: YR's wide-text form
+	int color, TextPrintType style, int timeout, bool singleplayer)
 {
-	if (!txt) {
-		return(NULL);
-	}
-	FontClass *font = Font_From_TPF(style);
-
-	TextLabelClass * txtlabel = NULL;
-	int i;
-	int found;
-	char message[MAX_MESSAGE_LENGTH + 50];
-	//char temp[MAX_MESSAGE_LENGTH + 30];
-	int print_this_pass;
-
-	if (strlen(txt) + 1 > sizeof(message)) {
-
-		int _len = 0;
-		int _width = 0;
-
-		while (_len < int(sizeof(message)-2)) {
-			if (_width > Width) {
-				break;
-			}
-			if (txt[_len] == '\n' || txt[_len] == '\0') {
-				break;
-			}
-			_width += font->Char_Pixel_Width(txt[_len++]);
-		}
-
-		int _olen = _len;
-
-		while (_len > 0) {
-			if (txt[_len] == ' ') {
-				break;
-			}
-			_len--;
-		}
-
-		if (_len == 0) {
-			_len = _olen;
-			while (_len > 0) {
-				if (_width <= Width) {
-					break;
-				}
-				_width -= font->Char_Pixel_Width(txt[_len--]);
-
-			}
-		}
-
-		strncpy(message, txt, _len);
-		message[_len] = '\0';
-		Add_Message(name, id, message, color, style, timeout);
-
-		if (txt[_len] > '\0' && txt[_len] <= ' ') {
-			_len++;
-		}
-
-		char const * msg = txt +_len;
-		if (strlen(msg)) {
-			return(Add_Message(NULL, id, msg, color, style, timeout));
-		}
-
-		return(NULL);
-	}
-
-	//------------------------------------------------------------------------
-	// Combine the name & message text, if there's a name given
-	//------------------------------------------------------------------------
+	BitFont * font = Font_From_TPF(style);
+	if (!txt) return NULL;
+	if (!font) return NULL;
+	wchar_t message[MAX_MESSAGE_LENGTH + 50];
+	message[0] = 0;
 	if (name) {
-		sprintf(message, "%s:%s", name, txt);
-	} else {
-		strcpy(message, txt);
+		wcscpy(message, name);
+		wcscat(message, L":");
 	}
-
-	char save = 0;
-
-	//------------------------------------------------------------------------
-	// Check that printing this wont overrun the width of the print area on screen
-	//------------------------------------------------------------------------
-
-	print_this_pass = 0;
-	//Fancy_Text_Print(TXT_NONE, 0, 0, &ColorRemaps[color], TBLACK, style);
-	int wid = font->String_Pixel_Width(message);
-	if (wid > Width) {
-		i = 0;
-		int charw = 0;
-		while (charw <= Width) {
-			if (message[i] == '\0' || message[i] == '\n') {
-				break;
-			}
-			charw += font->Char_Pixel_Width(message[i++]);
-		}
-
-		if (charw > Width) {
-			i--;
-			print_this_pass = i;
-			if (i > 0) {
-				while (i > 0) {
-					if (message[i] == '\0' || message[i] == ' ' || message[i] == '\n') {
-						break;
-					}
-					charw -= font->Char_Pixel_Width(message[i--]);
-				}
-				if (i > 0) {
-					print_this_pass = i;
-				}
-			}
-
-			//------------------------------------------------------------------------
-			// Prematurely terminate the string so it doesn't all print.
-			// We will re-enter at the end to print the rest.
-			//------------------------------------------------------------------------
-			save = message [print_this_pass];
-			message [print_this_pass] = 0;
-		}
-	}
-
-	//------------------------------------------------------------------------
-	// Remove the top-most message if we're about to exceed the max allowed
-	//------------------------------------------------------------------------
-	if ( (MaxMessages > 0) && ((Num_Messages() + 1) > MaxMessages)) {
+	int namelen = wcslen(message);
+	int namewidth = font->String_Pixel_Width(message, 0);
+	int textlen = wcslen(txt);
+	int width = Width - namewidth - 8;
+	if (width <= 0) return NULL;
+	int print_this_pass = font->Chars_In_Width(txt, width, MAX_MESSAGE_LENGTH - 1, 1);
+	if (print_this_pass < 0) return NULL;
+	wcsncat(message, txt, print_this_pass);
+	message[namelen + print_this_pass] = 0;
+	TextLabelClass * txtlabel;
+	int i;
+	if (MaxMessages > 0 && Num_Messages() + 1 > MaxMessages) {
 		txtlabel = MessageList;
-
-		if (txtlabel==NULL)
-			return(NULL);
-
-		//.....................................................................
-		//	Remove this message from the list; mark its buffer as being available.
-		//.....................................................................
+		if (!txtlabel) return NULL;
 		MessageList = (TextLabelClass *)txtlabel->Remove();
 		for (i = 0; i < MAX_NUM_MESSAGES; i++) {
-			if (txtlabel->Text == MessageBuffers[i])
-				BufferAvail[i] = 1;
+			if (txtlabel->Text == MessageBuffers[i]) BufferAvail[i] = 1;
 		}
 		delete txtlabel;
 	}
-
-	//------------------------------------------------------------------------
-	// Create the message
-	//------------------------------------------------------------------------
-	txtlabel = new TextLabelClass (message, MessageX, MessageY,
-		color, style);
-	if (timeout==-1) {
-		txtlabel->UserData1 = 0;
-	}
-	else {
-		txtlabel->UserData1 = TickCount + timeout;
-	}
+	txtlabel = new TextLabelClass(message, MessageX, MessageY, color, (TextPrintType)(style | 0x8000));
+	if (Session.Type == GAME_INTERNET) txtlabel->Animate = !singleplayer && Session.WOLScrollText;
+	else if (Session.Type == GAME_IPX) txtlabel->Animate = !singleplayer && Session.LANScrollText;
+	else txtlabel->Animate = !singleplayer;
+	if (timeout == -1) txtlabel->UserData1 = 0;
+	else txtlabel->UserData1 = TickCount + timeout;
 	txtlabel->UserData2 = id;
-
-	//------------------------------------------------------------------------
-	// Find a buffer to store our message in; if there are none, don't add the
-	// message.
-	//------------------------------------------------------------------------
-	found = 0;
+	txtlabel->PixWidth = Width;
+	int found = 0;
 	for (i = 0; i < MAX_NUM_MESSAGES; i++) {
 		if (BufferAvail[i]) {
 			BufferAvail[i] = 0;
-			memset (MessageBuffers[i],0,MAX_MESSAGE_LENGTH + 50);
-			strcpy (MessageBuffers[i],message);
+			memset(MessageBuffers[i], 0, MAX_MESSAGE_LENGTH + 50);
+			wcscpy(MessageBuffers[i], message);
 			txtlabel->Text = MessageBuffers[i];
 			found = 1;
 			break;
@@ -454,42 +340,19 @@ TextLabelClass * MessageListClass::Add_Message(char const * name, int id, char c
 	}
 	if (!found) {
 		delete txtlabel;
-		return(NULL);
+		return NULL;
 	}
-
-	Sound_Effect(Rule->IncomingMessage);
-
-	//------------------------------------------------------------------------
-	// Attach the message to our list
-	//------------------------------------------------------------------------
-	if (MessageList) {
-		txtlabel->Add_Tail (*MessageList);
-	}
-	else {
-		MessageList = txtlabel;
-	}
-
-	//------------------------------------------------------------------------
-	// Recompute all messages' y-coordinate values
-	//------------------------------------------------------------------------
+	if (!singleplayer) VocClass::PlayGlobal(Rule->IncomingMessage, 1.0f, 0x2000, NULL);
+	if (MessageList) txtlabel->Add_Tail(*MessageList);
+	else MessageList = txtlabel;
 	Compute_Y();
-
-	//------------------------------------------------------------------------
-	// If we terminated the string before the end then we need to reenter to
-	// add a new message with the rest of the string.
-	//------------------------------------------------------------------------
-	if (print_this_pass > 0) {
-		if (save > 32) {
-			message [print_this_pass] = save;
-		} else {
-			print_this_pass++;
-		}
-		Add_Message (name, id, &message [print_this_pass], color, style, timeout);
+	if (print_this_pass < textlen) {
+		wchar_t const * msg = txt + print_this_pass;
+		while (*msg && *msg < L' ') msg++;
+		if (*msg) Add_Message(name, id, msg, color, style, timeout, true);
 	}
-
-	return(txtlabel);
-
-}	// end of Add_Message
+	return txtlabel;
+}
 
 
 /***************************************************************************
@@ -507,13 +370,10 @@ TextLabelClass * MessageListClass::Add_Message(char const * name, int id, char c
  * HISTORY:                                                                *
  *   11/07/1995 BRR : Created.                                             *
  *=========================================================================*/
-char * MessageListClass::Get_Message(int id)
+wchar_t * MessageListClass::Get_Message(int id) // RA2: Get_Message at 0x5B5160 matches only so
 {
 	TextLabelClass * gadg;
 
-	//------------------------------------------------------------------------
-	// Scan the message list, searching for the given ID
-	//------------------------------------------------------------------------
 	if (MessageList) {
 		gadg = MessageList;
 		while (gadg) {
@@ -525,8 +385,7 @@ char * MessageListClass::Get_Message(int id)
 	}
 
 	return(NULL);
-
-}	// end of Get_Message
+}
 
 
 /***************************************************************************
@@ -548,9 +407,6 @@ TextLabelClass * MessageListClass::Get_Label(int id)
 {
 	TextLabelClass * gadg;
 
-	//------------------------------------------------------------------------
-	// Scan the message list, searching for the given ID
-	//------------------------------------------------------------------------
 	if (MessageList) {
 		gadg = MessageList;
 		while (gadg) {
@@ -562,8 +418,7 @@ TextLabelClass * MessageListClass::Get_Label(int id)
 	}
 
 	return(NULL);
-
-}	// end of Get_Label
+}
 
 
 /***************************************************************************
@@ -584,119 +439,77 @@ TextLabelClass * MessageListClass::Get_Label(int id)
  * HISTORY:                                                                *
  *   11/07/1995 BRR : Created.                                             *
  *=========================================================================*/
-int MessageListClass::Concat_Message(char const * name, int id, char const * txt, int timeout)
+int MessageListClass::Concat_Message(wchar_t const * name, int id, wchar_t const * txt, int timeout) // RA2: YR's wide-text form
 {
 	int min_chars;
 	int max_chars;
-	char * msg;
+	wchar_t * msg;
 	TextLabelClass * tlabel = NULL;
 	int found;
 
-	//------------------------------------------------------------------------
-	// If no name is given, or the concatenation feature is turned off,
-	// don't concatenate the message
-	//------------------------------------------------------------------------
 	if (name == NULL || txt == NULL || !EnableOverflow) {
 		return(0);
 	}
 
-	//------------------------------------------------------------------------
-	// Scan through all active messages, searching for one with a matching
-	// name & ID
-	//------------------------------------------------------------------------
 	found = 0;
 	if (MessageList) {
 		tlabel = MessageList;
 		while (tlabel) {
 			if ((int)tlabel->UserData2 == id &&
-				!memcmp(tlabel->Text,name,strlen(name))) {
+				!memcmp(tlabel->Text, name, wcslen(name) * 2)) {
 				found = 1;
 				break;
 			}
 			tlabel = (TextLabelClass *)tlabel->Get_Next();
 		}
 	}
-
-	//------------------------------------------------------------------------
-	// name and ID not found; return
-	//------------------------------------------------------------------------
 	if (!found) {
 		return(0);
 	}
 
-	//------------------------------------------------------------------------
-	// set a pointer to the text string, plus the name and colon
-	//------------------------------------------------------------------------
-	msg = tlabel->Text + strlen(name) + 1;
+	msg = tlabel->Text + wcslen(name) + 1;
 
-	//------------------------------------------------------------------------
-	// If there's room enough in the message, just add the given string
-	//------------------------------------------------------------------------
-	if ((strlen(msg) + strlen(txt)) < (unsigned)MaxChars) {
-
-		//---------------------------------------------------------------------
-		// We need to trim the message if there is no room to draw it
-		//---------------------------------------------------------------------
-		char *concat_test = new char [MaxChars+1];
-		FontClass *font = Font_From_TPF(tlabel->Style);
-//		Fancy_Text_Print(TXT_NONE, 0, 0, tlabel->Color, TBLACK, tlabel->Style);
-		int name_width = font->String_Pixel_Width(tlabel->Text) - font->String_Pixel_Width(msg);
+	if ((wcslen(msg) + wcslen(txt)) < (unsigned)MaxChars) {
+		wchar_t * concat_test = new wchar_t [MaxChars + 1];
+		BitFont * font = Font_From_TPF(tlabel->Style);
+		int name_width = font->String_Pixel_Width(tlabel->Text, 0) - font->String_Pixel_Width(msg, 0);
 		int width;
 
-		strcpy (concat_test, msg);
-		strcat (concat_test, txt);
-		width = font->String_Pixel_Width(concat_test) + name_width;
+		wcscpy(concat_test, msg);
+		wcscat(concat_test, txt);
+		width = font->String_Pixel_Width(concat_test, 0) + name_width;
 		min_chars = 10;
-
-		while (width >= Width){
-
-			max_chars = strlen (msg);
+		while (width >= Width) {
+			max_chars = wcslen(msg);
 			if (max_chars < min_chars) {
 				max_chars = min_chars;
 			}
-
-			Trim_Message (NULL, msg, min_chars, max_chars, 0);
-
-			strcpy (concat_test, msg);
-			strcat (concat_test, txt);
-
-			width = font->String_Pixel_Width(concat_test) + name_width;
-		};
-
+			Trim_Message(NULL, msg, min_chars, max_chars, 0);
+			wcscpy(concat_test, msg);
+			wcscat(concat_test, txt);
+			width = font->String_Pixel_Width(concat_test, 0) + name_width;
+		}
 		delete [] concat_test;
-
-		strcat (msg,txt);
+		wcscat(msg, txt);
 	}
-
-	//------------------------------------------------------------------------
-	// Otherwise, trim off some characters from the beginning of the
-	// message.  Trim off at least enough to leave room for the new text.
-	// Trim from left to right to remove the minimum required text.
-	//------------------------------------------------------------------------
 	else {
-		min_chars = (strlen(msg) + strlen(txt)) - MaxChars;
-		max_chars = strlen(msg);
+		min_chars = (wcslen(msg) + wcslen(txt)) - MaxChars;
+		max_chars = wcslen(msg);
 		if (max_chars < min_chars) {
 			max_chars = min_chars;
 		}
-		Trim_Message (NULL, msg, min_chars, max_chars, 0);
-		strcat (msg, txt);
+		Trim_Message(NULL, msg, min_chars, max_chars, 0);
+		wcscat(msg, txt);
 	}
 
-	//------------------------------------------------------------------------
-	// Set the new timeout value for the message
-	//------------------------------------------------------------------------
-	if (timeout==-1) {
+	if (timeout == -1) {
 		tlabel->UserData1 = 0;
 	}
 	else {
 		tlabel->UserData1 = TickCount + timeout;
 	}
-
 	return(1);
-
-}	// end of Concat_Message
-
+}
 
 
 /***********************************************************************************************
@@ -743,7 +556,6 @@ bool MessageListClass::Has_Edit_Focus (void)
 }
 
 
-
 /***************************************************************************
  * MessageListClass::Add_Edit -- Adds editable string to message list      *
  *                                                                         *
@@ -762,23 +574,17 @@ bool MessageListClass::Has_Edit_Focus (void)
  * HISTORY:                                                                *
  *   05/22/1995 BRR : Created.                                             *
  *=========================================================================*/
-TextLabelClass * MessageListClass::Add_Edit(int color,
-	TextPrintType style, char * to, char cursor, int width)
+TextLabelClass * MessageListClass::Add_Edit(int color, // RA2: YR's wide-text form
+	TextPrintType style, wchar_t * to, char cursor, int width)
 {
 	int i;
 	TextLabelClass * txtlabel;
 
-	//------------------------------------------------------------------------
-	// Do nothing if we're already in "edit" mode
-	//------------------------------------------------------------------------
 	if (IsEdit) {
 		EditLabel->Set_Focus();
 		return(NULL);
 	}
 
-	//------------------------------------------------------------------------
-	// Remove the top-most message if we're about to exceed the max allowed
-	//------------------------------------------------------------------------
 	if (AdjustEdit && ((Num_Messages() + 1) > MaxMessages)) {
 		txtlabel = MessageList;
 		MessageList = (TextLabelClass *)txtlabel->Remove();
@@ -789,32 +595,21 @@ TextLabelClass * MessageListClass::Add_Edit(int color,
 		delete txtlabel;
 	}
 
-	//------------------------------------------------------------------------
-	// If no 'to' field was passed in, ignore it
-	//------------------------------------------------------------------------
 	if (!to) {
-		to = (char *)"";
+		to = (wchar_t *)L"";
 	}
-
-	//------------------------------------------------------------------------
-	// Set the cursor character
-	//------------------------------------------------------------------------
 	CursorChar = cursor;
-
-	//------------------------------------------------------------------------
-	//	Initialize the buffer positions; create a new text label object
-	//------------------------------------------------------------------------
-	memset (EditBuf, 0, sizeof(EditBuf));
-	strcpy (EditBuf, to);
+	memset(EditBuf, 0, sizeof(EditBuf));
+	wcscpy(EditBuf, to);
 	OverflowBuf[0] = 0;
-	EditCurPos = EditInitPos = strlen(to);
-	EditLabel = new TextLabelClass (EditBuf, EditX, EditY,
-		color, style);
-
+	EditCurPos = EditInitPos = wcslen(to);
+	EditLabel = new TextLabelClass(EditBuf, EditX, EditY,
+		color, (TextPrintType)(style | 0x8000));
 	if (width > 0) {
-		Width = width;
+		EditLabel->PixWidth = width;
+	} else {
+		EditLabel->PixWidth = Width;
 	}
-
 	if (EditLabel) {
 		IsEdit = 1;
 		EditLabel->Set_Focus();
@@ -822,20 +617,12 @@ TextLabelClass * MessageListClass::Add_Edit(int color,
 	else {
 		IsEdit = 0;
 	}
-
-	//------------------------------------------------------------------------
-	// If the edit field appears over the message list, recompute the y-value
-	// for all messages.  Also, adjust MaxMessages down by one, since there
-	// is now one less slot available.
-	//------------------------------------------------------------------------
 	if (AdjustEdit) {
 		Compute_Y();
 		MaxMessages--;
 	}
-
 	return(EditLabel);
-
-}	// end of Add_Edit
+}
 
 
 /***************************************************************************
@@ -873,7 +660,7 @@ void MessageListClass::Remove_Edit(void)
 		}
 	}
 
-}	// end if Remove_Edit
+}
 
 
 /***************************************************************************
@@ -891,11 +678,10 @@ void MessageListClass::Remove_Edit(void)
  * HISTORY:                                                                *
  *   05/21/1995 BRR : Created.                                             *
  *=========================================================================*/
-char * MessageListClass::Get_Edit_Buf(void)
+wchar_t * MessageListClass::Get_Edit_Buf(void) // RA2: Get_Edit_Buf at 0x5B55E0 matches only so
 {
 	return(EditBuf + EditInitPos);
-
-}	// end of Get_Edit_Buf
+}
 
 
 /***************************************************************************
@@ -918,8 +704,7 @@ void MessageListClass::Set_Edit_Color(int color)
 	if (IsEdit) {
 		EditLabel->Color = color;
 	}
-
-}	// end of Set_Edit_Color
+}
 
 
 /***************************************************************************
@@ -939,27 +724,16 @@ void MessageListClass::Set_Edit_Color(int color)
  * HISTORY:                                                                *
  *   05/05/1995 BRR : Created.                                             *
  *=========================================================================*/
-int MessageListClass::Manage (void)
+int MessageListClass::Manage(void) // RA2: Manage at 0x5B5610 matches only so
 {
 	TextLabelClass * txtlabel;
 	TextLabelClass * next;
 	int changed = 0;
 	int i;
 
-	//------------------------------------------------------------------------
-	// Loop through all messages
-	//------------------------------------------------------------------------
 	txtlabel = MessageList;
 	while (txtlabel) {
-
-		//.....................................................................
-		// If this message's time is up, remove it from the list
-		//.....................................................................
 		if (txtlabel->UserData1 != 0 && TickCount > (int)txtlabel->UserData1) {
-
-			//..................................................................
-			//	Save the next ptr in the list; remove this entry
-			//..................................................................
 			next = (TextLabelClass *)txtlabel->Get_Next();
 			MessageList = (TextLabelClass *)txtlabel->Remove();
 			for (i = 0; i < MAX_NUM_MESSAGES; i++) {
@@ -976,16 +750,11 @@ int MessageListClass::Manage (void)
 		}
 	}
 
-	//------------------------------------------------------------------------
-	// If a changed has been made, recompute the y-coord of all messages
-	//------------------------------------------------------------------------
 	if (changed) {
 		Compute_Y();
 	}
-
 	return(changed);
-
-}	// end of Manage
+}
 
 
 /***************************************************************************
@@ -1008,84 +777,71 @@ int MessageListClass::Manage (void)
  * HISTORY:                                                                *
  *   05/05/1995 BRR : Created.                                             *
  *=========================================================================*/
-int MessageListClass::Input(KeyNumType &input)
+int MessageListClass::Input(KeyNumType &input, wchar_t definput) // RA2: YR's wide-text form
 {
-	KeyASCIIType ascii;
 	int retcode = 0;
+	int ascii;
 	int numchars;
+	BitFont * font;
+	int width;
 
-	//------------------------------------------------------------------------
-	// Do nothing if nothing to do.
-	//------------------------------------------------------------------------
-	if (input == KN_NONE) {
-		return(0);
-	}
-
-	//------------------------------------------------------------------------
-	// Leave mouse events alone.
-	//------------------------------------------------------------------------
-	if ( (input & (~KN_RLSE_BIT))==KN_LMOUSE ||
-		(input & (~KN_RLSE_BIT))==KN_RMOUSE) {
-		return(0);
-	}
-
-	//------------------------------------------------------------------------
-	// If we're in 'edit mode', handle keys
-	//------------------------------------------------------------------------
-	if (IsEdit) {
-
-
-		ascii = (KeyASCIIType)(Keyboard->To_ASCII(input) & 0x00ff);
-
-		/*
-		**	Allow numeric keypad presses to map to ascii numbers
-		*/
-		if ((input & WWKEY_VK_BIT) && ascii >='0' && ascii <= '9') {
-
-			input = (KeyNumType)(input & ~WWKEY_VK_BIT);
-
-		} else {
-			/*
-			**	Filter out all special keys except return, escape and backspace
-			*/
-			if ((!(input & WWKEY_VK_BIT) && !(input & KN_BUTTON)
-					&& ascii >= ' ' && ascii <= 127)
-				|| (input & 0xff)== (KN_RETURN & 0xff)
-				|| (input & 0xff)== (KN_BACKSPACE & 0xff)
-				|| (input & 0xff)== (KN_ESC & 0xff) ) {
-
-				//ascii = (KeyASCIIType)(Keyboard->To_ASCII(input));
-			} else {
-				input = KN_NONE;
-				return(0);
-			}
+	if (definput == 0) {
+		if (input == KN_NONE) {
+			return(0);
 		}
 
+		if ((input & (~KN_RLSE_BIT)) == KN_LMOUSE ||
+			(input & (~KN_RLSE_BIT)) == KN_RMOUSE) {
+			if ((input & 2) && IsEdit) {
+				Remove_Edit();
+				return(2);
+			}
+			return(0);
+		}
+	}
 
+	if (IsEdit) {
+		if (definput == 0) {
+			ascii = Keyboard->To_ASCII(input) & 0x00ff;
+
+			if ((input & WWKEY_VK_BIT) && ascii >= '0' && ascii <= '9') {
+				input = (KeyNumType)(input & ~WWKEY_VK_BIT);
+			} else {
+				if ((!(input & WWKEY_VK_BIT) && !(input & KN_BUTTON) && ascii >= ' ')
+					|| (input & 0xff) == (KN_RETURN & 0xff)
+					|| (input & 0xff) == (KN_BACKSPACE & 0xff)
+					|| (input & 0xff) == (KN_ESC & 0xff)
+					|| (char)ascii == 8) {
+				} else {
+					input = KN_NONE;
+					return(0);
+				}
+			}
+		} else {
+			ascii = definput & 0xffff;
+		}
 
 		switch (ascii) {
-			//..................................................................
-			//	ESC = abort message
-			//..................................................................
 			case KA_ESC & 0xff:
 				Remove_Edit();
 				retcode = 2;
 				input = KN_NONE;
 				break;
 
-			//..................................................................
-			//	RETURN = send the message.
-			// Add a space to the end, in case another message gets concatenated
-			// onto this one after we send it; then, they won't be mushed
-			// together.
-			//..................................................................
 			case KA_RETURN & 0xff:
+				if (EditCurPos < EditInitPos) {
+					EditCurPos = EditInitPos;
+				}
+				while (EditBuf[EditCurPos] != 0 && (EditCurPos - EditInitPos) < (MaxChars - 1)) {
+					EditCurPos++;
+				}
 				if (EditCurPos == EditInitPos) {
-					retcode = 0;
+					Remove_Edit();
+					retcode = 2;
 					input = KN_NONE;
 					break;
 				}
-				if ( (EditCurPos - EditInitPos) < (MaxChars - 1) ) {
+				if ((EditCurPos - EditInitPos) < (MaxChars - 1)) {
 					EditBuf[EditCurPos] = ' ';
 					EditCurPos++;
 					EditBuf[EditCurPos] = 0;
@@ -1095,75 +851,56 @@ int MessageListClass::Input(KeyNumType &input)
 				input = KN_NONE;
 				break;
 
-			//..................................................................
-			//	BACKSPACE = remove a character
-			//..................................................................
 			case KA_BACKSPACE & 0xff:
-				if (EditCurPos > EditInitPos) {
-					EditCurPos--;
-					EditBuf[EditCurPos] = 0;
-					retcode = 2;
+				if (input != 8) {
+					if (EditCurPos > EditInitPos) {
+						EditCurPos--;
+						EditBuf[EditCurPos] = 0;
+						retcode = 2;
+					}
 				}
 				input = KN_NONE;
 				EditLabel->Set_Focus();
 				break;
 
-			//..................................................................
-			// default: add a character.  Reserve the last buffer position for
-			// null.  (EditCurPos - EditInitPos) is the buffer index # of the
-			// next character, after the "To:" prefix.
-			//..................................................................
 			default:
 				EditLabel->Set_Focus();
-				bool overflowed = false;
-				if (ascii >= ' ' && ascii <= 127) {
-					if ( (EditCurPos - EditInitPos) < (MaxChars - 1) ) {
-
-						EditBuf[EditCurPos] = ascii;
+				if (ascii > 0x1f && ascii < 0x10000) {
+					while (EditBuf[EditCurPos] != 0 && (EditCurPos - EditInitPos) < (MaxChars - 1)) {
+						EditCurPos++;
+					}
+					if ((EditCurPos - EditInitPos) < (MaxChars - 1)) {
+						EditBuf[EditCurPos] = (wchar_t)ascii;
 						EditCurPos++;
 						EditBuf[EditCurPos] = 0;
 						retcode = 1;
-
-						/*
-						**	Verify that the additional character would not overrun the on screen edit box.
-						*/
-						//Fancy_Text_Print(TXT_NONE, 0, 0, EditLabel->Color, TBLACK, EditLabel->Style);
-						FontClass *font = Font_From_TPF(EditLabel->Style);
-						int width = font->String_Pixel_Width(EditBuf);
-						if (width >= Width-10) {
-							overflowed = true;
-							EditCurPos--;
-							EditBuf[EditCurPos] = 0;
-							retcode = 0;
+						font = Font_From_TPF(EditLabel->Style);
+						width = font->String_Pixel_Width(EditBuf, 0);
+						if (width < Width - 10) {
+							goto key_done;
 						}
-					} else {
-					//............................................................
-					// If there's no room in the buffer, and overflow is enabled,
-					// trim the extra characters off (from right to left, to
-					// remove the max possible characters), and then add the new
-					// character in.
-					//............................................................
-						overflowed = true;
+						EditCurPos--;
+						EditBuf[EditCurPos] = 0;
 					}
-
-					if (/*BGEnableOverflow &&*/ overflowed) {
-						numchars = Trim_Message (OverflowBuf, EditBuf + EditInitPos,
-							OverflowStart,OverflowEnd, 1);
+					if (EnableOverflow) {
+						numchars = Trim_Message(OverflowBuf, EditBuf + EditInitPos,
+							OverflowStart, OverflowEnd, 1);
 						EditCurPos -= numchars;
-						EditBuf[EditCurPos] = ascii;
+						EditBuf[EditCurPos] = (wchar_t)ascii;
 						EditCurPos++;
 						EditBuf[EditCurPos] = 0;
 						retcode = 4;
+					} else {
+						retcode = 0;
 					}
 				}
+key_done:
 				input = KN_NONE;
 				break;
 		}
 	}
-
 	return(retcode);
-
-}	// end of Input
+}
 
 
 /***************************************************************************
@@ -1183,31 +920,26 @@ int MessageListClass::Input(KeyNumType &input)
  *=========================================================================*/
 void MessageListClass::Draw(void)
 {
-	char txt[2] = {0,0};
+	wchar_t txt[2] = {0,0}; // RA2: Draw at 0x5B5B30 matches only so
 
 	if (IsEdit) {
 		Hide_Mouse();
 		EditLabel->Draw_Me(true);
-		FontClass *font = Font_From_TPF(this->EditLabel->Style);
+		BitFont * font = Font_From_TPF(EditLabel->Style); // RA2: as above
+		int textwidth = font->String_Pixel_Width(EditLabel->Text, 0); // RA2: as above
 		if (CursorChar && (EditCurPos - EditInitPos) < (MaxChars - 1) && EditLabel->Has_Focus()) {
 			txt[0] = CursorChar;
-			Fancy_Text_Print(txt,
-				*LogicalSurface,
-				LogicalSurface->Get_Rect(),
-				Point2D(EditLabel->X + font->String_Pixel_Width(EditLabel->Text),
-				EditLabel->Y),
-				ColorSchemes[EditLabel->Color],
-				TBLACK,
-				EditLabel->Style);
+			Point2D pt(EditLabel->X + textwidth, EditLabel->Y); // RA2: as above
+			Fancy_Text_Print(txt, *LogicalSurface, LogicalSurface->Get_Rect(), pt, // RA2: as above
+				ColorSchemes[EditLabel->Color], 0, EditLabel->Style); // RA2: as above
 		}
-
 		Show_Mouse();
 	}
-	if (MessageList) {
+
+	if (MessageList) { // RA2: Draw at 0x5B5B30 has no Show_Mouse();
 		MessageList->Draw_All();
 	}
-
-}	// end of Draw
+}
 
 
 /***************************************************************************
@@ -1245,8 +977,7 @@ int MessageListClass::Num_Messages(void)
 	}
 
 	return(num);
-
-}	// end of Num_Messages
+}
 
 
 /***************************************************************************
@@ -1279,12 +1010,10 @@ void MessageListClass::Set_Width(int width)
 			gadg = (GadgetClass *)gadg->Get_Next();
 		}
 	}
-
 	if (IsEdit) {
 		EditLabel->PixWidth = width;
 	}
-
-}	// end of Set_Width
+}
 
 
 /***************************************************************************
@@ -1306,78 +1035,52 @@ void MessageListClass::Set_Width(int width)
  * HISTORY:                                                                *
  *   11/07/1995 BRR : Created.                                             *
  *=========================================================================*/
-int MessageListClass::Trim_Message(char * dest, char * src, int min_chars,
+int MessageListClass::Trim_Message(wchar_t * dest, wchar_t * src, int min_chars, // RA2: YR's wide-text form
 	int max_chars, int scandir)
 {
 	int i;
 	int len;
 	int found;
 
-	//------------------------------------------------------------------------
-	// validate parameters
-	//------------------------------------------------------------------------
 	if (min_chars <= 0) {
 		return(0);
 	}
 
-	len = strlen (src);
+	len = wcslen(src);
 	if (max_chars > len) {
 		max_chars = len;
 	}
 
-	//------------------------------------------------------------------------
-	// find 1st available white space; if there is none, just trim off
-	// 'min_chars' characters.  'i' will be the number of chars to trim.
-	// The chars removed will include the white space.
-	//------------------------------------------------------------------------
 	found = 0;
-	//........................................................................
-	// scan from left to right
-	//........................................................................
 	if (scandir == 0) {
 		for (i = min_chars; i <= max_chars; i++) {
-			//if (isspace(src[i - 1])) {
 			if (src[i - 1] != 0 && (unsigned)src[i - 1] <= _CONTROL) {
 				found = 1;
 				break;
 			}
 		}
 	}
-	//........................................................................
-	// scan from right to left
-	//........................................................................
 	else {
 		for (i = max_chars; i >= min_chars; i--) {
-			//if (isspace(src[i - 1])) {
 			if (src[i - 1] != 0 && (unsigned)src[i - 1] <= _CONTROL) {
 				found = 1;
 				break;
 			}
 		}
 	}
-	//........................................................................
-	// If no whitespace was found, just set 'i' to the min # characters
-	//........................................................................
 	if (!found) {
 		i = min_chars;
 	}
 
-	//------------------------------------------------------------------------
-	// Save trimmed characters in the dest buffer, if there is one
-	//------------------------------------------------------------------------
 	if (dest) {
 		memcpy (dest, src, i * sizeof(dest[0]));
-		dest[i] ='\0';
+		dest[i] = 0;
 	}
 
-	//------------------------------------------------------------------------
-	// Shift characters over in the source buffer
-	//------------------------------------------------------------------------
 	memmove (src, src + i, (len - i + 1) * sizeof(src[0]));
 
 	return(i);
-
-}	// end of Trim_Message
+}
 
 
 /***************************************************************************
@@ -1420,7 +1123,8 @@ void MessageListClass::Compute_Y(void)
 		}
 	}
 
-}	// end of Compute_Y
+}
+
 
 
 /*************************** end of msglist.cpp ****************************/

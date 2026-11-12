@@ -123,19 +123,19 @@ class MessageListClass {
 			int over_end, int width = 640);
 		TextLabelClass * Add_Message (wchar_t const * name, int id, wchar_t const * txt, // RA2: wide strings and one more argument
 			int color, TextPrintType style, int timeout, bool singleplayer);
-		int Concat_Message (char const * name, int id, char const * txt, int timeout);
+		int Concat_Message (wchar_t const * name, int id, wchar_t const * txt, int timeout); // RA2: wide
 
 		//.....................................................................
 		// Message access utility routines
 		//.....................................................................
-		char * Get_Message (int id);
+		wchar_t * Get_Message (int id); // RA2: wide
 		TextLabelClass * Get_Label (int id);
 
 		//.....................................................................
 		// Message-editing support routines
 		//.....................................................................
 		TextLabelClass * Add_Edit(int color, TextPrintType style,
-			char *to, char cursor = 0, int width = 640);
+			wchar_t *to, char cursor = 0, int width = 640); // RA2: wide
 		void Remove_Edit (void);
 		wchar_t * Get_Edit_Buf (void); // RA2: wide
 		wchar_t * Get_Overflow_Buf (void) {return(OverflowBuf);} // RA2: wide
@@ -147,7 +147,7 @@ class MessageListClass {
 		// Maintenance routines
 		//.....................................................................
 		int Manage (void);
-		int Input (KeyNumType &input);
+		int Input (KeyNumType &input, wchar_t definput = 0); // RA2: the typed character
 		void Draw(void);
 		int Num_Messages(void);
 		void Set_Width(int width);
@@ -159,7 +159,8 @@ class MessageListClass {
 		//.....................................................................
 		// Message parsing
 		//.....................................................................
-		int Trim_Message(char *dest, char *src, int min_chars, int max_chars,
+		int Trim_Message(wchar_t *dest, wchar_t *src, // RA2: wide
+			 int min_chars, int max_chars,
 			int scandir);
 
 		//.....................................................................
@@ -192,7 +193,7 @@ class MessageListClass {
 		wchar_t OverflowBuf[MAX_MESSAGE_LENGTH + 50]; // RA2: wide      // overflow area
 		int EditCurPos;                                 // current edit position
 		int EditInitPos;                                // initial edit position
-		char CursorChar;                                // character to use a cursor
+		wchar_t CursorChar; // RA2: wide                                // character to use a cursor
 		int OverflowStart;                              // 1st index for overflow trimming
 		int OverflowEnd;                                // last index for overflow trimming
 		int Width;                                      // Maximum width in pixels of editable string
