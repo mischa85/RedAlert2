@@ -10,6 +10,7 @@
 #include "always.h"
 
 #include "jumpjet.h"
+#include "tracker.h" // RA2
 
 #include "_map.h"
 #include "_rules.h"
@@ -52,8 +53,10 @@ JumpjetLocomotionClass::JumpjetLocomotionClass(void) :
 /// </summary>
 JumpjetLocomotionClass::~JumpjetLocomotionClass(void)
 {
-
 }
+
+
+
 
 
 /// <summary>
@@ -126,6 +129,10 @@ boolean STDMETHODCALLTYPE JumpjetLocomotionClass::Process(void)
 				Process_Descent();
 				break;
 
+			case CRASHING: // RA2
+				Process_Crashing(); // RA2
+				break; // RA2
+
 			case UNKNOWN:
 				Process_Unknown();
 				break;
@@ -195,13 +202,15 @@ void STDMETHODCALLTYPE JumpjetLocomotionClass::Move_To(CoordStruct to)
 /// </summary>
 void STDMETHODCALLTYPE JumpjetLocomotionClass::Stop_Moving(void)
 {
-	if (IsMoving) {
+	if (!ScenarioInit && IsMoving) { // RA2: Stop_Moving at 0x52F960 matches only so
 		if (HeadToCoord != COORD_NONE && CurrentState != GROUNDED && IsLanding) {
 			LinkedTo->Clear_Occupy_Bit(HeadToCoord);
 			IsLanding = false;
 		}
-		Cell cell = LinkedTo->PositionCoord.As_Cell();
-		Cell nearby = Map.Nearby_Location(cell, SPEED_TRACK);
+		Coord position = LinkedTo->Position; // RA2: as above
+		Cell cell = position.As_Cell(); // RA2: as above
+		Cell nearby; // RA2: as above
+		nearby = Map.Nearby_Location(Cell(cell), LinkedTo->TClass->Speed, -1, LinkedTo->TClass->MZone, false, Point2D(1, 1), false, false, false, true); // RA2: as above
 		if (nearby != CELL_NONE) {
 			Coord nearby_coord = nearby.As_Coord();
 			nearby_coord.Z = Map.Get_Height_GL(nearby_coord);
@@ -210,8 +219,10 @@ void STDMETHODCALLTYPE JumpjetLocomotionClass::Stop_Moving(void)
 			}
 			Move_To(nearby_coord);
 		} else {
-			LinkedTo->Take_Damage(LinkedTo->Strength, 0, Rule->C4Warhead, NULL, true, true);
-			HeadToCoord = COORD_NONE;
+			if (LinkedTo->Strength > 0) { // RA2: as above
+				LinkedTo->Take_Damage(LinkedTo->Strength, 0, Rule->C4Warhead, NULL, true, true); // RA2: as above
+				HeadToCoord = COORD_NONE; // RA2: as above
+			}
 		}
 	}
 }
@@ -257,6 +268,9 @@ HRESULT STDMETHODCALLTYPE JumpjetLocomotionClass::Load(IStream * stream)
 	}
 	return(result);
 }
+
+
+
 
 
 /// <summary>
@@ -306,6 +320,19 @@ void JumpjetLocomotionClass::Process_Grounded(void)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static inline DirType & Direction_To(DirType & dir, Coord const & coord1, Coord const & coord2)
+{
+	if (coord1.X == coord2.X && coord1.Y == coord2.Y) {
+		dir.Facing = 0;
+	}
+	dir = DirType(fastmath::atan2((double)coord1.Y - (double)coord2.Y, (double)coord2.X - (double)coord1.X));
+	return dir;
+}
+
+
+/// <summary>
 /// Handles the ascent flight state.
 /// The unit climbs toward its flight level, picking up speed and turning toward its
 /// destination once it is safely clear of the ground. Reaching the flight level puts it into
@@ -325,6 +352,17 @@ void JumpjetLocomotionClass::Process_Ascent(void)
 	} else if (height > FlightLevel / 4) {
 		TargetSpeed = Rule->JumpjetSpeed;
 		Facing.Set_Desired(DirType().Direction(LinkedTo->PositionCoord, HeadToCoord));
+	}
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+static inline void Release_Jumpjet(FootClass * const & foot)
+{
+	if (foot->Get_Cell_Ptr()->Jumpjet == foot) {
+		foot->Get_Cell_Ptr()->TryAssignJumpjet(NULL);
 	}
 }
 
@@ -453,12 +491,45 @@ void JumpjetLocomotionClass::Process_Descent(void)
 
 
 /// <summary>
+/// RA2: handles the crashing state: the jumpjet sinks by JumpjetCrash, turning as it falls, and once on the ground it
+/// gives up its cell's jumpjet claim, leaves the aircraft tracker, stops and is told so.
+/// </summary>
+void JumpjetLocomotionClass::Process_Crashing(void) // RA2: at 0x530940
+{
+	Coord coord = LinkedTo->Position;
+	coord.Z -= Crash;
+	Facing.Set_Desired(Facing.Current() + DirType((Dir256)0x2D));
+	Map.Get_Height_GL(coord);
+
+	if (Map.In_Radar(coord.As_Cell())) {
+		Map.Remove(LinkedTo);
+		LinkedTo->Mark(MARK_UP);
+		LinkedTo->Set_Coord(coord);
+		LinkedTo->Mark(MARK_DOWN);
+		Map.Submit(LinkedTo);
+	}
+
+	if (LinkedTo->HeightAGL <= 0) {
+		if (LinkedTo->Get_Cell_Ptr()->Jumpjet == LinkedTo) {
+			LinkedTo->Get_Cell_Ptr()->TryAssignJumpjet(NULL);
+		}
+		AircraftTracker.Remove(LinkedTo);
+		CurrentSpeed = 0;
+		CurrentState = UNKNOWN;
+		((INoticeSink *)LinkedTo)->Unknown_Virtual_0(0x117C, 0);
+	}
+}
+
+
+
+
+
+/// <summary>
 /// Handles the unknown flight state.
 /// The state has a slot in the machine but asks for no processing of its own.
 /// </summary>
 void JumpjetLocomotionClass::Process_Unknown(void)
 {
-
 }
 
 
@@ -573,31 +644,7 @@ void JumpjetLocomotionClass::Movement_AI(void)
 	LinkedTo->Set_Coord(new_coord);
 
 	if (LinkedTo != NULL) {
-		const int & rad = Rule->JumpjetCloakDetectionRadius;
-		for (int x = -rad; x <= rad; x++) {
-			for (int y = -rad; y <= rad; y++) {
-				CellClass * cellptr = &Map[Cell(x, y) + Cell(new_coord)];
-				if (cellptr != NULL) {
-					ObjectClass * occupier = cellptr->Cell_Occupier(false);
-					while (occupier != NULL) {
-						TechnoClass * tech = dynamic_cast<TechnoClass *>(occupier);
-						if (tech != NULL) {
-							tech->Do_Shimmer();
-						}
-						occupier = occupier->Next;
-					}
-					occupier = cellptr->Cell_Occupier(true);
-					while (occupier != NULL) {
-						TechnoClass * tech = dynamic_cast<TechnoClass *>(occupier);
-						if (tech != NULL) {
-							tech->Do_Shimmer();
-						}
-						occupier = occupier->Next;
-					}
-				}
-			}
-		}
-	}
+	} // RA2: no JumpjetCloakDetectionRadius, rad (TibSun's use does not compile against RA2's declaration)
 
 	CellClass * cellptr = &Map[new_coord];
 	BuildingClass * building = cellptr->Cell_Building();
@@ -699,3 +746,28 @@ CoordStruct STDMETHODCALLTYPE JumpjetLocomotionClass::Head_To_Coord(void)
 		return(HeadToCoord);
 	}
 }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

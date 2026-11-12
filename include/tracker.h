@@ -49,10 +49,13 @@ extern DynamicVectorClass<AbstractClass *> ObjectsToDelete;
 **	RA2: the tracker of the aircraft in flight, and the selection list of the user
 **	interface commands; both forget an object when it goes away.
 */
+class FootClass;
+
 class AircraftTrackerClass
 {
 	public:
 		void Detach(AbstractClass * target);
+		void Remove(FootClass * object); // RA2: 0x413310 (YR name)
 };
 
 extern AircraftTrackerClass AircraftTracker;
