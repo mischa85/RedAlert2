@@ -4015,6 +4015,7 @@ address,size,evidence
 0x006395C0,176,"function of the Tiberian Sun reconstruction, matched"
 0x00639670,160,"function of the Tiberian Sun reconstruction, matched"
 0x00639970,,"inferred: target of the call at 0x006B147A in matched src/taction.cpp; size not known"
+0x0063A690,496,"code of src/reinf.cpp, matched"
 0x0063A880,,"inferred: target of the call at 0x006B2821 in matched src/taction.cpp; size not known"
 0x0063B090,480,"code of src/restate.cpp, matched"
 0x0063B270,144,"code of src/restate.cpp, matched"
