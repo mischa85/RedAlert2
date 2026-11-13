@@ -51,6 +51,10 @@
 
 #include "special.hh"
 
+namespace Unsorted { extern int MuteSWLaunches; }
+namespace Game { extern int SpecialDialog; }
+
+
 int GameSpeedNames[OptionsClass::MAX_SPEED_SETTING] = {
 	TXT_SLOWEST,
 	TXT_SLOWER,
@@ -106,11 +110,7 @@ void GameControlsClass::Dialog(void)
 	DebugString("GameControls: GameSpeed = %d, ScrollRate = %d, Detail = %d\n", Options.GameSpeed, Options.ScrollRate, Options.DetailLevel);
 
 	if (GameActive == true) {
-		if (Session.Type == GAME_INTERNET) {
-			_Dialog = OwnerDraw::Begin_Dialog(IDD_OPT_CTRL_GAME_WOL, (DLGPROC)Game_Controls_Dialog_Proc);
-		} else {
-			_Dialog = OwnerDraw::Begin_Dialog(IDD_OPT_CTRL_GAME_MP, (DLGPROC)Game_Controls_Dialog_Proc);
-		}
+		_Dialog = OwnerDraw::Begin_Dialog(IDD_OPT_CTRL_GAME_MP, (DLGPROC)Game_Controls_Dialog_Proc); // RA2: Dialog at 0x4CF920 matches only so: no WOL dialog
 	} else {
 		_Dialog = OwnerDraw::Begin_Dialog(IDD_OPT_CTRL_GAME_SP, (DLGPROC)Game_Controls_Dialog_Proc);
 	}
@@ -179,20 +179,16 @@ void GameControlsClass::Set(void)
 		}
 	}
 
-	handle = GetDlgItem(_Dialog, IDC_SIDEBAR_TEXT);
-	if (handle) {
-		bool cameotext = Button_GetCheck(handle) == TRUE;
-		if (Options.SidebarCameoText != cameotext) {
-			Options.SidebarCameoText = cameotext;
-			Map.Toggle_Cameo_Text(cameotext);
-		}
-	}
-
-	handle = GetDlgItem(_Dialog, IDC_TARGET_LINES);
+	handle = GetDlgItem(_Dialog, IDC_TARGET_LINES); // RA2: Set at 0x4CFA00 matches only so: no sidebar cameo text check box before this
 	if (handle) {
 		Options.ActionLines = Button_GetCheck(handle) == TRUE;
 		TechnoClass::Set_Action_Lines(Options.ActionLines);
 	}
+
+	handle = GetDlgItem(_Dialog, 1540); // RA2: the show-hidden check box
+	if (handle) { // RA2: as above
+		Options.IsShowHidden = Button_GetCheck(handle) == TRUE; // RA2: as above
+	} // RA2: as above
 
 	handle = GetDlgItem(_Dialog, IDC_TOOLTIPS);
 	if (handle) {
@@ -202,12 +198,7 @@ void GameControlsClass::Set(void)
 		}
 	}
 
-	handle = GetDlgItem(_Dialog, IDC_SCROLL_COASTING);
-	if (handle) {
-		Options.ScrollMethod = Button_GetCheck(handle) == TRUE ? 0 : 1;
-	}
-
-	if (GameActive == false) {
+	if (GameActive == false) { // RA2: Set at 0x4CFA00 matches only so: no scroll coasting check box before this
 		handle = GetDlgItem(_Dialog, IDC_DIFFICULTY_SLIDER);
 		if (handle) {
 			Options.Difficulty = Slider_GetPos(handle);
@@ -364,3 +355,4 @@ void Game_Controls_Dialog_On_COMMAND(HWND window, UINT message, WPARAM wparam, L
 			break;
 	}
 }
+
