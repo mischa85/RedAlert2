@@ -62,6 +62,11 @@
 #include "tracker.h"
 #include "warhead.h"
 
+void Generic_Theater_Name(char * name); // RA2: 0x5D7C20 (objtype.cpp)
+
+namespace Unsorted { extern bool ArmageddonMode; }
+
+
 
 /***********************************************************************************************
  * AnimTypeClass::AnimTypeClass -- Constructor for animation types.                            *
@@ -89,8 +94,7 @@ AnimTypeClass::AnimTypeClass(char const *ininame) :
 	LoopEnd(0),
 	Stages(0),
 	Loops(0),
-	Sound(VOC_NONE),
-	ChainTo(NULL),
+	ChainTo(NULL), // RA2: AnimTypeClass at 0x424E30 has no Sound
 	DetailLevel(0),
 	TranslucencyDetailLevel(0),
 	RandomLoopDelayMin(0),
@@ -101,9 +105,7 @@ AnimTypeClass::AnimTypeClass(char const *ininame) :
 	Spawns(NULL),
 	SpawnCount(0),
 	StartSound(VOC_NONE),
-	BounceSound(VOC_NONE),
-	ExpireSound(VOC_NONE),
-	BounceAnim(NULL),
+	BounceAnim(NULL), // RA2: AnimTypeClass at 0x424E30 has no BounceSound, ExpireSound
 	ExpireAnim(NULL),
 	TrailerAnim(NULL),
 	TrailerSeperation(0),
@@ -132,8 +134,7 @@ AnimTypeClass::AnimTypeClass(char const *ininame) :
 	IsAnimatedTiberium(false),
 	IsAltPalette(false),
 	IsNormalized(false),
-	IsGroundLayer(false),
-	IsFlat(false),
+	IsFlat(false), // RA2: AnimTypeClass at 0x424E30 has no IsGroundLayer
 	IsTranslucent(false),
 	IsScorcher(false),
 	IsFlameThrower(false),
@@ -141,7 +142,14 @@ AnimTypeClass::AnimTypeClass(char const *ininame) :
 	IsSticky(false),
 	IsPingPong(false),
 	IsReverse(false),
-	IsShouldFogRemove(true)
+	IsShouldFogRemove(true), // RA2: AnimTypeClass at 0x424E30 matches only so
+	StopSound(VOC_NONE), // RA2: the RA2 fields, as RA2 initializes them
+	ZAdjust(0), // RA2: as above
+	HideIfNoOre(false), // RA2: as above
+	Layer(LAYER_AIR), // RA2: as above
+	ForceBigCraters(false), // RA2: as above
+	Shadow(false), // RA2: as above
+	PsiWarning(false) // RA2: as above
 {
 	Create_ID();
 	IsSentient = true;
@@ -182,12 +190,7 @@ AnimTypeClass::AnimTypeClass(NoInitClass const & x) :
 /// </summary>
 AnimTypeClass::~AnimTypeClass(void)
 {
-	if (IsDemandLoad && ImageData) {
-		delete [] (char*) ImageData;
-		ImageData = NULL;
-	}
-
-	AbstractTypePtrTracker.Delete(this);
+	AbstractTypePtrTracker.Delete(this); // RA2: no IsDemandLoad, ImageData (TibSun's use does not compile against RA2's declaration)
 	AnimTypes.Delete(this);
 }
 
@@ -378,13 +381,11 @@ bool AnimTypeClass::Read_INI(CCINIClass const & ini)
 			Load_Image(THEATER_NONE);
 		}
 
-		Sound = ArtINI.Get_VocType(Name(), "Report", Sound);
-		IsAltPalette = ArtINI.Get_Bool(Name(), "AltPalette", IsAltPalette);
+		IsAltPalette = ArtINI.Get_Bool(Name(), "AltPalette", IsAltPalette); // RA2: no Sound (TibSun's use does not compile against RA2's declaration)
 		IsFlat = ini.Get_Bool(Name(), "Flat", IsFlat);
 		IsFlameThrower = ini.Get_Bool(Name(), "Flamer", IsFlameThrower);
 		IsNormalized = ini.Get_Bool(Name(), "Normalized", IsNormalized);
-		IsGroundLayer = ini.Get_Bool(Name(), "Surface", IsGroundLayer);
-		IsTranslucent = ini.Get_Bool(Name(), "Translucent", IsTranslucent);
+		IsTranslucent = ini.Get_Bool(Name(), "Translucent", IsTranslucent); // RA2: no IsGroundLayer (not in RA2's layout)
 		IsScorcher = ini.Get_Bool(Name(), "Scorch", IsScorcher);
 		IsCraterForming = ini.Get_Bool(Name(), "Crater", IsCraterForming);
 		IsSticky = ini.Get_Bool(Name(), "Sticky", IsSticky);
@@ -437,10 +438,8 @@ bool AnimTypeClass::Read_INI(CCINIClass const & ini)
 		YDrawOffset = ini.Get_Int(Name(), "YDrawOffset", YDrawOffset);
 
 		StartSound = ini.Get_VocType(Name(), "StartSound", StartSound);
-		BounceSound = ini.Get_VocType(Name(), "BounceSound", BounceSound);
-		ExpireSound = ini.Get_VocType(Name(), "ExpireSound", ExpireSound);
 
-		BounceAnim = TGet_Class(ini, Name(), "BounceAnim", BounceAnim);
+		BounceAnim = TGet_Class(ini, Name(), "BounceAnim", BounceAnim); // RA2: no BounceSound, ExpireSound (not in RA2's layout)
 		ExpireAnim = TGet_Class(ini, Name(), "ExpireAnim", ExpireAnim);
 		TrailerAnim = TGet_Class(ini, Name(), "TrailerAnim", TrailerAnim);
 
@@ -521,7 +520,6 @@ HRESULT STDMETHODCALLTYPE AnimTypeClass::Save(IStream * stream, BOOL cleardirty)
 {
 	HRESULT result = BASECLASS::Save(stream, cleardirty);
 	if (SUCCEEDED(result)) {
-
 		result = S_OK;
 	}
 	return(result);
@@ -553,8 +551,7 @@ void AnimTypeClass::Compute_CRC(CRCEngine & crc) const
 {
 	BASECLASS::Compute_CRC(crc);
 	crc(IsNormalized);
-	crc(IsGroundLayer);
-	crc(IsFlat);
+	crc(IsFlat); // RA2: no IsGroundLayer (not in RA2's layout)
 	crc(IsTranslucent);
 	crc(IsScorcher);
 	crc(IsFlameThrower);
@@ -570,8 +567,7 @@ void AnimTypeClass::Compute_CRC(CRCEngine & crc) const
 	crc(LoopStart);
 	crc(LoopEnd);
 	crc(Stages);
-	crc(Sound);
-	crc(DetailLevel);
+	crc(DetailLevel); // RA2: no Sound (TibSun's use does not compile against RA2's declaration)
 	crc(TranslucencyDetailLevel);
 	crc(RandomLoopDelayMin);
 	crc(RandomLoopDelayMax);
@@ -632,6 +628,16 @@ void const * AnimTypeClass::Get_Image_Data(void) const
 
 		CCFileClass file(fullname);
 		((void const *&)ImageData) = Load_Alloc_Data(file);
+		if (ImageData == NULL) { // RA2: a missing theater image is retried under the generic theater name
+			Generic_Theater_Name(fullname); // RA2: as above
+			CCFileClass file2(fullname); // RA2: as above
+			((void const *&)ImageData) = Load_Alloc_Data(file2); // RA2: as above
+			if (ImageData != NULL) { // RA2: as above
+				(bool &)ImageAllocated = true; // RA2: as above
+			} // RA2: as above
+		} else { // RA2: as above
+			(bool &)ImageAllocated = true; // RA2: as above
+		} // RA2: as above
 		((AnimTypeClass*)this)->Load_Image(Scen->Theater);
 
 		data = ImageData;
@@ -652,5 +658,7 @@ void AnimTypeClass::Free_Image(void)
 		DebugString("Freeing loaded image for %s\n", Full_Name());
 		delete [] (char*) ImageData;
 		ImageData = NULL;
+		ImageAllocated = false; // RA2: as Get_Image_Data sets it
 	}
 }
+
