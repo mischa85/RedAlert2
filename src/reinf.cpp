@@ -61,264 +61,16 @@
 #include "unit.h"
 #include "unittype.h"
 #include "vox.h"
+#include "iloco.h" // RA2
+#include "ipiggy.h" // RA2
+#include "scenario.h" // RA2
+#include "rules.h" // RA2
+#include "infatype.h" // RA2
+static FootClass * _Create_Group(TeamTypeClass const * teamtype); // RA2: defined after its first caller
+static bool _Pop_Group_Out_Of_Object(FootClass * group, TechnoClass * object); // RA2: defined after its first caller
 
 
-/***********************************************************************************************
- * _Pop_Group_Out_Of_Object -- Process popping the group out of the object.                    *
- *                                                                                             *
- *    This routine will cause the group to pop out of the object specified.                    *
- *                                                                                             *
- * INPUT:   group    -- Pointer to the first object in the group to be popped out.             *
- *                                                                                             *
- *          object   -- Pointer to the object that the group is to pop out of.                 *
- *                                                                                             *
- * OUTPUT:  bool; Was the group popped out of the specified object?                            *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/25/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-static bool _Pop_Group_Out_Of_Object(FootClass * group, TechnoClass * object)
-{
-	assert(group != NULL && object != NULL);
-	int quantity = 0;
 
-	/*
-	**	Take every infantry member of this group and detach it from the group list
-	**	and then make it pop out of the candidate source.
-	*/
-	while (group != NULL) {
-		TechnoClass * todo = group;
-		group = (FootClass *)(ObjectClass *)group->Next;
-		todo->Next = NULL;
-
-		switch ((RTTIType)object->RTTI) {
-
-			/*
-			**	The infantry just walks out of a building.
-			*/
-			case RTTI_BUILDING:
-				if (object->Exit_Object(todo) != 2) {
-					delete todo;
-				} else {
-					object->Transmit_Message(RADIO_OVER_OUT);
-					++quantity;
-				}
-				break;
-
-			/*
-			**	Infantry get attached to transport vehicles and then unload.
-			*/
-			case RTTI_UNIT:
-			case RTTI_AIRCRAFT:
-				object->Cargo.Attach((FootClass *)todo);
-				todo->Hidden();
-				object->Assign_Mission(MISSION_UNLOAD);
-				++quantity;
-				break;
-
-			default:
-				delete todo;
-				break;
-		}
-	}
-
-	return(quantity != 0);
-}
-
-
-/***********************************************************************************************
- * _Need_To_Take -- Examines unit to determine if it should be confiscated.                    *
- *                                                                                             *
- *    The unit is examined and if the owning house needs to confiscate it, then this routine   *
- *    will return TRUE. In other cases, the unit should be left to its own devices.            *
- *                                                                                             *
- * INPUT:   unit  -- Pointer to the object to examine.                                         *
- *                                                                                             *
- * OUTPUT:  bool; Should the object be confiscated by the player so that it becomes one of     *
- *                his normal game objects?                                                     *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/26/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-bool _Need_To_Take(AircraftClass const * air)
-{
-	return(false);
-}
-
-
-/***********************************************************************************************
- * _Create_Group -- Create a group given team specification.                                   *
- *                                                                                             *
- *    This routine will create all members of the group as specified by the team type.         *
- *                                                                                             *
- * INPUT:   teamtype -- Pointer to the team type that specifies what objects should be         *
- *                      created in this group.                                                 *
- *                                                                                             *
- * OUTPUT:  Returns with a pointer to the first member of the group created.                   *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   06/25/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-static FootClass * _Create_Group(TeamTypeClass const * teamtype)
-{
-	assert(teamtype != NULL);
-
-	TeamClass * team = new TeamClass(teamtype, teamtype->House);
-	if (team != NULL) {
-		team->Force_Active();
-	}
-
-	bool hasunload = false;
-	ScriptTypeClass * script = teamtype->Script;
-	int count = script->MissionCount;
-	for (int tm = 0; tm < count; tm++) {
-		TeamMissionClass mission = script->MissionList[tm];
-		if (mission.Mission == TMISSION_UNLOAD) {
-			hasunload = true;
-			break;
-		}
-	}
-
-	bool has_air_transport = team->Has_Air_Transport();
-
-	bool drop_pod = false;
-	if (teamtype->IsDroppod) {
-		if (teamtype->TaskForce->Has_Only_Infantry()) {
-			drop_pod = true;
-		}
-	}
-
-	/*
-	**	Now that the official source for the reinforcement has been determined, the
-	**	objects themselves must be created.
-	*/
-	FootClass * transport = NULL;
-	FootClass * object = NULL;
-	for (int index = 0; index < teamtype->TaskForce->ClassCount; index++) {
-		TechnoTypeClass const * tclass = teamtype->TaskForce->Members[index].Class;
-
-		for (int sub = 0; sub < teamtype->TaskForce->Members[index].Quantity; sub++) {
-			ScenarioInit++;
-			FootClass * temp = (FootClass *)tclass->Create_One_Of(teamtype->House);
-			ScenarioInit--;
-
-			if (temp != NULL) {
-
-				if (tclass->Capacity > 0 && teamtype->IsFull) {
-					temp->Storage.Increase_Amount(tclass->Capacity, 0);
-				}
-
-				switch (teamtype->VeteranLevel) {
-					case 0:
-						temp->Veterancy.Set_Dumbass(true);
-						break;
-					case 1:
-						break;
-					case 2:
-						temp->Veterancy.Set_Veteran(true);
-						break;
-					case 3:
-						temp->Veterancy.Set_Elite(true);
-						break;
-				}
-
-				/*
-				**	Add the member to the team.
-				*/
-				if (team != NULL) {
-					ScenarioInit++;
-					bool ok = team->Add(temp);
-					ScenarioInit--;
-					temp->IsInitiated = true;
-				}
-
-				bool transporter = false;
-				if (tclass->Max_Passengers() > 0) {
-					if (has_air_transport) {
-						if (temp->RTTI == RTTI_AIRCRAFT) {
-							transporter = true;
-						} else {
-							transporter = false;
-						}
-					} else {
-						if (temp->RTTI == RTTI_UNIT) {
-							transporter = true;
-						} else {
-							transporter = false;
-						}
-					}
-				}
-
-				/*
-				**	Build the list of transporters and passengers.
-				*/
-				if (transporter) {
-					/*
-					**	Link to the list of transports.
-					*/
-					temp->Next = transport;
-					transport = temp;
-				} else {
-					if (drop_pod) {
-						temp->Link_DropPod();
-					}
-
-					/*
-					**	Link to the list of normal objects.
-					*/
-					temp->Next = object;
-					object = temp;
-				}
-			}
-		}
-	}
-
-	/*
-	**	If the group consists of transports and normal objects, then assign the normal
-	**	objects to be passengers on the transport.
-	*/
-	if (transport != NULL && object != NULL) {
-		transport->Cargo.Attach(object);
-
-		/*
-		**	HACK ALERT! If the this team has an unload mission, then flag the transport
-		**	as a loaner so that it will exit from the map when the unload process is
-		**	complete, but only if the transport is an aircraft type.
-		*/
-		if (hasunload && transport->RTTI == RTTI_AIRCRAFT) {
-			transport->IsALoaner = true;
-		}
-	}
-
-	/*
-	**	For JUST transport helicopters, consider the loaner a gift if there are
-	**	no passengers.
-	*/
-	//if (transport != NULL && object == NULL && transport->What_Am_I() == RTTI_AIRCRAFT/* && *((AircraftClass *)transport) == AIRCRAFT_TRANSPORT*/) {
-	//	transport->IsALoaner = false;
-	//}
-
-	if (transport == NULL && object == NULL) {
-		if (team != NULL) delete team;
-		return(NULL);
-	}
-
-	/*
-	**	If this group consists only of non-transport object, then just return with a pointer
-	**	to the first member of the group.
-	*/
-	if (transport == NULL) {
-		return(object);
-	}
-
-	return(transport);
-}
 
 
 /***********************************************************************************************
@@ -337,15 +89,14 @@ static FootClass * _Create_Group(TeamTypeClass const * teamtype)
  * HISTORY:                                                                                    *
  *   06/25/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-static bool _Consists_Only_Of_Infantry(FootClass const * first)
+static bool _Consists_Only_Of_Infantry(FootClass const *first)
 {
 	while (first != NULL) {
-		if (first->RTTI != RTTI_INFANTRY) {
-			return(false);
-		}
-		first = (FootClass const *)((ObjectClass *)first->Next);
+		if (first->Fetch_RTTI() != RTTI_INFANTRY)
+			return false;
+		first = (FootClass const *)first->Next;
 	}
-	return(true);
+	return true;
 }
 
 
@@ -522,6 +273,178 @@ bool Do_Reinforcements(TeamTypeClass const * teamtype, WAYPOINT wp)
 }
 
 
+/***********************************************************************************************
+ * _Create_Group -- Create a group given team specification.                                   *
+ *                                                                                             *
+ *    This routine will create all members of the group as specified by the team type.         *
+ *                                                                                             *
+ * INPUT:   teamtype -- Pointer to the team type that specifies what objects should be         *
+ *                      created in this group.                                                 *
+ *                                                                                             *
+ * OUTPUT:  Returns with a pointer to the first member of the group created.                   *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   06/25/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+static FootClass * _Create_Group(TeamTypeClass const * teamtype)
+{
+	assert(teamtype != NULL);
+
+	TeamClass * team = new TeamClass(teamtype, teamtype->House);
+	if (team != NULL) {
+		team->Force_Active();
+	}
+
+	bool hasunload = false;
+	ScriptTypeClass * script = teamtype->Script;
+	int count = script->MissionCount;
+	for (int tm = 0; tm < count; tm++) {
+		TeamMissionClass mission = script->MissionList[tm];
+		if (mission.Mission == TMISSION_UNLOAD) {
+			hasunload = true;
+			break;
+		}
+	}
+
+	bool has_air_transport = team->Has_Air_Transport();
+
+	bool drop_pod = false;
+	if (teamtype->IsDroppod) {
+		if (teamtype->TaskForce->Has_Only_Infantry()) {
+			drop_pod = true;
+		}
+	}
+
+	/*
+	**	Now that the official source for the reinforcement has been determined, the
+	**	objects themselves must be created.
+	*/
+	FootClass * transport = NULL;
+	FootClass * object = NULL;
+	for (int index = 0; index < teamtype->TaskForce->ClassCount; index++) {
+		TechnoTypeClass const * tclass = teamtype->TaskForce->Members[index].Class;
+
+		for (int sub = 0; sub < teamtype->TaskForce->Members[index].Quantity; sub++) {
+			ScenarioInit++;
+			FootClass * temp = (FootClass *)tclass->Create_One_Of(teamtype->House);
+			ScenarioInit--;
+
+			if (temp != NULL) {
+
+				if (tclass->Capacity > 0 && teamtype->IsFull) {
+					temp->Storage.Increase_Amount(tclass->Capacity, 0);
+				}
+
+				switch (teamtype->VeteranLevel) {
+					case 0:
+						temp->Veterancy.Set_Dumbass(true);
+						break;
+					case 1:
+						break;
+					case 2:
+						temp->Veterancy.Set_Veteran(true);
+						break;
+					case 3:
+						temp->Veterancy.Set_Elite(true);
+						break;
+				}
+
+				/*
+				**	Add the member to the team.
+				*/
+				if (team != NULL) {
+					ScenarioInit++;
+					bool ok = team->Add(temp);
+					ScenarioInit--;
+					temp->IsInitiated = true;
+				}
+
+				bool transporter = false;
+				if (tclass->Max_Passengers() > 0) {
+					if (has_air_transport) {
+						if (temp->RTTI == RTTI_AIRCRAFT) {
+							transporter = true;
+						} else {
+							transporter = false;
+						}
+					} else {
+						if (temp->RTTI == RTTI_UNIT) {
+							transporter = true;
+						} else {
+							transporter = false;
+						}
+					}
+				}
+
+				/*
+				**	Build the list of transporters and passengers.
+				*/
+				if (transporter) {
+					/*
+					**	Link to the list of transports.
+					*/
+					temp->Next = transport;
+					transport = temp;
+				} else {
+					if (drop_pod) {
+						temp->Link_DropPod();
+					}
+
+					/*
+					**	Link to the list of normal objects.
+					*/
+					temp->Next = object;
+					object = temp;
+				}
+			}
+		}
+	}
+
+	/*
+	**	If the group consists of transports and normal objects, then assign the normal
+	**	objects to be passengers on the transport.
+	*/
+	if (transport != NULL && object != NULL) {
+		transport->Cargo.Attach(object);
+
+		/*
+		**	HACK ALERT! If the this team has an unload mission, then flag the transport
+		**	as a loaner so that it will exit from the map when the unload process is
+		**	complete, but only if the transport is an aircraft type.
+		*/
+		if (hasunload && transport->RTTI == RTTI_AIRCRAFT) {
+			transport->IsALoaner = true;
+		}
+	}
+
+	/*
+	**	For JUST transport helicopters, consider the loaner a gift if there are
+	**	no passengers.
+	*/
+	//if (transport != NULL && object == NULL && transport->What_Am_I() == RTTI_AIRCRAFT/* && *((AircraftClass *)transport) == AIRCRAFT_TRANSPORT*/) {
+	//	transport->IsALoaner = false;
+	//}
+
+	if (transport == NULL && object == NULL) {
+		if (team != NULL) delete team;
+		return(NULL);
+	}
+
+	/*
+	**	If this group consists only of non-transport object, then just return with a pointer
+	**	to the first member of the group.
+	*/
+	if (transport == NULL) {
+		return(object);
+	}
+
+	return(transport);
+}
+
+
+
 /// <summary>
 /// Can the whole reinforcement chain travel by tunnel?
 /// This routine is used by the reinforcement handler to decide whether a group should
@@ -533,7 +456,7 @@ bool Do_Reinforcements(TeamTypeClass const * teamtype, WAYPOINT wp)
 inline bool _Can_Burrow(FootClass * object)
 {
 	while (object != NULL) {
-		TechnoTypeClass const * tclass = object->TClass;
+		TechnoTypeClass const * tclass = object->Techno_Type_Class();
 		if (tclass->Locomotor != CLSID_TunnelLocomotion) {
 			return(false);
 		}
@@ -729,85 +652,80 @@ bool Create_Reinforcement(TeamTypeClass const * teamtype, FootClass * object, Ce
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
 /***********************************************************************************************
- * Create_Special_Reinforcement -- Ad hoc reinforcement handler.                               *
+ * _Pop_Group_Out_Of_Object -- Process popping the group out of the object.                    *
  *                                                                                             *
- *    Use this routine to bring on a reinforcement that hasn't been anticipated by the trigger *
- *    system. An example of this would be replacement harvesters or airfield ordered units.    *
- *    The appropriate transport is created (if necessary) and a mission is assigned such that  *
- *    the object will legally bring itself onto the playing field.                             *
+ *    This routine will cause the group to pop out of the object specified.                    *
  *                                                                                             *
- * INPUT:   house    -- The owner of this reinforcement.                                       *
+ * INPUT:   group    -- Pointer to the first object in the group to be popped out.             *
  *                                                                                             *
- *          type     -- The object to bring on.                                                *
+ *          object   -- Pointer to the object that the group is to pop out of.                 *
  *                                                                                             *
- *          another  -- This is reserved for the transport class in those cases where the      *
- *                      transport MUST be forced to a specific type.                           *
+ * OUTPUT:  bool; Was the group popped out of the specified object?                            *
  *                                                                                             *
- *          mission  -- The mission to assign this reinforcement team.                         *
- *                                                                                             *
- *          argument -- Optional team mission argument (usually a waypoint).                   *
- *                                                                                             *
- * OUTPUT:  Was the special reinforcement created without error?                               *
- *                                                                                             *
- * WARNINGS:   This routine will fail if a team type cannot be created.                        *
+ * WARNINGS:   none                                                                            *
  *                                                                                             *
  * HISTORY:                                                                                    *
- *   07/04/1995 JLB : Created.                                                                 *
+ *   06/25/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
-bool Create_Special_Reinforcement(HouseClass * house, TechnoTypeClass const * type, TechnoTypeClass const * another, TeamMissionType mission, int argument)
+static bool _Pop_Group_Out_Of_Object(FootClass * group, TechnoClass * object)
 {
-	/// nothing in TS
-#if 0
-	assert(house != 0);
-	assert(type != 0);
+	assert(group != NULL && object != NULL);
+	int quantity = 0;
 
-	if (house && type) {
-		TeamTypeClass * team = new TeamTypeClass();
+	/*
+	**	Take every infantry member of this group and detach it from the group list
+	**	and then make it pop out of the candidate source.
+	*/
+	while (group != NULL) {
+		TechnoClass * todo = group;
+		group = (FootClass *)(ObjectClass *)group->Next;
+		todo->Next = NULL;
 
-		if (team) {
-
-			/*
-			**	If there is no overridden mission assign to this special reinforcement, then
-			**	we must assign something. If not, the reinforcement will just sit at the edge
-			**	of the map.
-			*/
-			if (!another && mission == TMISSION_NONE) {
-				mission = TMISSION_MOVECELL;
-				argument = Map.Calculated_Cell(house->Control.Edge);
-			}
+		switch ((RTTIType)object->RTTI) {
 
 			/*
-			**	Fill in the team characteristics.
+			**	The infantry just walks out of a building.
 			*/
-			strcpy((char *)&team->IniName[0], "TEMP");
-			team->IsReinforcable = false;
-			team->IsTransient = true;
-			team->ClassCount = 1;
-			team->Members[0].Class = type;
-			team->Members[0].Quantity = 1;
-			team->MissionCount = 1;
-			if (mission == TMISSION_NONE) {
-				team->MissionList[0].Mission	= TMISSION_UNLOAD;
-				team->MissionList[0].Data.Value = WAYPT_REINF;
-			} else {
-				team->MissionList[0].Mission	= mission;
-				team->MissionList[0].Data.Value = argument;
-			}
-			team->House = house->Class->House;
-			if (another) {
-				team->ClassCount++;
-				team->Members[1].Class = another;
-				team->Members[1].Quantity = 1;
-			}
+			case RTTI_BUILDING:
+				if (object->Exit_Object(todo) != 2) {
+					delete todo;
+				} else {
+					object->Transmit_Message(RADIO_OVER_OUT);
+					++quantity;
+				}
+				break;
 
-			bool ok = Do_Reinforcements(team);
-			if (!ok) delete team;
-			return(ok);
+			/*
+			**	Infantry get attached to transport vehicles and then unload.
+			*/
+			case RTTI_UNIT:
+			case RTTI_AIRCRAFT:
+				object->Cargo.Attach((FootClass *)todo);
+				todo->Hidden();
+				object->Assign_Mission(MISSION_UNLOAD);
+				++quantity;
+				break;
+
+			default:
+				delete todo;
+				break;
 		}
 	}
-#endif
-	return(false);
+
+	return(quantity != 0);
 }
 
 
@@ -838,104 +756,231 @@ bool Create_Special_Reinforcement(HouseClass * house, TechnoTypeClass const * ty
  * HISTORY:                                                                                    *
  *   07/04/1995 JLB : Commented.                                                               *
  *=============================================================================================*/
-int Create_Air_Reinforcement(HouseClass * house, AircraftType air, int number, MissionType mission, AbstractClass * tarcom, AbstractClass * navcom, InfantryType passenger)
+int Create_Air_Reinforcement(HouseClass * house, AircraftType air, int number, MissionType mission, AbstractClass * tarcom, AbstractClass * navcom, InfantryType passenger, int passengers) // RA2: the passenger count
 {
-	assert(house != 0);
-	assert((unsigned)air < AircraftTypes.Count());
-	assert(number != 0);
-	assert((unsigned)mission < MISSION_COUNT);
-	/*
-	**	Get a pointer to the class of the object that we are going to create.
-	*/
-	TechnoTypeClass const * type = (TechnoTypeClass *)AircraftTypes[air];
-
-	/*
-	**	Loop through the number of objects we are supposed to create and
-	**	create and place them on the map.
-	*/
 	int sub;
-	for (sub = 0; sub < number; sub++) {
+	TechnoTypeClass const * type = (TechnoTypeClass *)AircraftTypes[air]; // RA2: Create_Air_Reinforcement rewritten (YR's Create_Paradrop_Planes form, Ghidra 0x63A690)
 
-		/*
-		**	Create one of the required objects.  If this fails we could have
-		**	a real problem.
-		*/
+	for (sub = 0; sub < number; sub++) { // RA2: as above
 		ScenarioInit++;
 		TechnoClass * obj = (TechnoClass *)type->Create_One_Of(house);
 		ScenarioInit--;
 		if (!obj) return(sub);
 
-		/*
-		**	Flying objects always have the IsALoaner bit set.
-		*/
 		obj->IsALoaner = true;
 
-		/*
-		**	Find a cell for the object to come in on.  This is stolen from the
-		**	the code that handles a SOURCE_AIR in the normal logic.
-		*/
-		SourceType source = house->Control.Edge;
-		switch (source) {
-			case SOURCE_NORTH:
-			case SOURCE_EAST:
-			case SOURCE_SOUTH:
-			case SOURCE_WEST:
-				break;
+		int edge = house->Control.Edge; // RA2: as above
+		if (edge < 0 || edge > 3) edge = SOURCE_NORTH; // RA2: as above
+		Cell newcell = Map.Calculated_Cell((SourceType)edge, CELL_NONE, CELL_NONE, SPEED_WINGED, true, MZONE_NORMAL); // RA2: as above
 
-			default:
-				source = SOURCE_NORTH;
-				break;
+		obj->QueueMission(mission, false); // RA2: as above
+		if (navcom != NULL) {
+			obj->Assign_Destination(navcom, true); // RA2: as above
 		}
-		Cell newcell = Map.Calculated_Cell(source, CELL_NONE, CELL_NONE, SPEED_WINGED);
+		if (tarcom != NULL) {
+			obj->Assign_Target(tarcom);
+		}
 
-		/*
-		**	Try and place the object onto the map.
-		*/
 		ScenarioInit++;
-		int placed = obj->Unlimbo(newcell, DIR_N);
+		int placed = obj->Unlimbo(Coord(newcell), DIR_N); // RA2: as above
 		ScenarioInit--;
-		if (placed) {
-
-			/*
-			**	If we succeeded in placing the obj onto the map then
-			**	now we need to give it a mission and destination.
-			*/
-			obj->Assign_Mission(mission);
-
-			/*
-			**	If a navcom was specified then set it.
-			*/
-			if (navcom != NULL) {
-				obj->Assign_Destination(navcom);
-			}
-
-			/*
-			**	If a tarcom was specified then set it.
-			*/
-			if (tarcom != NULL) {
-				obj->Assign_Target(tarcom);
-			}
-
-			/*
-			**	Assign generic passenger value here. This value is used to determine
-			**	if this aircraft should drop parachute reinforcements.
-			*/
-			if (obj->RTTI == RTTI_AIRCRAFT) {
-				AircraftClass * aircraft = (AircraftClass *)obj;
-				if (passenger != INFANTRY_NONE) {
-					aircraft->Passenger = true;
-				}
-			}
-
-			/*
-			**	Start the object into action.
-			*/
-			obj->Commence();
-		} else {
-			delete obj;
-			sub--;
-			return(sub);
+		if (!placed) { // RA2: as above
+			if (obj) delete obj; // RA2: as above
+			return(sub - 1); // RA2: as above
 		}
+
+		if (obj->RTTI == RTTI_AIRCRAFT && passenger != INFANTRY_NONE && passengers != 0) { // RA2: as above
+			((AircraftClass *)obj)->Passenger = true; // RA2: as above
+			InfantryTypeClass * itype = InfantryTypes[passenger]; // RA2: as above
+			if (itype != NULL) { // RA2: as above
+				int remaining = passengers; // RA2: as above
+				do { // RA2: as above
+					ObjectClass * inf = itype->Create_One_Of(house); // RA2: as above
+					if (inf) { // RA2: as above
+						inf->Limbo(); // RA2: as above
+						obj->Cargo.Attach((FootClass *)inf); // RA2: as above
+					} // RA2: as above
+				} while (--remaining != 0); // RA2: as above
+			} // RA2: as above
+		}
+		obj->Commence();
 	}
 	return(sub);
+}
+
+
+void Record_Event_Cell(Cell const & cell); // RA2: 0x63C6C0, the ring of recent event cells
+
+
+/// <summary>
+/// RA2: brings a team in by chrono warp at its origin (or the waypoint): each member is placed next to the point
+/// and warped there by a teleport locomotor riding on its own, and starts with the reinforcement chrono delay.
+/// </summary>
+bool Do_Chrono_Reinforcements(TeamTypeClass const * teamtype, WAYPOINT wp)
+{
+	if (!teamtype || !teamtype->TaskForce->ClassCount) return(false);
+
+	ScriptTypeClass * script = teamtype->Script;
+	if (!script || script->MissionCount == 0) {
+		TeamMissionClass tmission(TMISSION_GUARD, 0);
+		if (!script) {
+			((TeamTypeClass *)teamtype)->Script = new ScriptTypeClass(NULL);
+		}
+		script = teamtype->Script;
+		int count = script->MissionCount;
+		if (count < MAX_TEAM_MISSIONS) {
+			script->MissionList[count] = tmission;
+			script->MissionCount++;
+		}
+	}
+
+	FootClass * object = _Create_Group(teamtype);
+	object->Team->IsDeleteTypeWhenDone = false;
+	if (!object) {
+		return(false);
+	}
+
+	Cell origin = teamtype->Get_Origin();
+	if (wp != -1) {
+		origin = Scen->Get_Waypoint_Cell(wp);
+	}
+
+	FootClass * next = (FootClass *)(ObjectClass *)object->Next;
+	object->Next = NULL;
+	FootClass * placed = NULL;
+
+	while (object != NULL) {
+		bool isunit = false;
+		if (object != NULL && object->Fetch_RTTI() == RTTI_UNIT) {
+			isunit = true;
+		}
+
+		Coord coord = Map[origin].Center_Coord();
+		if (!isunit) {
+			coord.X += ((object->Ammo & 3) - 2) << 6;
+			coord.Y += ((object->Ammo & 0xC) - 4) << 6;
+		}
+		object->Ammo--;
+
+		Coord dest = COORD_NONE;
+		CellClass * cellptr = &Map[coord];
+		int tries = 0;
+		while (dest == COORD_NONE && tries < 255) {
+			Cell nearcell = Map.Nearby_Location(cellptr->Center_Coord().As_Cell(), object->Techno_Type_Class()->Speed);
+			cellptr = &Map[nearcell];
+			if (isunit) {
+				dest = cellptr->Center_Coord();
+			} else {
+				dest = cellptr->Closest_Free_Spot(cellptr->Center_Coord());
+			}
+			tries++;
+		}
+
+		coord.X = dest.X;
+		coord.Y = dest.Y;
+		ScenarioInit++;
+		int ok = object->Unlimbo(coord, DIR_N);
+		ScenarioInit--;
+		if (ok) {
+			IPiggybackPtr piggy(object->Locomotion);
+			ILocomotionPtr teleport(CLSID_TeleportLocomotion);
+			teleport->Link_To_Object(object);
+			piggy = IPiggybackPtr(teleport);
+			if (piggy != NULL) {
+				piggy->Begin_Piggyback(object->Locomotion);
+				object->Locomotion = teleport;
+			}
+			object->ChronoDestCoords = coord;
+			object->Locomotion->Move_To(coord);
+			object->WarpingOut = true;
+			object->ChronoLockRemaining = Rule->ChronoReinfDelay;
+			object->Next = placed;
+			placed = object;
+			object = next;
+			if (object != NULL) {
+				next = (FootClass *)(ObjectClass *)object->Next;
+				object->Next = NULL;
+			}
+		} else {
+			delete object;
+			object = next;
+			if (object != NULL) {
+				next = (FootClass *)(ObjectClass *)object->Next;
+				object->Next = NULL;
+			}
+		}
+	}
+
+	object = placed;
+	placed = (FootClass *)(ObjectClass *)object->Next;
+	object->Next = NULL;
+	while (object != NULL) {
+		object->Mark(MARK_UP);
+		object->TeleportState = 3;
+		object->Commence();
+		object = placed;
+		if (object != NULL) {
+			placed = (FootClass *)(ObjectClass *)object->Next;
+			object->Next = NULL;
+		}
+	}
+
+	if (teamtype->House->Is_Ally(PlayerPtr)) {
+		Record_Event_Cell(origin);
+	}
+	return(true);
+}
+
+
+/***********************************************************************************************
+ * Create_Special_Reinforcement -- Ad hoc reinforcement handler.                               *
+ *                                                                                             *
+ *    Use this routine to bring on a reinforcement that hasn't been anticipated by the trigger *
+ *    system. An example of this would be replacement harvesters or airfield ordered units.    *
+ *    The appropriate transport is created (if necessary) and a mission is assigned such that  *
+ *    the object will legally bring itself onto the playing field.                             *
+ *                                                                                             *
+ * INPUT:   house    -- The owner of this reinforcement.                                       *
+ *                                                                                             *
+ *          type     -- The object to bring on.                                                *
+ *                                                                                             *
+ *          another  -- This is reserved for the transport class in those cases where the      *
+ *                      transport MUST be forced to a specific type.                           *
+ *                                                                                             *
+ *          mission  -- The mission to assign this reinforcement team.                         *
+ *                                                                                             *
+ *          argument -- Optional team mission argument (usually a waypoint).                   *
+ *                                                                                             *
+ * OUTPUT:  Was the special reinforcement created without error?                               *
+ *                                                                                             *
+ * WARNINGS:   This routine will fail if a team type cannot be created.                        *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/04/1995 JLB : Created.                                                                 *
+ *=============================================================================================*/
+bool Create_Special_Reinforcement(HouseClass * house, TechnoTypeClass const * type, TechnoTypeClass const * another, TeamMissionType mission, int argument)
+{
+	return false; // RA2: no IniName, IsReinforcable, IsTransient and 10 more (TibSun's use does not compile against RA2's declaration); not in RA2's reinf
+}
+
+
+/***********************************************************************************************
+ * _Need_To_Take -- Examines unit to determine if it should be confiscated.                    *
+ *                                                                                             *
+ *    The unit is examined and if the owning house needs to confiscate it, then this routine   *
+ *    will return TRUE. In other cases, the unit should be left to its own devices.            *
+ *                                                                                             *
+ * INPUT:   unit  -- Pointer to the object to examine.                                         *
+ *                                                                                             *
+ * OUTPUT:  bool; Should the object be confiscated by the player so that it becomes one of     *
+ *                his normal game objects?                                                     *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/26/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+bool _Need_To_Take(AircraftClass const * air)
+{
+	return(false);
 }

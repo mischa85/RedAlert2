@@ -30,4 +30,4 @@ class Cell;
 bool Do_Reinforcements(TeamTypeClass const * team, WAYPOINT wp=-1);
 bool Create_Reinforcement(TeamTypeClass const * teamtype, FootClass * object, Cell const & cell, bool atwaypoint);
 bool Create_Special_Reinforcement(HouseClass * house, TechnoTypeClass const * type, TechnoTypeClass const * another, TeamMissionType mission = TMISSION_NONE, int argument =0);
-int Create_Air_Reinforcement(HouseClass *house, AircraftType air, int number, MissionType mission, AbstractClass * tarcom, AbstractClass * navcom, InfantryType passenger=INFANTRY_NONE);
+int Create_Air_Reinforcement(HouseClass *house, AircraftType air, int number, MissionType mission, AbstractClass * tarcom, AbstractClass * navcom, InfantryType passenger=INFANTRY_NONE, int passengers=0); // RA2: the passenger count
