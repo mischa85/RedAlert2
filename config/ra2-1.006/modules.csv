@@ -236,7 +236,9 @@ unk_004CCE80,0x004CCE80,0x004CEDF0,unknown,code not assigned to a module
 fuse,0x004CEDF0,0x004CEFA0,tibsun,"functions compiled from src/fuse.cpp, matched, without gaps"
 unk_004CEFA0,0x004CEFA0,0x004CEFC0,unknown,code not assigned to a module
 gadget,0x004CEFC0,0x004CF6A0,tibsun,"functions compiled from src/gadget.cpp, matched, without gaps; six placed by the gap"
-unk_004CF6A0,0x004CF6A0,0x004D0040,unknown,code not assigned to a module
+unk_004CF6A0,0x004CF6A0,0x004CF920,unknown,code not assigned to a module
+gamedlg,0x004CF920,0x004CFC00,tibsun,"functions compiled from src/gamedlg.cpp, without gaps; matched except ?Set@GameControlsClass@@QAEXXZ; ?Game_Controls_Dialog_Proc@@YGHPAUHWND__@@IIJ@Z not placed; ?Game_Controls_Dialog_On_COMMAND@@YIXPAUHWND__@@IIJ@Z not placed"
+unk_004CFC00,0x004CFC00,0x004D0040,unknown,code not assigned to a module
 gametime,0x004D0040,0x004D00D0,tibsun,"functions compiled from src/gametime.cpp, matched, without gaps; _$E2 not placed"
 unk_004D00D0,0x004D00D0,0x004D00F0,unknown,code not assigned to a module
 gauge,0x004D00F0,0x004D0C80,tibsun,"functions compiled from src/gauge.cpp, matched, without gaps"
