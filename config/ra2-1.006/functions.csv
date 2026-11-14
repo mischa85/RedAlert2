@@ -5025,7 +5025,7 @@ address,size,evidence
 0x006D1510,,"inferred: target of the call at 0x0043A4F3 in matched src/building.cpp; size not known"
 0x006D1D00,,"inferred: target of the call at 0x004C9916 in matched src/foot.cpp; size not known"
 0x006D2CA0,112,"code of src/techno.cpp, matched"
-0x006D3040,,"inferred: target of the call at 0x00413E06 in matched src/aircraft.cpp; size not known"
+0x006D3040,112,"code of src/techno.cpp, matched"
 0x006D30B0,,"inferred: target of the call at 0x00449FF5 in matched src/building.cpp; size not known"
 0x006D3150,144,"code of src/techno.cpp, matched"
 0x006D31E0,256,"code of src/techno.cpp, matched"

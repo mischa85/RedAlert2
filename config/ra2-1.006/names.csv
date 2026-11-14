@@ -4722,7 +4722,7 @@ address,symbol,evidence
 0x006D1510,?Techno_Draw_Object@TechnoClass@@QBEXPBVShapeSet@@HABVPoint2D@@ABV?$TRect@H@@W4Dir256@@HHW4ZGradientType@@_NH0HV3@W4ShapeFlags_Type@@@Z,"inferred: referenced by matched src/building.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x006D1D00,?Draw_Voxel@TechnoClass@@UBEXABUVoxelDataStruct@@HHPAV?$IndexClass@HPAUEntry@StaticBufferClass@@@@ABV?$TRect@H@@ABVPoint2D@@ABVMatrix3D@@HW4ShapeFlags_Type@@@Z,"inferred: referenced by matched src/foot.cpp (1 reference); across all matched code never at another address, and no other symbol here"
 0x006D2CA0,?Calculate_Sinking_Offset@TechnoClass@@QAEXFH@Z,"compiled from src/techno.cpp, matched"
-0x006D3040,?Kill_Cargo@TechnoClass@@QAEXPAV1@@Z,"inferred: referenced by matched src/aircraft.cpp (1 reference); across all matched code never at another address, and no other symbol here"
+0x006D3040,?Kill_Cargo@TechnoClass@@QAEXPAV1@@Z,"compiled from src/techno.cpp, matched"
 0x006D30B0,?Crew_Type@TechnoClass@@UBEPBVInfantryTypeClass@@XZ,"inferred: referenced by matched src/building.cpp (2 references); across all matched code never at another address, and no other symbol here"
 0x006D3150,?Value@TechnoClass@@UBEHXZ,"compiled from src/techno.cpp, matched"
 0x006D31E0,?Threat_Range@TechnoClass@@UBEHH@Z,"compiled from src/techno.cpp, matched"
