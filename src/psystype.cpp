@@ -251,9 +251,7 @@ ParticleSystemBehaviorType Particle_System_Behavior_From_Name(char const * name)
 		"Gas",
 		"Fire",
 		"Spark",
-		"Railgun",
-		"Web",
-		"WeakGas"
+		"Railgun" // RA2: no "Web" or "WeakGas" (the array at 0x7EBFD8 holds five names)
 	};
 
 	for (ParticleSystemBehaviorType behavior = PSYS_BEHAVIOR_FIRST; behavior < PSYS_BEHAVIOR_COUNT; behavior++) {
