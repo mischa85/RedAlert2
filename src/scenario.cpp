@@ -877,7 +877,8 @@ bool Read_Scenario(char const * fname)
 			prog_msg = prog_msg_buffer;
 		}
 
-		Progress.Set_Graphic_Data((players > 1) ? "PROGBARM.SHP" : "PROGBAR.SHP", background, prog_msg, prog_bar_pos);
+		Progress.Set_Graphic_Data((players > 1) ? "PROGBARM.SHP" : "PROGBAR.SHP", background); // RA2: the shape and background only
+		Progress.Set_Layout(prog_bar_pos, NULL, players > 1, players > 1); // RA2: the layout is set apart (RA2 takes the caption from its loading screen)
 		Progress.Display_Progress();
 
 		if (PacketTransport != NULL && Session.Type == GAME_INTERNET && Session.Players.Count() > 1) {

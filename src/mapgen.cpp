@@ -4469,8 +4469,9 @@ void MapGeneratorClass::Generate_Random_Map(bool full_init, HWND dialog)
 	if (RMGCallback != NULL) RMGCallback();
 
 	if (!Scen->IsReadingScenario) {
-		Progress.Initialize(100, 1, true);
+		Progress.Initialize(100, 1, dialog); // RA2: the dialog window
 		Progress.Set_Graphic_Data("PROGBAR2.SHP");
+		Progress.Set_Layout(Point2D(-1, -1), NULL, false, true); // RA2: the layout is set apart
 		Progress.Display_Progress();
 	}
 
@@ -4721,7 +4722,7 @@ void MapGeneratorClass::Generate_Random_Map(bool full_init, HWND dialog)
 
 	DebugString("RMG: Done\n");
 
-	Progress.End_Dialog();
+	Progress.Clear_Dialog(); // RA2: 0x6203D0, the window is forgotten
 }
 
 

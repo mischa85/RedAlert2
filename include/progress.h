@@ -19,6 +19,8 @@
 
 class ShapeSet;
 class ConvertClass;
+class ColorScheme; // RA2
+class Surface; // RA2
 
 class ProgressScreenClass : public INoticeSource // RA2: INoticeSource
 {
@@ -26,32 +28,45 @@ class ProgressScreenClass : public INoticeSource // RA2: INoticeSource
 		ProgressScreenClass(void);
 		~ProgressScreenClass(void);
 
-		virtual void Unknown_Virtual_0(int callback) override; // RA2: sets Callback
+		virtual void Unknown_Virtual_0(int callback) override {Callback = (INoticeSink *)callback;} // RA2: sets Callback (0x6203E0)
 
-		void Initialize(double progress, int count, bool usedialog = false);
+		void Initialize(double progress, char count, HWND dialog = NULL); // RA2: 0x61ED80, a dialog window instead of a flag
 		void End(void);
-
+		void Free_Shape(void); // RA2: 0x61EE00
+		void Set_Side(int side); // RA2: 0x61EE30
+		int Get_Side(void); // RA2: 0x61EE40
+		ColorScheme * Side_Scheme(void); // RA2: 0x61EE50
+		ColorScheme * Text_Scheme(void); // RA2: 0x61EE80
+		ColorScheme * Player_Scheme(int index); // RA2: 0x61EED0
+		void Set_Graphic_Data(char const * progbar, char const * background = NULL, ConvertClass * drawer = NULL); // RA2: 0x61EF40, a drawer instead of the caption and position
+		void Set_Layout(Point2D pt, wchar_t const * string, bool flags, bool outline); // RA2: 0x61EFA0
+		void Set_Row_Width(int width); // RA2: 0x61F150
+		void Bar_Size(int * width, int * height); // RA2: 0x61F160
+		void Flag_Size(int * width, int * height); // RA2: 0x61F1D0
+		static void Text_Size(int * width, int * height); // RA2: 0x61F210
+		void Box_Size(int * width, int * height, int rows, bool flags); // RA2: 0x61F280
+		int Row_Y(int y, int row, bool flags); // RA2: 0x61F3B0
+		int Bar_Offset(bool flags); // RA2: 0x61F4B0
+		int Flag_Offset(bool flags); // RA2: 0x61F630
+		int Text_Offset(bool flags); // RA2: 0x61F770
+		double Get_Current_Progress(void) const;
+		void Draw_Bar(Point2D pt, double fraction, Surface * surface, ColorScheme * scheme); // RA2: 0x61F8F0
+		void Draw_Flag(Point2D pt, Surface * flag); // RA2: 0x61FAB0
+		void Draw_Name(Point2D pt, wchar_t const * name, ColorScheme * scheme, int width); // RA2: 0x61FB70
+		void Draw_Player(ColorScheme * scheme, wchar_t const * name, Point2D & pt, int player, bool flags); // RA2: 0x61FC20
+		void Display_Progress(Point2D pt = Point2D(-1,-1));
 		void Set_Progress_Percent(int index, double value, Point2D pt=Point2D(-1,-1));
 		void Add_Progress_Percent(int index, double value, Point2D pt=Point2D(-1,-1));
+		bool Has_Dialog(void); // RA2: 0x6203C0
+		void Clear_Dialog(void); // RA2: 0x6203D0
 
 		double Get_Current_Progress(int index) const
 		{
-			//if (index < 8) {
-				return(PlayerProgress[index] / MainProgress);
-			//}
-			//return MainProgress;
+			if (index >= PlayerCount) { // RA2: past the last player, the job itself (0x6203F0)
+				return(MainProgress); // RA2: as above
+			} // RA2: as above
+			return(PlayerProgress[index] / MainProgress);
 		}
-		double Get_Current_Progress(void) const;
-
-		int Get_Bar_Width(void) const;
-
-		void Set_Graphic_Data(const char * progbar, const char * background = NULL, const char * string = NULL, Point2D pt=Point2D(-1,-1));
-		void Display_Progress(Point2D pt = Point2D(-1,-1));
-
-		void Begin_Dialog(void);
-		void End_Dialog(void);
-	private:
-		static BOOL CALLBACK Dialog_Proc(HWND window, UINT message, WPARAM wparam, LPARAM lparam);
 
 	public:
 		/*
@@ -118,7 +133,7 @@ class ProgressScreenClass : public INoticeSource // RA2: INoticeSource
 		 */
 		Point2D Pos;
 
-		bool UseDialog; // RA2: +0x70, lay the rows out for the dialog
+		bool ShowFlags; // RA2: +0x70, the rows show the players' country flags
 		bool IsFilled; // RA2: +0x71, fill each row's rectangle before drawing it
 		ConvertClass * Drawer; // RA2: +0x74, replaces the bar's palette when not NULL
 		int RowWidth; // RA2: +0x78, overrides the computed row width unless -1
