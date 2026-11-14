@@ -74,7 +74,14 @@ class AircraftClass : public FootClass, public IFlyControl
 		virtual LONG STDMETHODCALLTYPE Landing_Direction(void) override;
 		virtual BOOL STDMETHODCALLTYPE Is_Loaded(void) override;
 		virtual LONG STDMETHODCALLTYPE Is_Strafe(void) override;
+		virtual LONG STDMETHODCALLTYPE Is_Fighter(void) override; // RA2: 0x41AF90
 		virtual LONG STDMETHODCALLTYPE Is_Locked(void) override;
+		virtual bool In_Air(void) const override; // RA2: 0x41B050
+		virtual bool On_Ground(void) const override; // RA2: 0x41B0B0
+		virtual bool IsNotWarpingIn(void) const override; // RA2: 0x41B110
+		virtual void Set_Mission(MissionType mission) override; // RA2: 0x41B120
+		virtual void QueueMission(MissionType mission, bool start) override; // RA2: 0x41B160
+		virtual void Override_Mission(MissionType mission, AbstractClass * tarcom, AbstractClass * navcom) override; // RA2: 0x41B1A0
 
 		virtual void Init(void) override;
 		virtual void Detach(AbstractClass const * target, bool all = true) override;
@@ -84,6 +91,8 @@ class AircraftClass : public FootClass, public IFlyControl
 
 		virtual int Do_MISSION_ATTACK(void) override;
 		virtual int Do_MISSION_UNLOAD(void) override;
+		virtual int Do_MISSION_PARADROP_APPROACH(void) override; // RA2: 0x415190
+		virtual int Do_MISSION_PARADROP_OVERFLY(void) override; // RA2: 0x415210
 		virtual int Do_MISSION_HUNT(void) override;
 		virtual int Do_MISSION_RETREAT(void) override;
 		virtual int Do_MISSION_MOVE(void) override;
@@ -149,7 +158,6 @@ class AircraftClass : public FootClass, public IFlyControl
 		virtual ResultType Take_Damage(int & damage, int distance, WarheadTypeClass const * warhead, TechnoClass * source, bool forced=false, bool=false) override;
 		virtual BulletClass * Fire_At(AbstractClass * target, int which) override;
 		virtual void Reduce_Ammunition(void) override;
-		bool Crash(TechnoClass * source);
 
 		/*
 		**	AI.

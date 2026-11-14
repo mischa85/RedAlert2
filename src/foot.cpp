@@ -3558,7 +3558,7 @@ ZGradientType FootClass::Get_Z_Gradient(void) const
 /// The locomotor has the final say over whether a shadow is appropriate at all -- a burrowed
 /// or submerged object casts none -- and over where the shadow should be offset to.
 /// </summary>
-void FootClass::Draw_Voxel_Shadow(VoxelDataStruct const & voxeldata, int layer_index, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, bool force_cache) const
+void FootClass::Draw_Voxel_Shadow(VoxelDataStruct const & voxeldata, int layer_index, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, bool force_cache, Surface *, unsigned, unsigned) const // RA2: three more arguments
 {
 	if (Locomotion != NULL && Locomotion->Is_To_Have_Shadow() == (boolean)true) {
 		Point2D drawpoint = point;

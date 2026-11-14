@@ -473,7 +473,7 @@ class FootClass : public TechnoClass
 		virtual ZGradientType Get_Z_Gradient(void) const override;
 		virtual void Draw_Action_Line(bool force, int unknown) const override;
 		virtual void Draw_Voxel(VoxelDataStruct const & voxeldata, int frame, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, int brightness, ShapeFlags_Type flags) const override;
-		void Draw_Voxel_Shadow(VoxelDataStruct const & voxeldata, int layer_index, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, bool force_cache) const;
+		void Draw_Voxel_Shadow(VoxelDataStruct const & voxeldata, int layer_index, int key, VoxelIndexClass * cache, Rect const & cliprect, Point2D const & point, Matrix3D const & matrix, bool force_cache, Surface * surface = NULL, unsigned extra1 = 0, unsigned extra2 = 0) const; // RA2: three more arguments (ret 44)
 		virtual void Draw_Object(ShapeSet const * shapefile, int shapenum, Point2D const & xy, Rect const & rect, Dir256 rotation=DIR_N, int scale=0x0100, int zadjust=0, ZGradientType zgrad=ZGRAD_GROUND, bool=false, int brightness=0, ShapeSet const * zshapefile=0, int zshapenum=0, Point2D zoff=Point2D(0,0), ShapeFlags_Type flags=SHAPE_NORMAL) const;
 
 		/*
@@ -524,6 +524,8 @@ class FootClass : public TechnoClass
 		virtual int Do_MISSION_PATROL(void) override;
 		virtual bool Is_Allowed_To_Recloak(void) const override;
 		virtual bool Is_In_Team(void) const override {return(Team!=NULL);};
+		virtual Cell GetLastFlightMapCoords(void) const override {return(LastFlightMapCoords);}; // RA2: inline (0x41B550)
+		virtual void SetLastFlightMapCoords(Cell coord) override {LastFlightMapCoords = coord;}; // RA2: inline (0x41B560)
 		virtual void Advance_Waypoint_Path(void) override;
 		void Remove_From_Team(void) {if (Team != NULL) Team->Remove(this);}
 		double Threat_Avoidance_Value(void) const;

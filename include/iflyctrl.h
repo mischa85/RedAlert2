@@ -40,6 +40,11 @@ public:
 	virtual LONG STDMETHODCALLTYPE Is_Strafe(void) = 0;
 
 	/*
+	 * Is it a fighter? RA2
+	 */
+	virtual LONG STDMETHODCALLTYPE Is_Fighter(void) = 0; // RA2: between Is_Strafe and Is_Locked (vtable 0x79B0F4)
+
+	/*
 	 * Is the aircraft locked into straight flight?
 	 */
 	virtual LONG STDMETHODCALLTYPE Is_Locked(void) = 0;
