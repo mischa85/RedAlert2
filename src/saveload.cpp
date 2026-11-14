@@ -127,6 +127,9 @@
 #include "wave.h"
 #include "waypoint.h"
 #include "weapon.h"
+#include "ftimer.h"
+
+
 
 //#define	SAVE_BLOCK_SIZE	512
 #define	SAVE_BLOCK_SIZE	4096
@@ -146,31 +149,37 @@ static int Reconcile_Players(void);
 _COM_SMARTPTR_TYPEDEF(ILinkStream, __uuidof(ILinkStream));
 
 
+
+
+
 /// <summary>
 /// Loads a vector of persistent objects from the save game stream.
 /// This routine reads the element count and then recreates each object through OLE. The
 /// objects are not handed back -- each one reattaches itself to its own heap as it is
 /// constructed, which is what refills the game's vectors.
+/// RA2
 /// </summary>
 /// <returns>Returns with S_OK, or the failure code of the read that went wrong.</returns>
-__forceinline HRESULT Load_Vector(IStream * stream)
+static bool Put_All(IStream *stream, int save_net); // RA2: defined after its caller
+
+static bool Get_All(IStream *stream, bool save_net); // RA2: defined after its caller
+
+HRESULT Load_Vector(IStream * stream) // RA2: Load_Vector at 0x654C40 matches only so
 {
 	int count;
 	int index;
 	LPVOID obj;
 
 	HRESULT result = stream->Read(&count, sizeof(count), NULL);
-	if (FAILED(result)) {
-		return(result);
-	}
+	if (FAILED(result)) return(result); // RA2: as above
 	for (index = 0; index < count; index++) {
-		result = OleLoadFromStream(stream, IID_IUnknown, &obj);
-		if (FAILED(result)) {
-			return(result);
-		}
+		if (FAILED(result = OleLoadFromStream(stream, IID_IUnknown, &obj))) return(result); // RA2: as above
 	}
 	return(S_OK);
 }
+
+
+
 
 
 /// <summary>
@@ -297,6 +306,273 @@ CRCEngine Object_CRCs(void)
  * HISTORY:                                                                                    *
  *   07/08/1996 JLB : Created.                                                                 *
  *=============================================================================================*/
+
+/***************************************************************************
+ * Save_Game -- saves a game to disk                                       *
+ *                                                                         *
+ * Saving the Map:                                                         *
+ *     DisplayClass::Save() invokes CellClass's Write() for every cell     *
+ *     that needs to be saved.  A cell needs to be saved if it contains    *
+ *     any special data at all, such as a TIcon, or an Occupier.           *
+ *   The cell saves its own CellTrigger pointer, converted to a TARGET.    *
+ *                                                                         *
+ * Saving game objects:                                                    *
+ *   - Any object stored in an ArrayOf class needs to be saved.  The ArrayOf*
+ *     Save() routine invokes each object's Write() routine, if that       *
+ *     object's IsActive is set.                                           *
+ *                                                                         *
+ * Saving the layers:                                                      *
+ *   The Map's Layers (Ground, Air, etc) of things that are on the map,    *
+ *     and the Logic's Layer of things to process both need to be saved.   *
+ *     LayerClass::Save() writes the entire layer array to disk            *
+ *                                                                         *
+ * Saving the houses:                                                      *
+ *   Each house needs to be saved, to record its Credits, Power, etc.      *
+ *                                                                         *
+ * Saving miscellaneous data:                                              *
+ *   There are a lot of miscellaneous variables to save, such as the       *
+ *     map's dimensions, the player's house, etc.                          *
+ *                                                                         *
+ * INPUT:                                                                  *
+ *      id      numerical ID, for the file extension                       *
+ *                                                                         *
+ * OUTPUT:                                                                 *
+ *      true = OK, false = error                                           *
+ *                                                                         *
+ * WARNINGS:                                                               *
+ *      none.                                                              *
+ *                                                                         *
+ * HISTORY:                                                                *
+ *   12/28/1994 BR : Created.                                              *
+ *   02/27/1996 JLB : Uses simpler game control value save operation.      *
+ *=========================================================================*/
+bool Save_Game(const char *file_name, wchar_t const * descr, bool ) // RA2: wide description
+{
+	WCHAR name[64];
+
+	DebugString("\nSAVING GAME [%s - %s]\n", file_name, descr);
+
+	MultiByteToWideChar(0,0, file_name, -1, name, sizeof(name)/sizeof(WCHAR));
+
+	/*
+	**	Open the file
+	*/
+	DebugString("Creating DocFile\n");
+	IStoragePtr storage;
+	if (FAILED(StgCreateDocfile(name, STGM_CREATE|STGM_SHARE_EXCLUSIVE|STGM_READWRITE, 0, &storage))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
+
+
+	/*
+	**	Save the description, scenario #, and house
+	**	(scenario # & house are saved separately from the actual Scenario &
+	**	PlayerPtr globals for convenience; we can quickly find out which
+	**	house & scenario this save-game file is for by reading these values.
+	**	Also, PlayerPtr is stored in a coded form in Save_Misc_Values(),
+	**	which may or may not be a HousesType number; so, saving 'house'
+	**	here ensures we can always pull out the house for this file.)
+	*/
+	SaveVersionInfo info;
+	info.Set_Internal_Version(ExpectedGameVersion);
+	info.Set_Scenario_Description(descr);
+	info.Set_Version(1);
+	info.Set_Player_House(PlayerPtr->Class->UIName); // RA2: the house's wide UIName
+	info.Set_Campaign_Number(Scen->Campaign);
+	info.Set_Scenario_Number(Scen->Scenario);
+	info.Set_Executable_Name("SUN.EXE");
+	info.Set_Game_Type(Session.Type);
+	FILETIME FileTime;
+	CoFileTimeNow(&FileTime);
+	info.Set_Last_Time(FileTime);
+	info.Set_Start_Time(FileTime);
+	info.Set_Play_Time(FileTime);
+
+	/*
+	**	Save the save-game version, for loading verification
+	*/
+	DebugString("Saving version information\n");
+	if (FAILED(info.Save(storage))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
+
+	DebugString("Creating content stream\n");
+	IStreamPtr content;
+	if (FAILED(storage->CreateStream(L"CONTENTS", STGM_CREATE|STGM_SHARE_EXCLUSIVE|STGM_READWRITE, 0, 0, &content))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
+
+	DebugString("Linking content stream to compressor\n");
+	ILinkStreamPtr link;
+	link.CreateInstance(CLSID_CompressStream, NULL, CLSCTX_INPROC|CLSCTX_LOCAL_SERVER);
+	if (FAILED(link->Link_Stream(content))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
+	IStreamPtr stream(link);
+
+	/*
+	**	Dump the save game data to the file. The data is compressed
+	**	and then encrypted. The message digest is calculated in the
+	**	process by using the data just as it is written to disk.
+	*/
+	DebugString("Calling Put_All()\n");
+	bool res = Put_All(stream,0);
+
+	DebugString("Unlinking content stream from compressor\n");
+	if (FAILED(link->Unlink_Stream(NULL))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
+
+	DebugString("Releasing content stream\n");
+	content.Release();
+
+	DebugString("Closing DocFile\n");
+	if (FAILED(storage->Commit(0))) {
+		DebugString("\t***** FAILED!\n");
+		return(false);
+	}
+
+	DebugString("SAVING GAME [%s] - Complete\n\n", file_name, descr);
+	return(res);
+}
+
+
+/***************************************************************************
+ * Reconcile_Players -- Reconciles loaded data with the 'Players' vector   *
+ *                                                                         *
+ * This function is for supporting loading a saved multiplayer game.       *
+ * When the game is loaded, we have to figure out which house goes with    *
+ * which entry in the Players vector.  We also have to figure out if       *
+ * everyone who was originally in the game is still with us, and if not,   *
+ * turn their stuff over to the computer.                                  *
+ *                                                                         *
+ * So, this function does the following:                                   *
+ * - For every name in 'Players', makes sure that name is in the House     *
+ *   array; if not, it's a fatal error.                                    *
+ * - For every human-controlled house, makes sure there's a player         *
+ *   with that name; if not, it turns that house over to the computer.     *
+ * - Fills in the Player's house ID                                        *
+ *                                                                         *
+ * This assumes that each player MUST keep their name the same as it was   *
+ * when the game was saved!  It's also assumed that the network            *
+ * connections have not been formed yet, since Player[i]->Player.ID will   *
+ * be invalid until this routine has been called.                          *
+ *                                                                         *
+ * INPUT:                                                                  *
+ *      none.                                                              *
+ *                                                                         *
+ * OUTPUT:                                                                 *
+ *      true = OK, false = error                                           *
+ *                                                                         *
+ * WARNINGS:                                                               *
+ *      none.                                                              *
+ *                                                                         *
+ * HISTORY:                                                                *
+ *   09/29/1995 BRR : Created.                                             *
+ *=========================================================================*/
+static int Reconcile_Players(void)
+{
+	#if 0
+	int i;
+	int found;
+	HousesType house;
+	HouseClass * housep;
+
+	/*
+	**	If there are no players, there's nothing to do.
+	*/
+	if (Session.Players.Count()==0)
+		return(true);
+
+	/*
+	**	Make sure every name we're connected to can be found in a House
+	*/
+	for (i = 0; i < Session.Players.Count(); i++) {
+		found = 0;
+		for (house = HOUSE_MULTI1; house < HOUSE_MULTI1 +
+			Session.MaxPlayers; house++) {
+
+			housep = Houses[house];
+			if (!housep) {
+				continue;
+			}
+
+			if (!stricmp(Session.Players[i]->Name, housep->IniName)) {
+				found = 1;
+				break;
+			}
+		}
+		if (!found)
+			return(false);
+	}
+
+	//
+	// Loop through all Houses; if we find a human-owned house that we're
+	// not connected to, turn it over to the computer.
+	//
+	for (house = HOUSE_MULTI1; house < HOUSE_MULTI1 +
+		Session.MaxPlayers; house++) {
+		housep = Houses[house];
+		if (!housep) {
+			continue;
+		}
+
+		//
+		// Skip this house if it wasn't human to start with.
+		//
+		if (!housep->IsHuman) {
+			continue;
+		}
+
+		//
+		// Try to find this name in the Players vector; if it's found, set
+		// its ID to this house.
+		//
+		found = 0;
+		for (i = 0; i < Session.Players.Count(); i++) {
+			if (!stricmp(Session.Players[i]->Name, housep->IniName)) {
+				found = 1;
+				Session.Players[i]->Player.ID = house;
+				break;
+			}
+		}
+
+		/*
+		**	If this name wasn't found, remove it
+		*/
+		if (!found) {
+
+			/*
+			**	Turn the player's house over to the computer's AI
+			*/
+			housep->IsHuman = false;
+			housep->IsStarted = true;
+//			housep->Smartness = IQ_MENSA;
+			housep->IQ = Rule->MaxIQ;
+			housep->IniName = Text_String(TXT_COMPUTER);
+
+			Session.NumPlayers--;
+		}
+	}
+
+	//
+	// If all went well, our Session.NumPlayers value should now equal the value
+	// from the saved game, minus any players we removed.
+	//
+	if (Session.NumPlayers == Session.Players.Count()) {
+		return(true);
+	} else {
+		return(false);
+	}
+	#endif
+}
+
+
 static bool Put_All(IStream *stream, int save_net)
 {
 	/*
@@ -626,16 +902,137 @@ static bool Put_All(IStream *stream, int save_net)
 /// order they were written out.
 /// </summary>
 /// <returns>bool; Was the game state restored?</returns>
+
+
+
+/***********************************************************************************************
+ * Put_All -- Store all save game data to the pipe.                                            *
+ *                                                                                             *
+ *    This is the bulk processor of the game related save game data. All the game object       *
+ *    and state data is stored to the pipe specified.                                          *
+ *                                                                                             *
+ * INPUT:   pipe  -- Reference to the pipe that will receive the save game data.               *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/08/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+
+
+
+/***************************************************************************
+ * Load_Game -- loads a saved game                                         *
+ *                                                                         *
+ * This routine loads the data in the same way it was saved out.           *
+ *                                                                         *
+ * Loading the Map:                                                        *
+ *   - DisplayClass::Load() invokes CellClass's Load() for every cell      *
+ *     that was saved.                                                     *
+ * - The cell loads its own CellTrigger pointer.                           *
+ *                                                                         *
+ * Loading game objects:                                                   *
+ * - IHeap's Load() routine loads the # of objects stored, and loads       *
+ *   each object.                                                          *
+ * - Triggers: Add themselves to the HouseTriggers if they're associated   *
+ *   with a house                                                          *
+ *                                                                         *
+ * Loading the layers:                                                     *
+ *     LayerClass::Load() reads the entire layer array to disk             *
+ *                                                                         *
+ * Loading the houses:                                                     *
+ *   Each house is loaded in its entirety.                                 *
+ *                                                                         *
+ * Loading miscellaneous data:                                             *
+ *   There are a lot of miscellaneous variables to load, such as the       *
+ *     map's dimensions, the player's house, etc.                          *
+ *                                                                         *
+ * INPUT:                                                                  *
+ *      id         numerical ID, for the file extension                    *
+ *                                                                         *
+ * OUTPUT:                                                                 *
+ *      true = OK, false = error                                           *
+ *                                                                         *
+ * WARNINGS:                                                               *
+ *      If this routine returns false, the entire game will be in an       *
+ *      unknown state, so the scenario will have to be re-initialized.     *
+ *                                                                         *
+ * HISTORY:                                                                *
+ *   12/28/1994 BR : Created.                                              *
+ *   1/20/97  V.Grippi Added expansion CD check                            *
+ *=========================================================================*/
+bool Load_Game(const char *file_name)
+{
+	WCHAR name[64];
+
+	DebugString("\nLOADING GAME [%s]\n", file_name);
+
+	/*
+	**	Read & discard the save-game's header info
+	*/
+	SaveVersionInfo info;
+	if (!Get_Savefile_Info(file_name, &info)) {
+		return(false);
+	}
+
+	Session.Type = (GameType)info.Get_Game_Type();
+	Swizzler.Reset();
+
+	/*
+	**	Open the file
+	*/
+	IStoragePtr storage;
+	MultiByteToWideChar(0,0,file_name, -1, name, (sizeof(name)/sizeof(WCHAR)));
+
+	if (FAILED(StgOpenStorage(name, 0, STGM_SHARE_DENY_WRITE, 0, 0, &storage))) {
+		return(false);
+	}
+
+	IStreamPtr content;
+	if (FAILED(storage->OpenStream(L"CONTENTS", 0, STGM_SHARE_EXCLUSIVE, 0, &content))) {
+		return(false);
+	}
+
+	IUnknown *pUnknown = NULL;
+	ILinkStreamPtr link;
+	link.CreateInstance(CLSID_CompressStream, pUnknown,CLSCTX_INPROC|CLSCTX_LOCAL_SERVER);
+	if (FAILED(link->Link_Stream(content))) {
+		//return(false);
+	}
+	IStreamPtr stream(link);
+
+	bool res = Get_All(stream, false);
+
+	link->Unlink_Stream(NULL);
+
+	Swizzler.Reset();
+
+	/*
+	**	Fixup any expediency data that can be inferred from the physical
+	**	data loaded.
+	*/
+	Post_Load_Game();
+
+	Map.Init_IO();
+	Map.Activate(1);
+	Map.Reposition_Sidebar();
+	TiberiumClass::Init_Tiberium_Growth_System();
+	TiberiumClass::Init_Tiberium_Spread_System();
+	Map.Complete_Radar_Refresh();
+	ScenarioActive = true;
+	TacticalActive = true;
+	DebugString("LOADING GAME [%s] - Complete\n\n", file_name);
+	return(true);
+}
+
+
 static bool Get_All(IStream *stream, bool save_net)
 {
 	Clear_Scenario();
 	Scen->Load(stream);
-	Disable_Addon(ADDON_ANY);
-	Set_Required_Addon(Scen->RequiredAddOn);
-	if (!Addon_Installed(Scen->RequiredAddOn)) {
-		return(false);
-	}
-	Enable_Addon(Scen->RequiredAddOn);
+	Disable_Addon(ADDON_ANY); // RA2: no required-addon check (RequiredAddOn is not in RA2's ScenarioClass)
 
 	if (!Prep_For_Side(Scen->IsGDI ? SIDE_GDI : SIDE_NOD)) {
 		return(false);
@@ -664,17 +1061,8 @@ static bool Get_All(IStream *stream, bool save_net)
 		}
 	}
 
-	Rule->Load(stream);
+	Rule->Load(stream); // RA2: no per-side speech preparation (SpeechSide is not in RA2's ScenarioClass)
 
-	if (Scen->SpeechSide != SIDE_NONE) {
-		if (!Prep_Speech_For_Side(Scen->SpeechSide)) {
-			return(false);
-		}
-	} else {
-		if (!Prep_Speech_For_Side(Scen->IsGDI ? SIDE_GDI : SIDE_NOD)) {
-			return(false);
-		}
-	}
 
 	if (FAILED(Load_Vector(stream))) {	/// AnimTypes
 		return(false);
@@ -869,244 +1257,8 @@ static bool Get_All(IStream *stream, bool save_net)
 	return(true);
 }
 
-/***************************************************************************
- * Save_Game -- saves a game to disk                                       *
- *                                                                         *
- * Saving the Map:                                                         *
- *     DisplayClass::Save() invokes CellClass's Write() for every cell     *
- *     that needs to be saved.  A cell needs to be saved if it contains    *
- *     any special data at all, such as a TIcon, or an Occupier.           *
- *   The cell saves its own CellTrigger pointer, converted to a TARGET.    *
- *                                                                         *
- * Saving game objects:                                                    *
- *   - Any object stored in an ArrayOf class needs to be saved.  The ArrayOf*
- *     Save() routine invokes each object's Write() routine, if that       *
- *     object's IsActive is set.                                           *
- *                                                                         *
- * Saving the layers:                                                      *
- *   The Map's Layers (Ground, Air, etc) of things that are on the map,    *
- *     and the Logic's Layer of things to process both need to be saved.   *
- *     LayerClass::Save() writes the entire layer array to disk            *
- *                                                                         *
- * Saving the houses:                                                      *
- *   Each house needs to be saved, to record its Credits, Power, etc.      *
- *                                                                         *
- * Saving miscellaneous data:                                              *
- *   There are a lot of miscellaneous variables to save, such as the       *
- *     map's dimensions, the player's house, etc.                          *
- *                                                                         *
- * INPUT:                                                                  *
- *      id      numerical ID, for the file extension                       *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      true = OK, false = error                                           *
- *                                                                         *
- * WARNINGS:                                                               *
- *      none.                                                              *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/28/1994 BR : Created.                                              *
- *   02/27/1996 JLB : Uses simpler game control value save operation.      *
- *=========================================================================*/
-bool Save_Game(const char *file_name, char const * descr, bool )
-{
-	WCHAR name[64];
-
-	DebugString("\nSAVING GAME [%s - %s]\n", file_name, descr);
-
-	MultiByteToWideChar(0,0, file_name, -1, name, sizeof(name)/sizeof(WCHAR));
-
-	/*
-	**	Open the file
-	*/
-	DebugString("Creating DocFile\n");
-	IStoragePtr storage;
-	if (FAILED(StgCreateDocfile(name, STGM_CREATE|STGM_SHARE_EXCLUSIVE|STGM_READWRITE, 0, &storage))) {
-		DebugString("\t***** FAILED!\n");
-		return(false);
-	}
 
 
-	/*
-	**	Save the description, scenario #, and house
-	**	(scenario # & house are saved separately from the actual Scenario &
-	**	PlayerPtr globals for convenience; we can quickly find out which
-	**	house & scenario this save-game file is for by reading these values.
-	**	Also, PlayerPtr is stored in a coded form in Save_Misc_Values(),
-	**	which may or may not be a HousesType number; so, saving 'house'
-	**	here ensures we can always pull out the house for this file.)
-	*/
-	SaveVersionInfo info;
-	info.Set_Internal_Version(ExpectedGameVersion);
-	info.Set_Scenario_Description(descr);
-	info.Set_Version(1);
-	info.Set_Player_House((char *)PlayerPtr->Class->GivenName);
-	info.Set_Campaign_Number(Scen->Campaign);
-	info.Set_Scenario_Number(Scen->Scenario);
-	info.Set_Executable_Name("SUN.EXE");
-	info.Set_Game_Type(Session.Type);
-	FILETIME FileTime;
-	CoFileTimeNow(&FileTime);
-	info.Set_Last_Time(FileTime);
-	info.Set_Start_Time(FileTime);
-	info.Set_Play_Time(FileTime);
-
-	/*
-	**	Save the save-game version, for loading verification
-	*/
-	DebugString("Saving version information\n");
-	if (FAILED(info.Save(storage))) {
-		DebugString("\t***** FAILED!\n");
-		return(false);
-	}
-
-	DebugString("Creating content stream\n");
-	IStreamPtr content;
-	if (FAILED(storage->CreateStream(L"CONTENTS", STGM_CREATE|STGM_SHARE_EXCLUSIVE|STGM_READWRITE, 0, 0, &content))) {
-		DebugString("\t***** FAILED!\n");
-		return(false);
-	}
-
-	DebugString("Linking content stream to compressor\n");
-	ILinkStreamPtr link;
-	link.CreateInstance(CLSID_CompressStream, NULL, CLSCTX_INPROC|CLSCTX_LOCAL_SERVER);
-	if (FAILED(link->Link_Stream(content))) {
-		DebugString("\t***** FAILED!\n");
-		return(false);
-	}
-	IStreamPtr stream(link);
-
-	/*
-	**	Dump the save game data to the file. The data is compressed
-	**	and then encrypted. The message digest is calculated in the
-	**	process by using the data just as it is written to disk.
-	*/
-	DebugString("Calling Put_All()\n");
-	bool res = Put_All(stream,0);
-
-	DebugString("Unlinking content stream from compressor\n");
-	if (FAILED(link->Unlink_Stream(NULL))) {
-		DebugString("\t***** FAILED!\n");
-		return(false);
-	}
-
-	DebugString("Releasing content stream\n");
-	content.Release();
-
-	DebugString("Closing DocFile\n");
-	if (FAILED(storage->Commit(0))) {
-		DebugString("\t***** FAILED!\n");
-		return(false);
-	}
-
-	DebugString("SAVING GAME [%s] - Complete\n\n", file_name, descr);
-	return(res);
-}
-
-
-/***************************************************************************
- * Load_Game -- loads a saved game                                         *
- *                                                                         *
- * This routine loads the data in the same way it was saved out.           *
- *                                                                         *
- * Loading the Map:                                                        *
- *   - DisplayClass::Load() invokes CellClass's Load() for every cell      *
- *     that was saved.                                                     *
- * - The cell loads its own CellTrigger pointer.                           *
- *                                                                         *
- * Loading game objects:                                                   *
- * - IHeap's Load() routine loads the # of objects stored, and loads       *
- *   each object.                                                          *
- * - Triggers: Add themselves to the HouseTriggers if they're associated   *
- *   with a house                                                          *
- *                                                                         *
- * Loading the layers:                                                     *
- *     LayerClass::Load() reads the entire layer array to disk             *
- *                                                                         *
- * Loading the houses:                                                     *
- *   Each house is loaded in its entirety.                                 *
- *                                                                         *
- * Loading miscellaneous data:                                             *
- *   There are a lot of miscellaneous variables to load, such as the       *
- *     map's dimensions, the player's house, etc.                          *
- *                                                                         *
- * INPUT:                                                                  *
- *      id         numerical ID, for the file extension                    *
- *                                                                         *
- * OUTPUT:                                                                 *
- *      true = OK, false = error                                           *
- *                                                                         *
- * WARNINGS:                                                               *
- *      If this routine returns false, the entire game will be in an       *
- *      unknown state, so the scenario will have to be re-initialized.     *
- *                                                                         *
- * HISTORY:                                                                *
- *   12/28/1994 BR : Created.                                              *
- *   1/20/97  V.Grippi Added expansion CD check                            *
- *=========================================================================*/
-bool Load_Game(const char *file_name)
-{
-	WCHAR name[64];
-
-	DebugString("\nLOADING GAME [%s]\n", file_name);
-
-	/*
-	**	Read & discard the save-game's header info
-	*/
-	SaveVersionInfo info;
-	if (!Get_Savefile_Info(file_name, &info)) {
-		return(false);
-	}
-
-	Session.Type = (GameType)info.Get_Game_Type();
-	Swizzler.Reset();
-
-	/*
-	**	Open the file
-	*/
-	IStoragePtr storage;
-	MultiByteToWideChar(0,0,file_name, -1, name, (sizeof(name)/sizeof(WCHAR)));
-
-	if (FAILED(StgOpenStorage(name, 0, STGM_SHARE_DENY_WRITE, 0, 0, &storage))) {
-		return(false);
-	}
-
-	IStreamPtr content;
-	if (FAILED(storage->OpenStream(L"CONTENTS", 0, STGM_SHARE_EXCLUSIVE, 0, &content))) {
-		return(false);
-	}
-
-	IUnknown *pUnknown = NULL;
-	ILinkStreamPtr link;
-	link.CreateInstance(CLSID_CompressStream, pUnknown,CLSCTX_INPROC|CLSCTX_LOCAL_SERVER);
-	if (FAILED(link->Link_Stream(content))) {
-		//return(false);
-	}
-	IStreamPtr stream(link);
-
-	bool res = Get_All(stream, false);
-
-	link->Unlink_Stream(NULL);
-
-	Swizzler.Reset();
-
-	/*
-	**	Fixup any expediency data that can be inferred from the physical
-	**	data loaded.
-	*/
-	Post_Load_Game();
-
-	Map.Init_IO();
-	Map.Activate(1);
-	Map.Reposition_Sidebar();
-	TiberiumClass::Init_Tiberium_Growth_System();
-	TiberiumClass::Init_Tiberium_Spread_System();
-	Map.Complete_Radar_Refresh();
-	ScenarioActive = true;
-	TacticalActive = true;
-	DebugString("LOADING GAME [%s] - Complete\n\n", file_name);
-	return(true);
-}
 
 
 /***************************************************************************
@@ -1455,101 +1607,11 @@ bool Get_Savefile_Info(char const * name, SaveVersionInfo * info)
  * HISTORY:                                                                *
  *   09/29/1995 BRR : Created.                                             *
  *=========================================================================*/
-static int Reconcile_Players(void)
+/// <summary>
+/// RA2
+/// </summary>
+void Unused_Saveload_Stub(void) // RA2: at 0x658040, empty and unreferenced (name chosen here)
 {
-	#if 0
-	int i;
-	int found;
-	HousesType house;
-	HouseClass * housep;
-
-	/*
-	**	If there are no players, there's nothing to do.
-	*/
-	if (Session.Players.Count()==0)
-		return(true);
-
-	/*
-	**	Make sure every name we're connected to can be found in a House
-	*/
-	for (i = 0; i < Session.Players.Count(); i++) {
-		found = 0;
-		for (house = HOUSE_MULTI1; house < HOUSE_MULTI1 +
-			Session.MaxPlayers; house++) {
-
-			housep = Houses[house];
-			if (!housep) {
-				continue;
-			}
-
-			if (!stricmp(Session.Players[i]->Name, housep->IniName)) {
-				found = 1;
-				break;
-			}
-		}
-		if (!found)
-			return(false);
-	}
-
-	//
-	// Loop through all Houses; if we find a human-owned house that we're
-	// not connected to, turn it over to the computer.
-	//
-	for (house = HOUSE_MULTI1; house < HOUSE_MULTI1 +
-		Session.MaxPlayers; house++) {
-		housep = Houses[house];
-		if (!housep) {
-			continue;
-		}
-
-		//
-		// Skip this house if it wasn't human to start with.
-		//
-		if (!housep->IsHuman) {
-			continue;
-		}
-
-		//
-		// Try to find this name in the Players vector; if it's found, set
-		// its ID to this house.
-		//
-		found = 0;
-		for (i = 0; i < Session.Players.Count(); i++) {
-			if (!stricmp(Session.Players[i]->Name, housep->IniName)) {
-				found = 1;
-				Session.Players[i]->Player.ID = house;
-				break;
-			}
-		}
-
-		/*
-		**	If this name wasn't found, remove it
-		*/
-		if (!found) {
-
-			/*
-			**	Turn the player's house over to the computer's AI
-			*/
-			housep->IsHuman = false;
-			housep->IsStarted = true;
-//			housep->Smartness = IQ_MENSA;
-			housep->IQ = Rule->MaxIQ;
-			housep->IniName = Text_String(TXT_COMPUTER);
-
-			Session.NumPlayers--;
-		}
-	}
-
-	//
-	// If all went well, our Session.NumPlayers value should now equal the value
-	// from the saved game, minus any players we removed.
-	//
-	if (Session.NumPlayers == Session.Players.Count()) {
-		return(true);
-	} else {
-		return(false);
-	}
-	#endif
 }
 
 
@@ -1572,3 +1634,4 @@ void MPlayer_Save_Message(void)
 {
 	//char *txt = Text_String(
 }
+
