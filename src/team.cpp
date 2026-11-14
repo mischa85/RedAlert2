@@ -986,7 +986,7 @@ bool TeamClass::Can_Add(FootClass * obj, int & typeindex) const
  *   12/29/1994 JLB : Created.                                                                 *
  *   01/02/1995 JLB : Initiation tracking and team captain selection.                          *
  *=============================================================================================*/
-bool TeamClass::Remove(FootClass * obj, int typeindex)
+bool TeamClass::Remove(FootClass * obj, int typeindex, bool no_idle) // RA2: no_idle
 {
 	obj->IsDroppedFromTeam = true;
 
@@ -1086,7 +1086,7 @@ bool TeamClass::Remove(FootClass * obj, int typeindex)
 	/*
 	**	A unit that breaks off of a team will enter idle mode.
 	*/
-	if (GameActive && obj->IsActive && !obj->IsInLimbo) {
+	if (!ScenarioInit && obj->IsActive && !obj->IsRocking && !obj->IsInLimbo && !no_idle) { // RA2: not while the scenario loads, rocking or asked not to
 		obj->Enter_Idle_Mode();
 	}
 
