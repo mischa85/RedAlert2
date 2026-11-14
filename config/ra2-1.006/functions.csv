@@ -3798,6 +3798,7 @@ address,size,evidence
 0x0060AA70,704,"code of src/partsys.cpp, matched"
 0x0060AD30,336,"code of src/partsys.cpp, matched"
 0x0060AE80,528,"code of src/partsys.cpp, matched"
+0x0060B090,256,"code of src/partsys.cpp, matched"
 0x0060B190,176,"code of src/partsys.cpp, matched"
 0x0060B240,,"inferred: target of the call at 0x007104ED in matched src/vein.cpp; size not known"
 0x0060B2D0,272,"code of src/partsys.cpp, matched"
