@@ -166,7 +166,9 @@ unk_00496460,0x00496460,0x00496A20,unknown,code not assigned to a module
 delay,0x00496A20,0x00496D10,tibsun,"functions compiled from src/delay.cpp, matched, without gaps"
 unk_00496D10,0x00496D10,0x00496D30,unknown,code not assigned to a module
 dial8,0x00496D30,0x00497320,tibsun,"functions compiled from src/dial8.cpp, matched, without gaps; one placed by the gap"
-unk_00497320,0x00497320,0x004981C0,unknown,code not assigned to a module
+unk_00497320,0x00497320,0x00497360,unknown,code not assigned to a module
+dialog,0x00497360,0x00498160,tibsun,"functions compiled from src/dialog.cpp, matched, without gaps"
+unk_00498160,0x00498160,0x004981C0,unknown,code not assigned to a module
 dib,0x004981C0,0x004983E0,tibsun,"functions compiled from src/dib.cpp, matched, without gaps"
 diskswap,0x004983E0,0x00498750,tibsun,"functions compiled from src/diskswap.cpp, matched, without gaps; ?Request_Disk@DiskSwap@@UAE_NW4DiskID@@@Z not placed"
 unk_00498750,0x00498750,0x00498950,unknown,code not assigned to a module
