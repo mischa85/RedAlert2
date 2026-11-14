@@ -76,6 +76,10 @@
 
 #include "bench.hh"
 
+namespace Detail { extern unsigned MinFrameRate; extern unsigned BufferZoneWidth; unsigned GetMinFrameRate(void); } // RA2: frame-rate detail settings (YR's names)
+namespace FPSCounter { extern unsigned CurrentFrameRate; extern bool ReducedEffects; } // RA2: as above
+
+
 
 /*
  * Global COM reference count.
@@ -87,6 +91,295 @@ unsigned FramesThisSecond=0;
 unsigned LastFramesPerSecond=0;
 unsigned TotalFrames=0;
 unsigned SecondsPassed=0;
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void __fastcall Set_Frame_Rate_Limit(int value) // RA2: not in TibSun, at 0x53D820
+{
+	Detail::MinFrameRate = value;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+void __fastcall Set_Buffer_Zone_Width(int value) // RA2: at 0x53D830 (name chosen here)
+{
+	Detail::BufferZoneWidth = value;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
+unsigned Detail::GetMinFrameRate(void) // RA2: not in TibSun, at 0x53D840
+{
+	if (FPSCounter::ReducedEffects) {
+		if (FPSCounter::CurrentFrameRate >= Detail::MinFrameRate + Detail::BufferZoneWidth) {
+			FPSCounter::ReducedEffects = false;
+			return Detail::MinFrameRate;
+		}
+		return Detail::MinFrameRate + Detail::BufferZoneWidth;
+	}
+	if (FPSCounter::CurrentFrameRate < Detail::MinFrameRate) {
+		FPSCounter::ReducedEffects = true;
+		return Detail::MinFrameRate + Detail::BufferZoneWidth;
+	}
+	return Detail::MinFrameRate;
+}
+
+
+/***********************************************************************************************
+ * LogicClass::AI -- Handles AI logic processing for game objects.                             *
+ *                                                                                             *
+ *    This routine is used to perform the AI processing for all game objects. This includes    *
+ *    all houses, factories, objects, and teams.                                               *
+ *                                                                                             *
+ * INPUT:   none                                                                               *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   05/29/1994 JLB : Created.                                                                 *
+ *   12/17/1994 JLB : Must perform one complete pass rather than bailing early.                *
+ *   12/23/1994 JLB : Ensures that no object gets skipped if it was deleted.                   *
+ *=============================================================================================*/
+void LogicClass::AI(void)
+{
+	int index;
+
+	FramesThisSecond++;
+
+	/*
+	**	Handle any general timer trigger events.
+	*/
+	for (LogicTriggerID = 0; LogicTriggerID < LogicTags.Count(); LogicTriggerID++) {
+		TagClass * trig = LogicTags[LogicTriggerID];
+
+		if (Scen->IsCrateBeenPickedUp) {
+			if (trig->Spring(TEVENT_PICKUP_CRATE_ANY)) continue;
+		}
+
+		/*
+		**	Global changed trigger event might be triggered.
+		*/
+		if (Scen->IsGlobalChanged) {
+			if (trig->Spring(TEVENT_GLOBAL_SET)) continue;
+			if (trig->Spring(TEVENT_GLOBAL_CLEAR)) continue;
+			if (trig->Spring(TEVENT_LOCAL_SET)) continue;
+			if (trig->Spring(TEVENT_LOCAL_CLEAR)) continue;
+		}
+
+		if (Scen->IsAmbientLightChanged) {
+			if (trig->Spring(TEVENT_AMBIENT_LESS_THAN)) continue;
+			if (trig->Spring(TEVENT_AMBIENT_GREATER_THAN)) continue;
+		}
+
+		/*
+		**	General time expire trigger events can be sprung without warning.
+		*/
+		if (trig->Spring(TEVENT_TIME)) continue;
+		if (trig->Spring(TEVENT_RANDOM_TIME)) continue;
+
+		/*
+		**	The mission timer expiration trigger event might spring if the timer is active
+		**	but at a value of zero.
+		*/
+		if (Scen->MissionTimer.Is_Active() && Scen->MissionTimer == 0) {
+			if (trig->Spring(TEVENT_MISSION_TIMER_EXPIRED)) continue;
+		}
+	}
+
+	/*
+	**	Clean up any status values that were maintained only for logic trigger
+	**	purposes.
+	*/
+	if (Scen->MissionTimer.Is_Active() && Scen->MissionTimer == 0) {
+		Scen->MissionTimer.Stop();
+		Map.Flag_To_Redraw(GS_REDRAW_ALL);			// Used only to cause tabs to redraw in new state.
+	}
+
+	Scen->IsGlobalChanged = false;
+	Scen->IsBridgeChanged = false;
+	Scen->IsAmbientLightChanged = false;
+	Scen->IsCrateBeenPickedUp = false;
+
+	/*
+	**	Shadow creeping back over time is handled here.
+	*/
+	if (Rule->IsShroudGrow && Rule->ShroudRate != 0 && Scen->ShroudTimer == 0) {
+		Scen->ShroudTimer = TICKS_PER_MINUTE * Rule->ShroudRate;
+		Map.Encroach_Shadow();
+	}
+
+	if (Scen->Special.IsFogOfWar && Rule->FogRate != 0 && Scen->FogTimer == 0) {
+		Scen->FogTimer = TICKS_PER_MINUTE * Rule->FogRate;
+		Map.Encroach_Fog();
+	}
+
+	if (Scen->DesiredAmbientLight != Scen->CurrentAmbientLight && Rule->AmbientLightChangeRate != 0 && Scen->AmbientChangeTimer == 0) {
+		Scen->AmbientChangeTimer = TICKS_PER_MINUTE * Rule->AmbientLightChangeRate;
+
+		Scen->DesiredAmbientLight = MAX(Scen->DesiredAmbientLight, 0);
+
+		int value = 100.0 * Rule->AmbientLightChangeStep;
+
+		if (Scen->DesiredAmbientLight < Scen->CurrentAmbientLight) {
+			Scen->CurrentAmbientLight -= value;
+			Scen->CurrentAmbientLight = MAX(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
+		} else {
+			Scen->CurrentAmbientLight += value;
+			Scen->CurrentAmbientLight = MIN(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
+		}
+		Scen->IsAmbientLightChanged = true;
+		Map.Update_Cell_Colors();
+		Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
+
+	}
+
+
+	VeinholeMonsterClass::Update_All(); // RA2: no IceGrowthTimer (TibSun's use does not compile against RA2's declaration)
+	TiberiumClass::Tiberium_Growth();
+	TiberiumClass::Tiberium_Spread();
+	Map.Ice_Solidification_AI();
+
+	DynamicVectorClass<TeamClass *> teams;
+	for (index = 0; index < Teams.Count(); index++) {
+		teams.Add(Teams[index]);
+	}
+
+	/*
+	**	Team AI is processed.
+	*/
+	for (index = 0; index < teams.Count(); index++) {
+		teams[index]->AI();
+	}
+
+	SpotLightClass::Update_All();
+	LaserDrawClass::Update_All();
+	IonStormClass::AI();
+	LightSourceClass::Process_Lighting(6);
+	EMPulseClass::Update_All();
+	Map.Terrain_Deformation_AI();
+
+	/*
+	**	AI for all sentient objects is processed.
+	*/
+	for (index = 0; index < Count(); index++) {
+		ObjectClass * obj = (*this)[index];
+
+		BStart(BENCH_AI);
+		obj->AI();
+		BEnd(BENCH_AI);
+
+		/*
+		**	If the object was destroyed in the process of performing its AI, then
+		**	adjust the index so that no object gets skipped.
+		*/
+		//if (obj != (*this)[index]) {
+		//	index--;
+		//}
+	}
+//	HouseClass::Recalc_Attributes();
+
+	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
+		for (index = 0; index < MoveFlashes.Count(); index++) {
+			MoveFlashes[index]->AI();
+		}
+	}
+
+	IonBlastClass::Update_All();
+	AlphaShapeClass::Update_All();
+
+	/*
+	**	Map related logic is performed.
+	*/
+	Map.Logic();
+
+	TacticalMap->AI();
+
+	/*
+	**	Factory processing is performed.
+	*/
+	for (index = 0; index < Factories.Count(); index++) {
+		Factories[index]->AI();
+	}
+
+	/*
+	**	House processing is performed.
+	*/
+	for (HousesType house = HOUSE_FIRST; house < Houses.Count(); house++) {
+		HouseClass * hptr = Houses[house];
+		if (hptr) {
+			hptr->AI();
+		}
+	}
+
+	if (Map.Object_To_Follow() != NULL) {
+		TacticalMap->Set_Tactical_Position(Map.Object_To_Follow()->PositionCoord);
+	}
+}
+
+
+/// <summary>
+/// Handles the environmental side of the game logic frame.
+/// This routine paces shroud regrowth, fog of war spread and ice growth against their
+/// rule driven timers, lets the map settle its ice and terrain deformation, and then
+/// gives each foot object's locomotor its chance to process.
+/// </summary>
+void LogicClass::Environment_AI(void)
+{
+	if (Rule->IsShroudGrow && Rule->ShroudRate != 0 && Scen->ShroudTimer == 0) {
+		Scen->ShroudTimer = TICKS_PER_MINUTE * Rule->ShroudRate;
+		Map.Encroach_Shadow();
+	}
+
+	if (Scen->Special.IsFogOfWar && Rule->FogRate != 0 && Scen->FogTimer == 0) {
+		Scen->FogTimer = TICKS_PER_MINUTE * Rule->FogRate;
+		Map.Encroach_Fog();
+	}
+
+	for (int index = 0; index < Count(); index++) { // RA2: Environment_AI at 0x53DFB0 has no Scen, Theater, Rule and 3 more
+		FootClass *foot = (FootClass *)(*this)[index];
+		if (foot->Is_Foot() && foot->Locomotion != NULL && !foot->IsSinking) {
+			foot->Locomotion->Process();
+		}
+	}
+}
+
+
+/***********************************************************************************************
+ * LogicClass::Detach -- Detatch the specified target from the logic system.                   *
+ *                                                                                             *
+ *    This routine is called when the specified target object is about to be removed from the  *
+ *    game system and all references to it must be severed. The only thing that the logic      *
+ *    system looks for in this case is to see if the target refers to a trigger and if so,     *
+ *    it scans through the trigger list and removes all references to it.                      *
+ *                                                                                             *
+ * INPUT:   target   -- The target to remove from the sytem.                                   *
+ *                                                                                             *
+ * OUTPUT:  none                                                                               *
+ *                                                                                             *
+ * WARNINGS:   none                                                                            *
+ *                                                                                             *
+ * HISTORY:                                                                                    *
+ *   07/30/1996 JLB : Created.                                                                 *
+ *=============================================================================================*/
+void LogicClass::Detach(AbstractClass const * target, bool all)
+{
+	if (Is_Target_Tag(target)) {
+		for (int index = 0; index < LogicTags.Count(); index++) {
+			if (target == (AbstractClass *)LogicTags[index]) {
+				LogicTags.Delete_Index(index);
+				index--;
+			}
+		}
+	}
+}
 
 
 #ifdef _DEBUG
@@ -215,274 +508,6 @@ void LogicClass::Debug_Dump(MonoClass * mono) const
 #endif
 
 
-/***********************************************************************************************
- * LogicClass::AI -- Handles AI logic processing for game objects.                             *
- *                                                                                             *
- *    This routine is used to perform the AI processing for all game objects. This includes    *
- *    all houses, factories, objects, and teams.                                               *
- *                                                                                             *
- * INPUT:   none                                                                               *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   05/29/1994 JLB : Created.                                                                 *
- *   12/17/1994 JLB : Must perform one complete pass rather than bailing early.                *
- *   12/23/1994 JLB : Ensures that no object gets skipped if it was deleted.                   *
- *=============================================================================================*/
-void LogicClass::AI(void)
-{
-	int index;
-
-	FramesThisSecond++;
-
-	/*
-	**	Handle any general timer trigger events.
-	*/
-	for (LogicTriggerID = 0; LogicTriggerID < LogicTags.Count(); LogicTriggerID++) {
-		TagClass * trig = LogicTags[LogicTriggerID];
-
-		if (Scen->IsCrateBeenPickedUp) {
-			if (trig->Spring(TEVENT_PICKUP_CRATE_ANY)) continue;
-		}
-
-		/*
-		**	Global changed trigger event might be triggered.
-		*/
-		if (Scen->IsGlobalChanged) {
-			if (trig->Spring(TEVENT_GLOBAL_SET)) continue;
-			if (trig->Spring(TEVENT_GLOBAL_CLEAR)) continue;
-			if (trig->Spring(TEVENT_LOCAL_SET)) continue;
-			if (trig->Spring(TEVENT_LOCAL_CLEAR)) continue;
-		}
-
-		if (Scen->IsAmbientLightChanged) {
-			if (trig->Spring(TEVENT_AMBIENT_LESS_THAN)) continue;
-			if (trig->Spring(TEVENT_AMBIENT_GREATER_THAN)) continue;
-		}
-
-		/*
-		**	General time expire trigger events can be sprung without warning.
-		*/
-		if (trig->Spring(TEVENT_TIME)) continue;
-		if (trig->Spring(TEVENT_RANDOM_TIME)) continue;
-
-		/*
-		**	The mission timer expiration trigger event might spring if the timer is active
-		**	but at a value of zero.
-		*/
-		if (Scen->MissionTimer.Is_Active() && Scen->MissionTimer == 0) {
-			if (trig->Spring(TEVENT_MISSION_TIMER_EXPIRED)) continue;
-		}
-	}
-
-	/*
-	**	Clean up any status values that were maintained only for logic trigger
-	**	purposes.
-	*/
-	if (Scen->MissionTimer.Is_Active() && Scen->MissionTimer == 0) {
-		Scen->MissionTimer.Stop();
-		Map.Flag_To_Redraw(GS_REDRAW_ALL);			// Used only to cause tabs to redraw in new state.
-	}
-
-	Scen->IsGlobalChanged = false;
-	Scen->IsBridgeChanged = false;
-	Scen->IsAmbientLightChanged = false;
-	Scen->IsCrateBeenPickedUp = false;
-
-	/*
-	**	Shadow creeping back over time is handled here.
-	*/
-	if (Rule->IsShroudGrow && Rule->ShroudRate != 0 && Scen->ShroudTimer == 0) {
-		Scen->ShroudTimer = TICKS_PER_MINUTE * Rule->ShroudRate;
-		Map.Encroach_Shadow();
-	}
-
-	if (Scen->Special.IsFogOfWar && Rule->FogRate != 0 && Scen->FogTimer == 0) {
-		Scen->FogTimer = TICKS_PER_MINUTE * Rule->FogRate;
-		Map.Encroach_Fog();
-	}
-
-	if (Scen->DesiredAmbientLight != Scen->CurrentAmbientLight && Rule->AmbientLightChangeRate != 0 && Scen->AmbientChangeTimer == 0) {
-		Scen->AmbientChangeTimer = TICKS_PER_MINUTE * Rule->AmbientLightChangeRate;
-
-		Scen->DesiredAmbientLight = MAX(Scen->DesiredAmbientLight, 0);
-
-		int value = 100.0 * Rule->AmbientLightChangeStep;
-
-		if (Scen->DesiredAmbientLight < Scen->CurrentAmbientLight) {
-			Scen->CurrentAmbientLight -= value;
-			Scen->CurrentAmbientLight = MAX(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
-		} else {
-			Scen->CurrentAmbientLight += value;
-			Scen->CurrentAmbientLight = MIN(Scen->CurrentAmbientLight, Scen->DesiredAmbientLight);
-		}
-		Scen->IsAmbientLightChanged = true;
-		Map.Update_Cell_Colors();
-		Map.Flag_To_Redraw(GS_REDRAW_TACTICAL);
-
-	}
-
-	if (Scen->Theater == THEATER_SNOW && Rule->IceGrowthRate != 0 && Scen->IceGrowthTimer == 0) {
-		Scen->IceGrowthTimer = TICKS_PER_MINUTE * Rule->IceGrowthRate;
-		Map.DirtyIceCells.Clear();
-		if (Map.Ice_Growth_AI()) {
-			Map.Recalc_Ice_Cells();
-		}
-	}
-
-	VeinholeMonsterClass::Update_All();
-	TiberiumClass::Tiberium_Growth();
-	TiberiumClass::Tiberium_Spread();
-	Map.Ice_Solidification_AI();
-
-	DynamicVectorClass<TeamClass *> teams;
-	for (index = 0; index < Teams.Count(); index++) {
-		teams.Add(Teams[index]);
-	}
-
-	/*
-	**	Team AI is processed.
-	*/
-	for (index = 0; index < teams.Count(); index++) {
-		teams[index]->AI();
-	}
-
-	SpotLightClass::Update_All();
-	LaserDrawClass::Update_All();
-	IonStormClass::AI();
-	LightSourceClass::Process_Lighting(6);
-	EMPulseClass::Update_All();
-	Map.Terrain_Deformation_AI();
-
-	/*
-	**	AI for all sentient objects is processed.
-	*/
-	for (index = 0; index < Count(); index++) {
-		ObjectClass * obj = (*this)[index];
-
-		BStart(BENCH_AI);
-		obj->AI();
-		BEnd(BENCH_AI);
-
-		/*
-		**	If the object was destroyed in the process of performing its AI, then
-		**	adjust the index so that no object gets skipped.
-		*/
-		//if (obj != (*this)[index]) {
-		//	index--;
-		//}
-	}
-//	HouseClass::Recalc_Attributes();
-
-	if (Session.Type != GAME_NORMAL && Session.Type != GAME_SKIRMISH) {
-		for (index = 0; index < MoveFlashes.Count(); index++) {
-			MoveFlashes[index]->AI();
-		}
-	}
-
-	IonBlastClass::Update_All();
-	AlphaShapeClass::Update_All();
-
-	/*
-	**	Map related logic is performed.
-	*/
-	Map.Logic();
-
-	TacticalMap->AI();
-
-	/*
-	**	Factory processing is performed.
-	*/
-	for (index = 0; index < Factories.Count(); index++) {
-		Factories[index]->AI();
-	}
-
-	/*
-	**	House processing is performed.
-	*/
-	for (HousesType house = HOUSE_FIRST; house < Houses.Count(); house++) {
-		HouseClass * hptr = Houses[house];
-		if (hptr) {
-			hptr->AI();
-		}
-	}
-
-	if (Map.Object_To_Follow() != NULL) {
-		TacticalMap->Set_Tactical_Position(Map.Object_To_Follow()->PositionCoord);
-	}
-}
-
-
-/// <summary>
-/// Handles the environmental side of the game logic frame.
-/// This routine paces shroud regrowth, fog of war spread and ice growth against their
-/// rule driven timers, lets the map settle its ice and terrain deformation, and then
-/// gives each foot object's locomotor its chance to process.
-/// </summary>
-void LogicClass::Environment_AI(void)
-{
-	if (Rule->IsShroudGrow && Rule->ShroudRate != 0 && Scen->ShroudTimer == 0) {
-		Scen->ShroudTimer = TICKS_PER_MINUTE * Rule->ShroudRate;
-		Map.Encroach_Shadow();
-	}
-
-	if (Scen->Special.IsFogOfWar && Rule->FogRate != 0 && Scen->FogTimer == 0) {
-		Scen->FogTimer = TICKS_PER_MINUTE * Rule->FogRate;
-		Map.Encroach_Fog();
-	}
-
-	if (Scen->Theater == THEATER_SNOW && Rule->IceGrowthRate != 0 && Scen->IceGrowthTimer == 0) {
-		Scen->IceGrowthTimer = TICKS_PER_MINUTE * Rule->IceGrowthRate;
-		Map.Ice_Growth_AI();
-	}
-
-	Map.Ice_Solidification_AI();
-	Map.Terrain_Deformation_AI();
-
-	for (int index = 0; index < Count(); index++) {
-		FootClass *foot = (FootClass *)(*this)[index];
-		if (foot->Is_Foot() && foot->Locomotion != NULL && !foot->IsSinking) {
-			foot->Locomotion->Process();
-		}
-	}
-}
-
-
-/***********************************************************************************************
- * LogicClass::Detach -- Detatch the specified target from the logic system.                   *
- *                                                                                             *
- *    This routine is called when the specified target object is about to be removed from the  *
- *    game system and all references to it must be severed. The only thing that the logic      *
- *    system looks for in this case is to see if the target refers to a trigger and if so,     *
- *    it scans through the trigger list and removes all references to it.                      *
- *                                                                                             *
- * INPUT:   target   -- The target to remove from the sytem.                                   *
- *                                                                                             *
- * OUTPUT:  none                                                                               *
- *                                                                                             *
- * WARNINGS:   none                                                                            *
- *                                                                                             *
- * HISTORY:                                                                                    *
- *   07/30/1996 JLB : Created.                                                                 *
- *=============================================================================================*/
-void LogicClass::Detach(AbstractClass const * target, bool all)
-{
-	/*
-	**	Remove any triggers from the logic trigger list.
-	*/
-	if (Is_Target_Tag(target)) {
-		for (int index = 0; index < LogicTags.Count(); index++) {
-			if (target == (AbstractClass *)LogicTags[index]) {
-				LogicTags.Delete_Index(index);
-				index--;
-			}
-		}
-	}
-}
-
 
 /// <summary>
 /// Performs the per object thinking for one game logic frame.
@@ -551,6 +576,8 @@ void LogicClass_AI_Logic_507470(void)
 }
 
 
+
+
 /// <summary>
 /// Submits the object to the logic system.
 /// This routine is used to add an object to the list that the game logic ticks each
@@ -585,3 +612,4 @@ void LogicClass::Remove(ObjectClass * object)
 		object->IsSubmittedToLayer = false;
 	}
 }
+
