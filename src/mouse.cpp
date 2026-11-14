@@ -117,8 +117,6 @@ MouseClass::MouseClass(void) :
  *=============================================================================================*/
 void MouseClass::Set_Default_Mouse(MouseType mouse, bool size)
 {
-	assert((unsigned)mouse < MOUSE_COUNT);
-
 	NormalMouseShape = mouse;
 	Override_Mouse_Shape(mouse, size);
 }
@@ -176,6 +174,26 @@ void MouseClass::Mouse_Small(bool wsmall)
 
 	MouseCursor->Set_Cursor(hotspot, MouseShapes, frame);
 }
+
+
+/// <summary>
+/// Fetches the first frame of the given mouse shape, in its small form if asked for and it has one.
+/// </summary>
+int MouseClass::Get_Mouse_Start_Frame(MouseType mouse, bool wsmall) const // RA2: not in TibSun, at 0x59F170
+{
+	MouseStruct const * control = &MouseControl[mouse];
+
+	if (wsmall) {
+		if (control->SmallFrame != -1) {
+			return(control->SmallFrame);
+		}
+	}
+
+	return(control->StartFrame);
+}
+
+
+
 
 
 /// <summary>
@@ -252,8 +270,6 @@ Point2D MouseClass::Get_Mouse_Hotspot(MouseType mouse) const
  *=============================================================================================*/
 bool MouseClass::Override_Mouse_Shape(MouseType mouse, bool wsmall)
 {
-	assert((unsigned)mouse < MOUSE_COUNT);
-
 	MouseStruct const * control = &MouseControl[mouse];
 	static bool startup = false;
 
@@ -382,6 +398,15 @@ void MouseClass::Init_Clear(void)
 
 
 /// <summary>
+/// RA2
+/// </summary>
+static HRESULT Read_Cell(IStream * stream, Cell & cell)
+{
+	return stream->Read(&cell, sizeof(cell), NULL);
+}
+
+
+/// <summary>
 /// Loads the map layer from a save game stream.
 /// This routine tears down the cell array and the zone tables, reads the saved state
 /// over this class, then reallocates the map and reads the cells and zone data back into
@@ -394,13 +419,9 @@ HRESULT MouseClass::Load(IStream * stream)
 	int i;
 
 	TaggedCells.Clear();
-	DirtyIceCells.Clear();
-	CrackedIce.Clear();
-	PendingBridgeCells.Clear();
+	PendingBridgeCells.Clear(); // RA2: no DirtyIceCells, Clear, CrackedIce (TibSun's use does not compile against RA2's declaration)
 
-	int size = sizeof(*this);
-
-	HRESULT result = BASECLASS::Load(stream);
+	HRESULT result = BASECLASS::Load(stream); // RA2: no int size = sizeof(*this); (not in RA2's layout)
 	if (SUCCEEDED(result)) {
 		int theater;
 		result = stream->Read(&theater, sizeof(theater), NULL);
@@ -432,8 +453,10 @@ HRESULT MouseClass::Load(IStream * stream)
 		}
 
 		for (i = 0; i < SUBZONE_COUNT; i++) {
-			delete SubzoneConnectionHashTable[i];
-			SubzoneConnectionHashTable[i] = NULL;
+			if (SubzoneConnectionHashTable[i] != NULL) { // RA2: YR's Load (unplaced; TibSun's does not compile against RA2's MapClass: no DirtyIceCells/CrackedIce)
+				delete SubzoneConnectionHashTable[i]; // RA2: as above
+				SubzoneConnectionHashTable[i] = NULL; // RA2: as above
+			}
 		}
 
 		Array.Clear();
@@ -445,7 +468,7 @@ HRESULT MouseClass::Load(IStream * stream)
 
 		new (this) MouseClass(NoInitClass());
 
-		for (i = 0; i < SidebarClass::COLUMNS; i++) {
+		for (i = 0; i < SidebarClass::STRIPS; i++) { // RA2: as above (SidebarClass::STRIPS)
 			for (int j = 0; j < SidebarClass::StripClass::MAX_BUILDABLES; j++) {
 				Swizzle_Pointer(&Column[i].Buildables[j].Factory);
 			}
@@ -487,7 +510,8 @@ HRESULT MouseClass::Load(IStream * stream)
 			int v = (1 << (i + 1));
 			SubzoneTracking[i].Clear();
 			SubzoneTracking[i].Set_Growth_Step((4 * PlayRect.Width * PlayRect.Height) / (v * v));
-			SubzoneConnectionHashTable[i] = new SUBZONE_CONNECTION_HASH_SET(20, 256, SubzoneHash);
+			SUBZONE_CONNECTION_HASH_SET * connections = new SUBZONE_CONNECTION_HASH_SET(20, 256, SubzoneHash); // RA2: as above
+			SubzoneConnectionHashTable[i] = connections; // RA2: as above
 		}
 
 		result = stream->Read(CellZones, sizeof(*CellZones) * CellZoneCount, NULL);
@@ -519,8 +543,10 @@ HRESULT MouseClass::Load(IStream * stream)
 		}
 
 		for (i = 0; i < Array.Length(); i++) {
-			delete Array[i];
-			Array[i] = NULL;
+			if (Array[i] != NULL) { // RA2: as above
+				delete Array[i]; // RA2: as above
+				Array[i] = NULL; // RA2: as above
+			}
 		}
 		int count;
 		result = stream->Read(&count, sizeof(count), NULL);
@@ -538,7 +564,7 @@ HRESULT MouseClass::Load(IStream * stream)
 		}
 		for (i = 0; i < count; i++) {
 			Cell cell;
-			result = stream->Read(&cell, sizeof(cell), NULL);
+			result = Read_Cell(stream, cell); // RA2: as above
 			if (FAILED(result)) {
 				return(result);
 			}
@@ -551,33 +577,7 @@ HRESULT MouseClass::Load(IStream * stream)
 		}
 		for (i = 0; i < count; i++) {
 			Cell cell;
-			result = stream->Read(&cell, sizeof(cell), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			DirtyIceCells.Add(cell);
-		}
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			CrackedIceStruct ice;
-			result = stream->Read(&ice, sizeof(ice), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-			CrackedIce.Add(ice);
-		}
-
-		result = stream->Read(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			Cell cell;
-			result = stream->Read(&cell, sizeof(cell), NULL);
+			result = Read_Cell(stream, cell); // RA2: as above
 			if (FAILED(result)) {
 				return(result);
 			}
@@ -668,6 +668,7 @@ HRESULT MouseClass::Save(IStream * stream)
 		if (FAILED(result)) {
 			return(result);
 		}
+
 		Reset_Iterator();
 		cptr = Iterate();
 		while (cptr != NULL) {
@@ -694,31 +695,7 @@ HRESULT MouseClass::Save(IStream * stream)
 			}
 		}
 
-		count = DirtyIceCells.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&DirtyIceCells[i], sizeof(DirtyIceCells[i]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = CrackedIce.Count();
-		result = stream->Write(&count, sizeof(count), NULL);
-		if (FAILED(result)) {
-			return(result);
-		}
-		for (i = 0; i < count; i++) {
-			result = stream->Write(&CrackedIce[i], sizeof(CrackedIce[0]), NULL);
-			if (FAILED(result)) {
-				return(result);
-			}
-		}
-
-		count = PendingBridgeCells.Count();
+		count = PendingBridgeCells.Count(); // RA2: no DirtyIceCells, Count, Write and 2 more (TibSun's use does not compile against RA2's declaration)
 		result = stream->Write(&count, sizeof(count), NULL);
 		if (FAILED(result)) {
 			return(result);
@@ -736,12 +713,31 @@ HRESULT MouseClass::Save(IStream * stream)
 }
 
 
+
+
+
+bool MouseShapesLoaded; // RA2: set when the mouse shapes were loaded rather than retrieved
+
+
 /// <summary>
 /// Fetches the first shape frame used by a mouse cursor.
 /// This routine is used to locate a mouse shape's animation within the combined mouse
 /// shape file.
 /// </summary>
 /// <returns>Returns with the starting frame number of the mouse shape specified.</returns>
+void Free_Mouse_Shapes(void) // RA2: not in TibSun, at 0x59FEF0
+{
+	if (MouseShapesLoaded) {
+		delete (void *)MouseClass::MouseShapes;
+		MouseShapesLoaded = false;
+	}
+	MouseClass::MouseShapes = NULL;
+}
+
+
+/// <summary>
+/// RA2
+/// </summary>
 int MouseClass::Get_Mouse_Start_Frame(MouseType mouse) const
 {
 	return(MouseControl[mouse].StartFrame);
@@ -756,6 +752,10 @@ int MouseClass::Get_Mouse_Frame_Count(MouseType mouse) const
 {
 	return(MouseControl[mouse].FrameCount);
 }
+
+
+
+
 
 
 /*

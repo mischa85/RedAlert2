@@ -67,6 +67,7 @@ class MouseClass: public ScrollClass
 		int Get_Mouse_Current_Frame(MouseType mouse, bool wsmall) const;
 		Point2D Get_Mouse_Hotspot(MouseType mouse) const;
 		int Get_Mouse_Start_Frame(MouseType mouse) const;
+		int Get_Mouse_Start_Frame(MouseType mouse, bool wsmall) const; // RA2: 0x59F170
 		int Get_Mouse_Frame_Count(MouseType mouse) const;
 
 		/*
