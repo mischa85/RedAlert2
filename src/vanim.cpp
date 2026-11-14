@@ -212,7 +212,7 @@ void VoxelAnimClass::Draw_It(Point2D const & xpoint, Rect const & cliprect) cons
 
 				matrix = BounceClass::Get_Matrix();
 				VoxelDrawSystem::Reset();
-				VoxelDrawSystem::Prep_For_Shadow(voxlib, Class->VoxelIndex, 0, VoxelCameraMatrix, matrix, VoxelShadowLightVector);
+				VoxelDrawSystem::Prep_For_Shadow(voxlib, Class->VoxelIndex, 0, VoxelCameraMatrix, matrix, VoxelShadowLightVector, NULL, 0, 0); // RA2: NULL, 0, 0
 
 				VoxelDrawSystem::Render(fromrect, x, y);
 
@@ -318,10 +318,7 @@ void VoxelAnimClass::AI(void)
 				new AnimClass(Class->ExpireAnim, Coord(MyCoord.X, MyCoord.Y, MyCoord.Z), 0, 1, ShapeFlags_Type(SHAPE_ZGRAD|SHAPE_WIN_REL|SHAPE_CENTER), -30);
 				Explosion_Damage(Get_Bounce_Coord(), Class->Damage, 0, Class->Warhead, 1);
 				Combat_Lighting(Get_Bounce_Coord(), Class->Damage, Class->Warhead, 0);
-			}
-			if ((unsigned char)Class->ExpireSound != (unsigned char)VOC_NONE) {
-				Sound_Effect(Class->ExpireSound, Coord(Position.X, Position.Y, Position.Z));
-			}
+			} // RA2: no ExpireSound (not in RA2's layout)
 
 		/*
 		 * Splashing into water: a meteor makes the biggest splash, anything else
@@ -361,27 +358,12 @@ void VoxelAnimClass::AI(void)
 				/*
 				 * Gouge a crater into the terrain around the impact cell.
 				 */
-				if (Rule->CraterLevel) {
-					if (!is_above_bridge) {
-						Map.Deform_Terrain(impact.As_Cell(), false);
-						if (Rule->CraterLevel > 1) {
-							for (int i = 0; i < FACING_COUNT; i++) {
-								if (i % (FACING_COUNT / 4) || Rule->CraterLevel > 2) {
-									Map.Deform_Terrain(Adjacent_Cell(impact.As_Cell(), (FacingType)i), false);
-								}
-							}
-							if (Rule->CraterLevel > 3) {
-								Map.Deform_Terrain(impact.As_Cell(), false);
-							}
-						}
-					}
-				}
 
 				/*
 				 * A tiberium meteor seeds tiberium into the ring of cells around the
 				 * impact, accumulating each affected cell into the dirty rectangle.
 				 */
-				if (Class->IsTiberium && !is_above_bridge) {
+				if (Class->IsTiberium && !is_above_bridge) { // RA2: no CraterLevel (not in RA2's layout)
 					int i = FACING_FIRST;
 					do {
 						Cell cell = Adjacent_Cell(impact.As_Cell(), (FacingType)i);
@@ -467,10 +449,7 @@ void VoxelAnimClass::AI(void)
 				if (Class->BounceAnim != NULL) {
 					new AnimClass(Class->BounceAnim, Coord(Position), 0, 1, ShapeFlags_Type(SHAPE_WIN_REL|SHAPE_CENTER), 0);
 				}
-				if ((unsigned char)Class->BounceSound != (unsigned char)VOC_NONE) {
-					Sound_Effect(Class->BounceSound, Coord(Position.X, Position.Y, Position.Z));
-				}
-				for (ObjectClass * occupier = Map[Get_Bounce_Coord()].Cell_Occupier(); occupier != NULL; occupier = occupier->Next) {
+				for (ObjectClass * occupier = Map[Get_Bounce_Coord()].Cell_Occupier(); occupier != NULL; occupier = occupier->Next) { // RA2: no BounceSound (not in RA2's layout)
 					Coord occoord = occupier->PositionCoord;
 					Coord mycoord = Get_Bounce_Coord();
 					int lepton = abs(mycoord.X - occoord.X) + abs(mycoord.Y - occoord.Y);
@@ -576,7 +555,7 @@ HRESULT STDMETHODCALLTYPE VoxelAnimClass::GetClassID(CLSID * retval)
 /// committed to the save stream.
 /// </summary>
 /// <returns>Returns with the byte size of this object.</returns>
-int VoxelAnimClass::Fetch_Object_Size(bool oldsave) const
+int VoxelAnimClass::Fetch_Object_Size(void) const // RA2: no oldsave argument
 {
 	return(sizeof(*this));
 }
@@ -612,3 +591,7 @@ Cell const * VoxelAnimClass::Occupy_List(bool placement) const
 {
 	return(NULL);
 }
+
+
+
+
