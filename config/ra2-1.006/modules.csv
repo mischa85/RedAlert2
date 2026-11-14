@@ -342,9 +342,9 @@ unk_0053AEF0,0x0053AEF0,0x0053B0E0,unknown,code not assigned to a module
 loaddlg,0x0053B0E0,0x0053C970,tibsun,"functions compiled from src/loaddlg.cpp, without gaps; matched except ?Load_Dialog_Proc@LoadOptionsClass@@KGJPAUHWND__@@IIJ@Z and ?Save_Dialog_Proc@LoadOptionsClass@@KGJPAUHWND__@@IIJ@Z and ?Delete_Dialog_Proc@LoadOptionsClass@@KGJPAUHWND__@@IIJ@Z and ?Dialog@LoadOptionsClass@@IAE_NXZ and ?Fill_List@LoadOptionsClass@@IAEXPAUHWND__@@@Z and ?Files_Present@LoadOptionsClass@@QAE_NXZ and ?Load_File@LoadOptionsClass@@UAE_NPBD@Z and ?Save_File@LoadOptionsClass@@UAE_NPBDPBG@Z; ?Delete_Dialog_Proc@LoadOptionsClass@@KGJPAUHWND__@@IIJ@Z and ?Dialog@LoadOptionsClass@@IAE_NXZ and ?Files_Present@LoadOptionsClass@@QAE_NXZ and ?Fill_List@LoadOptionsClass@@IAEXPAUHWND__@@@Z and ?Load_Dialog_Proc@LoadOptionsClass@@KGJPAUHWND__@@IIJ@Z and ?Load_File@LoadOptionsClass@@UAE_NPBD@Z and ?Save_Dialog_Proc@LoadOptionsClass@@KGJPAUHWND__@@IIJ@Z and ?Save_File@LoadOptionsClass@@UAE_NPBDPBG@Z placed at their function starts"
 unk_0053C970,0x0053C970,0x0053CFC0,unknown,code not assigned to a module
 loco,0x0053CFC0,0x0053D630,tibsun,"functions compiled from src/loco.cpp, matched, without gaps; 21 placed by the gap"
-unk_0053D630,0x0053D630,0x0053E110,unknown,code not assigned to a module
-unk_0053E110,0x0053E110,0x0053E180,tibsun,matched functions of one source file of the Tiberian Sun reconstruction
-unk_0053E180,0x0053E180,0x0053E420,unknown,code not assigned to a module
+unk_0053D630,0x0053D630,0x0053D820,unknown,code not assigned to a module
+logic,0x0053D820,0x0053E3D0,tibsun,"functions compiled from src/logic.cpp, without gaps; matched except ?AI@LogicClass@@QAEXXZ; one placed by the gap"
+unk_0053E3D0,0x0053E3D0,0x0053E420,unknown,code not assigned to a module
 lzo1x_c,0x0053E420,0x0053E970,tibsun,"functions compiled from src/lzo1x_c.cpp, matched, without gaps"
 lzo1x_d,0x0053E970,0x0053EB40,tibsun,"functions compiled from src/lzo1x_d.cpp, matched, without gaps"
 lzopipe,0x0053EB40,0x0053EF60,tibsun,"functions compiled from src/lzopipe.cpp, matched, without gaps; one placed by alphabetical order"
