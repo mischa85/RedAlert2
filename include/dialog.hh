@@ -59,9 +59,11 @@ enum TextPrintType {
 	TPF_LIGHTSHADOW	=0x0080,            // Use engraved drop 'shadow' color.
 	TPF_CENTER			=0x0100,        // Center about the X axis.
 	TPF_RIGHT			=0x0200,        // Right justify text.
+	TPF_BLACK_BACKGROUND	=0x0400,    // RA2: a black box behind the text (0x497830)
 	TPF_MEDIUM_COLOR	=0x1000,        // Use medium color for all text gradient
 	TPF_BRIGHT_COLOR	=0x2000,        // Use bright color for all text gradient
 	TPF_USE_GRAD_PAL	=0x4000,        // Use a gradient palette based on fore color
+	TPF_FADED_BACKGROUND	=0x8000,    // RA2: a translucent black box behind the text (0x497830)
 
 	// Standard button text print flags.
 	TPF_TEXT			=(TPF_6PT_GRAD|TPF_NOSHADOW),
