@@ -157,10 +157,13 @@
 #include "wwfont.h"
 #include "wwmouse.h"
 #include "zbuffer.h"
+#include "bittext.h" // RA2: BitText
 
 #include <conio.h>
 #include <io.h>
 #include <cfloat>
+
+
 
 extern "C" {
 	void __cdecl set_control_word(void);
@@ -237,6 +240,7 @@ bool SetRegKeyValue(const LPCSTR pszKey, const LPCSTR pszSubkey, const LPCSTR ps
 	return(bOk);
 }
 
+
 /// MSDN sample code
 
 /// <summary>
@@ -289,13 +293,14 @@ HRESULT RegisterServer(void)
 	SetRegKeyValue(szCLSID, TEXT("Typelib"), szLibID);
 
 	ITypeLib * pITypeLib = NULL;
-	LoadTypeLib(L"SUN.TLB", &pITypeLib);
+	LoadTypeLib(L"RA2.TLB", &pITypeLib); // RA2: RegisterServer at 0x68DC70 matches only so
 	if (pITypeLib != NULL) {
 		pITypeLib->Release();
 	}
 
 	return(hr);
 }
+
 
 /// MSDN sample code
 
@@ -346,6 +351,10 @@ HRESULT UnregisterServer(void)
 	return(hr);
 }
 
+
+
+
+
 /// <summary>
 /// Destroys the drawing surfaces and drops the video mode.
 /// This routine is used on the way out of the game so that the display is handed back to
@@ -389,6 +398,7 @@ void Reset_Surfaces(void)
 	}
 }
 
+
 /// <summary>
 /// Handles any exception that escapes the game.
 /// This routine is installed as the top level exception filter for the process, so that
@@ -399,6 +409,18 @@ LONG Top_Level_Exception_Filter(EXCEPTION_POINTERS *e_info)
 {
 	return(Exception_Handler(e_info->ExceptionRecord->ExceptionCode, e_info));
 }
+
+
+
+
+
+
+
+
+
+
+
+
 
 /// <summary>
 /// Registers the game's COM classes with OLE.
@@ -540,6 +562,7 @@ static bool RegisterClasses(void)
 	return(failed);
 
 }
+
 
 /***********************************************************************************************
  * main -- Initial startup routine (preps library systems).                                    *
@@ -833,15 +856,8 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 
 		int screen_height;
 
-		if (Session.ShowInternetDebug) {
-			Options.ScreenWidth = 640;
-			screen_height = 480;
-			Options.ScreenHeight = 480;
-		} else {
-			screen_height = Options.ScreenHeight;
-		}
 
-		if (Options.ScreenWidth == -1 || screen_height == -1) {
+		if (Options.ScreenWidth == -1 || screen_height == -1) { // RA2: no ShowInternetDebug (not in RA2's layout)
 			Options.ScreenWidth = 640;
 
 			if (WinVersion.Is_WinNTx() || GetVideoMemory() > 0x200000) {
@@ -920,13 +936,8 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 			Emergency_Exit();
 		}
 
-		if (Session.ShowInternetDebug) {
-			Options.ScreenHeight = 400;
-			VideoModeHeight = 400;
-			VisibleRect = Rect(0,0,Options.ScreenWidth,Options.ScreenHeight);
-		}
 
-		do {
+		do { // RA2: no ShowInternetDebug (not in RA2's layout)
 			Windows_Message_Handler();
 		}
 		while (!GameInFocus);
@@ -959,7 +970,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 		**	Check for forced intro movie run disabling. If the conquer
 		**	configuration file says "no", then don't run the intro.
 		*/
-		DiskID disk = CD::Get_Current_Disk();
+		DiskID disk = CD::Get_Current_Disk(60); // RA2: a 60 timeout
 		if (!Special.IsFromInstall && (disk == DISK_GDI || disk == DISK_NOD)) {
 			sprintf(buffer, "PlaySide%02d", disk);
 			Special.IsFromInstall = ConfigINI.Get_Bool("Intro", buffer, true);
@@ -1056,6 +1067,7 @@ int CALLBACK WinMain ( HINSTANCE instance , HINSTANCE , char * command_line , in
 	return(error_code);
 }
 
+
 /***********************************************************************************************
  * Prog_End -- Cleans up library systems in prep for game exit.                                *
  *                                                                                             *
@@ -1127,9 +1139,8 @@ void __cdecl Prog_End(void)
 	Map.Free_Cells();
 	Map.Clear_Radar();
 
-	Reset_Surfaces();
 
-	if (DepthBuffer != NULL) {
+	if (DepthBuffer != NULL) { // RA2: no Reset_Surfaces (not in RA2's layout)
 		delete DepthBuffer;
 		DepthBuffer = NULL;
 	}
@@ -1257,9 +1268,8 @@ void __cdecl Prog_End(void)
 		PreviewSurface = NULL;
 	}
 
-	CDControl.Unlock_All_CD_Trays();
 
-	if (MoviesMix != NULL) {
+	if (MoviesMix != NULL) { // RA2: no Unlock_All_CD_Trays (not in RA2's layout)
 		delete MoviesMix;
 		MoviesMix = NULL;
 	}
@@ -1408,6 +1418,16 @@ void __cdecl Prog_End(void)
 #endif
 }
 
+
+/// <summary>
+/// Ends the process with the exit code given.
+/// </summary>
+void Exit_Process(int code) // RA2: not in TibSun, at 0x691310
+{
+	exit(code);
+}
+
+
 /***********************************************************************************************
  * Emergency_Exit -- Function to call when we want to exit unexpectedly.                       *
  *                   Use this function instead of exit(n) so everything is properly cleaned up.*
@@ -1461,3 +1481,4 @@ void Emergency_Exit(void)
 
 	Prog_End();
 }
+
