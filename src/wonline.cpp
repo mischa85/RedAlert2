@@ -3896,6 +3896,193 @@ bool __fastcall Host_Game(void) // RA2: 0x007459A0, not in TibSun: hosts a game:
 	return(true); // RA2: as above
 }
 
+extern char LastFindName[]; // RA2: 0x00B29CD8, the nick the last /find command asked for
+
+int __fastcall Parse_Online_Command(wchar_t const * text) // RA2: 0x00746240, not in TibSun: the lobby chat command that looks a player up (TXT_ONLINE_COMMAND followed by a nick): 1 when the command was handled
+{
+	int handled = 0; // RA2: as above
+	wchar_t command[64]; // RA2: as above
+	wcscpy(command, StringTable::LoadString("TXT_ONLINE_COMMAND", 0, "D:\\Ra2\\wonline.cpp", 10505)); // RA2: as above
+	if (wcsncmp(text, command, wcslen(command)) == 0) { // RA2: as above
+		int count = 0; // RA2: as above
+		wchar_t const * cursor = text + wcslen(command); // RA2: as above
+		while (wcsncmp(cursor, L" ", 1) == 0) { // RA2: as above
+			++cursor; // RA2: as above
+		}
+		wchar_t name[16]; // RA2: as above
+		while (*cursor) { // RA2: as above
+			if (wcsncmp(cursor, L" ", 1) == 0 || count >= 10) { // RA2: as above
+				break; // RA2: as above
+			}
+			name[count++] = *cursor++; // RA2: as above
+		}
+		name[count] = 0; // RA2: as above
+		if (wcslen(name) > 0) { // RA2: as above
+			User user; // RA2: as above
+			strcpy((char *)user.name, Wide_To_Narrow(name)); // RA2: as above
+			strcpy(LastFindName, Wide_To_Narrow(name)); // RA2: as above
+			g_pChat->RequestFind(&user); // RA2: virtual 0x60
+			handled = 1; // RA2: as above
+		} else {
+			wchar_t message[256]; // RA2: as above
+			swprintf(message, StringTable::LoadString("TXT_NO_NAME", 0, "D:\\Ra2\\wonline.cpp", 10525)); // RA2: as above
+			HWND window = WS_Top_Window(); // RA2: as above
+			if (window) { // RA2: as above
+				if (GetDlgItem(window, 0x53F)) { // RA2: as above
+					Lobby_Chat_Printf(ColorSystem, message); // RA2: as above
+				}
+				if (GetDlgItem(window, 0x5B5)) { // RA2: as above
+					SMessagePrintf(ColorSystem, message); // RA2: as above
+				}
+			}
+			if (Session.Is_In_Game()) { // RA2: as above
+				int color = GadgetClass::Get_Color_Scheme(); // RA2: as above
+				Session.Messages.Add_Message(0, 0, message, color, TextPrintType(0x16), (int)(Rule->MessageDelay * TICKS_PER_MINUTE), false); // RA2: as above
+			}
+			handled = 1; // RA2: as above
+		}
+	}
+	return(handled); // RA2: as above
+}
+
+extern int MuteSWLaunches; // RA2: 0x00A3D548, nonzero while the launch announcements are muted (as the other files declare it)
+
+int __fastcall Parse_Page_Command(wchar_t const * text) // RA2: 0x00746480, not in TibSun: the lobby chat command that pages a player (TXT_PAGE_COMMAND, a nick and the text): 1 when handled, 2 when a message was shown instead
+{
+	int result = 0; // RA2: as above
+	wchar_t nickname[16]; // RA2: as above
+	User recipient; // RA2: as above
+	wchar_t command[128]; // RA2: as above
+	wcscpy(command, StringTable::LoadString("TXT_PAGE_COMMAND", 0, "D:\\Ra2\\wonline.cpp", 10559)); // RA2: as above
+	if (_wcsnicmp(text, command, wcslen(command)) == 0) { // RA2: as above
+		int name_length = 0; // RA2: as above
+		unsigned length = wcslen(text) + 1; // RA2: as above
+		wchar_t * copy = (wchar_t *)operator new(length * 2); // RA2: as above
+		if (!copy) { // RA2: as above
+			return(0); // RA2: as above
+		}
+		copy = wcsncpy(copy, text, length); // RA2: as above
+		if (!copy) { // RA2: as above
+			return(0); // RA2: as above
+		}
+		wchar_t * message = copy + wcslen(command); // RA2: as above
+		while (*message && wcsncmp(message, L" ", 1) == 0) { // RA2: as above
+			++message; // RA2: as above
+		}
+		while (*message) { // RA2: as above
+			if (wcsncmp(message, L" ", 1) == 0 || name_length > 10) { // RA2: as above
+				break; // RA2: as above
+			}
+			nickname[name_length++] = *message++; // RA2: as above
+		}
+		nickname[name_length] = 0; // RA2: as above
+		while (*message && wcsncmp(message, L" ", 1) == 0) { // RA2: as above
+			++message; // RA2: as above
+		}
+		if (name_length > 10) { // RA2: as above
+			result = 1; // RA2: as above
+		} else if (name_length == 0) { // RA2: as above
+			result = 1; // RA2: as above
+		} else {
+			bool recipient_is_player = false; // RA2: as above
+			if (MuteSWLaunches) { // RA2: as above
+				for (int i = 0; i < Session.Players.Count(); ++i) { // RA2: as above
+					if (_wcsicmp(Session.Players[i]->Name, nickname) == 0) { // RA2: as above
+						recipient_is_player = true; // RA2: as above
+						break; // RA2: as above
+					}
+				}
+			}
+			if (!recipient_is_player) { // RA2: as above
+				if (wcslen(message) > 0) { // RA2: as above
+					strcpy((char *)recipient.name, Wide_To_Narrow(nickname)); // RA2: as above
+					g_pChat->RequestPageWide(&recipient, message); // RA2: virtual 0xF8
+				}
+				result = 1; // RA2: as above
+			} else {
+				int color = GadgetClass::Get_Color_Scheme(); // RA2: as above
+				Session.Messages.Add_Message(0, 0, StringTable::LoadString("TXT_OBSERVER_CANT_PAGE", 0, "D:\\Ra2\\wonline.cpp", 10619), color, TextPrintType(0x16), (int)(Rule->MessageDelay * TICKS_PER_MINUTE), false); // RA2: as above
+				result = 2; // RA2: as above
+			}
+		}
+		operator delete(copy); // RA2: as above
+	}
+	return(result); // RA2: as above
+}
+
+extern char LastPagerName[]; // RA2: 0x00B2AC48, who paged last (as mainloop.cpp declares it)
+
+int __fastcall Reply_To_Last_Pager(wchar_t const * text) // RA2: 0x007466C0, not in TibSun: the lobby chat command that answers the last pager (TXT_REPLY_COMMAND or its short form, then the text): 1 when handled, 2 when a message was shown instead
+{
+	int result = 0; // RA2: as above
+	wchar_t reply_command[128]; // RA2: as above
+	User recipient; // RA2: as above
+	wchar_t short_command[128]; // RA2: as above
+	wchar_t notice[128]; // RA2: as above
+	wcscpy(reply_command, StringTable::LoadString("TXT_REPLY_COMMAND", 0, "D:\\Ra2\\wonline.cpp", 10639)); // RA2: as above
+	wcscpy(short_command, StringTable::LoadString("TXT_REPLY_COMMAND_SHORT", 0, "D:\\Ra2\\wonline.cpp", 10640)); // RA2: as above
+	if (_wcsnicmp(text, reply_command, wcslen(reply_command)) == 0 || wcsncmp(text, short_command, wcslen(short_command)) == 0) { // RA2: as above
+		unsigned length = wcslen(text) + 1; // RA2: as above
+		wchar_t * copy = (wchar_t *)operator new(length * 2); // RA2: as above
+		if (!copy) { // RA2: as above
+			return(0); // RA2: as above
+		}
+		copy = wcsncpy(copy, text, length); // RA2: as above
+		if (!copy) { // RA2: as above
+			return(0); // RA2: as above
+		}
+		wchar_t * message; // RA2: as above
+		if (wcsncmp(text, reply_command, wcslen(reply_command)) == 0) { // RA2: as above
+			message = copy + wcslen(reply_command); // RA2: as above
+		} else {
+			message = copy + wcslen(short_command); // RA2: as above
+		}
+		while (*message && wcsncmp(message, L" ", 1) == 0) { // RA2: as above
+			++message; // RA2: as above
+		}
+		bool recipient_is_player = false; // RA2: as above
+		if (MuteSWLaunches) { // RA2: as above
+			for (int i = 0; i < Session.Players.Count(); ++i) { // RA2: as above
+				if (_wcsicmp(Session.Players[i]->Name, Narrow_To_Wide(LastPagerName)) == 0) { // RA2: as above
+					recipient_is_player = true; // RA2: as above
+					break; // RA2: as above
+				}
+			}
+		}
+		if (!recipient_is_player) { // RA2: as above
+			if (strlen(LastPagerName) > 0) { // RA2: as above
+				if (wcslen(message) > 0) { // RA2: as above
+					strcpy((char *)recipient.name, LastPagerName); // RA2: as above
+					g_pChat->RequestPageWide(&recipient, message); // RA2: virtual 0xF8
+				}
+				result = 1; // RA2: as above
+			} else {
+				wcscpy(notice, StringTable::LoadString("TXT_NO_ONE_WHOM_TO_REPLY", 0, "D:\\Ra2\\wonline.cpp", 10691)); // RA2: as above
+				HWND window = WS_Top_Window(); // RA2: as above
+				if (window) { // RA2: as above
+					if (GetDlgItem(window, 0x53F)) { // RA2: as above
+						Lobby_Chat_Printf(ColorSystem, notice); // RA2: as above
+					}
+					if (GetDlgItem(window, 0x5B5)) { // RA2: as above
+						SMessagePrintf(ColorSystem, notice); // RA2: as above
+					}
+				}
+				if (Session.Is_In_Game()) { // RA2: as above
+					int color = GadgetClass::Get_Color_Scheme(); // RA2: as above
+					Session.Messages.Add_Message(0, 0, notice, color, TextPrintType(0x16), (int)(Rule->MessageDelay * TICKS_PER_MINUTE), false); // RA2: as above
+				}
+				result = 2; // RA2: as above
+			}
+		} else {
+			int color = GadgetClass::Get_Color_Scheme(); // RA2: as above
+			Session.Messages.Add_Message(0, 0, StringTable::LoadString("TXT_OBSERVER_CANT_PAGE", 0, "D:\\Ra2\\wonline.cpp", 10715), color, TextPrintType(0x16), (int)(Rule->MessageDelay * TICKS_PER_MINUTE), false); // RA2: as above
+			result = 2; // RA2: as above
+		}
+		operator delete(copy); // RA2: as above
+	}
+	return(result); // RA2: as above
+}
+
 bool __fastcall Is_AI_Entry(NodeNameType * entry); // RA2: 0x005C9370, defined in netshare.cpp
 int __fastcall Get_Scenario_Slot_Limit(int index); // RA2: 0x005C65A0, defined in netshare.cpp
 extern NodeNameType * LobbyEntries[]; // RA2: 0x00A72D2C, the fixed entries of the lobby (open, closed, ...), as in netshare.cpp

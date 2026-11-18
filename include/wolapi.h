@@ -382,7 +382,7 @@ typedef struct Squad Squad;
         virtual HRESULT STDMETHODCALLTYPE RequestPrivateMessageWide(User *users, unsigned short const *message) = 0; // RA2: as above
         virtual HRESULT STDMETHODCALLTYPE RequestPublicActionWide(unsigned short const *action) = 0; // RA2: slot 60, called by 0x0073CB80 (Send_Chat_Action)
         virtual HRESULT STDMETHODCALLTYPE RequestPrivateActionWide(User *users, unsigned short const *action) = 0; // RA2: as above
-        virtual HRESULT STDMETHODCALLTYPE Unknown_Virtual_F8(User *user, unsigned short const *message) = 0;
+        virtual HRESULT STDMETHODCALLTYPE RequestPageWide(User *user, unsigned short const *message) = 0; // RA2: slot 62 (0xF8), the wide counterpart of RequestPage: Parse_Page_Command 0x00746480 and Reply_To_Last_Pager 0x007466C0 call it with the recipient and the text
         virtual HRESULT STDMETHODCALLTYPE Unknown_Virtual_FC(int update, int count) = 0;
         
     };
